@@ -10,7 +10,6 @@
   var EMP_KEY='PETATOE_PAYROLL_EMPLOYEES_V1';
   var SLIP_KEY='PETATOE_PAYROLL_SLIPS_V1';
   var COMM_SNAPSHOT_KEY='PETATOE_v3_5_COMMISSION_MONTHLY_SNAPSHOTS';
-  var COMM_STORE_KEY='PETATOE_v3_5_COMMISSION_SYSTEM';
   var JOB_TYPES_KEY='PETATOE_PAYROLL_JOB_TYPES_V1';
   var EMP_CONFIG_KEY='PETATOE_PAYROLL_EMPLOYEE_CONFIG_V1';
   var state={tab:'employees',configTab:'employees',editEmployeeId:'',editSlipId:'',archiveYear:'',archiveMonth:'',archivePayment:'',reportYear:'',reportMonth:'',reportPayment:'',salarySlipId:''};
@@ -134,9 +133,30 @@
   function statusInfo(st){var map={draft:['مسودة','warn'],pending_board:['بانتظار اعتماد رئيس مجلس الإدارة','warn'],board_approved:['معتمد مبدئيًا - بانتظار موافقة الموظف','ok'],employee_objection:['اعتراض من الموظف','bad'],employee_approved:['موافق عليه من الموظف - جاهز للحسابات','ok'],accounts_approved:['معتمد للصرف','ok'],paid:['تم الصرف','ok'],rejected:['مرفوض','bad']};return map[st]||[st||'مسودة','warn']}
   function statusBadge(st){var x=statusInfo(st);return '<span class="payroll-badge '+x[1]+'">'+esc(x[0])+'</span>'}
   function readCommissionSnapshots(){var s=read(COMM_SNAPSHOT_KEY,{});return s&&typeof s==='object'?s:{}}
-  function readCommissionStore(){var s=read(COMM_STORE_KEY,{});return s&&typeof s==='object'?s:{}}
-  function pushUniqueName(list,name){name=String(name||'').trim();if(name&&list.map(norm).indexOf(norm(name))===-1)list.push(name)}
-  function commissionStoreEmployeeName(row){row=row||{};return row.name||row.person||row.employee||row.employeeName||row.salesPerson||row.driver||row.groomer||''}
+  function readCommissionStore(){
+    var s=read('commissions',null);
+    if(s&&typeof s==='object')return s;
+    try{if(window.PETATOERepositories&&window.PETATOERepositories.Commissions&&typeof window.PETATOERepositories.Commissions.get==='function'){s=window.PETATOERepositories.Commissions.get();if(s&&typeof s==='object')return s;}}catch(e){console.warn('PETATOEPayroll commission repository fallback',e)}
+    return {};
+  }
+  function addUniqueCommissionName(out,name){
+    name=String(name||'').trim();
+    if(name&&out.map(norm).indexOf(norm(name))===-1)out.push(name);
+  }
+  function currentCommissionEmployeeNames(){
+    var st=readCommissionStore();
+    var emp=(st&&st.employees)||{};
+    var out=[];
+    ['groomers','drivers','sales','groomer','driver'].forEach(function(k){
+      (Array.isArray(emp[k])?emp[k]:[]).forEach(function(r){addUniqueCommissionName(out,r&&r.name)});
+    });
+    return out;
+  }
+  function snapshotCommissionEmployeeNames(){
+    var snaps=readCommissionSnapshots();var out=[];
+    Object.keys(snaps||{}).forEach(function(period){var snap=snaps[period]||{};['groomer','driver','sales'].forEach(function(k){(snap[k]||[]).forEach(function(r){addUniqueCommissionName(out,commissionPersonName(r))})})});
+    return out;
+  }
   function commissionAliases(emp){
     emp=emp||{};
     var linked=emp.userId?getUserById(emp.userId):null;
@@ -146,13 +166,8 @@
   function commissionPersonName(row){row=row||{};return row.person||row.name||row.employee||row.employeeName||row.salesPerson||row.driver||row.groomer||''}
   function commissionEmployeeNames(){
     var out=[];
-    var store=readCommissionStore();
-    var emp=store&&store.employees?store.employees:{};
-    ['groomers','drivers','sales','groomer','driver'].forEach(function(k){
-      (Array.isArray(emp&&emp[k])?emp[k]:[]).forEach(function(r){pushUniqueName(out,commissionStoreEmployeeName(r))});
-    });
-    var snaps=readCommissionSnapshots();
-    Object.keys(snaps||{}).forEach(function(period){var snap=snaps[period]||{};['groomer','driver','sales'].forEach(function(k){(snap[k]||[]).forEach(function(r){pushUniqueName(out,commissionPersonName(r))})})});
+    currentCommissionEmployeeNames().forEach(function(name){addUniqueCommissionName(out,name)});
+    snapshotCommissionEmployeeNames().forEach(function(name){addUniqueCommissionName(out,name)});
     return out.sort(function(a,b){return a.localeCompare(b,'ar')});
   }
   function commissionEmployeeOptions(selected){
