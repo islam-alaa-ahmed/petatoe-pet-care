@@ -13,7 +13,31 @@
   function mny(v){try{return typeof money==='function'?money(v):(Number(v||0).toFixed(2)+' SAR')}catch(e){return (Number(v||0).toFixed(2)+' SAR')}}
   function note(v){try{toast(v)}catch(e){if(window.PETATOEDiagnostics&&window.PETATOEDiagnostics.info)window.PETATOEDiagnostics.info('invoice-manual-multi-items',{message:v});}}
   function arr(){try{return (window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[]}catch(e){return []}}
-  function setArr(v){try{if(window.PETATOEDataSource&&window.PETATOEDataSource.setRecordsSync){window.PETATOEDataSource.setRecordsSync(Array.isArray(v)?v:[]);return true}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}return false}
+  function commitManualRowsToSupabase(rows){
+    try{
+      rows=Array.isArray(rows)?rows.filter(function(r){return r && !r.supabase_id && !r.__petatoeManualSupabasePending;}):[];
+      if(!rows.length) return;
+      rows.forEach(function(r){try{r.__petatoeManualSupabasePending=true;}catch(_e){}});
+      if(window.PETATOEDataLayer && typeof window.PETATOEDataLayer.insertSalesRecords==='function'){
+        window.PETATOEDataLayer.insertSalesRecords(rows,{source:'manual-invoice-entry'}).then(function(res){
+          if(!res || !res.ok){console.warn('[PETATOE Manual Invoice] Supabase save failed',res);return;}
+          if(window.PETATOEDataSource && typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
+            window.PETATOEDataSource.refreshSalesRecordsFromSupabase('manual-invoice-supabase-commit');
+          }
+        }).catch(function(e){console.warn('[PETATOE Manual Invoice] Supabase save crashed',e);});
+      }
+    }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js:commitManualRowsToSupabase",e);}
+  }
+  function setArr(v){
+    try{
+      var safe=Array.isArray(v)?v:[];
+      if(window.PETATOEDataSource&&window.PETATOEDataSource.syncRecordsCache){
+        window.PETATOEDataSource.syncRecordsCache(safe,{reason:'manual-invoice-runtime-sync'});
+        commitManualRowsToSupabase(safe);
+        return true;
+      }
+      if(window.PETATOEDataSource&&window.PETATOEDataSource.setRecordsSync){window.PETATOEDataSource.setRecordsSync(safe);return true}
+    }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}return false}
   function normDate(v){try{return typeof parseDate==='function'?parseDate(v):(v||'')}catch(e){return v||''}}
   function rowDate(r){return normDate(r&&r.date)||String(r&&r.date||'')}
   function invKey(v){return String(v==null?'':v).trim()}

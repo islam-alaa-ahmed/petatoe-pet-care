@@ -311,8 +311,15 @@
           return false;
         }
         ok=true;
-        // Runtime-only sync for immediate screen feedback. Official source is Supabase.
-        try{ if(window.PETATOEDataSource && typeof window.PETATOEDataSource.syncRecordsCache==='function') window.PETATOEDataSource.syncRecordsCache(uploadRows); }catch(e){console.warn('PETATOEImport runtime cache sync failed',e)}
+        // Official source is Supabase. Refresh the runtime cache from Supabase after write,
+        // so Dashboard / Smart Reports / Records read the same cross-device source.
+        try{
+          if(window.PETATOEDataSource && typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
+            await window.PETATOEDataSource.refreshSalesRecordsFromSupabase(eventName || 'sales-import-supabase-commit');
+          }else if(window.PETATOEDataSource && typeof window.PETATOEDataSource.syncRecordsCache==='function'){
+            window.PETATOEDataSource.syncRecordsCache(uploadRows,{reason:'sales-import-runtime-fallback'});
+          }
+        }catch(e){console.warn('PETATOEImport runtime cache refresh failed',e)}
       }catch(e){
         console.error('[PETATOE Import] Supabase save crashed', e);
         renderErrors([makeError(1,1,'حدث خطأ أثناء الرفع إلى Supabase',e&&e.message?e.message:String(e))]);
