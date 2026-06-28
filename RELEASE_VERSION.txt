@@ -1,0 +1,25 @@
+PETATOE v8.0.2 — GOLD_FINAL_AUDIT_GITHUB_PRODUCTION_CERTIFICATION
+
+Release Type: Enterprise Gold Stable Certification
+Base: v8.0.1 — SMART_REPORTS_FILTERS_BINDING_FIX
+
+Purpose:
+- Gold Final Audit before GitHub Pages production upload.
+- GitHub Production Certification package check.
+- No new features.
+- No data logic changes.
+- No critical script loading order changes.
+
+What changed:
+- Unified release version/name to v8.0.2 — GOLD_FINAL_AUDIT_GITHUB_PRODUCTION_CERTIFICATION.
+- Added final GitHub production certification documents under docs/gold-final-audit-v802/.
+- Added final manual pre-upload checklist.
+- Preserved v8.0.1 Smart Reports filter binding fix as baseline.
+
+Known deferred item:
+- Smart Reports PDF print layout polish may remain deferred if manual testing accepts current behavior.
+
+Quality Gates:
+- JavaScript syntax check required before release.
+- Source/href/img reference check required before release.
+- Manual regression required: Dashboard, Smart Reports filters, Customer 360, Login/Logout, Appointments, Vehicle Operations, PDF/Excel, Maintenance Center.
