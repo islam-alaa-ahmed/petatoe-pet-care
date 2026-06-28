@@ -375,6 +375,24 @@
     const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
     save(); toast('تم اعتماد البيانات بنجاح بدون تكرار');
   };
+
+  // PETATOE IMPORT OVERRIDE PUBLIC API
+  // Exposes override controls for runtime verification and manual Super Admin override.
+  window.petatoeImportOverride = {
+    version: 'v8.0.2-import-override-fix',
+    isLoaded: true,
+    getLastErrors: function(){ return (lastImportErrors||[]).slice(); },
+    canOverride: function(){
+      try{ return isSuperAdminUser(findCurrentFullUser()); }catch(_e){ return false; }
+    },
+    open: function(){ return openOverrideModal(); },
+    renderButton: function(){
+      const box=document.getElementById('importErrors');
+      if(box) appendOverrideButton(box);
+      return !!document.getElementById('petImportOverrideBtn');
+    }
+  };
+
   document.addEventListener('DOMContentLoaded',updateImportModeUI);
   setTimeout(updateImportModeUI,0);
 })();
