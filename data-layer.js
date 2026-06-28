@@ -35,6 +35,46 @@
     return { client:client, error:null };
   }
 
+  function applyOrder(q, order){
+    if(!order) return q;
+    if(Array.isArray(order)){
+      if(typeof q.order === 'function') return q.order(order);
+      return q;
+    }
+    if(typeof order === 'string'){
+      return typeof q.order === 'function' ? q.order(order) : q;
+    }
+    if(order && typeof order === 'object'){
+      return typeof q.order === 'function' ? q.order(order.column || order.name || order, { ascending: order.ascending !== false }) : q;
+    }
+    return q;
+  }
+
+  var SALES_STABLE_ORDER = [
+    { column:'invoice_date', ascending:true },
+    { column:'invoice_no', ascending:true },
+    { column:'client_name', ascending:true },
+    { column:'item_name', ascending:true },
+    { column:'price', ascending:true },
+    { column:'total_inc', ascending:true },
+    { column:'id', ascending:true }
+  ];
+
+  function normalizeReadAllRows(rows, table){
+    rows = Array.isArray(rows) ? rows : [];
+    // Defensive de-duplication by Supabase UUID prevents unstable page-boundary duplicates
+    // if a browser serves an older client while the new stable order is loading.
+    if(table !== 'sales_records') return rows;
+    var seen = {};
+    return rows.filter(function(r){
+      var k = asText(r && r.id);
+      if(!k) return true;
+      if(seen[k]) return false;
+      seen[k] = true;
+      return true;
+    });
+  }
+
   function normalizeRows(rows){
     if(rows == null) return [];
     return Array.isArray(rows) ? rows : [rows];
@@ -49,7 +89,7 @@
       if(options.eq && typeof options.eq === 'object'){
         Object.keys(options.eq).forEach(function(k){ q = q.eq(k, options.eq[k]); });
       }
-      if(options.order){ q = q.order(options.order.column || options.order, { ascending: options.order.ascending !== false }); }
+      q = applyOrder(q, options.order);
       if(options.limit !== false){ q = q.limit(options.limit || DEFAULT_LIMIT); }
       return unwrap(await q);
     }catch(error){
@@ -75,7 +115,7 @@
         if(options.eq && typeof options.eq === 'object'){
           Object.keys(options.eq).forEach(function(k){ q = q.eq(k, options.eq[k]); });
         }
-        if(options.order){ q = q.order(options.order.column || options.order, { ascending: options.order.ascending !== false }); }
+        q = applyOrder(q, options.order);
         if(typeof q.range === 'function') q = q.range(from, to);
         else { q = q.limit(pageSize); if(typeof q.offset === 'function') q = q.offset(from); }
         var res = unwrap(await q);
@@ -85,7 +125,8 @@
         all = all.concat(rows);
         if(rows.length < pageSize) break;
       }
-      return ok(all, { table:table, rows:all.length, pages:pages, pageSize:pageSize });
+      all = normalizeReadAllRows(all, table);
+      return ok(all, { table:table, rows:all.length, pages:pages, pageSize:pageSize, stableOrder: options.order || null });
     }catch(error){
       return fail(error && error.message ? error.message : String(error), error);
     }
@@ -284,7 +325,7 @@
       columns: options.columns || '*',
       pageSize: options.pageSize || 1000,
       maxRows: options.maxRows === undefined ? false : options.maxRows,
-      order: options.order || { column:'invoice_date', ascending:true }
+      order: options.order || SALES_STABLE_ORDER
     });
     if(!res.ok) return res;
     var rows = (res.data || []).map(mapSalesRecordFromSupabase);
@@ -414,5 +455,5 @@
 
   window.PETATOEDataLayer = api;
   window.petatoeDataLayerHealth = health;
-  console.log('✅ PETATOE Data Layer loaded — SALES_PAGINATION_FIX ready, no LocalStorage migration');
+  console.log('✅ PETATOE Data Layer loaded — SALES_STABLE_PAGINATION_FIX ready, no LocalStorage migration');
 })();

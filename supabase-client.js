@@ -93,7 +93,18 @@
   };
   QueryBuilder.prototype.order = function(column, opts){
     opts = opts || {};
-    var value = column + '.' + (opts.ascending === false ? 'desc' : 'asc');
+    if(Array.isArray(column)){
+      var joined = column.map(function(o){
+        if(typeof o === 'string') return o.indexOf('.') >= 0 ? o : (o + '.asc');
+        return String(o.column || o.name || '').trim() + '.' + (o.ascending === false ? 'desc' : 'asc');
+      }).filter(Boolean).join(',');
+      return this._param('order', joined);
+    }
+    if(typeof column === 'string' && column.indexOf(',') >= 0){
+      return this._param('order', column);
+    }
+    var c = String(column || '').trim();
+    var value = (c.indexOf('.') >= 0) ? c : (c + '.' + (opts.ascending === false ? 'desc' : 'asc'));
     return this._param('order', value);
   };
   QueryBuilder.prototype.eq = function(column, value){ return this._param(column, 'eq.' + String(value)); };
