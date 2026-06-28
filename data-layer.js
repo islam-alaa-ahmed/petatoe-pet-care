@@ -239,11 +239,20 @@
     options = options || {};
     var res = await read('sales_records', {
       columns: options.columns || '*',
-      limit: options.limit || 5000,
-      order: options.order || { column:'created_at', ascending:false }
+      limit: options.limit || 10000,
+      order: options.order || { column:'invoice_date', ascending:true }
     });
     if(!res.ok) return res;
-    return ok((res.data || []).map(mapSalesRecordFromSupabase), { table:'sales_records', count:res.count });
+    var rows = (res.data || []).map(mapSalesRecordFromSupabase);
+    return ok(rows, { table:'sales_records', rows:rows.length, count:res.count });
+  }
+
+  async function select(table, options){
+    return read(table, options || {});
+  }
+
+  function getLastCommit(){
+    try{ return window.__PETATOE_LAST_IMPORT_COMMIT__ || null; }catch(_e){ return null; }
   }
 
   async function health(){
@@ -270,6 +279,7 @@
     __writeOnlyWhenCalled: true,
     getClient: getClient,
     read: read,
+    select: select,
     count: count,
     insert: insert,
     upsert: upsert,
@@ -277,6 +287,7 @@
     remove: remove,
     insertSalesRecords: insertSalesRecords,
     readSalesRecords: readSalesRecords,
+    getLastCommit: getLastCommit,
     mapSalesRecordForSupabase: mapSalesRecordForSupabase,
     mapSalesRecordFromSupabase: mapSalesRecordFromSupabase,
     health: health,
@@ -301,5 +312,5 @@
 
   window.PETATOEDataLayer = api;
   window.petatoeDataLayerHealth = health;
-  console.log('✅ PETATOE Data Layer loaded — DL-2 Supabase official Excel import ready, no LocalStorage migration');
+  console.log('✅ PETATOE Data Layer loaded — SALES_UNIFICATION_PHASE1 ready, no LocalStorage migration');
 })();
