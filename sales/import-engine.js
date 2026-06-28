@@ -78,13 +78,14 @@
       const list=storageReadJSON(key,[]); if(Array.isArray(list)){ list.push({time:new Date().toISOString(),user:u.username||u.fullName||u.id||'Super Admin',rows:(importData||[]).length,errors:(lastImportErrors||[]).length,mode:importMode,replace:!!replace,reason:reason||''}); localStorage.setItem(key,JSON.stringify(list.slice(-300))); }
     }catch(e){ try{ console.warn('[PETATOE Import Override] audit failed', e); }catch(_e){} }
   }
-  function forceImportAfterOverride(reason){
+  async function forceImportAfterOverride(reason){
     if(!(importData&&importData.length)){ toast('لا توجد بيانات قابلة للرفع بعد التخطي'); return; }
     const replace=!!pendingOverrideReplace;
     auditOverride(reason, replace);
     const existingRows=dsRecords().slice();
-    const nextRows=replace?[...importData]:existingRows.concat(importData);
-    commitImportedRows(nextRows,'import-override-confirmed','تم رفع البيانات بتجاوز قواعد التحقق بواسطة Super Admin');
+    const uploadRows=(importData||[]).slice();
+    const nextRows=replace?uploadRows:existingRows.concat(uploadRows);
+    return await commitImportedRows(nextRows,'import-override-confirmed','تم رفع البيانات إلى Supabase بتجاوز قواعد التحقق بواسطة Super Admin',{uploadRows:uploadRows,replace:replace});
   }
   function ensureOverrideStyle(){
     if(document.getElementById('pet-import-override-style')) return;
@@ -110,7 +111,7 @@
       const check=verifyOverridePassword(bd.querySelector('#petOverridePassword').value);
       if(!check.ok){ err.textContent=check.reason; return; }
       const reason=bd.querySelector('#petOverrideReason').value||'';
-      close(); forceImportAfterOverride(reason);
+      close(); forceImportAfterOverride(reason).catch(function(e){ console.error('[PETATOE Import Override] failed', e); if(typeof toast==='function') toast('فشل تنفيذ التخطي والرفع'); });
     });
   }
   function appendOverrideButton(box){
@@ -284,18 +285,58 @@
     try{ window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),rows:safe.length,ok:ok}; }catch(_e){}
     return ok;
   }
-  function commitImportedRows(nextRows, eventName, message){
-    const ok=dsSetRecords(nextRows);
+  function hasOfficialDataLayer(){
+    return !!(window.PETATOEDataLayer && typeof window.PETATOEDataLayer.insertSalesRecords === 'function');
+  }
+  async function commitImportedRows(nextRows, eventName, message, options){
+    options = options || {};
+    const uploadRows = Array.isArray(options.uploadRows) ? options.uploadRows.slice() : ((importData || []).slice());
+    let ok=false;
+    let supabaseResult=null;
+
+    if(hasOfficialDataLayer()){
+      try{
+        if(typeof toast==='function') toast('جاري رفع البيانات الرسمية إلى Supabase...');
+        supabaseResult = await window.PETATOEDataLayer.insertSalesRecords(uploadRows, {
+          mode: importMode,
+          replace: !!options.replace,
+          source: eventName || 'excel-import'
+        });
+        if(!supabaseResult || !supabaseResult.ok){
+          const msg=(supabaseResult&&supabaseResult.error&&supabaseResult.error.message)?supabaseResult.error.message:'فشل حفظ البيانات في Supabase';
+          console.error('[PETATOE Import] Supabase save failed', supabaseResult);
+          renderErrors([makeError(1,1,'فشل الرفع إلى Supabase',msg)]);
+          if(typeof toast==='function') toast('فشل الرفع إلى Supabase — راجع Console');
+          window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase',rows:uploadRows.length,result:supabaseResult};
+          return false;
+        }
+        ok=true;
+        // Runtime-only sync for immediate screen feedback. Official source is Supabase.
+        try{ if(window.PETATOEDataSource && typeof window.PETATOEDataSource.syncRecordsCache==='function') window.PETATOEDataSource.syncRecordsCache(uploadRows); }catch(e){console.warn('PETATOEImport runtime cache sync failed',e)}
+      }catch(e){
+        console.error('[PETATOE Import] Supabase save crashed', e);
+        renderErrors([makeError(1,1,'حدث خطأ أثناء الرفع إلى Supabase',e&&e.message?e.message:String(e))]);
+        if(typeof toast==='function') toast('حدث خطأ أثناء الرفع إلى Supabase');
+        window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase',rows:uploadRows.length,error:String(e&&e.message?e.message:e)};
+        return false;
+      }
+    }else{
+      // Legacy fallback only if Data Layer is not loaded.
+      ok=dsSetRecords(nextRows);
+      try{ if(typeof persistRecords==='function') persistRecords(); }catch(e){console.warn('PETATOEImport persistRecords failed',e)}
+      try{ if(typeof save==='function') save(); }catch(e){console.warn('PETATOEImport save failed',e)}
+    }
+
     try{if(window.PETATOESmartTabs&&typeof window.PETATOESmartTabs.notifyDataChanged==='function')window.PETATOESmartTabs.notifyDataChanged(eventName||'import-confirmed');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/import-engine.js",e);}
     try{ if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex(); }catch(_e){}
-    try{ if(typeof persistRecords==='function') persistRecords(); }catch(e){console.warn('PETATOEImport persistRecords failed',e)}
-    try{ if(typeof save==='function') save(); }catch(e){console.warn('PETATOEImport save failed',e)}
     try{ if(typeof renderRecords==='function') renderRecords(); }catch(_e){}
     try{ if(typeof refreshCurrentPage==='function') refreshCurrentPage(); }catch(_e){}
     importData=[];
+    lastImportErrors=[];
     const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
     const box=document.getElementById('importErrors'); if(box){box.style.display='none'; clearNode(box);}
-    if(typeof toast==='function')toast(message || (ok?'تم اعتماد البيانات بنجاح':'تمت محاولة حفظ البيانات'));
+    window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:ok,target:hasOfficialDataLayer()?'supabase':'legacy-local',rows:uploadRows.length,result:supabaseResult};
+    if(typeof toast==='function')toast(message || (ok?'تم رفع البيانات الرسمية إلى Supabase بنجاح':'تمت محاولة حفظ البيانات'));
     return ok;
   }
   function applyPaymentsToRows(rows,payMap){let matched=0,missing=[];(rows||[]).forEach(r=>{const k=normText(r.invoice);if(payMap[k]){r.pay=payMap[k];matched++;}else missing.push(r.invoice);});return {matched,missing:[...new Set(missing.filter(Boolean))]};}
@@ -382,26 +423,28 @@
       table.appendChild(tbody);
     }
   };
-  window.confirmImport=function(replace){
+  window.confirmImport=async function(replace){
     if(!(importData&&importData.length)){toast('لا توجد بيانات جاهزة للاعتماد');return;}
     pendingOverrideReplace=!!replace; pendingOverrideContext='confirm';
     const errs=[];
     const dup=duplicateErrorsAgainstExisting(importData,replace); errs.push(...dup);
     if(errs.length){renderErrors(errs);return;}
     var existingRows=dsRecords().slice();
-    var nextRows=replace?[...importData]:existingRows.concat(importData);
-    commitImportedRows(nextRows,'import-confirmed','تم اعتماد البيانات بنجاح بدون تكرار');
+    var uploadRows=(importData||[]).slice();
+    var nextRows=replace?uploadRows:existingRows.concat(uploadRows);
+    await commitImportedRows(nextRows,'import-confirmed','تم رفع البيانات الرسمية إلى Supabase بنجاح',{uploadRows:uploadRows,replace:!!replace});
   };
 
   // PETATOE IMPORT OVERRIDE PUBLIC API
   // Runtime verification helper. No data is written by these helpers unless open() is confirmed by Super Admin.
   window.petatoeImportOverride = {
-    version: 'v8.0.2-import-override-commit-fix',
+    version: 'v8.0.2-dl2-supabase-import',
     isLoaded: true,
     getLastErrors: function(){ return (lastImportErrors||[]).slice(); },
     getPendingRowsCount: function(){ try{return (importData||[]).length;}catch(_e){return 0;} },
     getRecordsCount: function(){ try{return dsRecords().length;}catch(_e){return 0;} },
     getLastCommit: function(){ return window.__PETATOE_LAST_IMPORT_COMMIT__||null; },
+    hasOfficialDataLayer: function(){ return hasOfficialDataLayer(); },
     canOverride: function(){ try{ return isSuperAdminUser(findCurrentFullUser()); }catch(_e){ return false; } },
     open: function(){ return openOverrideModal(); },
     renderButton: function(){
