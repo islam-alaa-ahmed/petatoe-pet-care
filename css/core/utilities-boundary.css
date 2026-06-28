@@ -1,0 +1,97 @@
+/*
+  PETATOE v6.1.285 — CSS Utilities Boundary
+  Purpose: prepare a safe home for shared utility classes before reducing main.css.
+  This file is intentionally additive and non-destructive.
+  No existing selectors were removed from main.css in this phase.
+*/
+
+/* Visibility utilities */
+.pet-hidden,
+.u-hidden {
+  display: none !important;
+}
+
+.pet-visually-hidden,
+.u-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Layout helpers */
+.pet-flex,
+.u-flex {
+  display: flex !important;
+}
+
+.pet-flex-center,
+.u-flex-center {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.pet-flex-between,
+.u-flex-between {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+.pet-flex-wrap,
+.u-flex-wrap {
+  flex-wrap: wrap !important;
+}
+
+.pet-gap-sm,
+.u-gap-sm {
+  gap: var(--space-sm, 8px) !important;
+}
+
+.pet-gap-md,
+.u-gap-md {
+  gap: var(--space-md, 12px) !important;
+}
+
+.pet-gap-lg,
+.u-gap-lg {
+  gap: var(--space-lg, 16px) !important;
+}
+
+/* Text helpers */
+.pet-text-center,
+.u-text-center {
+  text-align: center !important;
+}
+
+.pet-text-right,
+.u-text-right {
+  text-align: right !important;
+}
+
+.pet-text-muted,
+.u-text-muted {
+  color: var(--text-secondary, rgba(255,255,255,0.72)) !important;
+}
+
+.pet-nowrap,
+.u-nowrap {
+  white-space: nowrap !important;
+}
+
+/* Width helpers */
+.pet-w-100,
+.u-w-100 {
+  width: 100% !important;
+}
+
+.pet-min-w-0,
+.u-min-w-0 {
+  min-width: 0 !important;
+}

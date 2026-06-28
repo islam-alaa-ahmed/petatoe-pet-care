@@ -1,0 +1,92 @@
+/*
+  PETATOE v5.1.95 - Phase 3
+  Smart Reports CSS Isolation Layer
+
+  Scope owner: #smartReportsScreen
+  Purpose: protect the stable Smart Reports area from broad/global CSS changes
+  without changing report logic, filters, exports, or rendering functions.
+*/
+
+#smartReportsScreen,
+#smartReportsScreen *{
+  box-sizing:border-box;
+}
+
+#smartReportsScreen{
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  isolation:isolate;
+  color:var(--text);
+  font-family:Cairo,system-ui,-apple-system,Segoe UI,sans-serif;
+}
+
+#smartReportsScreen :where(button,input,select,textarea){
+  font-family:Cairo,system-ui,-apple-system,Segoe UI,sans-serif;
+}
+
+#smartReportsScreen :where(.smart-hero,.smart-card,.smart-panel,.smart-kpi,.smart-exec-kpi,.smart-insight){
+  color:var(--text);
+}
+
+#smartReportsScreen :where(.smart-hero p,.smart-card p,.smart-panel p,.smart-row small,.smart-insight span,.smart-kpi span,.smart-exec-kpi span){
+  color:var(--muted);
+}
+
+#smartReportsScreen :where(.smart-grid,.smart-grid-3,.smart-kpis,.smart-insights,.smart-exec-grid,.smart-dash-grid,.smart-rec-pro-grid){
+  min-width:0;
+  max-width:100%;
+}
+
+#smartReportsScreen :where(.smart-card,.smart-panel,.smart-kpi,.smart-exec-kpi,.smart-chart,.smart-chart-lg,.smart-chart-md,.smart-chart-sm,.smart-chart.tall){
+  min-width:0;
+  max-width:100%;
+}
+
+#smartReportsScreen :where(.table-wrap,.smart-table,.smart-table-clean,.report-scroll){
+  max-width:100%;
+  overflow:auto;
+}
+
+#smartReportsScreen :where(table){
+  border-collapse:collapse;
+}
+
+#smartReportsScreen :where(.smart-pill,.metric-chip,.year-chip,.smart-rec-filter,.smart-rec-action-btn,.smart-rec-back-btn,.pet-page-pdf-btn,.exp-btn){
+  cursor:pointer;
+}
+
+#smartReportsScreen :where(.smart-pill.active,.metric-chip.active,.year-chip.active,.smart-tab.active,.active-report){
+  pointer-events:auto;
+}
+
+html[data-theme="light"] #smartReportsScreen{
+  color:var(--text);
+}
+
+html[data-theme="dark"] #smartReportsScreen{
+  color:var(--text);
+}
+
+@media(max-width:1100px){
+  #smartReportsScreen :where(.smart-kpis,.report-kpis){
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+@media(max-width:760px){
+  #smartReportsScreen :where(.smart-kpis,.smart-insights,.smart-grid,.smart-grid-3,.smart-exec-grid,.smart-dash-grid,.smart-rec-pro-grid){
+    grid-template-columns:1fr!important;
+  }
+
+  #smartReportsScreen :where(.smart-hero){
+    align-items:flex-start;
+    flex-direction:column;
+  }
+}
+
+@media print{
+  #smartReportsScreen{
+    isolation:auto;
+  }
+}

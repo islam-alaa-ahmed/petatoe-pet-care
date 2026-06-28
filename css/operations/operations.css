@@ -1,0 +1,13 @@
+/*
+  PETATOE Operations CSS Boundary
+  Version: v6.2.5_PHASE4_CSS_BOUNDARY_GUARDS
+
+  This file is the single CSS entry point for Operations screens.
+  Current phase keeps the Golden UI unchanged by importing the existing
+  appointments styles and relies on core/module-boundary-guards.css for
+  low-specificity module ownership tokens.
+
+  Next safe phase can migrate rules gradually from:
+  css/components/appointments.css
+*/
+@import url("../components/appointments.css");

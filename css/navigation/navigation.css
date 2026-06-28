@@ -1,0 +1,31 @@
+/* PETATOE v6.1.204 Navigation Module Phase 1
+   Extracted menu styles. main.css still keeps original rules in this phase to avoid visual regressions.
+*/
+#nav.pet-v142-nav{display:flex!important;flex-direction:column!important;gap:8px!important;}
+#nav.pet-v142-nav button{font-family:Cairo,system-ui,sans-serif!important;cursor:pointer!important;}
+#nav.pet-v142-nav .pet-v142-direct,
+#nav.pet-v142-nav .pet-v142-toggle,
+#nav.pet-v142-nav .pet-v142-items button{
+  width:100%!important;min-height:44px!important;border:1px solid rgba(148,163,184,.14)!important;
+  background:rgba(148,163,184,.055)!important;color:var(--muted)!important;border-radius:15px!important;
+  padding:11px 13px!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
+  gap:10px!important;text-align:right!important;font:900 13px Cairo!important;transition:.18s ease!important;
+}
+#nav.pet-v142-nav .pet-v142-direct:hover,
+#nav.pet-v142-nav .pet-v142-toggle:hover,
+#nav.pet-v142-nav .pet-v142-items button:hover{background:rgba(139,92,246,.12)!important;border-color:rgba(139,92,246,.35)!important;color:var(--text)!important;}
+#nav.pet-v142-nav .pet-v142-direct.active,
+#nav.pet-v142-nav .pet-v142-items button.active{
+  background:linear-gradient(135deg,var(--purple),#7c3aed)!important;color:#fff!important;
+  border-color:rgba(139,92,246,.75)!important;box-shadow:0 12px 28px rgba(139,92,246,.26)!important;
+}
+#nav.pet-v142-nav .pet-v142-group{display:flex!important;flex-direction:column!important;gap:6px!important;}
+#nav.pet-v142-nav .pet-v142-toggle{font-size:14px!important;color:var(--text)!important;background:rgba(15,23,42,.38)!important;}
+#nav.pet-v142-nav .pet-v142-toggle .pet-v142-arrow{font-style:normal!important;color:var(--dim)!important;font-size:12px!important;transition:.18s ease!important;}
+#nav.pet-v142-nav .pet-v142-group.open>.pet-v142-toggle{border-color:rgba(139,92,246,.65)!important;background:linear-gradient(135deg,rgba(139,92,246,.22),rgba(30,41,59,.35))!important;color:#fff!important;}
+#nav.pet-v142-nav .pet-v142-items{display:none!important;flex-direction:column!important;gap:6px!important;padding-inline-start:10px!important;border-inline-start:1px solid rgba(139,92,246,.35)!important;}
+#nav.pet-v142-nav .pet-v142-group.open>.pet-v142-items{display:flex!important;}
+#nav.pet-v142-nav .pet-v142-items button{min-height:54px!important;align-items:center!important;justify-content:flex-start!important;flex-direction:column!important;gap:2px!important;padding:10px 13px!important;}
+#nav.pet-v142-nav .pet-v142-items button .pet-v142-title{display:block!important;width:100%!important;color:inherit!important;font-size:13px!important;line-height:1.25!important;}
+#nav.pet-v142-nav .pet-v142-items button .pet-v142-sub{display:block!important;width:100%!important;color:var(--muted)!important;font-size:10px!important;font-weight:800!important;line-height:1.25!important;}
+#nav.pet-v142-nav .pet-v142-items button.active .pet-v142-sub{color:rgba(255,255,255,.78)!important;}

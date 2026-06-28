@@ -1,0 +1,103 @@
+/*
+  PETATOE v6.2.5 — Phase 4 CSS Boundary Guards
+  Purpose: add a safe, low-specificity ownership boundary for extracted modules.
+  This file is intentionally loaded after the legacy/module styles and avoids
+  visual redesign. It only stabilizes layout inheritance and prevents common
+  cross-module bleed while the remaining CSS debt is removed gradually.
+*/
+
+:where(.panel[data-pet-module]){
+  isolation:isolate;
+  min-width:0;
+  max-width:100%;
+  color:var(--text);
+  background:transparent;
+}
+
+:where(.panel[data-pet-module], .panel[data-pet-module] *){
+  box-sizing:border-box;
+}
+
+:where(.panel[data-pet-module]) :where(img,svg,canvas,video){
+  max-width:100%;
+}
+
+:where(.panel[data-pet-module]) :where(table){
+  border-collapse:separate;
+  border-spacing:0;
+}
+
+:where(.panel[data-pet-module]) :where(input,select,textarea,button){
+  font-family:inherit;
+}
+
+:where(.panel[data-pet-module]) :where([hidden]){
+  display:none!important;
+}
+
+/* Module ownership tokens — low specificity aliases for future extraction. */
+:where(#appointments,#vehicleOperations,#vehicleOperationsReports,#operationKpis){
+  --pet-module-accent:var(--cyan);
+  --pet-module-border:var(--appt-border-soft, var(--stroke));
+  --pet-module-panel:var(--panel);
+}
+
+:where(#childrenExpenses){
+  --pet-module-accent:var(--pink);
+  --pet-module-border:var(--children-border-soft, var(--stroke));
+  --pet-module-panel:var(--children-card-bg, var(--panel));
+}
+
+:where(#smart){
+  --pet-module-accent:var(--purple);
+  --pet-module-border:var(--stroke);
+  --pet-module-panel:var(--panel);
+}
+
+:where(#payroll,#salarySlip,#commissionStatement){
+  --pet-module-accent:var(--green);
+  --pet-module-border:var(--stroke);
+  --pet-module-panel:var(--panel);
+}
+
+:where(#warehouses){
+  --pet-module-accent:var(--orange);
+  --pet-module-border:var(--stroke);
+  --pet-module-panel:var(--panel);
+}
+
+:where(#treasury){
+  --pet-module-accent:var(--blue);
+  --pet-module-border:var(--stroke);
+  --pet-module-panel:var(--panel);
+}
+
+:where(#settings){
+  --pet-module-accent:var(--purple);
+  --pet-module-border:var(--stroke);
+  --pet-module-panel:var(--panel);
+}
+
+/* Light-mode readability guard for extracted module containers only. */
+html[data-theme="light"] :where(.panel[data-pet-module]){
+  color:#0f172a;
+}
+
+html[data-theme="light"] :where(.panel[data-pet-module]) :where(input,select,textarea){
+  color:#0f172a;
+}
+
+html[data-theme="dark"] :where(.panel[data-pet-module]){
+  color:#f8fafc;
+}
+
+/* Print boundary: avoid module glass backgrounds bleeding across pages. */
+@media print{
+  :where(.panel[data-pet-module]){
+    isolation:auto;
+    break-inside:auto;
+  }
+  :where(.panel[data-pet-module]) :where(.card,.tr-card,.wh-card,.children-expenses-card,.appointments-card){
+    break-inside:avoid;
+  }
+}

@@ -1,0 +1,2378 @@
+/* PETATOE v6.1.121 — Children expenses UI only.
+   Scope: isolated section styling, no changes to reports/commission print. */
+#childrenExpenses .children-expenses-head{align-items:flex-start}
+.children-expenses-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.children-expenses-shell{display:flex;flex-direction:column;gap:16px}
+.children-expenses-kpis{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px}
+.children-expenses-kpi,.children-expenses-card{border:1px solid rgba(148,163,184,.22);background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.04));border-radius:22px;box-shadow:0 18px 45px rgba(0,0,0,.16);backdrop-filter:blur(14px)}
+.children-expenses-kpi{padding:14px 16px;display:flex;flex-direction:column;gap:5px}
+.children-expenses-kpi span{color:var(--muted);font-size:12px;font-weight:800}
+.children-expenses-kpi b{font-size:20px;color:var(--text)}
+.children-expenses-kpi small{color:var(--muted);font-size:11px}
+.children-expenses-grid{display:grid;grid-template-columns:minmax(280px,390px) 1fr;gap:16px;align-items:start}
+.children-expenses-card{padding:16px}
+.children-expenses-card h3{margin:0 0 6px;font-size:18px}
+.children-expenses-card p{margin:0 0 12px;color:var(--muted)}
+.children-expenses-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.children-expenses-form label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:12px;font-weight:900}
+.children-expenses-form input,.children-expenses-form select,.children-expenses-form textarea,.children-expenses-filters input,.children-expenses-filters select{width:100%;min-height:40px;border-radius:14px;border:1px solid var(--children-border-mid);background:var(--children-field-bg);color:var(--text);padding:8px 11px;font-family:Cairo,Arial;outline:none;box-sizing:border-box}
+.children-expenses-form textarea{resize:vertical;min-height:78px}
+.children-expenses-form input:focus,.children-expenses-form select:focus,.children-expenses-form textarea:focus,.children-expenses-filters input:focus,.children-expenses-filters select:focus{border-color:rgba(34,211,238,.70);box-shadow:0 0 0 3px rgba(34,211,238,.11)}
+.children-expenses-notes{grid-column:1/-1}
+.children-expenses-form-actions,.children-expenses-filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.children-expenses-filters input{min-width:230px;flex:1}
+.children-expenses-filters select{max-width:180px}
+.children-expenses-table-wrap{width:100%;overflow:auto;border-radius:16px;border:1px solid var(--children-border-soft);margin-top:12px}
+.children-expenses-table{width:100%;border-collapse:collapse;min-width:850px}
+.children-expenses-table th,.children-expenses-table td{padding:10px 9px;border-bottom:1px solid rgba(148,163,184,.16);text-align:right;vertical-align:middle}
+.children-expenses-table th{font-size:12px;color:var(--muted);font-weight:900;background:rgba(15,23,42,.30)}
+.children-expenses-table td{font-size:13px;color:var(--text)}
+.children-expenses-row-actions{display:flex;gap:6px;flex-wrap:wrap;white-space:nowrap}
+.children-expenses-empty{text-align:center!important;color:var(--muted)!important;padding:24px!important}
+@media(max-width:980px){.children-expenses-kpis{grid-template-columns:repeat(2,1fr)}.children-expenses-grid{grid-template-columns:1fr}.children-expenses-filters select{max-width:none;flex:1}}
+@media(max-width:620px){.children-expenses-kpis{grid-template-columns:1fr}.children-expenses-form{grid-template-columns:1fr}.children-expenses-actions,.children-expenses-form-actions{width:100%}.children-expenses-actions .btn,.children-expenses-form-actions .btn{flex:1}.children-expenses-filters{flex-direction:column;align-items:stretch}.children-expenses-filters input,.children-expenses-filters select{min-width:0;width:100%;max-width:none}}
+
+/* PETATOE v6.1.125 — Children expenses monthly budget UI */
+.children-expenses-budget-card{display:flex;flex-direction:column;gap:12px}
+.children-expenses-budget-form{display:grid;grid-template-columns:170px minmax(180px,1fr) 170px auto;gap:10px;align-items:end}
+.children-expenses-budget-form label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:12px;font-weight:900}
+.children-expenses-budget-form input{width:100%;min-height:40px;border-radius:14px;border:1px solid var(--children-border-mid);background:var(--children-field-bg);color:var(--text);padding:8px 11px;font-family:Cairo,Arial;outline:none;box-sizing:border-box}
+.children-expenses-budget-form input:focus{border-color:rgba(34,211,238,.70);box-shadow:0 0 0 3px rgba(34,211,238,.11)}
+.children-expenses-budget-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.children-expenses-budget-wrap{margin-top:0}
+.children-expenses-status{display:inline-flex;align-items:center;justify-content:center;min-width:110px;padding:5px 9px;border-radius:999px;font-weight:900;font-size:12px;border:1px solid rgba(148,163,184,.24)}
+.children-expenses-status.is-ok{background:rgba(34,197,94,.14);color:var(--children-success-text);border-color:rgba(34,197,94,.28)}
+.children-expenses-status.is-warning{background:rgba(245,158,11,.16);color:var(--children-warning-text);border-color:rgba(245,158,11,.30)}
+.children-expenses-status.is-danger{background:rgba(239,68,68,.16);color:var(--children-danger-text);border-color:rgba(239,68,68,.32)}
+.children-expenses-status.is-neutral{background:rgba(148,163,184,.14);color:var(--muted);border-color:rgba(148,163,184,.24)}
+.children-expenses-negative{color:var(--children-danger-text)!important;font-weight:900}
+@media(max-width:980px){.children-expenses-budget-form{grid-template-columns:1fr 1fr}.children-expenses-budget-actions{grid-column:1/-1}}
+@media(max-width:620px){.children-expenses-budget-form{grid-template-columns:1fr}.children-expenses-budget-actions .btn{flex:1}}
+
+/* v6.1.126 — section-only children expenses reports/export UI */
+.children-expenses-reports-card{display:flex;flex-direction:column;gap:12px}
+.children-expenses-list-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.children-expenses-report-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.children-expenses-report-filters{display:grid;grid-template-columns:repeat(3,minmax(160px,1fr)) auto;gap:10px;align-items:end}
+.children-expenses-report-filters label{display:flex;flex-direction:column;gap:6px;color:var(--muted);font-size:12px;font-weight:900}
+.children-expenses-report-filters select{width:100%;min-height:40px;border-radius:14px;border:1px solid var(--children-border-mid);background:var(--children-field-bg);color:var(--text);padding:8px 11px;font-family:Cairo,Arial;outline:none;box-sizing:border-box}
+.children-expenses-report-summary{display:grid;grid-template-columns:repeat(4,minmax(140px,1fr));gap:10px}
+.children-expenses-report-pill{border:1px solid rgba(148,163,184,.20);background:rgba(15,23,42,.22);border-radius:16px;padding:11px 12px;display:flex;flex-direction:column;gap:4px}
+.children-expenses-report-pill span{font-size:11px;color:var(--muted);font-weight:900}
+.children-expenses-report-pill b{font-size:14px;color:var(--text)}
+.children-expenses-report-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.children-expenses-report-table{min-width:420px}
+@media(max-width:980px){.children-expenses-report-filters{grid-template-columns:1fr 1fr}.children-expenses-report-summary{grid-template-columns:repeat(2,1fr)}.children-expenses-report-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.children-expenses-report-filters,.children-expenses-report-summary{grid-template-columns:1fr}.children-expenses-report-actions,.children-expenses-report-actions .btn{width:100%}}
+
+.children-expenses-readonly-note{display:inline-flex;align-items:center;justify-content:center;padding:6px 10px;border-radius:999px;border:1px solid rgba(148,163,184,.35);font-size:12px;opacity:.85}
+.children-expenses-readonly .children-expenses-form-card,.children-expenses-readonly .children-expenses-budget-card{display:none!important}
+
+/* PETATOE v6.1.128 — Children expenses mobile + dark/light polish
+   Scope: isolated styling for #childrenExpenses only. No data/calculation/router changes. */
+#childrenExpenses{
+  isolation:isolate;
+}
+#childrenExpenses .section-head.children-expenses-head{
+  border:1px solid rgba(148,163,184,.20);
+  background:linear-gradient(135deg,var(--children-field-bg),rgba(15,23,42,.16));
+  border-radius:24px;
+  padding:16px;
+  box-shadow:0 18px 46px rgba(0,0,0,.14);
+}
+#childrenExpenses .children-expenses-card,
+#childrenExpenses .children-expenses-kpi{
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+}
+#childrenExpenses .children-expenses-card h3,
+#childrenExpenses .children-expenses-head h2{
+  color:var(--text);
+}
+#childrenExpenses .children-expenses-form input,
+#childrenExpenses .children-expenses-form select,
+#childrenExpenses .children-expenses-form textarea,
+#childrenExpenses .children-expenses-filters input,
+#childrenExpenses .children-expenses-filters select,
+#childrenExpenses .children-expenses-budget-form input,
+#childrenExpenses .children-expenses-report-filters select{
+  appearance:none;
+  -webkit-appearance:none;
+}
+#childrenExpenses .children-expenses-table-wrap{
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:thin;
+}
+#childrenExpenses .children-expenses-table-wrap::-webkit-scrollbar{height:8px;width:8px}
+#childrenExpenses .children-expenses-table-wrap::-webkit-scrollbar-thumb{background:rgba(148,163,184,.40);border-radius:999px}
+#childrenExpenses .children-expenses-row-actions .btn{
+  min-height:34px;
+  padding:7px 10px;
+}
+
+html[data-theme="light"] #childrenExpenses .section-head.children-expenses-head,
+body.light #childrenExpenses .section-head.children-expenses-head,
+body.light-mode #childrenExpenses .section-head.children-expenses-head{
+  background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(248,250,252,.74));
+  border-color:rgba(15,23,42,.10);
+  box-shadow:0 18px 44px rgba(15,23,42,.10);
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-card,
+html[data-theme="light"] #childrenExpenses .children-expenses-kpi,
+body.light #childrenExpenses .children-expenses-card,
+body.light #childrenExpenses .children-expenses-kpi,
+body.light-mode #childrenExpenses .children-expenses-card,
+body.light-mode #childrenExpenses .children-expenses-kpi{
+  background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(248,250,252,.76));
+  border-color:rgba(15,23,42,.10);
+  box-shadow:0 18px 44px rgba(15,23,42,.10);
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-form input,
+html[data-theme="light"] #childrenExpenses .children-expenses-form select,
+html[data-theme="light"] #childrenExpenses .children-expenses-form textarea,
+html[data-theme="light"] #childrenExpenses .children-expenses-filters input,
+html[data-theme="light"] #childrenExpenses .children-expenses-filters select,
+html[data-theme="light"] #childrenExpenses .children-expenses-budget-form input,
+html[data-theme="light"] #childrenExpenses .children-expenses-report-filters select,
+body.light #childrenExpenses .children-expenses-form input,
+body.light #childrenExpenses .children-expenses-form select,
+body.light #childrenExpenses .children-expenses-form textarea,
+body.light #childrenExpenses .children-expenses-filters input,
+body.light #childrenExpenses .children-expenses-filters select,
+body.light #childrenExpenses .children-expenses-budget-form input,
+body.light #childrenExpenses .children-expenses-report-filters select,
+body.light-mode #childrenExpenses .children-expenses-form input,
+body.light-mode #childrenExpenses .children-expenses-form select,
+body.light-mode #childrenExpenses .children-expenses-form textarea,
+body.light-mode #childrenExpenses .children-expenses-filters input,
+body.light-mode #childrenExpenses .children-expenses-filters select,
+body.light-mode #childrenExpenses .children-expenses-budget-form input,
+body.light-mode #childrenExpenses .children-expenses-report-filters select{
+  background:var(--children-light-field-bg);
+  color:var(--children-light-text);
+  border-color:rgba(15,23,42,.14);
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-table th,
+body.light #childrenExpenses .children-expenses-table th,
+body.light-mode #childrenExpenses .children-expenses-table th{
+  background:rgba(241,245,249,.88);
+  color:var(--children-light-table-head);
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-table td,
+body.light #childrenExpenses .children-expenses-table td,
+body.light-mode #childrenExpenses .children-expenses-table td{
+  color:var(--children-light-text);
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-report-pill,
+body.light #childrenExpenses .children-expenses-report-pill,
+body.light-mode #childrenExpenses .children-expenses-report-pill{
+  background:rgba(255,255,255,.84);
+  border-color:rgba(15,23,42,.10);
+}
+
+@media(max-width:760px){
+  #childrenExpenses{
+    padding-bottom:calc(92px + env(safe-area-inset-bottom,0px));
+  }
+  #childrenExpenses .section-head.children-expenses-head{
+    gap:12px;
+    margin:0 0 12px;
+    padding:14px;
+  }
+  #childrenExpenses .children-expenses-head h2{
+    font-size:20px;
+    line-height:1.45;
+  }
+  #childrenExpenses .children-expenses-head p,
+  #childrenExpenses .children-expenses-card p{
+    font-size:12px;
+    line-height:1.7;
+  }
+  #childrenExpenses .children-expenses-shell{
+    gap:12px;
+  }
+  #childrenExpenses .children-expenses-card{
+    border-radius:18px;
+    padding:13px;
+  }
+  #childrenExpenses .children-expenses-kpi{
+    border-radius:18px;
+    padding:12px 13px;
+  }
+  #childrenExpenses .children-expenses-kpi b{
+    font-size:18px;
+  }
+  #childrenExpenses .children-expenses-list-head{
+    gap:8px;
+  }
+  #childrenExpenses .children-expenses-list-head h3{
+    font-size:16px;
+  }
+  #childrenExpenses .children-expenses-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    width:100%;
+  }
+  #childrenExpenses .children-expenses-actions .btn,
+  #childrenExpenses .children-expenses-form-actions .btn,
+  #childrenExpenses .children-expenses-budget-actions .btn,
+  #childrenExpenses .children-expenses-report-actions .btn{
+    min-height:42px;
+    padding:9px 10px;
+    font-size:12px;
+    justify-content:center;
+  }
+  #childrenExpenses .children-expenses-table-wrap{
+    margin-top:10px;
+    border-radius:14px;
+    max-width:100%;
+  }
+  #childrenExpenses .children-expenses-table{
+    min-width:760px;
+  }
+  #childrenExpenses .children-expenses-report-table{
+    min-width:380px;
+  }
+  #childrenExpenses .children-expenses-budget-table{
+    min-width:680px;
+  }
+  #childrenExpenses .children-expenses-table th,
+  #childrenExpenses .children-expenses-table td{
+    padding:9px 8px;
+    font-size:12px;
+  }
+  #childrenExpenses .children-expenses-row-actions{
+    flex-wrap:nowrap;
+  }
+}
+
+@media(max-width:420px){
+  #childrenExpenses .children-expenses-actions,
+  #childrenExpenses .children-expenses-report-actions{
+    grid-template-columns:1fr;
+  }
+  #childrenExpenses .children-expenses-card{
+    padding:12px;
+  }
+}
+
+
+/* PETATOE v6.1.129 — Children expenses tabs layout only */
+#childrenExpenses .children-expenses-tabs{
+  direction:rtl;
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  justify-content:flex-start;
+  margin:2px 0 0;
+}
+#childrenExpenses .children-expenses-tab{
+  border:1px solid rgba(148,163,184,.24);
+  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.04));
+  color:var(--text);
+  border-radius:999px;
+  min-height:42px;
+  padding:9px 15px;
+  font-family:Cairo,Arial,sans-serif;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 12px 28px rgba(0,0,0,.10);
+}
+#childrenExpenses .children-expenses-tab.active{
+  border-color:rgba(34,211,238,.60);
+  background:linear-gradient(135deg,rgba(34,211,238,.22),rgba(59,130,246,.14));
+  box-shadow:0 0 0 3px rgba(34,211,238,.10),0 14px 34px rgba(0,0,0,.14);
+}
+#childrenExpenses .children-expenses-tab-panel{display:none;}
+#childrenExpenses .children-expenses-tab-panel.active{display:block;}
+#childrenExpenses .children-expenses-tabs-grid{display:block;}
+html[data-theme="light"] #childrenExpenses .children-expenses-tab,
+body.light #childrenExpenses .children-expenses-tab,
+body.light-mode #childrenExpenses .children-expenses-tab{
+  background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(248,250,252,.76));
+  border-color:rgba(15,23,42,.12);
+  box-shadow:0 12px 28px rgba(15,23,42,.08);
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-tab.active,
+body.light #childrenExpenses .children-expenses-tab.active,
+body.light-mode #childrenExpenses .children-expenses-tab.active{
+  background:linear-gradient(135deg,rgba(14,165,233,.14),rgba(59,130,246,.10));
+  border-color:rgba(14,165,233,.45);
+}
+@media(max-width:760px){
+  #childrenExpenses .children-expenses-tabs{display:grid;grid-template-columns:1fr;gap:8px;}
+  #childrenExpenses .children-expenses-tab{width:100%;min-height:44px;}
+}
+
+/* PETATOE v6.1.130 — Children expenses tabs active light + compact internal filters
+   Scope: #childrenExpenses only. No data, calculations, permissions, reports, or commission logic touched. */
+#childrenExpenses .children-expenses-tab{
+  position:relative;
+  overflow:hidden;
+  transition:background .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease,color .18s ease;
+}
+#childrenExpenses .children-expenses-tab:hover{
+  transform:translateY(-1px);
+  border-color:rgba(34,211,238,.42);
+}
+#childrenExpenses .children-expenses-tab.active,
+#childrenExpenses .children-expenses-tab[aria-selected="true"]{
+  color:var(--children-light-field-bg);
+  border-color:rgba(34,211,238,.88);
+  background:linear-gradient(135deg,rgba(124,58,237,.98),rgba(14,165,233,.78));
+  box-shadow:0 0 0 3px rgba(34,211,238,.16),0 18px 38px rgba(14,165,233,.22),inset 0 1px 0 rgba(255,255,255,.26);
+}
+#childrenExpenses .children-expenses-tab.active::before,
+#childrenExpenses .children-expenses-tab[aria-selected="true"]::before{
+  content:"";
+  position:absolute;
+  inset:0 auto 0 0;
+  width:5px;
+  background:linear-gradient(180deg,#67e8f9,#a78bfa);
+  box-shadow:0 0 16px rgba(103,232,249,.75);
+}
+#childrenExpenses .children-expenses-tab.active::after,
+#childrenExpenses .children-expenses-tab[aria-selected="true"]::after{
+  content:"";
+  position:absolute;
+  inset:-45% -20%;
+  background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.30),transparent 38%);
+  pointer-events:none;
+}
+
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form-card,
+#childrenExpenses .children-expenses-reports-card{
+  padding:14px;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form{
+  direction:rtl;
+  display:grid;
+  grid-template-columns:repeat(5,minmax(135px,180px));
+  gap:8px;
+  align-items:end;
+  justify-content:start;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form label,
+#childrenExpenses .children-expenses-report-filters label{
+  gap:5px;
+  font-size:11px;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form input,
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form select,
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form textarea,
+#childrenExpenses .children-expenses-report-filters select{
+  min-height:36px;
+  border-radius:12px;
+  padding:6px 10px;
+  font-size:12px;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form textarea{
+  min-height:58px;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-notes{
+  grid-column:1 / span 2;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form-actions{
+  margin-top:10px;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form-actions .btn,
+#childrenExpenses .children-expenses-report-filters .btn{
+  min-height:36px;
+  padding:7px 12px;
+  font-size:12px;
+}
+#childrenExpenses .children-expenses-report-filters{
+  direction:rtl;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(140px,185px)) auto;
+  gap:8px;
+  align-items:end;
+  justify-content:start;
+}
+#childrenExpenses .children-expenses-report-summary{
+  margin-top:2px;
+}
+
+html[data-theme="light"] #childrenExpenses .children-expenses-tab.active,
+html[data-theme="light"] #childrenExpenses .children-expenses-tab[aria-selected="true"],
+body.light #childrenExpenses .children-expenses-tab.active,
+body.light #childrenExpenses .children-expenses-tab[aria-selected="true"],
+body.light-mode #childrenExpenses .children-expenses-tab.active,
+body.light-mode #childrenExpenses .children-expenses-tab[aria-selected="true"]{
+  color:var(--children-light-field-bg);
+  background:linear-gradient(135deg,#7c3aed,#0ea5e9);
+  border-color:rgba(14,165,233,.72);
+  box-shadow:0 0 0 3px rgba(14,165,233,.12),0 18px 36px rgba(14,165,233,.18),inset 0 1px 0 rgba(255,255,255,.28);
+}
+
+@media(max-width:1180px){
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form{
+    grid-template-columns:repeat(3,minmax(135px,1fr));
+  }
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-notes{
+    grid-column:1 / -1;
+  }
+}
+@media(max-width:760px){
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form,
+  #childrenExpenses .children-expenses-report-filters{
+    grid-template-columns:1fr 1fr;
+  }
+  #childrenExpenses .children-expenses-report-filters .btn{
+    grid-column:1 / -1;
+    width:100%;
+  }
+}
+@media(max-width:520px){
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form,
+  #childrenExpenses .children-expenses-report-filters{
+    grid-template-columns:1fr;
+  }
+}
+
+/* PETATOE v6.1.131 — Children expenses rectangular filter controls
+   Scope: #childrenExpenses only. Fixes custom select wrappers so they match main rectangular filters. */
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form{
+  grid-template-columns:repeat(4,minmax(150px,1fr));
+  max-width:980px;
+  margin-inline-start:auto;
+  margin-inline-end:0;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form label,
+#childrenExpenses .children-expenses-report-filters label{
+  min-width:0;
+  width:100%;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form input,
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form select,
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form textarea,
+#childrenExpenses .children-expenses-report-filters select,
+#childrenExpenses [data-children-expenses-panel="entry"] .pet-select-wrap,
+#childrenExpenses .children-expenses-report-filters .pet-select-wrap{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  height:auto!important;
+  min-height:38px!important;
+  border-radius:13px!important;
+  flex:0 1 auto!important;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .pet-select-face,
+#childrenExpenses .children-expenses-report-filters .pet-select-face{
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  border-radius:13px!important;
+  padding:7px 12px!important;
+  font-size:12px!important;
+  line-height:1.2!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form textarea{
+  min-height:72px!important;
+  border-radius:13px!important;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-notes{
+  grid-column:span 2;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form-actions{
+  justify-content:flex-end;
+}
+#childrenExpenses .children-expenses-report-filters{
+  grid-template-columns:repeat(3,minmax(150px,190px)) auto;
+  max-width:760px;
+  margin-inline-start:auto;
+  margin-inline-end:0;
+}
+@media(max-width:1180px){
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form{
+    grid-template-columns:repeat(3,minmax(150px,1fr));
+    max-width:none;
+  }
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-notes{
+    grid-column:1 / -1;
+  }
+}
+@media(max-width:760px){
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form,
+  #childrenExpenses .children-expenses-report-filters{
+    grid-template-columns:1fr 1fr;
+    max-width:none;
+  }
+}
+@media(max-width:520px){
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form,
+  #childrenExpenses .children-expenses-report-filters{
+    grid-template-columns:1fr;
+  }
+}
+
+/* PETATOE v6.1.132 — Children expenses RTL field alignment + stacked reports + annual report tab
+   Scope: #childrenExpenses only. No commission, sales, payroll, or global report logic touched. */
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form-card{
+  direction:rtl;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form{
+  grid-template-columns:repeat(5,minmax(150px,1fr));
+  max-width:none;
+  width:100%;
+  margin-inline:0;
+  justify-content:stretch;
+  align-items:end;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form input,
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form select,
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form textarea,
+#childrenExpenses [data-children-expenses-panel="entry"] .pet-select-face{
+  direction:rtl!important;
+  text-align:right!important;
+  padding-inline-start:12px!important;
+  padding-inline-end:14px!important;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] input[type="date"]{
+  direction:rtl!important;
+  text-align:right!important;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] input[type="date"]::-webkit-calendar-picker-indicator{
+  margin-left:0;
+  margin-right:8px;
+  cursor:pointer;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .pet-select-wrap,
+#childrenExpenses [data-children-expenses-panel="entry"] .pet-select-face{
+  direction:rtl!important;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-notes{
+  grid-column:1 / -1;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form textarea{
+  min-height:74px!important;
+}
+#childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form-actions{
+  justify-content:flex-start;
+  direction:rtl;
+}
+#childrenExpenses .children-expenses-report-filters,
+#childrenExpenses .children-expenses-annual-filters{
+  direction:rtl;
+  display:grid;
+  grid-template-columns:repeat(4,minmax(150px,190px)) auto;
+  gap:8px;
+  align-items:end;
+  justify-content:start;
+  width:100%;
+  max-width:none;
+  margin-inline:0;
+}
+#childrenExpenses .children-expenses-annual-filters label,
+#childrenExpenses .children-expenses-report-filters label{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900;
+  min-width:0;
+  width:100%;
+}
+#childrenExpenses .children-expenses-annual-filters select,
+#childrenExpenses .children-expenses-report-filters select,
+#childrenExpenses .children-expenses-annual-filters .pet-select-wrap,
+#childrenExpenses .children-expenses-report-filters .pet-select-wrap{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:38px!important;
+  border-radius:13px!important;
+}
+#childrenExpenses .children-expenses-annual-filters .pet-select-face,
+#childrenExpenses .children-expenses-report-filters .pet-select-face{
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  border-radius:13px!important;
+  padding:7px 12px!important;
+  direction:rtl!important;
+  text-align:right!important;
+  font-size:12px!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses .children-expenses-report-stack{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  width:100%;
+}
+#childrenExpenses .children-expenses-report-stack .children-expenses-table-wrap{
+  width:100%;
+  margin-top:0;
+}
+#childrenExpenses .children-expenses-report-stack .children-expenses-report-table{
+  min-width:100%;
+}
+#childrenExpenses .children-expenses-annual-card{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-annual-filters select,
+body.light #childrenExpenses .children-expenses-annual-filters select,
+body.light-mode #childrenExpenses .children-expenses-annual-filters select{
+  background:var(--children-light-field-bg);
+  color:var(--children-light-text);
+  border-color:rgba(15,23,42,.14);
+}
+@media(max-width:1180px){
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form{
+    grid-template-columns:repeat(3,minmax(150px,1fr));
+  }
+  #childrenExpenses .children-expenses-report-filters,
+  #childrenExpenses .children-expenses-annual-filters{
+    grid-template-columns:repeat(3,minmax(150px,1fr));
+  }
+  #childrenExpenses .children-expenses-report-filters .btn,
+  #childrenExpenses .children-expenses-annual-filters .btn{
+    grid-column:1 / -1;
+    justify-self:start;
+  }
+}
+@media(max-width:760px){
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form,
+  #childrenExpenses .children-expenses-report-filters,
+  #childrenExpenses .children-expenses-annual-filters{
+    grid-template-columns:1fr 1fr;
+  }
+}
+@media(max-width:520px){
+  #childrenExpenses [data-children-expenses-panel="entry"] .children-expenses-form,
+  #childrenExpenses .children-expenses-report-filters,
+  #childrenExpenses .children-expenses-annual-filters{
+    grid-template-columns:1fr;
+  }
+}
+
+/* v6.1.133 — Children Expenses reports totals + annual monthly trend dashboard */
+#childrenExpenses .children-expenses-report-filters,
+#childrenExpenses .children-expenses-annual-filters{
+  justify-content:start!important;
+  align-items:end!important;
+}
+#childrenExpenses .children-expenses-filter-reset{
+  align-self:end!important;
+  min-height:38px!important;
+  height:38px!important;
+  padding:7px 16px!important;
+  white-space:nowrap!important;
+  justify-self:start!important;
+}
+#childrenExpenses .children-expenses-total-row td{
+  background:var(--children-total-bg);
+  color:var(--text);
+  font-weight:900;
+  border-top:1px solid var(--children-border-strong);
+}
+#childrenExpenses .children-expenses-trend-dashboard{
+  width:100%;
+  border:1px solid var(--children-border-soft);
+  background:var(--children-card-bg);
+  border-radius:18px;
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+#childrenExpenses .children-expenses-trend-head{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  direction:rtl;
+}
+#childrenExpenses .children-expenses-trend-head h4{
+  margin:0;
+  font-size:15px;
+  font-weight:900;
+  color:var(--text);
+}
+#childrenExpenses .children-expenses-trend-filters{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(150px,190px));
+  gap:8px;
+  direction:rtl;
+}
+#childrenExpenses .children-expenses-trend-filters label{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  color:var(--muted);
+  font-size:11px;
+  font-weight:900;
+}
+#childrenExpenses .children-expenses-trend-filters select,
+#childrenExpenses .children-expenses-trend-filters .pet-select-wrap{
+  width:100%!important;
+  min-height:38px!important;
+  border-radius:13px!important;
+}
+#childrenExpenses .children-expenses-trend-filters .pet-select-face{
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  border-radius:13px!important;
+  padding:7px 12px!important;
+  direction:rtl!important;
+  text-align:right!important;
+  font-size:12px!important;
+}
+#childrenExpenses .children-expenses-trend-summary{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(160px,1fr));
+  gap:10px;
+}
+#childrenExpenses .children-expenses-trend-pill{
+  border:1px solid var(--children-border-soft);
+  border-radius:16px;
+  padding:10px 12px;
+  background:rgba(15,23,42,.22);
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  text-align:right;
+}
+#childrenExpenses .children-expenses-trend-pill span{
+  color:var(--muted);
+  font-size:12px;
+  font-weight:800;
+}
+#childrenExpenses .children-expenses-trend-pill b{
+  color:var(--text);
+  font-size:14px;
+  font-weight:900;
+}
+#childrenExpenses .children-expenses-trend-bars{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+#childrenExpenses .children-expenses-trend-row{
+  display:grid;
+  grid-template-columns:52px 1fr minmax(150px,auto);
+  gap:10px;
+  align-items:center;
+  direction:rtl;
+}
+#childrenExpenses .children-expenses-trend-row b,
+#childrenExpenses .children-expenses-trend-row strong{
+  color:var(--text);
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+#childrenExpenses .children-expenses-trend-track{
+  height:12px;
+  border-radius:999px;
+  background:rgba(15,23,42,.35);
+  overflow:hidden;
+  border:1px solid rgba(148,163,184,.14);
+}
+#childrenExpenses .children-expenses-trend-track span{
+  display:block;
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg,rgba(125,92,255,.95),rgba(64,214,255,.9));
+  min-width:0;
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-trend-dashboard,
+body.light #childrenExpenses .children-expenses-trend-dashboard,
+body.light-mode #childrenExpenses .children-expenses-trend-dashboard{
+  background:rgba(255,255,255,.72);
+  border-color:rgba(15,23,42,.12);
+}
+@media(max-width:760px){
+  #childrenExpenses .children-expenses-trend-summary{grid-template-columns:1fr;}
+  #childrenExpenses .children-expenses-trend-filters{grid-template-columns:1fr 1fr;width:100%;}
+  #childrenExpenses .children-expenses-trend-row{grid-template-columns:42px 1fr;}
+  #childrenExpenses .children-expenses-trend-row strong{grid-column:1 / -1;text-align:left;}
+}
+@media(max-width:520px){
+  #childrenExpenses .children-expenses-trend-filters{grid-template-columns:1fr;}
+}
+
+
+/* PETATOE v6.1.134 — Annual report filters alignment + monthly chart dashboard
+   Scope: #childrenExpenses only. No commission, data sources, or sales reports logic touched. */
+#childrenExpenses .children-expenses-annual-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  direction:rtl!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+#childrenExpenses .children-expenses-annual-filters label{
+  flex:0 0 190px!important;
+  max-width:190px!important;
+}
+#childrenExpenses .children-expenses-annual-filters .children-expenses-filter-reset{
+  flex:0 0 auto!important;
+  margin:0!important;
+  justify-self:auto!important;
+  align-self:flex-end!important;
+}
+#childrenExpenses .children-expenses-trend-dashboard{
+  background:linear-gradient(135deg,rgba(15,23,42,.34),rgba(30,64,82,.24));
+  border:1px solid var(--children-border-soft)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 44px rgba(0,0,0,.14);
+  padding:16px!important;
+}
+#childrenExpenses .children-expenses-trend-head{
+  display:grid!important;
+  grid-template-columns:1fr auto!important;
+  align-items:end!important;
+  direction:rtl!important;
+  gap:12px!important;
+}
+#childrenExpenses .children-expenses-trend-head h4{
+  grid-column:1!important;
+  grid-row:1!important;
+  justify-self:end!important;
+  text-align:right!important;
+  font-size:18px!important;
+}
+#childrenExpenses .children-expenses-trend-filters{
+  grid-column:2!important;
+  grid-row:1!important;
+  justify-self:end!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,190px)!important;
+  gap:8px!important;
+  direction:rtl!important;
+}
+#childrenExpenses .children-expenses-monthly-chart{
+  width:100%!important;
+  height:340px!important;
+  min-height:340px!important;
+  border:1px solid rgba(148,163,184,.16)!important;
+  background:rgba(15,23,42,.20);
+  border-radius:18px!important;
+  padding:12px!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses .children-expenses-monthly-chart canvas{
+  width:100%!important;
+  height:100%!important;
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-trend-dashboard,
+body.light #childrenExpenses .children-expenses-trend-dashboard,
+body.light-mode #childrenExpenses .children-expenses-trend-dashboard{
+  background:linear-gradient(135deg,rgba(255,255,255,.90),rgba(241,245,249,.70));
+}
+@media(max-width:900px){
+  #childrenExpenses .children-expenses-annual-filters{
+    flex-wrap:wrap!important;
+  }
+  #childrenExpenses .children-expenses-annual-filters label{
+    flex:1 1 170px!important;
+    max-width:none!important;
+  }
+  #childrenExpenses .children-expenses-trend-head{
+    grid-template-columns:1fr!important;
+  }
+  #childrenExpenses .children-expenses-trend-head h4,
+  #childrenExpenses .children-expenses-trend-filters{
+    grid-column:1!important;
+    justify-self:stretch!important;
+  }
+  #childrenExpenses .children-expenses-trend-filters{
+    grid-template-columns:1fr 1fr!important;
+  }
+}
+@media(max-width:520px){
+  #childrenExpenses .children-expenses-annual-filters,
+  #childrenExpenses .children-expenses-trend-filters{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+  }
+  #childrenExpenses .children-expenses-monthly-chart{
+    height:290px!important;
+    min-height:290px!important;
+  }
+}
+
+/* PETATOE v6.1.135 — Children expenses annual/trend filter alignment fix
+   Scope: #childrenExpenses CSS only. Keeps data, reports, commissions, and calculations untouched. */
+#childrenExpenses .children-expenses-annual-filters{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(150px,190px))!important;
+  direction:rtl!important;
+  justify-content:end!important;
+  align-items:end!important;
+  gap:8px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+}
+#childrenExpenses .children-expenses-annual-filters label{
+  width:100%!important;
+  max-width:none!important;
+  flex:none!important;
+}
+#childrenExpenses .children-expenses-annual-filters .children-expenses-filter-reset{
+  grid-column:auto!important;
+  grid-row:auto!important;
+  justify-self:stretch!important;
+  align-self:end!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+}
+#childrenExpenses .children-expenses-trend-head{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  direction:rtl!important;
+  gap:10px!important;
+  width:100%!important;
+}
+#childrenExpenses .children-expenses-trend-head h4{
+  align-self:flex-end!important;
+  justify-self:end!important;
+  text-align:right!important;
+  margin:0!important;
+}
+#childrenExpenses .children-expenses-trend-filters{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(150px,190px))!important;
+  direction:rtl!important;
+  justify-content:end!important;
+  align-self:flex-end!important;
+  width:auto!important;
+  max-width:100%!important;
+  gap:8px!important;
+}
+@media(max-width:900px){
+  #childrenExpenses .children-expenses-annual-filters{
+    grid-template-columns:repeat(2,minmax(150px,1fr))!important;
+    justify-content:stretch!important;
+  }
+  #childrenExpenses .children-expenses-trend-filters{
+    grid-template-columns:repeat(2,minmax(150px,1fr))!important;
+    width:100%!important;
+  }
+}
+@media(max-width:520px){
+  #childrenExpenses .children-expenses-annual-filters,
+  #childrenExpenses .children-expenses-trend-filters{
+    grid-template-columns:1fr!important;
+    width:100%!important;
+  }
+}
+
+/* PETATOE v6.1.136 — Exact annual reset + dashboard filters alignment
+   Scope: #childrenExpenses only. Fixes visual placement exactly as requested. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0 0 18px 0!important;
+  padding:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters label{
+  flex:0 0 238px!important;
+  width:238px!important;
+  max-width:238px!important;
+  margin:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters .children-expenses-filter-reset{
+  flex:0 0 230px!important;
+  width:230px!important;
+  max-width:230px!important;
+  min-width:0!important;
+  margin:0!important;
+  align-self:flex-end!important;
+  justify-self:auto!important;
+  order:4!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-dashboard{
+  width:100%!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-head{
+  display:flex!important;
+  flex-direction:column!important;
+  direction:rtl!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  width:100%!important;
+  margin:0 0 14px 0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:none!important;
+  align-self:stretch!important;
+  margin:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters label{
+  flex:0 0 238px!important;
+  width:238px!important;
+  max-width:238px!important;
+  margin:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-head h4{
+  width:100%!important;
+  text-align:right!important;
+  align-self:stretch!important;
+  justify-self:auto!important;
+  margin:0!important;
+}
+@media(max-width:900px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters{
+    flex-wrap:wrap!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters .children-expenses-filter-reset{
+    flex:1 1 180px!important;
+    width:auto!important;
+    max-width:none!important;
+  }
+}
+@media(max-width:520px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+}
+
+/* PETATOE v6.1.137 — Exact annual reset button placement
+   Scope: annual report filters only. Keep reset button directly next to expense type filter. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0 0 18px 0!important;
+  padding:0!important;
+  overflow:visible!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters label{
+  flex:0 0 230px!important;
+  width:230px!important;
+  max-width:230px!important;
+  min-width:0!important;
+  margin:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters label:nth-of-type(1){order:1!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters label:nth-of-type(2){order:2!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters label:nth-of-type(3){order:3!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters .children-expenses-filter-reset{
+  order:4!important;
+  flex:0 0 240px!important;
+  width:240px!important;
+  max-width:240px!important;
+  min-width:0!important;
+  height:48px!important;
+  margin:0!important;
+  align-self:flex-end!important;
+  position:static!important;
+  transform:none!important;
+}
+@media (max-width: 1100px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+    flex-wrap:wrap!important;
+  }
+}
+
+
+/* PETATOE v6.1.138 — REAL annual reset placement fix
+   المطلوب: زر مسح فلاتر التقرير السنوي ملاصق لفلتر نوع المصروف داخل نفس الصف، وليس في منتصف الكارت. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:wrap!important;
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0 0 18px 0!important;
+  padding:0!important;
+  position:relative!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > label{
+  flex:0 0 230px!important;
+  width:230px!important;
+  max-width:230px!important;
+  margin:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row{
+  display:flex!important;
+  flex-direction:row!important;
+  direction:rtl!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  order:3!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row label{
+  flex:0 0 230px!important;
+  width:230px!important;
+  max-width:230px!important;
+  margin:0!important;
+  order:1!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-filter-reset{
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:220px!important;
+  max-width:none!important;
+  height:48px!important;
+  margin:0!important;
+  order:2!important;
+  position:static!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:auto!important;
+  transform:none!important;
+  align-self:flex-end!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-year-filter{order:1!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-child-filter{order:2!important;}
+@media (max-width: 900px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-filter-reset{
+    width:100%!important;
+    max-width:none!important;
+    flex:0 0 auto!important;
+  }
+}
+
+
+/* PETATOE v6.1.139 — Exact HTML placement for annual reset button
+   المطلوب: زر مسح فلاتر التقرير السنوي يظهر بجوار فلتر نوع المصروف مباشرة في نفس الصف. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  direction:rtl!important;
+  flex-wrap:nowrap!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  gap:10px!important;
+  width:100%!important;
+  margin:0 0 18px 0!important;
+  padding:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > label{
+  flex:0 0 230px!important;
+  width:230px!important;
+  max-width:230px!important;
+  margin:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-year-filter{order:1!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-child-filter{order:2!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-filter{order:3!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-reset-inline{
+  order:4!important;
+  flex:0 0 auto!important;
+  min-width:220px!important;
+  width:auto!important;
+  max-width:none!important;
+  height:48px!important;
+  margin:0!important;
+  align-self:flex-end!important;
+  position:static!important;
+  inset:auto!important;
+  transform:none!important;
+}
+@media (max-width: 1100px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+    flex-wrap:wrap!important;
+  }
+}
+@media (max-width: 760px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-reset-inline{
+    width:100%!important;
+    max-width:none!important;
+    flex:0 0 auto!important;
+  }
+}
+
+
+/* PETATOE v6.1.140 — DOM-level annual reset placement fix
+   Final scope: annual report only. Reset button is bound to expense type filter group. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  direction:rtl!important;
+  flex-wrap:nowrap!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:12px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0 0 18px 0!important;
+  padding:0!important;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > .children-expenses-annual-year-filter,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > .children-expenses-annual-child-filter{
+  flex:0 0 285px!important;
+  width:285px!important;
+  max-width:285px!important;
+  margin:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-year-filter{order:1!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-child-filter{order:2!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row{
+  order:3!important;
+  display:flex!important;
+  flex-direction:row!important;
+  direction:rtl!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-annual-type-filter{
+  order:1!important;
+  flex:0 0 285px!important;
+  width:285px!important;
+  max-width:285px!important;
+  min-width:0!important;
+  margin:0!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-annual-reset-inline{
+  order:2!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:220px!important;
+  max-width:none!important;
+  height:48px!important;
+  margin:0!important;
+  align-self:flex-end!important;
+  position:static!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:auto!important;
+  inset:auto!important;
+  transform:none!important;
+  white-space:nowrap!important;
+}
+@media (max-width: 1200px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+    flex-wrap:wrap!important;
+  }
+}
+@media (max-width: 760px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > .children-expenses-annual-year-filter,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > .children-expenses-annual-child-filter,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-annual-type-filter,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-annual-reset-inline{
+    width:100%!important;
+    max-width:none!important;
+    flex:0 0 auto!important;
+  }
+}
+
+/* PETATOE v6.1.141 — Confirmed annual reset placement
+   الهدف: زر "مسح فلاتر التقرير السنوي" يكون ملاصقًا لفلتر "نوع المصروف" داخل نفس صف الفلاتر.
+   سبب الإصلاح: الزر كان داخل wrapper يظهر كسطر مستقل؛ استخدام display:contents يحول عناصره لعناصر مباشرة داخل grid. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+  display:grid!important;
+  grid-template-columns: 285px 285px 285px auto!important;
+  grid-auto-flow:column!important;
+  direction:rtl!important;
+  justify-content:end!important;
+  align-items:end!important;
+  gap:12px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0 0 18px 0!important;
+  padding:0!important;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > .children-expenses-annual-year-filter,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > .children-expenses-annual-child-filter,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row > .children-expenses-annual-type-filter{
+  width:285px!important;
+  min-width:0!important;
+  max-width:285px!important;
+  flex:none!important;
+  margin:0!important;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row{
+  display:contents!important;
+  margin:0!important;
+  padding:0!important;
+  width:auto!important;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-year-filter{order:1!important; grid-column:1!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-child-filter{order:2!important; grid-column:2!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-filter{order:3!important; grid-column:3!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-reset-inline{
+  order:4!important;
+  grid-column:4!important;
+  width:auto!important;
+  min-width:220px!important;
+  max-width:none!important;
+  height:48px!important;
+  margin:0!important;
+  padding:0 18px!important;
+  position:static!important;
+  inset:auto!important;
+  transform:none!important;
+  align-self:end!important;
+  white-space:nowrap!important;
+  flex:none!important;
+}
+@media (max-width: 1200px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+    grid-template-columns: repeat(2, minmax(220px, 1fr))!important;
+    grid-auto-flow:row!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-year-filter,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-child-filter,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-filter,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-reset-inline{
+    grid-column:auto!important;
+    width:100%!important;
+    max-width:none!important;
+  }
+}
+@media (max-width: 760px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+    grid-template-columns:1fr!important;
+  }
+}
+
+/* PETATOE v6.1.142 — FINAL annual reset placement
+   Exact request: keep "مسح فلاتر التقرير السنوي" directly beside "نوع المصروف" in the same filters row.
+   This overrides older grid/media rules that pushed the button to a lower row. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  direction:rtl!important;
+  flex-wrap:nowrap!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:12px!important;
+  width:100%!important;
+  margin:0 0 18px 0!important;
+  padding:0!important;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-year-filter,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-child-filter{
+  order:1!important;
+  flex:0 0 240px!important;
+  width:240px!important;
+  max-width:240px!important;
+  margin:0!important;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-child-filter{order:2!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row{
+  order:3!important;
+  display:flex!important;
+  flex-direction:row!important;
+  direction:rtl!important;
+  flex-wrap:nowrap!important;
+  align-items:flex-end!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-annual-type-filter{
+  order:1!important;
+  flex:0 0 240px!important;
+  width:240px!important;
+  max-width:240px!important;
+  margin:0!important;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-annual-reset-inline{
+  order:2!important;
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-width:220px!important;
+  max-width:none!important;
+  height:48px!important;
+  margin:0!important;
+  padding:0 18px!important;
+  position:static!important;
+  inset:auto!important;
+  transform:none!important;
+  align-self:flex-end!important;
+  white-space:nowrap!important;
+}
+@media (max-width: 900px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row{
+    flex-wrap:wrap!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-year-filter,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-child-filter,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-annual-type-filter,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-annual-reset-inline{
+    flex:1 1 100%!important;
+    width:100%!important;
+    max-width:none!important;
+  }
+}
+
+/* PETATOE v6.1.146 — Children expenses annual compact layout
+   Scope: Annual report panel only. No calculations, filters logic, data sources, or commission statement changes.
+   Goal: reduce the empty vertical space between annual filters and summary cards, and make the layout more organized. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-card{
+  gap:14px!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-list-head{
+  margin-bottom:4px!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(220px,1fr))!important;
+  grid-auto-flow:row!important;
+  direction:rtl!important;
+  align-items:end!important;
+  justify-content:stretch!important;
+  gap:14px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:16px 18px!important;
+  border:1px solid var(--children-border-soft)!important;
+  border-radius:18px!important;
+  background:linear-gradient(135deg,rgba(15,23,42,.24),rgba(30,64,82,.16));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+  box-sizing:border-box!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > .children-expenses-annual-year-filter,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters > .children-expenses-annual-child-filter,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row .children-expenses-annual-type-filter{
+  flex:none!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-type-reset-row{
+  display:block!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters label{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:7px!important;
+  color:var(--muted);
+  font-size:12px!important;
+  font-weight:900;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters select,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters .pet-select-wrap,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters .pet-select-face{
+  width:100%!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  border-radius:14px!important;
+  box-sizing:border-box!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary.children-expenses-report-summary{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(150px,1fr))!important;
+  gap:10px!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill{
+  min-height:74px!important;
+  padding:13px 14px!important;
+  border-radius:16px!important;
+  display:grid!important;
+  grid-template-columns:1fr auto!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+  column-gap:12px!important;
+  row-gap:4px!important;
+  background:linear-gradient(135deg,rgba(15,23,42,.24),rgba(30,64,82,.16));
+  border-color:var(--children-border-soft);
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill::after{
+  grid-column:2!important;
+  grid-row:1 / span 2!important;
+  width:42px!important;
+  height:42px!important;
+  border-radius:13px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:21px!important;
+  color:var(--children-light-field-bg);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 12px 24px rgba(0,0,0,.16);
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill:nth-child(1)::after{
+  content:'💼';
+  background:linear-gradient(135deg,rgba(124,58,237,.88),rgba(168,85,247,.78));
+}
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill:nth-child(2)::after{
+  content:'☷';
+  background:linear-gradient(135deg,rgba(34,197,94,.82),rgba(16,185,129,.72));
+}
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill:nth-child(3)::after{
+  content:'👤';
+  background:linear-gradient(135deg,rgba(59,130,246,.82),rgba(96,165,250,.72));
+}
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill:nth-child(4)::after{
+  content:'🏷️';
+  background:linear-gradient(135deg,rgba(245,158,11,.84),rgba(217,119,6,.78));
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill span,
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill b{
+  grid-column:1!important;
+  text-align:right!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill b{
+  font-size:17px!important;
+  line-height:1.45!important;
+}
+
+html[data-theme="light"] #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters,
+body.light #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters,
+body.light-mode #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters,
+html[data-theme="light"] #childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill,
+body.light #childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill,
+body.light-mode #childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary .children-expenses-report-pill{
+  background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(248,250,252,.76));
+  border-color:rgba(15,23,42,.10);
+}
+
+@media(max-width:1180px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters{
+    grid-template-columns:repeat(2,minmax(190px,1fr))!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary.children-expenses-report-summary{
+    grid-template-columns:repeat(2,minmax(150px,1fr))!important;
+  }
+}
+@media(max-width:620px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-filters,
+  #childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualSummary.children-expenses-report-summary{
+    grid-template-columns:1fr!important;
+  }
+}
+
+/* PETATOE v6.1.147 — Children expenses annual monthly trend compact layout
+   Scope: "اتجاه المصاريف السنوية تفصيلي شهور" inside children annual panel only.
+   UI/CSS only: no calculations, data sources, filters logic, or commission statement changes. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-dashboard{
+  gap:14px!important;
+  padding:16px 18px!important;
+  margin-top:0!important;
+  border-radius:20px!important;
+  background:linear-gradient(135deg,rgba(15,23,42,.24),rgba(30,64,82,.16));
+  border:1px solid var(--children-border-soft)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 18px 44px rgba(0,0,0,.12);
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-head{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:14px!important;
+  width:100%!important;
+  margin:0!important;
+  direction:rtl!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-head h4{
+  width:100%!important;
+  margin:0!important;
+  text-align:right!important;
+  align-self:stretch!important;
+  justify-self:auto!important;
+  font-size:20px!important;
+  line-height:1.45!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(220px,1fr))!important;
+  grid-auto-flow:row!important;
+  direction:rtl!important;
+  align-items:end!important;
+  justify-content:stretch!important;
+  gap:14px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:16px 18px!important;
+  border:1px solid var(--children-border-soft)!important;
+  border-radius:18px!important;
+  background:linear-gradient(135deg,rgba(15,23,42,.22),rgba(30,64,82,.14));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+  box-sizing:border-box!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters label{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:7px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  color:var(--muted);
+  font-size:12px!important;
+  font-weight:900;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters select,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters .pet-select-wrap,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters .pet-select-face{
+  width:100%!important;
+  height:44px!important;
+  min-height:44px!important;
+  max-height:44px!important;
+  border-radius:14px!important;
+  box-sizing:border-box!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary.children-expenses-trend-summary{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(160px,1fr))!important;
+  gap:10px!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill{
+  min-height:74px!important;
+  padding:13px 14px!important;
+  border-radius:16px!important;
+  display:grid!important;
+  grid-template-columns:1fr auto!important;
+  grid-template-rows:auto auto!important;
+  align-items:center!important;
+  column-gap:12px!important;
+  row-gap:4px!important;
+  text-align:right!important;
+  background:linear-gradient(135deg,rgba(15,23,42,.24),rgba(30,64,82,.16));
+  border:1px solid var(--children-border-soft)!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill::after{
+  grid-column:2!important;
+  grid-row:1 / span 2!important;
+  width:42px!important;
+  height:42px!important;
+  border-radius:13px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:21px!important;
+  color:var(--children-light-field-bg);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 12px 24px rgba(0,0,0,.16);
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill:nth-child(1)::after{
+  content:'💼';
+  background:linear-gradient(135deg,rgba(124,58,237,.88),rgba(168,85,247,.78));
+}
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill:nth-child(2)::after{
+  content:'☷';
+  background:linear-gradient(135deg,rgba(34,197,94,.82),rgba(16,185,129,.72));
+}
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill:nth-child(3)::after{
+  content:'📈';
+  background:linear-gradient(135deg,rgba(59,130,246,.82),rgba(96,165,250,.72));
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill span,
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill b{
+  grid-column:1!important;
+  text-align:right!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill b{
+  font-size:17px!important;
+  line-height:1.45!important;
+}
+
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-monthly-chart{
+  margin-top:0!important;
+}
+
+html[data-theme="light"] #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-dashboard,
+body.light #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-dashboard,
+body.light-mode #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-dashboard,
+html[data-theme="light"] #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters,
+body.light #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters,
+body.light-mode #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters,
+html[data-theme="light"] #childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill,
+body.light #childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill,
+body.light-mode #childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill{
+  background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(248,250,252,.76));
+  border-color:rgba(15,23,42,.10);
+}
+
+@media(max-width:1180px){
+  #childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary.children-expenses-trend-summary{
+    grid-template-columns:repeat(2,minmax(150px,1fr))!important;
+  }
+}
+@media(max-width:620px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters,
+  #childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary.children-expenses-trend-summary{
+    grid-template-columns:1fr!important;
+  }
+}
+
+
+/* PETATOE v6.1.148 — Annual trend chart-only cleanup
+   Scope: children expenses annual monthly trend only.
+   Removes the lower horizontal trend-bars dashboard and forces trend dashboard numbers to white. */
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenAnnualTrendDashboard.children-expenses-trend-bars{
+  display:none!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill b,
+#childrenExpenses [data-children-expenses-panel="annual"] #childrenTrendSummary .children-expenses-trend-pill span{
+  color:var(--children-light-field-bg)fff;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-monthly-chart,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-monthly-chart canvas{
+  color:var(--children-light-field-bg)fff;
+}
+
+
+/* PETATOE v6.1.150 — Children expenses report table section titles (UI only) */
+#childrenExpenses .children-expenses-report-block{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  width:100%;
+}
+#childrenExpenses .children-expenses-report-title{
+  display:flex;
+  align-items:center;
+  justify-content:flex-start;
+  min-height:42px;
+  padding:10px 14px;
+  border-radius:16px;
+  border:1px solid rgba(148,163,184,.22);
+  background:linear-gradient(135deg,rgba(96,165,250,.16),rgba(34,211,238,.08));
+  color:var(--children-light-field-bg)fff;
+  font-size:15px;
+  font-weight:900;
+  line-height:1.4;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+#childrenExpenses .children-expenses-report-block .children-expenses-table-wrap{
+  margin-top:0;
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-report-title,
+body.light #childrenExpenses .children-expenses-report-title,
+body.light-mode #childrenExpenses .children-expenses-report-title{
+  background:linear-gradient(135deg,rgba(59,130,246,.12),rgba(14,165,233,.07));
+  color:var(--children-light-text);
+  border-color:rgba(15,23,42,.12);
+}
+
+/* PETATOE v6.1.151 — Warm Champagne Glass report tables theme (UI only)
+   Scope: children expenses analytical/report summary tables only.
+   No data, calculation, filter, or commission logic changes. */
+#childrenExpenses .children-expenses-report-stack{
+  gap:18px;
+}
+#childrenExpenses .children-expenses-report-block{
+  gap:0;
+  padding:12px;
+  border-radius:22px;
+  border:1px solid rgba(220,196,154,.28);
+  background:
+    radial-gradient(circle at 12% 0%,rgba(245,225,190,.11),transparent 34%),
+    linear-gradient(135deg,rgba(255,255,255,.070),rgba(214,198,170,.055));
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.10);
+  backdrop-filter:blur(18px);
+  overflow:hidden;
+}
+#childrenExpenses .children-expenses-report-title{
+  min-height:48px;
+  padding:12px 16px;
+  border-radius:16px 16px 0 0;
+  border:1px solid rgba(245,225,190,.24);
+  border-bottom:0;
+  background:
+    linear-gradient(135deg,rgba(245,225,190,.20),rgba(180,135,74,.11)),
+    rgba(15,23,42,.22);
+  color:var(--children-light-field-bg)af0;
+  font-size:16px;
+  letter-spacing:.01em;
+  text-shadow:0 2px 10px rgba(0,0,0,.28);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 8px 18px rgba(0,0,0,.10);
+}
+#childrenExpenses .children-expenses-report-block .children-expenses-table-wrap{
+  margin-top:0;
+  border-radius:0 0 16px 16px;
+  border-color:rgba(220,196,154,.26);
+  background:rgba(5,12,24,.20);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+#childrenExpenses .children-expenses-report-table{
+  border-collapse:separate;
+  border-spacing:0;
+}
+#childrenExpenses .children-expenses-report-table th{
+  color:var(--children-light-field-bg)af0;
+  background:
+    linear-gradient(135deg,rgba(245,225,190,.44),rgba(180,135,74,.30))!important;
+  border-bottom:1px solid rgba(245,225,190,.30)!important;
+  font-weight:900;
+  text-shadow:0 1px 8px rgba(0,0,0,.22);
+}
+#childrenExpenses .children-expenses-report-table td{
+  color:var(--children-light-field-bg)fff;
+  border-bottom:1px solid rgba(245,225,190,.115)!important;
+}
+#childrenExpenses .children-expenses-report-table tbody tr:nth-child(odd):not(.children-expenses-total-row) td{
+  background:rgba(7,15,29,.56);
+}
+#childrenExpenses .children-expenses-report-table tbody tr:nth-child(even):not(.children-expenses-total-row) td{
+  background:rgba(255,255,255,.075);
+}
+#childrenExpenses .children-expenses-report-table tbody tr:not(.children-expenses-total-row):hover td{
+  background:rgba(245,225,190,.13);
+}
+#childrenExpenses .children-expenses-report-table tbody tr.children-expenses-total-row td{
+  color:var(--children-light-field-bg)fff;
+  font-weight:950;
+  background:
+    linear-gradient(135deg,rgba(245,225,190,.44),rgba(180,135,74,.32))!important;
+  border-top:1px solid rgba(245,225,190,.36);
+  border-bottom:0!important;
+  text-shadow:0 1px 10px rgba(0,0,0,.24);
+}
+#childrenExpenses .children-expenses-report-table tbody tr.children-expenses-total-row td:first-child{
+  font-size:16px;
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-report-block,
+body.light #childrenExpenses .children-expenses-report-block,
+body.light-mode #childrenExpenses .children-expenses-report-block{
+  border-color:rgba(146,101,45,.18);
+  background:linear-gradient(135deg,rgba(255,248,235,.82),rgba(246,238,222,.62));
+  box-shadow:0 14px 34px rgba(15,23,42,.10);
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-report-title,
+body.light #childrenExpenses .children-expenses-report-title,
+body.light-mode #childrenExpenses .children-expenses-report-title,
+html[data-theme="light"] #childrenExpenses .children-expenses-report-table th,
+body.light #childrenExpenses .children-expenses-report-table th,
+body.light-mode #childrenExpenses .children-expenses-report-table th{
+  color:#2b1d10;
+  background:linear-gradient(135deg,rgba(222,195,154,.75),rgba(245,232,207,.62));
+  text-shadow:none;
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-report-table td,
+body.light #childrenExpenses .children-expenses-report-table td,
+body.light-mode #childrenExpenses .children-expenses-report-table td{
+  color:#111827;
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-report-table tbody tr:nth-child(odd):not(.children-expenses-total-row) td,
+body.light #childrenExpenses .children-expenses-report-table tbody tr:nth-child(odd):not(.children-expenses-total-row) td,
+body.light-mode #childrenExpenses .children-expenses-report-table tbody tr:nth-child(odd):not(.children-expenses-total-row) td{
+  background:rgba(255,255,255,.78);
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-report-table tbody tr:nth-child(even):not(.children-expenses-total-row) td,
+body.light #childrenExpenses .children-expenses-report-table tbody tr:nth-child(even):not(.children-expenses-total-row) td,
+body.light-mode #childrenExpenses .children-expenses-report-table tbody tr:nth-child(even):not(.children-expenses-total-row) td{
+  background:rgba(245,232,207,.38);
+}
+html[data-theme="light"] #childrenExpenses .children-expenses-report-table tbody tr.children-expenses-total-row td,
+body.light #childrenExpenses .children-expenses-report-table tbody tr.children-expenses-total-row td,
+body.light-mode #childrenExpenses .children-expenses-report-table tbody tr.children-expenses-total-row td{
+  color:#2b1d10;
+  background:linear-gradient(135deg,rgba(222,195,154,.82),rgba(191,143,79,.52));
+  text-shadow:none;
+}
+
+/* v6.1.153 — Children annual dashboard/table scope separation
+   Move annual report controls to sit directly above the annual tables while keeping trend dashboard filters independent. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section{
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid rgba(245, 241, 232, .16);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(245, 241, 232, .08), rgba(212, 180, 131, .045));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 14px 36px rgba(0,0,0,.16);
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-head{
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(245, 241, 232, .12);
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-head p{
+  margin: 4px 0 0;
+  color: rgba(245,241,232,.70);
+  font-size: 12px;
+  font-weight: 800;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-dashboard{
+  margin-top: 0 !important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-report-summary{
+  margin-top: 14px;
+  margin-bottom: 14px;
+}
+@media (max-width: 768px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section{
+    padding: 12px;
+    border-radius: 18px;
+  }
+}
+
+/* PETATOE v6.1.155 — Trend filters unified compact layout
+   Scope: Annual monthly trend dashboard filters only.
+   Matches Children Expenses Reports filter size/layout without touching data or calculations. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-head{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:12px!important;
+  width:100%!important;
+  direction:rtl!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-head h4{
+  width:100%!important;
+  margin:0!important;
+  text-align:right!important;
+  align-self:stretch!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+  align-self:stretch!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters label{
+  flex:0 0 190px!important;
+  width:190px!important;
+  max-width:190px!important;
+  min-width:0!important;
+  margin:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  color:var(--muted);
+  font-size:11px!important;
+  font-weight:900;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters select,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters .pet-select-wrap{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:38px!important;
+  height:38px!important;
+  border-radius:13px!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters .pet-select-face{
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  border-radius:13px!important;
+  padding:7px 12px!important;
+  direction:rtl!important;
+  text-align:right!important;
+  font-size:12px!important;
+  box-sizing:border-box!important;
+}
+@media (max-width:900px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters{
+    flex-wrap:wrap!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters label{
+    flex:1 1 180px!important;
+    width:auto!important;
+    max-width:none!important;
+  }
+}
+@media (max-width:520px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+}
+
+
+/* PETATOE v6.1.156 — Annual report filters unified compact layout + trend filter stability
+   Scope: Children Expenses annual tab only. Match annual table filters to Children Expenses Reports compact filter size. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0 0 12px!important;
+  padding:0!important;
+  background:transparent;
+  border:0!important;
+  box-shadow:none;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters > label,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row > label{
+  flex:0 0 190px!important;
+  width:190px!important;
+  max-width:190px!important;
+  min-width:0!important;
+  margin:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  color:var(--muted);
+  font-size:11px!important;
+  font-weight:900;
+  order:initial!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row{
+  padding:0!important;
+  background:transparent;
+  border:0!important;
+  box-shadow:none;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters select,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters .pet-select-wrap{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  min-height:38px!important;
+  height:38px!important;
+  border-radius:13px!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters .pet-select-face{
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  border-radius:13px!important;
+  padding:7px 12px!important;
+  direction:rtl!important;
+  text-align:right!important;
+  font-size:12px!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-year-filter{order:1!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-child-filter{order:2!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row{order:3!important;}
+@media (max-width:900px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters{
+    flex-wrap:wrap!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters > label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row > label{
+    flex:1 1 180px!important;
+    width:auto!important;
+    max-width:none!important;
+  }
+}
+@media (max-width:520px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+}
+
+/* PETATOE v6.1.157 — Children Expenses cascading filters + compact log filters
+   Scope: #childrenExpenses only. UI sizing + dynamic option consistency; no calculations touched. */
+#childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:wrap!important;
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  margin-top:12px!important;
+}
+#childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters input{
+  flex:0 0 260px!important;
+  width:260px!important;
+  max-width:260px!important;
+  min-width:0!important;
+  min-height:38px!important;
+  height:38px!important;
+  border-radius:13px!important;
+  padding:7px 12px!important;
+  font-size:12px!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters select,
+#childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters .pet-select-wrap{
+  flex:0 0 190px!important;
+  width:190px!important;
+  max-width:190px!important;
+  min-width:0!important;
+  min-height:38px!important;
+  height:38px!important;
+  border-radius:13px!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters .pet-select-face{
+  width:100%!important;
+  min-height:38px!important;
+  height:38px!important;
+  border-radius:13px!important;
+  padding:7px 12px!important;
+  font-size:12px!important;
+  direction:rtl!important;
+  text-align:right!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters .btn{
+  flex:0 0 auto!important;
+  min-height:38px!important;
+  height:38px!important;
+  padding:7px 16px!important;
+  border-radius:999px!important;
+  white-space:nowrap!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters{
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  margin:0 0 12px!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters > label,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row > label,
+#childrenExpenses [data-children-expenses-panel="reports"] .children-expenses-report-filters label,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters label{
+  flex:0 0 190px!important;
+  width:190px!important;
+  max-width:190px!important;
+  min-width:0!important;
+}
+@media (max-width:900px){
+  #childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters input,
+  #childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters select,
+  #childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters .pet-select-wrap,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters > label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row > label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-trend-filters label{
+    flex:1 1 180px!important;
+    width:auto!important;
+    max-width:none!important;
+  }
+}
+@media (max-width:520px){
+  #childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters input,
+  #childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters select,
+  #childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters .pet-select-wrap,
+  #childrenExpenses [data-children-expenses-panel="log"] .children-expenses-filters .btn{
+    width:100%!important;
+    max-width:none!important;
+    flex:0 0 auto!important;
+  }
+}
+
+/* PETATOE v6.1.158 — Annual tables filters row alignment fix
+   Scope: annual report tables filters only.
+   Goal: keep year, child, and expense type filters in one compact row with the same size used in Children Expenses Reports.
+   No calculations, data sources, dashboard logic, or export logic touched. */
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  direction:rtl!important;
+  justify-content:flex-start!important;
+  align-items:flex-end!important;
+  gap:10px!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0 0 12px!important;
+  padding:0!important;
+  background:transparent;
+  border:0!important;
+  box-shadow:none;
+  position:static!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row{
+  display:contents!important;
+  width:auto!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  background:transparent;
+  border:0!important;
+  box-shadow:none;
+  position:static!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters > label,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row > label{
+  flex:0 0 190px!important;
+  width:190px!important;
+  max-width:190px!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  color:var(--muted);
+  font-size:11px!important;
+  font-weight:900;
+  position:static!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-year-filter{order:1!important;grid-column:auto!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-child-filter{order:2!important;grid-column:auto!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-filter{order:3!important;grid-column:auto!important;}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters select,
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters .pet-select-wrap{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:38px!important;
+  min-height:38px!important;
+  border-radius:13px!important;
+  box-sizing:border-box!important;
+}
+#childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters .pet-select-face{
+  width:100%!important;
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  border-radius:13px!important;
+  padding:7px 12px!important;
+  direction:rtl!important;
+  text-align:right!important;
+  font-size:12px!important;
+  box-sizing:border-box!important;
+}
+@media (max-width:900px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters{
+    flex-wrap:wrap!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters > label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row > label{
+    flex:1 1 180px!important;
+    width:auto!important;
+    max-width:none!important;
+  }
+}
+@media (max-width:520px){
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters{
+    flex-direction:column!important;
+    align-items:stretch!important;
+  }
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-filters > label,
+  #childrenExpenses [data-children-expenses-panel="annual"] .children-expenses-annual-tables-section .children-expenses-annual-type-reset-row > label{
+    width:100%!important;
+    max-width:none!important;
+    flex:0 0 auto!important;
+  }
+}

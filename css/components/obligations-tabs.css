@@ -1,0 +1,18 @@
+/* PETATOE v6.0.3 - Obligations report tabs only */
+#obligations .ob-tabs-wrap{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:2px 0 6px}
+#obligations .ob-tab-btn{border:1px solid rgba(148,163,184,.22);background:rgba(255,255,255,.10);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);color:var(--text);border-radius:16px;padding:12px 18px;font:950 13px Cairo;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 10px 24px rgba(0,0,0,.12);transition:.22s ease}
+#obligations .ob-tab-btn:hover{transform:translateY(-1px);border-color:rgba(34,211,238,.42);background:rgba(255,255,255,.15)}
+#obligations .ob-tab-btn.active{background:linear-gradient(135deg,rgba(34,211,238,.24),rgba(139,92,246,.20));border-color:rgba(34,211,238,.48);box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 12px 28px rgba(34,211,238,.10)}
+#obligations .ob-tab-panel{display:none}
+#obligations .ob-tab-panel.active{display:block}
+#obligations #obHistoryTab .ob-history-card{width:100%}
+html[data-theme="light"] #obligations .ob-tab-btn{background:rgba(255,255,255,.62);border-color:rgba(15,23,42,.12);color:#172033}
+html[data-theme="light"] #obligations .ob-tab-btn.active{background:linear-gradient(135deg,rgba(34,211,238,.24),rgba(139,92,246,.16));border-color:rgba(14,165,233,.35)}
+@media(max-width:650px){#obligations .ob-tabs-wrap{display:grid;grid-template-columns:1fr}#obligations .ob-tab-btn{width:100%}}
+
+/* PETATOE v6.0.4 - Obligations monthly low stock report */
+#obligations .ob-low-stock-card{margin-top:14px}
+#obligations .ob-low-zero{color:#fca5a5!important;font-weight:950}
+#obligations .ob-low-warn{color:#fde68a!important;font-weight:950}
+html[data-theme="light"] #obligations .ob-low-zero{color:#b91c1c!important}
+html[data-theme="light"] #obligations .ob-low-warn{color:#92400e!important}

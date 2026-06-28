@@ -1,0 +1,75 @@
+/* PETATOE v6.1.282 — CSS Tokens Boundary
+   Purpose: centralize stable design tokens before splitting main.css.
+   This file is loaded before main.css. Values intentionally mirror the current main.css tokens to avoid any UI change.
+*/
+:root{
+  --bg:#070b14;
+  --bg2:#0b1220;
+  --panel:rgba(15,23,42,.78);
+  --panel2:rgba(30,41,59,.72);
+  --stroke:rgba(148,163,184,.18);
+  --text:#f8fafc;
+  --muted:#94a3b8;
+  --dim:#64748b;
+  --purple:#8b5cf6;
+  --cyan:#22d3ee;
+  --green:#22c55e;
+  --orange:#fb923c;
+  --pink:#ec4899;
+  --blue:#3b82f6;
+  --red:#ef4444;
+  --yellow:#facc15;
+  --side:258px;
+  --top:72px;
+  --contentPad:18px;
+  --radius:22px;
+  --shadow:0 24px 80px rgba(0,0,0,.42);
+  --glass:blur(18px) saturate(145%);
+}
+
+html[data-theme="light"]{
+  --bg:#f8fafc;
+  --bg2:#eef2ff;
+  --panel:rgba(255,255,255,.82);
+  --panel2:rgba(255,255,255,.94);
+  --stroke:rgba(15,23,42,.12);
+  --text:#0f172a;
+  --muted:#475569;
+  --dim:#94a3b8;
+  --shadow:0 18px 55px rgba(15,23,42,.12);
+}
+
+/* PETATOE v6.1.303 — Appointments CSS cleanup tokens
+   Aliases intentionally mirror existing values to avoid visual changes. */
+:root{
+  --appt-text-strong:#fff;
+  --appt-text-soft:rgba(226,232,240,.78);
+  --appt-text-muted:rgba(226,232,240,.68);
+  --appt-border-soft:rgba(148,163,184,.22);
+  --appt-border-mid:rgba(148,163,184,.28);
+  --appt-bg-deep:rgba(15,23,42,.42);
+  --appt-bg-card-a:rgba(15,23,42,.60);
+  --appt-bg-card-b:rgba(51,65,85,.42);
+  --appt-cyan-soft:rgba(34,211,238,.18);
+  --appt-cyan-border:rgba(34,211,238,.74);
+  --appt-success-a:#10b981;
+  --appt-success-b:#22c55e;
+}
+
+
+/* PETATOE v6.1.304 — Children Expenses CSS cleanup tokens
+   Aliases mirror existing section values to avoid visual changes. */
+:root{
+  --children-border-soft:rgba(148,163,184,.18);
+  --children-border-mid:rgba(148,163,184,.28);
+  --children-border-strong:rgba(148,163,184,.34);
+  --children-card-bg:rgba(15,23,42,.18);
+  --children-field-bg:rgba(15,23,42,.38);
+  --children-total-bg:linear-gradient(135deg,rgba(93,147,178,.38),rgba(15,23,42,.48));
+  --children-success-text:#86efac;
+  --children-warning-text:#fcd34d;
+  --children-danger-text:#fca5a5;
+  --children-light-table-head:#475569;
+  --children-light-field-bg:#fff;
+  --children-light-text:#0f172a;
+}

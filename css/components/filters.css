@@ -1,0 +1,149 @@
+/* PETATOE v3.11.1 — Global Filters Fix
+   A custom dropdown layer for all selects. Original select values/onchange logic stay intact. */
+select,input,textarea,button{pointer-events:auto;}
+.pet-filters-horizontal-ready,
+.filters,
+.report-filters,
+.filters-row,
+.filter-row,
+.pet-filter-bar,
+.top-filters{
+  display:flex!important;
+  flex-wrap:wrap!important;
+  gap:10px!important;
+  align-items:center!important;
+}
+.pet-filters-horizontal-ready>*{flex:0 0 auto;}
+.pet-select-wrap{
+  position:relative!important;
+  display:inline-flex!important;
+  align-items:stretch!important;
+  vertical-align:middle!important;
+  min-width:120px;
+  max-width:100%;
+  isolation:isolate;
+  flex:0 0 auto;
+}
+.pet-select-wrap.pet-select-block{display:flex!important;width:100%!important;flex:1 1 180px;}
+.pet-select-wrap select.pet-select-native{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  z-index:-1!important;
+  visibility:hidden!important;
+}
+.pet-select-face{
+  width:100%;
+  min-height:42px;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px;
+  border:1px solid var(--stroke,rgba(148,163,184,.22));
+  border-radius:13px;
+  background:var(--panel2,#1e293b);
+  color:var(--text,#f8fafc);
+  padding:9px 13px;
+  font:900 12px Cairo,Arial,sans-serif;
+  cursor:pointer;
+  user-select:none;
+  box-shadow:none;
+  transition:.16s ease;
+  white-space:nowrap;
+  overflow:hidden;
+  direction:rtl;
+}
+.pet-select-face:hover,.pet-select-wrap.open .pet-select-face{border-color:rgba(139,92,246,.72);box-shadow:0 12px 28px rgba(139,92,246,.12)}
+.pet-select-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.4;order:2;}
+.pet-select-arrow{font-size:12px;opacity:.95;flex:0 0 auto;transition:.16s ease;order:1;}
+.pet-select-wrap.open .pet-select-arrow{transform:rotate(180deg)}
+.pet-select-menu{
+  position:fixed!important;
+  z-index:2147483000!important;
+  display:none;
+  max-height:320px;
+  overflow:auto;
+  padding:7px;
+  border:1px solid rgba(148,163,184,.24);
+  border-radius:15px;
+  background:#0f172a!important;
+  color:#f8fafc!important;
+  box-shadow:0 24px 70px rgba(0,0,0,.45);
+  backdrop-filter:blur(14px) saturate(140%);
+  direction:rtl;
+}
+.pet-select-menu.show{display:block!important;}
+.pet-select-option{
+  width:100%;
+  border:0;
+  border-radius:11px;
+  background:transparent;
+  color:#f8fafc!important;
+  text-align:right;
+  padding:9px 11px;
+  font:900 12px Cairo,Arial,sans-serif;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  white-space:nowrap;
+}
+.pet-select-option:hover,.pet-select-option.active{background:rgba(139,92,246,.26)!important;color:#fff!important;}
+.pet-select-option.disabled{opacity:.45;cursor:not-allowed;}
+.pet-select-check{font-size:11px;color:#a78bfa;}
+html[data-theme="light"] .pet-select-face{background:#fff!important;color:#0f172a!important;border-color:rgba(15,23,42,.14)!important;}
+html[data-theme="light"] .pet-select-menu{background:#fff!important;color:#0f172a!important;border-color:rgba(15,23,42,.14)!important;box-shadow:0 24px 60px rgba(15,23,42,.18)!important;}
+html[data-theme="light"] .pet-select-option{color:#0f172a!important;}
+html[data-theme="light"] .pet-select-option:hover,html[data-theme="light"] .pet-select-option.active{background:rgba(139,92,246,.14)!important;color:#4c1d95!important;}
+html[data-theme="light"] .pet-select-check{color:#7c3aed;}
+/* Keep known filter areas in their intended layout */
+#dashboard .filters .pet-select-wrap{min-width:140px;}
+#salesInvoiceReportArea .sir-filter-panel{display:grid!important;grid-template-columns:1.15fr repeat(5,minmax(120px,.7fr))!important;gap:10px!important;align-items:end!important;}
+#salesInvoiceReportArea .sir-filter-panel .pet-select-wrap{width:100%!important;min-width:0!important;}
+#salesInvoiceReportArea .sir-filter-wide{grid-column:span 2!important;}
+@media(max-width:1250px){#salesInvoiceReportArea .sir-filter-panel{grid-template-columns:1fr 1fr!important;}#salesInvoiceReportArea .sir-filter-wide{grid-column:1/-1!important;}}
+@media(max-width:760px){.pet-filters-horizontal-ready,.filters,.report-filters,.filters-row,.filter-row,.pet-filter-bar,.top-filters{display:grid!important;grid-template-columns:1fr!important}.pet-select-wrap{width:100%!important}.pet-select-menu{max-height:260px}#salesInvoiceReportArea .sir-filter-panel{grid-template-columns:1fr!important;}#salesInvoiceReportArea .sir-filter-wide{grid-column:1/-1!important;}}
+
+/* PETATOE v6.1.82 — Phase 6-A UI/UX viewport guard for custom select menus
+   Scope: visual CSS only. Keeps dropdowns inside viewport on narrow screens without changing values/events. */
+.pet-select-menu{
+  max-width:min(420px, calc(100vw - 24px))!important;
+  overflow-x:hidden!important;
+  overscroll-behavior:contain!important;
+}
+.pet-select-option,
+.pet-select-label{
+  min-width:0!important;
+}
+.pet-select-option span,
+.pet-select-option b,
+.pet-select-option small{
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+}
+@media(max-width:760px){
+  .pet-select-wrap{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  .pet-select-face{
+    max-width:100%!important;
+  }
+  .pet-select-menu{
+    left:12px!important;
+    right:12px!important;
+    width:auto!important;
+    max-width:calc(100vw - 24px)!important;
+    max-height:min(260px, calc(100vh - 140px))!important;
+  }
+  .pet-select-option{
+    white-space:normal!important;
+    line-height:1.45!important;
+  }
+}

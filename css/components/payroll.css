@@ -1,0 +1,597 @@
+/* PETATOE v6.1.0 — Payroll module styles; scoped to payroll screens only */
+#payroll .payroll-shell,
+#salarySlip .payroll-shell{display:flex;flex-direction:column;gap:14px}
+#payroll .payroll-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+#payroll .payroll-tab{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);color:var(--text);border-radius:14px;padding:10px 14px;cursor:pointer;backdrop-filter:blur(12px)}
+#payroll .payroll-tab.active{background:linear-gradient(135deg,rgba(24,231,249,.25),rgba(138,97,255,.24));border-color:rgba(24,231,249,.45);box-shadow:0 12px 30px rgba(24,231,249,.16)}
+#payroll .payroll-card,
+#salarySlip .payroll-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow)}
+#payroll .payroll-grid{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:12px}
+#payroll .payroll-grid-3{display:grid;grid-template-columns:repeat(3,minmax(170px,1fr));gap:12px}
+#payroll .payroll-field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}
+#payroll .payroll-field input,
+#payroll .payroll-field select,
+#payroll .payroll-field textarea,
+#salarySlip .payroll-field textarea{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--text);border-radius:14px;padding:10px;outline:none}
+#payroll .payroll-actions,
+#salarySlip .payroll-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+#payroll .payroll-table,
+#salarySlip .payroll-table{overflow:auto;border-radius:16px;border:1px solid var(--line);margin-top:12px}
+#payroll .payroll-table table,
+#salarySlip .payroll-table table{width:100%;border-collapse:collapse;min-width:900px}
+#payroll .payroll-table th,
+#payroll .payroll-table td,
+#salarySlip .payroll-table th,
+#salarySlip .payroll-table td{padding:10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+#payroll .payroll-table th,
+#salarySlip .payroll-table th{color:var(--muted);font-weight:700;background:rgba(255,255,255,.04)}
+#payroll .payroll-badge,
+#salarySlip .payroll-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;font-size:12px;border:1px solid var(--line);background:rgba(255,255,255,.08)}
+#payroll .payroll-badge.ok,#salarySlip .payroll-badge.ok{background:rgba(34,197,94,.16);border-color:rgba(34,197,94,.38);color:#86efac}
+#payroll .payroll-badge.warn,#salarySlip .payroll-badge.warn{background:rgba(245,158,11,.16);border-color:rgba(245,158,11,.38);color:#fcd34d}
+#payroll .payroll-badge.bad,#salarySlip .payroll-badge.bad{background:rgba(239,68,68,.16);border-color:rgba(239,68,68,.38);color:#fca5a5}
+#payroll .payroll-lines{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+#payroll .payroll-line{display:grid;grid-template-columns:1fr 160px auto;gap:8px;align-items:center}
+#salarySlip .salary-slip-box{max-width:720px;margin:auto}
+#salarySlip .salary-slip-row{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px dashed var(--line)}
+#salarySlip .salary-slip-row.total{font-size:20px;font-weight:800;border-bottom:0;margin-top:10px;color:var(--primary)}
+#salarySlip .salary-slip-note{color:var(--muted);font-size:13px;margin-top:10px}
+@media(max-width:900px){#payroll .payroll-grid,#payroll .payroll-grid-3{grid-template-columns:1fr}#payroll .payroll-line{grid-template-columns:1fr}#payroll .payroll-table table,#salarySlip .payroll-table table{min-width:720px}}
+
+
+/* PETATOE v6.1.1 — visible payroll entry cards on dashboard only */
+#dashboard .payroll-home-access{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(220px,1fr));
+  gap:12px;
+  margin:14px 0 16px;
+}
+#dashboard .payroll-home-card{
+  width:100%;
+  text-align:right;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.10);
+  color:var(--text);
+  border-radius:20px;
+  padding:14px 16px;
+  cursor:pointer;
+  backdrop-filter:blur(16px) saturate(160%);
+  -webkit-backdrop-filter:blur(16px) saturate(160%);
+  box-shadow:0 12px 30px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.22);
+  transition:transform .18s ease, border-color .18s ease, background .18s ease;
+}
+#dashboard .payroll-home-card:hover{
+  transform:translateY(-2px);
+  border-color:rgba(24,231,249,.48);
+  background:rgba(255,255,255,.16);
+}
+#dashboard .payroll-home-card b{display:block;font-size:15px;margin-bottom:3px}
+#dashboard .payroll-home-card small{display:block;color:var(--muted);font-size:12px}
+#dashboard .payroll-home-icon{font-size:26px;line-height:1;filter:drop-shadow(0 8px 18px rgba(0,0,0,.24))}
+@media(max-width:760px){#dashboard .payroll-home-access{grid-template-columns:1fr}}
+
+/* PETATOE v6.1.4 — Payroll employee status fixed segmented control */
+#payroll .payroll-status-picker{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(90px,1fr));
+  gap:8px;
+  align-items:stretch;
+}
+#payroll .payroll-status-choice{
+  width:100%;
+  min-height:42px;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08);
+  color:var(--text);
+  border-radius:14px;
+  cursor:pointer;
+  font-weight:800;
+  transition:transform .18s ease,background .18s ease,border-color .18s ease;
+}
+#payroll .payroll-status-choice:hover{transform:translateY(-1px);background:rgba(255,255,255,.13)}
+#payroll .payroll-status-choice.active{
+  background:linear-gradient(135deg,rgba(24,231,249,.30),rgba(138,97,255,.30));
+  border-color:rgba(24,231,249,.55);
+  box-shadow:0 10px 26px rgba(24,231,249,.14);
+}
+@media(max-width:700px){#payroll .payroll-status-picker{grid-template-columns:1fr}}
+
+/* PETATOE v6.1.5 — Payroll tabs active highlight + stable status dropdown */
+#payroll .payroll-tab.active,
+#payroll .payroll-tab[aria-selected="true"]{
+  background:linear-gradient(135deg,rgba(24,231,249,.34),rgba(138,97,255,.36)) !important;
+  border-color:rgba(24,231,249,.68) !important;
+  color:#fff !important;
+  box-shadow:0 14px 34px rgba(24,231,249,.20), inset 0 1px 0 rgba(255,255,255,.28) !important;
+  transform:translateY(-1px);
+}
+#payroll .payroll-status-select{
+  position:relative;
+  width:100%;
+  z-index:20;
+}
+#payroll .payroll-status-trigger{
+  width:100%;
+  min-height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.08);
+  color:var(--text);
+  border-radius:14px;
+  padding:10px 12px;
+  cursor:pointer;
+  font-weight:800;
+  text-align:right;
+}
+#payroll .payroll-status-select.open .payroll-status-trigger{
+  border-color:rgba(24,231,249,.50);
+  box-shadow:0 10px 26px rgba(24,231,249,.12);
+}
+#payroll .payroll-status-arrow{opacity:.75;font-size:12px}
+#payroll .payroll-status-menu{
+  position:absolute;
+  inset-inline:0;
+  top:calc(100% + 6px);
+  z-index:200;
+  border:1px solid rgba(24,231,249,.32);
+  background:rgba(26,39,57,.96);
+  color:var(--text);
+  border-radius:16px;
+  padding:6px;
+  box-shadow:0 18px 46px rgba(0,0,0,.34);
+  backdrop-filter:blur(18px) saturate(150%);
+  -webkit-backdrop-filter:blur(18px) saturate(150%);
+}
+#payroll .payroll-status-option{
+  width:100%;
+  display:block;
+  border:0;
+  background:transparent;
+  color:var(--text);
+  border-radius:12px;
+  padding:10px 12px;
+  cursor:pointer;
+  font-weight:800;
+  text-align:right;
+}
+#payroll .payroll-status-option:hover{background:rgba(255,255,255,.10)}
+#payroll .payroll-status-option.active{
+  background:linear-gradient(135deg,rgba(24,231,249,.24),rgba(138,97,255,.30));
+  color:#fff;
+}
+
+/* PETATOE v6.1.6 — Payroll config tabs + fixed status dropdown interaction */
+#payroll .payroll-config-tabs{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+#payroll .payroll-config-tab{
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.08);
+  color:var(--text);
+  border-radius:14px;
+  padding:10px 14px;
+  cursor:pointer;
+  backdrop-filter:blur(12px);
+}
+#payroll .payroll-config-tab.active,
+#payroll .payroll-config-tab[aria-selected="true"]{
+  background:linear-gradient(135deg,rgba(24,231,249,.28),rgba(138,97,255,.26));
+  border-color:rgba(24,231,249,.55);
+  box-shadow:0 12px 30px rgba(24,231,249,.18), inset 0 1px 0 rgba(255,255,255,.18);
+}
+#payroll .payroll-status-menu[hidden]{display:none !important;}
+#payroll .payroll-status-select.open .payroll-status-menu{display:block !important;}
+
+/* PETATOE v6.1.7 — Payroll config employee setup, native status select, stronger active highlight */
+#payroll .payroll-native-select{
+  width:100%;
+  min-height:42px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.08);
+  color:var(--text);
+  border-radius:14px;
+  padding:10px 12px;
+  outline:none;
+  cursor:pointer;
+}
+#payroll .payroll-native-select:focus{
+  border-color:rgba(24,231,249,.62);
+  box-shadow:0 0 0 3px rgba(24,231,249,.13);
+}
+#payroll .payroll-config-tab.active,
+#payroll .payroll-config-tab[aria-selected="true"]{
+  background:linear-gradient(135deg,rgba(24,231,249,.38),rgba(138,97,255,.38)) !important;
+  border-color:rgba(24,231,249,.75) !important;
+  color:#fff !important;
+  box-shadow:0 14px 34px rgba(24,231,249,.22), inset 0 1px 0 rgba(255,255,255,.30) !important;
+  transform:translateY(-1px);
+}
+
+/* PETATOE v6.1.10 — Salary slip employee name + commission link visibility */
+#salarySlip .salary-slip-employee,
+#payroll .salary-slip-employee{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:8px 0 10px;
+  padding:10px 14px;
+  border:1px solid rgba(24,231,249,.28);
+  border-radius:16px;
+  background:rgba(24,231,249,.08);
+}
+#salarySlip .salary-slip-employee span,
+#payroll .salary-slip-employee span{color:var(--muted);font-weight:700}
+#salarySlip .salary-slip-employee b,
+#payroll .salary-slip-employee b{color:var(--text);font-size:1.05rem}
+#salarySlip .commission-link-note,
+#payroll .commission-link-note{
+  margin-top:-6px;
+  margin-bottom:10px;
+  border-color:rgba(255,200,87,.26);
+  background:rgba(255,200,87,.08);
+}
+
+/* PETATOE v6.1.12 — Payroll archive filters, totals row, and payment method */
+#payroll .payroll-grid-4{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  align-items:end;
+}
+#payroll .payroll-filter-actions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  align-items:end;
+}
+#payroll .payroll-total-row td{
+  background:linear-gradient(135deg,rgba(24,231,249,.16),rgba(138,97,255,.14)) !important;
+  border-top:2px solid rgba(24,231,249,.45) !important;
+  color:var(--text) !important;
+  font-weight:950 !important;
+}
+@media(max-width:900px){
+  #payroll .payroll-grid-4{grid-template-columns:1fr;}
+}
+
+/* PETATOE v6.1.18 — Full Salary Slip Professional Redesign
+   Root cause fix: previous version changed CSS only while salary slip HTML still used the old compact structure.
+   This layer styles the rebuilt salary slip renderer and supports dark/light themes. */
+#salarySlip .salary-slip-redesign-shell{
+  width:100%;
+  max-width:1280px;
+  margin:0 auto;
+  gap:22px;
+}
+#salarySlip .salary-slip-pro{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 310px;
+  gap:18px;
+  align-items:stretch;
+  padding:18px;
+  border-radius:30px;
+  border:1px solid rgba(148,163,184,.22);
+  background:
+    radial-gradient(circle at 20% 15%,rgba(34,211,238,.14),transparent 30%),
+    radial-gradient(circle at 86% 18%,rgba(139,92,246,.16),transparent 34%),
+    linear-gradient(145deg,rgba(15,23,42,.88),rgba(8,16,31,.92));
+  box-shadow:0 26px 80px rgba(0,0,0,.32), inset 0 1px 0 rgba(255,255,255,.10);
+  color:#f8fafc;
+  overflow:hidden;
+  position:relative;
+}
+#salarySlip .salary-slip-pro:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(90deg,rgba(255,255,255,.05),transparent 38%,rgba(255,255,255,.03));
+}
+#salarySlip .salary-slip-main,
+#salarySlip .salary-slip-side{position:relative;z-index:1;}
+#salarySlip .salary-slip-main{display:flex;flex-direction:column;gap:16px;min-width:0;}
+#salarySlip .salary-slip-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;}
+#salarySlip .salary-slip-hero h2{margin:0 0 8px;font-size:30px;letter-spacing:-.5px;color:#fff;}
+#salarySlip .salary-slip-status-wrap .payroll-badge{font-size:13px;padding:7px 12px;}
+#salarySlip .salary-slip-back{
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.07);
+  color:#e5e7eb;
+  border-radius:18px;
+  padding:11px 14px;
+  cursor:pointer;
+  backdrop-filter:blur(12px);
+}
+#salarySlip .salary-slip-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+#salarySlip .salary-kpi{
+  min-height:108px;
+  border-radius:22px;
+  padding:16px;
+  border:1px solid rgba(148,163,184,.22);
+  background:rgba(15,23,42,.58);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 12px 34px rgba(0,0,0,.18);
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  position:relative;
+  overflow:hidden;
+}
+#salarySlip .salary-kpi:after{content:"";position:absolute;inset:auto -35px -45px auto;width:110px;height:110px;border-radius:999px;background:rgba(56,189,248,.16);filter:blur(2px);}
+#salarySlip .salary-kpi span{color:#cbd5e1;font-weight:800;font-size:13px;}
+#salarySlip .salary-kpi b{font-size:22px;color:#fff;direction:ltr;text-align:right;}
+#salarySlip .salary-kpi i{position:absolute;top:14px;left:14px;font-style:normal;font-size:24px;opacity:.9;}
+#salarySlip .salary-kpi-net{border-color:rgba(34,197,94,.42);background:linear-gradient(145deg,rgba(16,185,129,.18),rgba(15,23,42,.60));}
+#salarySlip .salary-kpi-net b{color:#86efac;}
+#salarySlip .salary-kpi-deduct{border-color:rgba(248,113,113,.30);}
+#salarySlip .salary-kpi-deduct b{color:#fca5a5;}
+#salarySlip .salary-slip-details-card{
+  border-radius:26px;
+  border:1px solid rgba(148,163,184,.20);
+  background:rgba(2,6,23,.32);
+  padding:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07);
+}
+#salarySlip .salary-slip-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+#salarySlip .salary-slip-section-title h3{margin:0;color:#fff;font-size:22px;}
+#salarySlip .salary-slip-section-title span{color:#94a3b8;font-size:13px;font-weight:800;}
+#salarySlip .salary-slip-two-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+#salarySlip .salary-slip-col{
+  border-radius:20px;
+  overflow:hidden;
+  border:1px solid rgba(148,163,184,.18);
+  background:rgba(15,23,42,.44);
+}
+#salarySlip .salary-slip-col-title{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:8px;
+  padding:13px;
+  font-weight:950;
+  border-bottom:1px solid rgba(148,163,184,.16);
+}
+#salarySlip .salary-slip-additions .salary-slip-col-title{color:#86efac;background:rgba(34,197,94,.08);}
+#salarySlip .salary-slip-deductions .salary-slip-col-title{color:#fca5a5;background:rgba(239,68,68,.08);}
+#salarySlip .salary-slip-mini-table{width:100%;border-collapse:collapse;}
+#salarySlip .salary-slip-mini-table td{padding:11px 13px;border-bottom:1px solid rgba(148,163,184,.14);color:#e5e7eb;}
+#salarySlip .salary-slip-mini-table td:last-child{direction:ltr;text-align:left;font-weight:900;color:#fff;}
+#salarySlip .salary-slip-col-total{display:flex;justify-content:space-between;gap:10px;padding:13px;font-weight:950;background:rgba(255,255,255,.035);}
+#salarySlip .salary-slip-additions .salary-slip-col-total{color:#86efac;}
+#salarySlip .salary-slip-deductions .salary-slip-col-total{color:#fca5a5;}
+#salarySlip .salary-slip-empty-state{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#94a3b8;}
+#salarySlip .salary-slip-empty-state span{font-size:54px;filter:grayscale(.2);opacity:.75;}
+#salarySlip .salary-slip-net-formula{
+  margin-top:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:16px;
+  border-radius:20px;
+  background:linear-gradient(135deg,rgba(34,197,94,.14),rgba(34,211,238,.08));
+  border:1px solid rgba(34,197,94,.24);
+}
+#salarySlip .salary-slip-net-formula span{font-weight:950;color:#bbf7d0;}
+#salarySlip .salary-slip-net-formula b{font-size:24px;color:#86efac;direction:ltr;}
+#salarySlip .salary-slip-note{border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(148,163,184,.14);}
+#salarySlip .salary-slip-side{display:flex;flex-direction:column;gap:12px;}
+#salarySlip .salary-slip-logo-card{
+  min-height:246px;
+  border-radius:24px;
+  border:1px solid rgba(255,255,255,.18);
+  background:linear-gradient(145deg,rgba(255,255,255,.10),rgba(255,255,255,.035));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 18px 44px rgba(0,0,0,.20);
+}
+#salarySlip .salary-slip-logo-card img{max-width:82%;max-height:220px;object-fit:contain;filter:drop-shadow(0 18px 26px rgba(0,0,0,.38)) saturate(1.05);position:relative;z-index:2;}
+#salarySlip .salary-slip-logo-glow{position:absolute;width:180px;height:180px;border-radius:999px;background:rgba(34,211,238,.20);filter:blur(42px);}
+#salarySlip .salary-slip-person-card{
+  border-radius:24px;
+  border:1px solid rgba(148,163,184,.20);
+  background:rgba(15,23,42,.54);
+  padding:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  text-align:center;
+}
+#salarySlip .salary-slip-avatar{width:68px;height:68px;border-radius:999px;margin:0 auto 10px;display:grid;place-items:center;font-size:32px;background:linear-gradient(135deg,rgba(34,211,238,.20),rgba(139,92,246,.18));border:1px solid rgba(255,255,255,.18);}
+#salarySlip .salary-slip-person-card small{color:#94a3b8;font-weight:800;}
+#salarySlip .salary-slip-person-card h3{margin:6px 0 14px;font-size:24px;color:#fff;}
+#salarySlip .salary-slip-meta-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-top:1px solid rgba(148,163,184,.14);}
+#salarySlip .salary-slip-meta-row span{color:#94a3b8;font-size:12px;font-weight:800;}
+#salarySlip .salary-slip-meta-row b{color:#fff;font-size:13px;}
+#salarySlip .salary-slip-actions-pro{display:flex;flex-direction:column;gap:10px;}
+#salarySlip .salary-slip-btn{border:0;border-radius:16px;padding:14px 16px;color:#fff;font-weight:950;cursor:pointer;box-shadow:0 12px 24px rgba(0,0,0,.18);}
+#salarySlip .salary-slip-btn-approve{background:linear-gradient(135deg,#16a34a,#22c55e);}
+#salarySlip .salary-slip-btn-reject{background:linear-gradient(135deg,#dc2626,#f43f5e);}
+#salarySlip .salary-slip-objection-input{min-height:48px;border-radius:16px;border:1px solid rgba(148,163,184,.22);background:rgba(255,255,255,.08);color:#fff;padding:12px;outline:none;resize:vertical;}
+#salarySlip .salary-slip-action-note{padding:12px;border-radius:16px;background:rgba(255,255,255,.06);color:#94a3b8;text-align:center;font-weight:800;}
+#salarySlip .salary-slip-empty{max-width:720px;margin:auto;text-align:center;}
+html[data-theme="light"] #salarySlip .salary-slip-pro{
+  color:#0f172a;
+  background:
+    radial-gradient(circle at 20% 15%,rgba(14,165,233,.10),transparent 30%),
+    radial-gradient(circle at 86% 18%,rgba(139,92,246,.10),transparent 34%),
+    linear-gradient(145deg,rgba(255,255,255,.96),rgba(248,250,252,.94));
+  border-color:rgba(15,23,42,.10);
+  box-shadow:0 24px 70px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.75);
+}
+html[data-theme="light"] #salarySlip .salary-slip-hero h2,
+html[data-theme="light"] #salarySlip .salary-slip-section-title h3,
+html[data-theme="light"] #salarySlip .salary-kpi b,
+html[data-theme="light"] #salarySlip .salary-slip-mini-table td:last-child,
+html[data-theme="light"] #salarySlip .salary-slip-person-card h3,
+html[data-theme="light"] #salarySlip .salary-slip-meta-row b{color:#0f172a;}
+html[data-theme="light"] #salarySlip .salary-slip-back,
+html[data-theme="light"] #salarySlip .salary-kpi,
+html[data-theme="light"] #salarySlip .salary-slip-details-card,
+html[data-theme="light"] #salarySlip .salary-slip-col,
+html[data-theme="light"] #salarySlip .salary-slip-person-card,
+html[data-theme="light"] #salarySlip .salary-slip-logo-card{
+  background:rgba(255,255,255,.72);
+  border-color:rgba(15,23,42,.10);
+  color:#0f172a;
+}
+html[data-theme="light"] #salarySlip .salary-slip-mini-table td{color:#334155;border-bottom-color:rgba(15,23,42,.08);}
+html[data-theme="light"] #salarySlip .salary-kpi span,
+html[data-theme="light"] #salarySlip .salary-slip-section-title span,
+html[data-theme="light"] #salarySlip .salary-slip-meta-row span,
+html[data-theme="light"] #salarySlip .salary-slip-empty-state{color:#64748b;}
+html[data-theme="light"] #salarySlip .salary-slip-objection-input{background:#fff;color:#0f172a;border-color:rgba(15,23,42,.14);}
+html[data-theme="light"] #salarySlip .salary-slip-logo-card img{filter:drop-shadow(0 16px 22px rgba(15,23,42,.18)) saturate(1.05);}
+@media(max-width:1050px){
+  #salarySlip .salary-slip-pro{grid-template-columns:1fr;}
+  #salarySlip .salary-slip-side{grid-row:1;}
+  #salarySlip .salary-slip-logo-card{min-height:190px;}
+  #salarySlip .salary-slip-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:720px){
+  #salarySlip .salary-slip-pro{padding:12px;border-radius:22px;}
+  #salarySlip .salary-slip-hero{flex-direction:column;}
+  #salarySlip .salary-slip-hero h2{font-size:24px;}
+  #salarySlip .salary-slip-kpis,#salarySlip .salary-slip-two-cols{grid-template-columns:1fr;}
+  #salarySlip .salary-slip-actions-pro{position:static;}
+}
+
+/* PETATOE v6.1.20 — Salary slip details/back button runtime fix */
+#salarySlip .salary-slip-lines-list{
+  display:flex;
+  flex-direction:column;
+  width:100%;
+}
+#salarySlip .salary-slip-line-item{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:16px;
+  min-height:50px;
+  padding:12px 14px;
+  border-bottom:1px solid rgba(148,163,184,.14);
+}
+#salarySlip .salary-slip-line-label{
+  min-width:0;
+  color:#e5e7eb;
+  font-weight:850;
+  text-align:right;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+#salarySlip .salary-slip-line-value{
+  color:#ffffff;
+  font-weight:950;
+  direction:ltr;
+  text-align:left;
+  white-space:nowrap;
+}
+#salarySlip .salary-slip-additions .salary-slip-line-value{color:#86efac;}
+#salarySlip .salary-slip-deductions .salary-slip-line-value{color:#fca5a5;}
+#salarySlip .salary-slip-back{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-width:170px;
+  pointer-events:auto;
+}
+#salarySlip .salary-slip-back:hover{
+  transform:translateY(-1px);
+  border-color:rgba(34,211,238,.45);
+  background:rgba(34,211,238,.14);
+}
+html[data-theme="light"] #salarySlip .salary-slip-line-label{color:#334155;}
+html[data-theme="light"] #salarySlip .salary-slip-line-value{color:#0f172a;}
+html[data-theme="light"] #salarySlip .salary-slip-additions .salary-slip-line-value{color:#15803d;}
+html[data-theme="light"] #salarySlip .salary-slip-deductions .salary-slip-line-value{color:#dc2626;}
+@media(max-width:520px){
+  #salarySlip .salary-slip-line-item{grid-template-columns:1fr;gap:5px;}
+  #salarySlip .salary-slip-line-value{text-align:right;}
+}
+
+/* v6.1.22 Employee Self Service */
+.salary-slip-self-service{gap:18px}
+.salary-slip-self-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px;padding:16px 18px;border-radius:24px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);backdrop-filter:blur(18px)}
+.salary-slip-self-head h2{margin:0;font-size:24px}
+.salary-slip-self-head p{margin:4px 0 0;color:var(--muted,#94a3b8);font-weight:700}
+.salary-slip-self-grid{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:18px;align-items:start}
+.salary-slip-self-sidebar{display:flex;flex-direction:column;gap:14px;position:sticky;top:90px}
+.salary-slip-self-panel h3{margin-top:0}
+.salary-slip-self-list{display:flex;flex-direction:column;gap:10px}
+.salary-slip-self-item{width:100%;display:grid;grid-template-columns:1fr auto;gap:4px 8px;text-align:right;border:1px solid rgba(148,163,184,.22);background:rgba(255,255,255,.07);color:inherit;border-radius:18px;padding:12px 14px;cursor:pointer;transition:.2s ease;backdrop-filter:blur(14px)}
+.salary-slip-self-item:hover{transform:translateY(-1px);border-color:rgba(56,189,248,.45)}
+.salary-slip-self-item.active{background:linear-gradient(135deg,rgba(56,189,248,.24),rgba(34,197,94,.14));border-color:rgba(56,189,248,.65);box-shadow:0 14px 32px rgba(14,165,233,.14)}
+.salary-slip-self-item span{font-weight:900}
+.salary-slip-self-item b{font-weight:900;color:var(--accent,#38bdf8)}
+.salary-slip-self-item small{grid-column:1/-1;color:var(--muted,#94a3b8);font-weight:800}
+.salary-slip-muted{color:var(--muted,#94a3b8);font-weight:700;margin:0}
+.salary-slip-objections-list{display:flex;flex-direction:column;gap:10px}
+.salary-slip-objection-row{border:1px solid rgba(248,113,113,.22);background:rgba(248,113,113,.08);border-radius:16px;padding:11px 12px;display:grid;gap:4px}
+.salary-slip-objection-row b{color:#fb7185}
+.salary-slip-objection-row span{font-weight:800}
+.salary-slip-objection-row small{color:var(--muted,#94a3b8)}
+@media(max-width:980px){.salary-slip-self-grid{grid-template-columns:1fr}.salary-slip-self-sidebar{position:static}.salary-slip-self-head{flex-direction:column;align-items:stretch}}
+body.light-mode .salary-slip-self-head,
+body.light-mode .salary-slip-self-item{background:rgba(255,255,255,.72);border-color:rgba(15,23,42,.10)}
+body.light-mode .salary-slip-self-item.active{background:linear-gradient(135deg,rgba(14,165,233,.16),rgba(34,197,94,.12));border-color:rgba(14,165,233,.35)}
+
+/* PETATOE v6.1.23 — Employee salary slip full-width layout */
+#salarySlip .salary-slip-self-head p,
+#salarySlip .salary-slip-self-head .salary-slip-help-text{
+  display:none !important;
+}
+#salarySlip .salary-slip-self-actions{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+#salarySlip .salary-slip-self-full{
+  width:100%;
+}
+#salarySlip .salary-slip-self-full .salary-slip-pro{
+  width:100%;
+  max-width:none;
+}
+#salarySlip .salary-slip-self-bottom{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:18px;
+  align-items:start;
+  margin-top:18px;
+}
+#salarySlip .salary-slip-self-bottom .salary-slip-self-panel{
+  min-height:220px;
+}
+#salarySlip .salary-slip-self-grid{
+  grid-template-columns:1fr;
+}
+#salarySlip .salary-slip-self-sidebar{
+  position:static;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+}
+@media(max-width:900px){
+  #salarySlip .salary-slip-self-bottom,
+  #salarySlip .salary-slip-self-sidebar{
+    grid-template-columns:1fr;
+  }
+  #salarySlip .salary-slip-self-actions{
+    width:100%;
+  }
+  #salarySlip .salary-slip-self-actions .btn{
+    flex:1;
+  }
+}

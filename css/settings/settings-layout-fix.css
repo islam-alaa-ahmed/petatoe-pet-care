@@ -1,0 +1,165 @@
+/* PETATOE v6.1.209 — Phase 6: Settings CSS/Layout Isolation Fix
+   Scope: Settings panel only. No JavaScript render/router changes.
+   Purpose: The runtime diagnostic proved #settingsArea receives HTML, so this file
+   forces the settings panel and its rendered content to remain visible and scrollable
+   even if global Liquid Glass / report styles collapse or overlay panel content. */
+
+/* 1) Make the settings panel a real visible viewport when it is active. */
+#settings.panel.active,
+#settings.active{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:relative!important;
+  z-index:20!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:calc(100vh - 120px)!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  transform:none!important;
+  clip:auto!important;
+  clip-path:none!important;
+  contain:none!important;
+  pointer-events:auto!important;
+}
+
+/* 2) Isolate the settings render root from generic .gov-stack / panel styles. */
+#settingsArea{
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  position:relative!important;
+  z-index:30!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:360px!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+  transform:none!important;
+  clip:auto!important;
+  clip-path:none!important;
+  contain:none!important;
+  pointer-events:auto!important;
+  color:var(--text,#f8fafc)!important;
+  background:transparent!important;
+}
+
+/* 3) Keep all settings blocks visible; global effects must not hide or collapse them. */
+#settingsArea .pet-v110-wrap,
+#settingsArea .pet-v110-hero,
+#settingsArea .pet-v110-main-tabs,
+#settingsArea .pet-v110-sub-tabs,
+#settingsArea .pet-v110-kpis,
+#settingsArea .pet-v110-grid,
+#settingsArea .pet-v110-card,
+#settingsArea .pet-v110-table,
+#settingsArea .pet-v120-setup-wrap,
+#settingsArea .pet-v121-setup-page,
+#settingsArea .pet-v139-user-permissions,
+#settingsArea .pet-v110-permissions-only{
+  visibility:visible!important;
+  opacity:1!important;
+  height:auto!important;
+  max-height:none!important;
+  transform:none!important;
+  clip:auto!important;
+  clip-path:none!important;
+  contain:none!important;
+  pointer-events:auto!important;
+}
+
+#settingsArea .pet-v110-wrap{
+  display:grid!important;
+  gap:16px!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:300px!important;
+  position:relative!important;
+  z-index:31!important;
+}
+
+#settingsArea .pet-v110-hero,
+#settingsArea .pet-v110-card,
+#settingsArea .pet-v110-kpi,
+#settingsArea .pet-v110-table{
+  position:relative!important;
+  z-index:32!important;
+  color:var(--text,#f8fafc)!important;
+}
+
+/* 4) Do not let decorative pseudo layers cover settings content. */
+#settings::before,
+#settings::after,
+#settingsArea::before,
+#settingsArea::after,
+#settingsArea .pet-v110-card::before,
+#settingsArea .pet-v110-card::after,
+#settingsArea .pet-v110-kpi::before,
+#settingsArea .pet-v110-kpi::after,
+#settingsArea .pet-v110-table::before,
+#settingsArea .pet-v110-table::after{
+  pointer-events:none!important;
+  z-index:0!important;
+}
+
+#settings > *,
+#settingsArea > *,
+#settingsArea .pet-v110-card > *,
+#settingsArea .pet-v110-kpi > *,
+#settingsArea .pet-v110-table > *{
+  position:relative!important;
+  z-index:2!important;
+}
+
+/* 5) Tables may scroll horizontally, but the whole settings panel must not collapse. */
+#settingsArea .pet-v110-table,
+#settingsArea .pet-v139-perm-table,
+#settingsArea .pet-v120-setup-table{
+  overflow:auto!important;
+  min-height:80px!important;
+}
+
+#settingsArea table{
+  visibility:visible!important;
+  opacity:1!important;
+}
+
+/* 6) Ensure dark/light text contrast inside the isolated panel. */
+#settingsArea h1,
+#settingsArea h2,
+#settingsArea h3,
+#settingsArea h4,
+#settingsArea b,
+#settingsArea strong,
+#settingsArea td,
+#settingsArea th,
+#settingsArea label,
+#settingsArea button,
+#settingsArea input,
+#settingsArea select,
+#settingsArea textarea{
+  visibility:visible!important;
+  opacity:1!important;
+}
+
+html[data-theme="light"] #settingsArea,
+body.light #settingsArea{
+  color:#0f172a!important;
+}
+
+/* 7) Keep settings usable on mobile and prevent bottom clipping. */
+@media(max-width:760px){
+  #settings.panel.active,
+  #settings.active{
+    min-height:calc(100vh - 96px)!important;
+    padding-bottom:120px!important;
+    overflow:visible!important;
+  }
+  #settingsArea{
+    min-height:420px!important;
+    padding-bottom:96px!important;
+  }
+}

@@ -1,0 +1,95 @@
+/* PETATOE v3.10.5 — Theme & UI Engine
+   Safe centralized theme tokens. This file only normalizes shared UI surfaces
+   and keeps existing report calculations/rendering untouched. */
+:root,
+html[data-theme="dark"]{
+  --pet-bg-primary:#07111f;
+  --pet-bg-secondary:#0b1728;
+  --pet-bg-panel:rgba(15,23,42,.92);
+  --pet-bg-panel-2:rgba(30,41,59,.88);
+  --pet-text-primary:#f8fafc;
+  --pet-text-secondary:#cbd5e1;
+  --pet-text-muted:#94a3b8;
+  --pet-border:rgba(148,163,184,.22);
+  --pet-border-strong:rgba(148,163,184,.36);
+  --pet-input-bg:#0f172a;
+  --pet-input-text:#f8fafc;
+  --pet-card-shadow:0 18px 45px rgba(0,0,0,.28);
+  color-scheme:dark;
+}
+html[data-theme="light"]{
+  --pet-bg-primary:#f8fafc;
+  --pet-bg-secondary:#eef2f7;
+  --pet-bg-panel:#ffffff;
+  --pet-bg-panel-2:#f8fafc;
+  --pet-text-primary:#111827;
+  --pet-text-secondary:#334155;
+  --pet-text-muted:#64748b;
+  --pet-border:#dbe3ef;
+  --pet-border-strong:#cbd5e1;
+  --pet-input-bg:#ffffff;
+  --pet-input-text:#111827;
+  --pet-card-shadow:0 12px 28px rgba(15,23,42,.10);
+  color-scheme:light;
+}
+/* Bridge old variable names without overriding explicit legacy values too aggressively */
+html[data-theme="dark"], html[data-theme="light"]{
+  --text:var(--pet-text-primary);
+  --muted:var(--pet-text-muted);
+  --stroke:var(--pet-border);
+  --panel:var(--pet-bg-panel);
+  --panel2:var(--pet-bg-panel-2);
+}
+/* Shared controls normalization — scoped and conservative */
+select,input,textarea{
+  background:var(--pet-input-bg)!important;
+  color:var(--pet-input-text)!important;
+  border-color:var(--pet-border)!important;
+}
+select option,select optgroup{
+  background:var(--pet-input-bg)!important;
+  color:var(--pet-input-text)!important;
+}
+.card,.kpi,.report-card,.modal,.pet-modal,.smart-card,.analytics-card{
+  color:var(--pet-text-primary);
+}
+.table-wrap,table,.modal-content,.pet-modal-content{
+  border-color:var(--pet-border);
+}
+.pet-theme-safe-surface{
+  background:var(--pet-bg-panel);
+  color:var(--pet-text-primary);
+  border:1px solid var(--pet-border);
+  box-shadow:var(--pet-card-shadow);
+}
+
+/* PETATOE v6.1.84 — Phase 6-C form readability and RTL final QA
+   Scope: CSS-only. No data, report calculation, export, routing, or storage changes. */
+:where(input,select,textarea,.search,#globalSearchInput)::placeholder{
+  color:color-mix(in srgb,var(--pet-text-muted,#94a3b8) 82%,transparent)!important;
+  opacity:1!important;
+}
+:where(input,select,textarea,.search,#globalSearchInput){
+  min-width:0;
+  caret-color:var(--pet-text-primary,#f8fafc);
+}
+:where(input[type="number"],input[data-ltr],.ltr,.amount,.money,.sar,.numeric){
+  direction:ltr;
+  unicode-bidi:plaintext;
+}
+:where(input:not([type="number"]),textarea,select){
+  text-align:start;
+}
+html[dir="rtl"] :where(input:not([type="number"]),textarea,select),
+body[dir="rtl"] :where(input:not([type="number"]),textarea,select){
+  direction:rtl;
+}
+@media(max-width:760px){
+  :where(input,select,textarea,.search,#globalSearchInput){
+    width:100%;
+    max-width:100%!important;
+  }
+  :where(label,.field-label,.form-label,.filter-label){
+    overflow-wrap:anywhere;
+  }
+}

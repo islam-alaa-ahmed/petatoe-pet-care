@@ -1,0 +1,9 @@
+/* Extracted from index.html: petatoe-recovery-notes-style */
+/* PETATOE v3.9.4 customer recovery notes */
+.customer-recovery-note-box{display:flex;flex-direction:column;gap:10px;min-width:260px;align-items:stretch}
+.customer-recovery-note-text{background:rgba(139,92,246,.10);border:1px solid rgba(139,92,246,.35);border-radius:12px;padding:10px 12px;color:var(--text,#f8fafc);font-weight:800;line-height:1.7;text-align:right;white-space:pre-wrap;word-break:break-word}
+.customer-recovery-note-empty{display:block;color:var(--muted,#94a3b8);font-weight:800;text-align:center;padding:8px;border:1px dashed rgba(148,163,184,.35);border-radius:12px}
+.customer-recovery-note-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.customer-note-delete{background:linear-gradient(135deg,#ef4444,#be123c)!important;box-shadow:0 10px 22px rgba(239,68,68,.18)!important}
+[data-theme="light"] .customer-recovery-note-text{background:#f5f3ff;color:#1f2937;border-color:#c4b5fd}
+[data-theme="light"] .customer-recovery-note-empty{color:#64748b;border-color:#cbd5e1}

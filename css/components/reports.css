@@ -1,0 +1,48 @@
+.pet-report-section{width:100%;border:1px solid rgba(148,163,184,.22);border-radius:18px;padding:16px;margin:14px 0;background:rgba(15,23,42,.38);box-shadow:0 12px 35px rgba(0,0,0,.12)}
+html[data-theme="light"] .pet-report-section,body.light-mode .pet-report-section{background:rgba(255,255,255,.82);border-color:rgba(15,23,42,.10)}
+.pet-report-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+.pet-report-title{margin:0;font-size:18px;font-weight:900}.pet-report-subtitle{margin:4px 0 0;color:var(--muted,#94a3b8);font-size:12px}.pet-report-section-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pet-report-grid,.pet-kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;width:100%}.pet-kpi-card{display:flex;align-items:center;gap:12px;border-radius:16px;padding:14px;background:rgba(255,255,255,.06);border:1px solid rgba(148,163,184,.16)}html[data-theme="light"] .pet-kpi-card,body.light-mode .pet-kpi-card{background:#fff;border-color:rgba(15,23,42,.08)}.pet-kpi-icon{font-size:22px}.pet-kpi-content{display:flex;flex-direction:column;gap:2px}.pet-kpi-content span{font-size:12px;color:var(--muted,#94a3b8)}.pet-kpi-content b{font-size:20px}.pet-kpi-content small{font-size:11px;color:var(--muted,#94a3b8)}
+.pet-table-wrap{width:100%;overflow:auto;border-radius:14px}.pet-data-table,.pet-heatmap-table{width:100%;border-collapse:collapse}.pet-data-table th,.pet-data-table td,.pet-heatmap-table th,.pet-heatmap-table td{padding:10px 12px;border-bottom:1px solid rgba(148,163,184,.14);text-align:center;white-space:nowrap}.pet-data-table th,.pet-heatmap-table th{font-weight:900;background:rgba(148,163,184,.10)}.pet-empty-cell{color:var(--muted,#94a3b8);padding:20px!important}.pet-show-more-btn{margin:12px auto 0;display:block;border:0;border-radius:999px;padding:9px 18px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#38bdf8,#22c55e);color:#04111d}.pet-report-error{padding:14px;border-radius:14px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.35);color:#fecaca}.pet-chart-wrap{width:100%;min-height:180px}.pet-heatmap-wrap{width:100%;overflow:auto}.pet-heat-cell.good{background:rgba(34,197,94,.18)}.pet-heat-cell.warn{background:rgba(234,179,8,.18)}.pet-heat-cell.bad{background:rgba(239,68,68,.18)}
+@media(max-width:768px){.pet-report-section-head{flex-direction:column}.pet-report-grid,.pet-kpi-grid{grid-template-columns:1fr}.pet-data-table th,.pet-data-table td{font-size:12px;padding:8px}}
+
+/* PETATOE v6.1.83 — Phase 6-B reports viewport containment QA
+   Scope: CSS-only. Keeps report tables/actions inside viewport without changing PDF/Excel logic. */
+.pet-report-grid,
+.pet-kpi-grid,
+.report-summary-cards,
+.report-control-bar,
+.report-control-group{
+  min-width:0!important;
+  max-width:100%!important;
+}
+.pet-data-table,
+.pet-data-table table,
+.report-table,
+.report-table table{
+  max-width:none;
+}
+.pet-data-table,
+.report-table,
+.pet-report-table-wrap{
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+@media(max-width:768px){
+  .pet-report-section-head,
+  .report-control-bar{
+    align-items:stretch!important;
+    gap:10px!important;
+  }
+  .pet-report-section-head :where(button,.btn,.exp-btn),
+  .report-control-bar :where(button,.btn,.exp-btn,.metric-chip,.view-chip){
+    min-width:0!important;
+    white-space:normal!important;
+  }
+  .pet-data-table,
+  .report-table,
+  .pet-report-table-wrap{
+    width:100%!important;
+    max-width:100%!important;
+  }
+}

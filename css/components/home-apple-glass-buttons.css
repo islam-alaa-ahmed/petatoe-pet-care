@@ -1,0 +1,135 @@
+/*
+  PETATOE v6.0.1 — Phase 8 Trial
+  Apple-Inspired Glass Buttons for MAIN DASHBOARD only.
+  Scope is intentionally limited to the top-level homepage dashboard:
+  body > .app > .main > .page > #dashboard
+  Smart Reports and all other panels are excluded.
+*/
+
+body > .app > .main > .page > #dashboard .btn,
+body > .app > .main > .page > #dashboard .pet-page-pdf-btn,
+body > .app > .main > .page > #dashboard button:not(.kpi-info-btn) {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 17px !important;
+  border: 1px solid rgba(255,255,255,.30) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.22), rgba(255,255,255,.075)) !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.34) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.42),
+    inset 0 -1px 0 rgba(255,255,255,.08),
+    0 12px 30px rgba(2,6,23,.20) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(170%) !important;
+  backdrop-filter: blur(18px) saturate(170%) !important;
+  transition:
+    transform .22s ease,
+    box-shadow .22s ease,
+    border-color .22s ease,
+    background .22s ease,
+    filter .22s ease !important;
+}
+
+body > .app > .main > .page > #dashboard .btn::before,
+body > .app > .main > .page > #dashboard .pet-page-pdf-btn::before,
+body > .app > .main > .page > #dashboard button:not(.kpi-info-btn)::before {
+  content: "";
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 48%;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255,255,255,.34), rgba(255,255,255,0));
+  pointer-events: none;
+  z-index: -1;
+}
+
+body > .app > .main > .page > #dashboard .btn:hover,
+body > .app > .main > .page > #dashboard .pet-page-pdf-btn:hover,
+body > .app > .main > .page > #dashboard button:not(.kpi-info-btn):hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(255,255,255,.48) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.30), rgba(255,255,255,.12)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.55),
+    0 16px 36px rgba(2,6,23,.26) !important;
+  filter: saturate(1.08) brightness(1.04) !important;
+}
+
+body > .app > .main > .page > #dashboard .btn:active,
+body > .app > .main > .page > #dashboard .pet-page-pdf-btn:active,
+body > .app > .main > .page > #dashboard button:not(.kpi-info-btn):active {
+  transform: translateY(0) scale(.985) !important;
+  box-shadow:
+    inset 0 1px 8px rgba(2,6,23,.18),
+    0 8px 20px rgba(2,6,23,.18) !important;
+}
+
+/* Keep action identity visible while preserving the glass surface. */
+body > .app > .main > .page > #dashboard .btn-primary {
+  background:
+    linear-gradient(135deg, rgba(139,92,246,.50), rgba(14,165,233,.22)),
+    rgba(255,255,255,.12) !important;
+}
+
+body > .app > .main > .page > #dashboard .btn-ghost {
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,.06)) !important;
+}
+
+body > .app > .main > .page > #dashboard .pet-dashboard-pdf-btn {
+  background:
+    linear-gradient(135deg, rgba(239,68,68,.46), rgba(244,114,182,.18)),
+    rgba(255,255,255,.11) !important;
+}
+
+/* Light mode: inverse readable text over brighter frosted glass. */
+html[data-theme="light"] body > .app > .main > .page > #dashboard .btn,
+html[data-theme="light"] body > .app > .main > .page > #dashboard .pet-page-pdf-btn,
+html[data-theme="light"] body > .app > .main > .page > #dashboard button:not(.kpi-info-btn),
+body.light > .app > .main > .page > #dashboard .btn,
+body.light > .app > .main > .page > #dashboard .pet-page-pdf-btn,
+body.light > .app > .main > .page > #dashboard button:not(.kpi-info-btn) {
+  color: #142033 !important;
+  text-shadow: 0 1px 0 rgba(255,255,255,.55) !important;
+  border-color: rgba(15,23,42,.12) !important;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.72), rgba(255,255,255,.34)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.75),
+    inset 0 -1px 0 rgba(15,23,42,.05),
+    0 12px 28px rgba(15,23,42,.12) !important;
+}
+
+html[data-theme="light"] body > .app > .main > .page > #dashboard .btn-primary,
+body.light > .app > .main > .page > #dashboard .btn-primary {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.24) !important;
+  background:
+    linear-gradient(135deg, rgba(124,58,237,.70), rgba(14,165,233,.40)),
+    rgba(255,255,255,.42) !important;
+}
+
+html[data-theme="light"] body > .app > .main > .page > #dashboard .pet-dashboard-pdf-btn,
+body.light > .app > .main > .page > #dashboard .pet-dashboard-pdf-btn {
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0,0,0,.26) !important;
+  background:
+    linear-gradient(135deg, rgba(220,38,38,.72), rgba(244,114,182,.38)),
+    rgba(255,255,255,.34) !important;
+}
+
+@media (max-width: 700px) {
+  body > .app > .main > .page > #dashboard .section-head > div:last-child,
+  body > .app > .main > .page > #dashboard .filters {
+    gap: 10px !important;
+  }
+
+  body > .app > .main > .page > #dashboard .btn,
+  body > .app > .main > .page > #dashboard .pet-page-pdf-btn,
+  body > .app > .main > .page > #dashboard button:not(.kpi-info-btn) {
+    min-height: 42px;
+  }
+}

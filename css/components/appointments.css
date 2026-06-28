@@ -1,0 +1,2173 @@
+/* PETATOE v6.1.164 - Appointments assignment and payment fields */
+#appointments{direction:rtl}
+.appointments-shell{display:grid;gap:16px;padding:16px}
+.appointments-hero,.appointments-card{border:1px solid var(--appt-border-soft);background:linear-gradient(135deg,rgba(51,65,85,.58),rgba(8,47,73,.46));box-shadow:0 18px 50px rgba(0,0,0,.20),inset 0 1px 0 rgba(255,255,255,.08);border-radius:24px;padding:18px;backdrop-filter:blur(16px)}
+.appointments-hero{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.appointments-hero h2,.appointments-card h3{margin:0;color:var(--appt-text-strong);font-weight:950;letter-spacing:-.02em}.appointments-hero p,.appointments-card p{margin:8px 0 0;color:var(--appt-text-soft);font-weight:800}.appointments-actions,.appointments-form-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.appointments-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.appointments-kpi{min-height:84px;border-radius:20px;padding:14px;border:1px solid rgba(148,163,184,.20);background:linear-gradient(135deg,rgba(15,23,42,.74),rgba(30,58,75,.54));display:flex;align-items:center;justify-content:space-between;gap:12px}.appointments-kpi .ico{width:48px;height:48px;border-radius:16px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(34,211,238,.26),rgba(124,58,237,.30));font-size:22px}.appointments-kpi span{display:block;color:rgba(226,232,240,.75);font-weight:900;font-size:12px}.appointments-kpi b{display:block;color:var(--appt-text-strong);font-size:22px;font-weight:950;margin-top:4px}.appointments-tabs{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}.appointments-tab{height:44px;border-radius:999px;padding:0 18px;border:1px solid var(--appt-border-mid);background:linear-gradient(135deg,rgba(51,65,85,.60),rgba(15,23,42,.52));color:var(--appt-text-strong);font-family:Cairo,Arial,sans-serif;font-weight:950;cursor:pointer}.appointments-tab.active{background:linear-gradient(135deg,rgba(34,211,238,.30),rgba(124,58,237,.42));border-color:var(--appt-cyan-border);box-shadow:0 0 22px rgba(34,211,238,.18)}.appointments-section{display:none}.appointments-section.active{display:block}.appointments-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.appointments-form{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}.appointments-form label{display:grid;gap:6px;color:rgba(226,232,240,.82);font-size:12px;font-weight:950}.appointments-form input,.appointments-form select,.appointments-form textarea,.appointments-filters input,.appointments-filters select{height:42px;border-radius:15px;border:1px solid rgba(148,163,184,.30);background:rgba(15,23,42,.40);color:var(--appt-text-strong);padding:0 12px;font-family:Cairo,Arial,sans-serif;font-weight:850;outline:none}.appointments-form textarea{height:72px;padding:10px 12px;resize:vertical}.appointments-form input:focus,.appointments-form select:focus,.appointments-form textarea:focus,.appointments-filters input:focus,.appointments-filters select:focus{border-color:rgba(34,211,238,.85);box-shadow:0 0 0 3px rgba(34,211,238,.12)}.appointments-span-2{grid-column:span 2}.appointments-form-actions{justify-content:flex-start;margin-top:14px}.appointments-filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:end;margin-bottom:12px}.appointments-table-wrap{overflow:auto;border-radius:18px;border:1px solid rgba(148,163,184,.24)}.appointments-table{width:100%;border-collapse:collapse;min-width:1380px;background:var(--appt-bg-deep)}.appointments-table th{background:linear-gradient(135deg,rgba(71,85,105,.84),rgba(14,116,144,.50));color:var(--appt-text-strong);font-weight:950;padding:12px;border-bottom:1px solid rgba(148,163,184,.22);white-space:nowrap}.appointments-table td{padding:12px;border-bottom:1px solid rgba(148,163,184,.14);color:var(--appt-text-strong);font-weight:800;vertical-align:middle}.appointments-table tbody tr:nth-child(odd){background:rgba(15,23,42,.34)}.appointments-table tbody tr:nth-child(even){background:rgba(255,255,255,.035)}.appointments-table tbody tr:hover{background:rgba(34,211,238,.08)}.appointments-status{display:inline-flex;align-items:center;justify-content:center;min-width:72px;height:30px;border-radius:999px;font-size:12px;font-weight:950;border:1px solid rgba(255,255,255,.12)}.appointments-status.scheduled{background:rgba(34,211,238,.16);color:#a5f3fc}.appointments-status.done{background:rgba(34,197,94,.16);color:#bbf7d0}.appointments-status.postponed{background:rgba(245,158,11,.16);color:#fde68a}.appointments-status.cancelled{background:rgba(239,68,68,.16);color:#fecaca}.appointments-row-actions{display:flex;gap:6px;flex-wrap:wrap}.appointments-row-actions button{height:32px;border-radius:12px;padding:0 10px}.appointments-report-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.appointments-report-card{border-radius:18px;border:1px solid rgba(148,163,184,.20);background:linear-gradient(135deg,var(--appt-bg-card-a),var(--appt-bg-card-b));padding:14px}.appointments-report-card span{color:rgba(226,232,240,.72);font-size:12px;font-weight:900}.appointments-report-card b{display:block;color:var(--appt-text-strong);font-size:24px;font-weight:950;margin-top:6px}.appointments-empty{text-align:center;color:var(--appt-text-muted);padding:26px}@media(max-width:1100px){.appointments-kpis,.appointments-report-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.appointments-form{grid-template-columns:repeat(2,minmax(0,1fr))}.appointments-filters{grid-template-columns:1fr 1fr}.appointments-span-2{grid-column:span 2}}@media(max-width:680px){.appointments-shell{padding:10px}.appointments-kpis,.appointments-report-grid,.appointments-form,.appointments-filters{grid-template-columns:1fr}.appointments-span-2{grid-column:auto}.appointments-actions .btn,.appointments-form-actions .btn{width:100%}}
+
+/* PETATOE v6.1.165 - Appointments phase 2 filters */
+.appointments-quick-filters{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin:0 0 10px}
+.appointments-chip{height:34px;border-radius:999px;padding:0 14px;border:1px solid var(--appt-border-mid);background:linear-gradient(135deg,rgba(51,65,85,.58),rgba(15,23,42,.48));color:var(--appt-text-strong);font-family:Cairo,Arial,sans-serif;font-weight:950;cursor:pointer}
+.appointments-chip.active{background:linear-gradient(135deg,rgba(34,211,238,.26),rgba(124,58,237,.36));border-color:rgba(34,211,238,.72);box-shadow:0 0 18px rgba(34,211,238,.16)}
+.appointments-filters-advanced{grid-template-columns:2fr repeat(6,minmax(130px,1fr)) repeat(2,minmax(145px,1fr)) auto}
+@media(max-width:1500px){.appointments-filters-advanced{grid-template-columns:repeat(5,minmax(0,1fr))}.appointments-filters-advanced input:first-child{grid-column:span 2}}
+@media(max-width:900px){.appointments-filters-advanced{grid-template-columns:1fr 1fr}.appointments-filters-advanced input:first-child{grid-column:1/-1}}
+@media(max-width:620px){.appointments-filters-advanced{grid-template-columns:1fr}.appointments-filters-advanced input:first-child{grid-column:auto}.appointments-quick-filters{justify-content:stretch}.appointments-chip{flex:1 1 44%}}
+
+/* PETATOE v6.1.166 - Appointments dashboard summary phase 3 */
+.appointments-kpis{grid-template-columns:repeat(6,minmax(0,1fr))}
+.appointments-kpi{position:relative;overflow:hidden}
+.appointments-kpi::after{content:"";position:absolute;inset:auto -28px -42px auto;width:110px;height:110px;border-radius:999px;background:rgba(255,255,255,.045);pointer-events:none}
+@media(max-width:1500px){.appointments-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.appointments-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.appointments-kpis{grid-template-columns:1fr}}
+
+
+/* PETATOE v6.1.167 - Appointments reports phase 4 */
+.appointments-report-grid{display:block}
+.appointments-report-summary-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.appointments-report-tables{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.appointments-report-table-card{border-radius:22px;border:1px solid rgba(214,196,154,.22);background:linear-gradient(135deg,rgba(245,241,232,.08),rgba(214,196,154,.06));box-shadow:0 18px 42px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.07);overflow:hidden;backdrop-filter:blur(16px)}
+.appointments-report-title{display:flex;align-items:center;gap:12px;padding:14px 16px;background:linear-gradient(135deg,rgba(214,196,154,.18),rgba(255,255,255,.08));border-bottom:1px solid rgba(214,196,154,.20)}
+.appointments-report-icon{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.10);font-size:20px;flex:0 0 auto}
+.appointments-report-title h4{margin:0;color:var(--appt-text-strong);font-size:15px;font-weight:950}.appointments-report-title p{margin:4px 0 0;color:rgba(245,241,232,.72);font-size:12px;font-weight:850}
+.appointments-report-table-wrap{overflow:auto}.appointments-report-table{width:100%;border-collapse:collapse;min-width:520px;background:rgba(15,23,42,.25)}
+.appointments-report-table th{background:linear-gradient(135deg,rgba(214,196,154,.22),rgba(255,255,255,.10));color:var(--appt-text-strong);font-weight:950;padding:11px;border-bottom:1px solid rgba(214,196,154,.20);white-space:nowrap}.appointments-report-table td{padding:11px;color:var(--appt-text-strong);font-weight:850;border-bottom:1px solid rgba(255,255,255,.08)}
+.appointments-report-table tbody tr:nth-child(odd){background:rgba(255,255,255,.035)}.appointments-report-table tbody tr:nth-child(even){background:rgba(214,196,154,.055)}.appointments-report-table tbody tr:hover{background:rgba(214,196,154,.10)}
+.appointments-report-table tfoot td{background:linear-gradient(135deg,rgba(214,196,154,.22),rgba(255,255,255,.10));color:var(--appt-text-strong);font-weight:950;border-top:1px solid rgba(214,196,154,.24)}
+@media(max-width:1500px){.appointments-report-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:1100px){.appointments-report-tables{grid-template-columns:1fr}.appointments-report-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.appointments-report-summary-grid{grid-template-columns:1fr}}
+
+/* PETATOE v6.1.168 - Appointments calendar operations phase 5 */
+.appointments-calendar-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.appointments-calendar-controls input{height:36px;border-radius:999px;border:1px solid rgba(214,196,154,.28);background:var(--appt-bg-deep);color:var(--appt-text-strong);padding:0 14px;font-family:Cairo,Arial,sans-serif;font-weight:900;outline:none}
+.appointments-conflict-panel{display:none;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:12px 14px;border-radius:18px;border:1px solid rgba(245,158,11,.34);background:linear-gradient(135deg,rgba(245,158,11,.16),rgba(124,58,237,.08));color:var(--appt-text-strong);font-weight:900}
+.appointments-conflict-panel span{color:rgba(255,255,255,.82);font-size:13px}.appointments-calendar-view{display:grid;gap:14px}.appointments-day-card{border-radius:22px;border:1px solid rgba(214,196,154,.20);background:linear-gradient(135deg,rgba(15,23,42,.58),rgba(245,241,232,.055));overflow:hidden;box-shadow:0 14px 34px rgba(0,0,0,.16)}
+.appointments-day-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 16px;background:linear-gradient(135deg,rgba(214,196,154,.18),rgba(255,255,255,.08));border-bottom:1px solid rgba(214,196,154,.18)}
+.appointments-day-head b{color:var(--appt-text-strong);font-weight:950}.appointments-day-head span{color:rgba(245,241,232,.76);font-weight:900;font-size:12px}.appointments-timeline{display:grid;gap:0;padding:8px}.appointments-timeline-item{display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;padding:12px;border-radius:16px;border:1px solid transparent}.appointments-timeline-item:nth-child(odd){background:rgba(255,255,255,.035)}.appointments-timeline-item:nth-child(even){background:rgba(214,196,154,.050)}.appointments-timeline-item.has-conflict{border-color:rgba(245,158,11,.48);box-shadow:inset 0 0 0 1px rgba(245,158,11,.16);background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(255,255,255,.035))}.appointments-time{display:grid;place-items:center;border-radius:14px;background:rgba(255,255,255,.075);min-height:72px}.appointments-time b{color:var(--appt-text-strong);font-size:18px;font-weight:950}.appointments-time small{color:rgba(245,241,232,.72);font-weight:850}.appointments-event b{display:block;color:var(--appt-text-strong);font-size:15px;font-weight:950;margin-bottom:4px}.appointments-event p{margin:0 0 8px;color:rgba(245,241,232,.78);font-weight:850}.appointments-event small{display:block;color:var(--appt-text-muted);font-weight:800;margin-top:8px}.appointments-event-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.appointments-event-meta span:not(.appointments-status){display:inline-flex;align-items:center;min-height:28px;border-radius:999px;padding:0 10px;background:rgba(255,255,255,.075);color:var(--appt-text-strong);font-size:12px;font-weight:900}.appointments-calendar-empty{border-radius:20px;border:1px dashed rgba(214,196,154,.26);background:rgba(255,255,255,.035)}
+@media(max-width:700px){.appointments-calendar-controls{justify-content:stretch}.appointments-calendar-controls input,.appointments-calendar-controls .appointments-chip{flex:1 1 100%}.appointments-timeline-item{grid-template-columns:1fr}.appointments-time{place-items:start;padding:10px;min-height:auto}}
+
+/* PETATOE v6.1.169 - Appointments status timeline phase 6 */
+.appointments-status-input{height:34px;min-width:128px;border-radius:999px;border:1px solid rgba(255,255,255,.16);padding:0 12px;color:var(--appt-text-strong);font-family:Cairo,Arial,sans-serif;font-size:12px;font-weight:950;outline:none;cursor:pointer;background:rgba(15,23,42,.64)}
+.appointments-status-input option{background:#0f172a;color:var(--appt-text-strong)}
+.appointments-status.active,.appointments-status-input.active{background:rgba(14,165,233,.18);color:#e0f2fe;border-color:rgba(56,189,248,.34)}
+.appointments-today-card{position:relative;overflow:hidden}
+.appointments-status-legend{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;margin:0 0 14px}
+.appointments-status-legend span{display:inline-flex;align-items:center;min-height:30px;border-radius:999px;padding:0 12px;color:var(--appt-text-strong);font-size:12px;font-weight:950;border:1px solid rgba(255,255,255,.14)}
+.appointments-status-legend .scheduled{background:rgba(34,211,238,.14)}
+.appointments-status-legend .active{background:rgba(14,165,233,.18)}
+.appointments-status-legend .done{background:rgba(34,197,94,.16)}
+.appointments-status-legend .postponed{background:rgba(245,158,11,.16)}
+.appointments-status-legend .cancelled{background:rgba(239,68,68,.16)}
+.appointments-today-timeline{display:grid;gap:12px}
+.appointments-today-item{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:14px;align-items:stretch;padding:12px;border-radius:20px;border:1px solid rgba(214,196,154,.18);background:linear-gradient(135deg,rgba(15,23,42,.58),rgba(255,255,255,.045));box-shadow:0 12px 28px rgba(0,0,0,.14)}
+.appointments-today-item.active{border-color:rgba(56,189,248,.35);box-shadow:0 0 0 1px rgba(56,189,248,.12),0 12px 28px rgba(0,0,0,.16)}
+.appointments-today-item.done{border-color:rgba(34,197,94,.30)}
+.appointments-today-item.postponed{border-color:rgba(245,158,11,.34)}
+.appointments-today-item.cancelled{border-color:rgba(239,68,68,.34);opacity:.82}
+.appointments-today-actions{display:flex;flex-direction:column;gap:8px;justify-content:center;align-items:flex-start}
+.appointments-status-step{height:34px;border-radius:999px;border:1px solid rgba(34,211,238,.34);background:linear-gradient(135deg,rgba(34,211,238,.18),rgba(124,58,237,.14));color:var(--appt-text-strong);font-family:Cairo,Arial,sans-serif;font-size:12px;font-weight:950;padding:0 14px;cursor:pointer;white-space:nowrap}
+.appointments-status-step.ghost{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14)}
+@media(max-width:820px){.appointments-today-item{grid-template-columns:1fr}.appointments-today-actions{flex-direction:row;flex-wrap:wrap}.appointments-status-step{flex:1 1 auto}.appointments-status-legend{justify-content:stretch}.appointments-status-legend span{flex:1 1 42%;justify-content:center}}
+
+/* PETATOE v6.1.170 - Appointments revenue and collection phase 7 */
+.appointments-table{min-width:1780px}
+.appointments-finance-summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.appointments-finance-report{grid-column:span 2}
+.appointments-finance-table{min-width:880px}
+.appointments-report-card b{font-size:20px;line-height:1.25;word-break:keep-all}
+#appointmentSessionPrice,#appointmentDiscount,#appointmentPaidAmount{text-align:center;direction:ltr}
+@media(max-width:1500px){.appointments-finance-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.appointments-finance-report{grid-column:auto}}
+@media(max-width:620px){.appointments-finance-summary-grid{grid-template-columns:1fr}}
+
+/* PETATOE v6.1.171 - Appointments customers and pets phase 8 */
+.appointments-customer-tools{display:grid;grid-template-columns:minmax(260px,520px);justify-content:end;margin:0 0 14px}
+.appointments-customer-tools input{height:42px;border-radius:15px;border:1px solid rgba(148,163,184,.30);background:rgba(15,23,42,.40);color:var(--appt-text-strong);padding:0 14px;font-family:Cairo,Arial,sans-serif;font-weight:850;outline:none}
+.appointments-customer-tools input:focus{border-color:rgba(214,196,154,.70);box-shadow:0 0 0 3px rgba(214,196,154,.12)}
+.appointments-customers-summary-grid{grid-template-columns:repeat(6,minmax(0,1fr));margin-bottom:16px}
+.appointments-customers-list{display:grid;gap:16px}
+.appointments-customer-card{border-radius:24px;border:1px solid rgba(214,196,154,.22);background:linear-gradient(135deg,rgba(245,241,232,.075),rgba(15,23,42,.50));box-shadow:0 18px 42px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.07);overflow:hidden;backdrop-filter:blur(16px)}
+.appointments-customer-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:15px 16px;background:linear-gradient(135deg,rgba(214,196,154,.18),rgba(255,255,255,.08));border-bottom:1px solid rgba(214,196,154,.20)}
+.appointments-customer-head h4{margin:0;color:var(--appt-text-strong);font-size:17px;font-weight:950}.appointments-customer-head p{margin:5px 0 0;color:rgba(245,241,232,.74);font-size:12px;font-weight:850}
+.appointments-customer-stats{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start}.appointments-customer-stats span{display:inline-flex;align-items:center;min-height:30px;border-radius:999px;padding:0 11px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);color:var(--appt-text-strong);font-size:12px;font-weight:950}
+.appointments-pets-list{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.appointments-pets-list span{display:inline-flex;align-items:center;min-height:32px;border-radius:999px;padding:0 12px;background:linear-gradient(135deg,rgba(214,196,154,.14),rgba(255,255,255,.055));border:1px solid rgba(214,196,154,.18);color:var(--appt-text-strong);font-size:12px;font-weight:900}
+.appointments-customer-visits{min-width:720px}
+@media(max-width:1500px){.appointments-customers-summary-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.appointments-customers-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.appointments-customer-tools{grid-template-columns:1fr}}
+@media(max-width:620px){.appointments-customers-summary-grid{grid-template-columns:1fr}.appointments-customer-head{display:grid}.appointments-customer-stats span{flex:1 1 100%;justify-content:center}}
+
+/* v6.1.172 Smart Customer Selection */
+.appointments-input-action{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  width:100%;
+}
+.appointments-input-action input{
+  flex:1 1 auto;
+  min-width:0;
+}
+.appointments-mini-action{
+  flex:0 0 auto;
+  height:38px;
+  padding:0 12px;
+  border-radius:12px;
+  border:1px solid rgba(245,241,232,.22);
+  background:rgba(245,241,232,.10);
+  color:var(--appt-text-strong);
+  font-weight:800;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.appointments-mini-action:hover{
+  background:rgba(245,241,232,.18);
+}
+@media (max-width: 720px){
+  .appointments-input-action{flex-direction:column;align-items:stretch;}
+  .appointments-mini-action{width:100%;}
+}
+
+/* PETATOE v6.1.173 - Appointments alerts and notifications phase 10 */
+.appointments-kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr))}
+.appointments-inline-badge,.appointments-nav-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:999px;padding:0 7px;margin-inline-start:6px;background:linear-gradient(135deg,rgba(239,68,68,.95),rgba(245,158,11,.95));color:var(--appt-text-strong);font-size:12px;font-weight:950;line-height:1;box-shadow:0 0 16px rgba(239,68,68,.24)}
+.appointments-nav-badge{position:absolute;top:8px;left:10px;margin:0;min-width:20px;height:20px;font-size:11px}
+.pet-v142-direct[data-tab="appointments"]{position:relative}
+.appointments-alerts-card{overflow:hidden}
+.appointments-alert-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 14px}
+.appointments-alert-summary-card{border-radius:18px;border:1px solid rgba(214,196,154,.22);background:linear-gradient(135deg,rgba(245,241,232,.08),rgba(15,23,42,.45));padding:14px;box-shadow:0 12px 28px rgba(0,0,0,.14)}
+.appointments-alert-summary-card span{display:block;color:rgba(245,241,232,.72);font-size:12px;font-weight:900}.appointments-alert-summary-card b{display:block;color:var(--appt-text-strong);font-size:24px;font-weight:950;margin-top:5px}.appointments-alert-summary-card.danger{border-color:rgba(239,68,68,.30);background:linear-gradient(135deg,rgba(239,68,68,.16),rgba(15,23,42,.45))}.appointments-alert-summary-card.warning{border-color:rgba(245,158,11,.32);background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(15,23,42,.45))}.appointments-alert-summary-card.info{border-color:rgba(34,211,238,.28);background:linear-gradient(135deg,rgba(34,211,238,.13),rgba(15,23,42,.45))}
+.appointments-alert-list{display:grid;gap:10px}.appointments-alert-item{display:grid;grid-template-columns:46px minmax(0,1fr);gap:12px;align-items:flex-start;padding:13px 14px;border-radius:18px;border:1px solid rgba(214,196,154,.18);background:linear-gradient(135deg,rgba(15,23,42,.58),rgba(255,255,255,.045));box-shadow:0 10px 24px rgba(0,0,0,.12)}.appointments-alert-item.danger{border-color:rgba(239,68,68,.34);background:linear-gradient(135deg,rgba(239,68,68,.14),rgba(15,23,42,.55))}.appointments-alert-item.warning{border-color:rgba(245,158,11,.35);background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(15,23,42,.55))}.appointments-alert-item.info{border-color:rgba(34,211,238,.30);background:linear-gradient(135deg,rgba(34,211,238,.11),rgba(15,23,42,.55))}.appointments-alert-icon{width:42px;height:42px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.10);font-size:20px}.appointments-alert-item b{display:block;color:var(--appt-text-strong);font-size:14px;font-weight:950;margin-bottom:4px}.appointments-alert-item p{margin:0;color:rgba(245,241,232,.80);font-size:13px;font-weight:850}.appointments-alert-item small{display:block;color:rgba(226,232,240,.64);font-size:12px;font-weight:800;margin-top:6px}
+@media(max-width:900px){.appointments-alert-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.appointments-alert-summary{grid-template-columns:1fr}.appointments-alert-item{grid-template-columns:1fr}.appointments-alert-icon{width:100%;height:38px}}
+
+/* PETATOE v6.1.174 - Appointments master data phase 11 */
+.appointments-master-card{overflow:hidden}
+.appointments-master-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.appointments-master-box{border-radius:22px;border:1px solid rgba(214,196,154,.22);background:linear-gradient(135deg,rgba(245,241,232,.075),rgba(15,23,42,.48));box-shadow:0 14px 34px rgba(0,0,0,.14),inset 0 1px 0 rgba(255,255,255,.06);padding:15px;min-width:0}
+.appointments-master-box h4{margin:0 0 12px;color:var(--appt-text-strong);font-size:15px;font-weight:950}
+.appointments-master-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin-bottom:12px;align-items:center}
+.appointments-master-add-2{grid-template-columns:minmax(150px,.75fr) minmax(0,1fr) auto}
+.appointments-master-add input,.appointments-master-add select{height:40px;border-radius:14px;border:1px solid rgba(148,163,184,.30);background:var(--appt-bg-deep);color:var(--appt-text-strong);padding:0 12px;font-family:Cairo,Arial,sans-serif;font-weight:850;outline:none;min-width:0}
+.appointments-master-add input:focus,.appointments-master-add select:focus{border-color:rgba(214,196,154,.75);box-shadow:0 0 0 3px rgba(214,196,154,.12)}
+.appointments-master-list{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start;min-height:44px}
+.appointments-master-pill{display:inline-flex;align-items:center;gap:6px;min-height:34px;border-radius:999px;padding:4px 8px 4px 10px;background:linear-gradient(135deg,rgba(214,196,154,.16),rgba(255,255,255,.065));border:1px solid rgba(214,196,154,.20);color:var(--appt-text-strong);font-size:12px;font-weight:900}
+.appointments-master-pill b{font-weight:950;max-width:210px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.appointments-master-pill button{height:24px;border-radius:999px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.08);color:var(--appt-text-strong);font-family:Cairo,Arial,sans-serif;font-size:11px;font-weight:900;padding:0 8px;cursor:pointer}
+.appointments-master-pill button:hover{background:rgba(214,196,154,.16)}
+.appointments-breed-group{width:100%;border-radius:16px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.035);padding:10px;display:grid;gap:8px}
+.appointments-breed-group strong{color:var(--appt-text-strong);font-size:13px;font-weight:950}
+.appointments-breed-group>div{display:flex;gap:8px;flex-wrap:wrap}
+.appointments-master-empty{padding:10px;border-radius:14px;width:100%}
+@media(max-width:1100px){.appointments-master-grid{grid-template-columns:1fr}.appointments-master-add-2{grid-template-columns:1fr}}
+@media(max-width:620px){.appointments-master-add{grid-template-columns:1fr}.appointments-master-pill{width:100%;justify-content:space-between}.appointments-master-pill b{max-width:60%}}
+
+/* PETATOE v6.1.175 - Appointments route planning and dispatching phase 12 */
+.appointments-dispatch-card{overflow:hidden}
+.appointments-dispatch-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.appointments-dispatch-summary-card{border-radius:20px;border:1px solid rgba(214,196,154,.22);background:linear-gradient(135deg,rgba(245,241,232,.08),rgba(15,23,42,.48));box-shadow:0 14px 32px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.06);padding:14px;min-height:88px}
+.appointments-dispatch-summary-card span{display:block;color:rgba(245,241,232,.76);font-size:12px;font-weight:950}.appointments-dispatch-summary-card b{display:block;color:var(--appt-text-strong);font-size:26px;font-weight:950;margin-top:5px}.appointments-dispatch-summary-card small{display:block;color:rgba(226,232,240,.64);font-size:11px;font-weight:850;margin-top:4px}
+.appointments-dispatch-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0 0 16px}.appointments-dispatch-box{border-radius:20px;border:1px solid rgba(214,196,154,.18);background:linear-gradient(135deg,rgba(15,23,42,.56),rgba(245,241,232,.055));padding:14px}.appointments-dispatch-box h4{margin:0 0 12px;color:var(--appt-text-strong);font-size:15px;font-weight:950}.appointments-dispatch-loads{display:grid;gap:8px}.appointments-dispatch-load{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:38px;border-radius:14px;padding:0 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}.appointments-dispatch-load b{color:var(--appt-text-strong);font-size:13px;font-weight:950}.appointments-dispatch-load span{color:rgba(245,241,232,.76);font-size:12px;font-weight:900}
+.appointments-dispatch-routes{display:grid;gap:14px}.appointments-route-card{border-radius:22px;border:1px solid rgba(214,196,154,.22);background:linear-gradient(135deg,rgba(245,241,232,.07),rgba(15,23,42,.52));box-shadow:0 16px 38px rgba(0,0,0,.16);overflow:hidden}.appointments-route-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:linear-gradient(135deg,rgba(214,196,154,.18),rgba(255,255,255,.07));border-bottom:1px solid rgba(214,196,154,.18)}.appointments-route-head h4{margin:0;color:var(--appt-text-strong);font-size:16px;font-weight:950}.appointments-route-head span{display:inline-flex;align-items:center;min-height:30px;border-radius:999px;padding:0 12px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.10);color:var(--appt-text-strong);font-size:12px;font-weight:950}.appointments-route-list{display:grid;gap:10px;padding:12px}.appointments-route-stop{display:grid;grid-template-columns:44px 92px minmax(0,1fr);gap:12px;align-items:flex-start;border-radius:18px;padding:12px;border:1px solid rgba(255,255,255,.08);background:var(--appt-bg-deep)}.appointments-route-index{width:36px;height:36px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,rgba(214,196,154,.22),rgba(255,255,255,.08));border:1px solid rgba(214,196,154,.20);color:var(--appt-text-strong);font-weight:950}.appointments-route-stop .appointments-event b{color:var(--appt-text-strong)}.appointments-route-stop .appointments-event p{margin:4px 0 7px;color:rgba(245,241,232,.80);font-weight:850}
+@media(max-width:1100px){.appointments-dispatch-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.appointments-dispatch-grid{grid-template-columns:1fr}.appointments-route-stop{grid-template-columns:40px 82px minmax(0,1fr)}}
+@media(max-width:680px){.appointments-dispatch-summary{grid-template-columns:1fr}.appointments-route-stop{grid-template-columns:1fr}.appointments-route-index,.appointments-route-stop .appointments-time{width:100%}}
+
+/* PETATOE v6.1.176 - Daily operations printable sheet phase 13 */
+.appointments-daily-ops-card{overflow:hidden}
+.appointments-daily-ops-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 16px}
+.appointments-daily-ops-print-area{display:grid;gap:14px}
+.appointments-daily-print-header{display:none;text-align:center;margin:0 0 14px;color:#111827}
+.appointments-daily-vehicle{border-radius:22px;border:1px solid rgba(214,196,154,.22);background:linear-gradient(135deg,rgba(245,241,232,.07),rgba(15,23,42,.52));box-shadow:0 16px 38px rgba(0,0,0,.16);overflow:hidden}
+.appointments-daily-vehicle-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:linear-gradient(135deg,rgba(214,196,154,.18),rgba(255,255,255,.07));border-bottom:1px solid rgba(214,196,154,.18)}
+.appointments-daily-vehicle-head h4{margin:0;color:var(--appt-text-strong);font-size:16px;font-weight:950}.appointments-daily-vehicle-head span{display:inline-flex;align-items:center;min-height:30px;border-radius:999px;padding:0 12px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.10);color:var(--appt-text-strong);font-size:12px;font-weight:950}
+.appointments-daily-table{min-width:1320px}.appointments-daily-table th,.appointments-daily-table td{font-size:12px}.appointments-daily-table td:nth-child(6){min-width:220px}.appointments-daily-table td:nth-child(7){min-width:180px}.appointments-daily-table td:nth-child(12){min-width:160px}
+@media(max-width:1100px){.appointments-daily-ops-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:680px){.appointments-daily-ops-summary{grid-template-columns:1fr}}
+@media print{
+  body *{visibility:hidden!important}
+  #appointmentsDailyOperations,#appointmentsDailyOperations *{visibility:visible!important}
+  #appointmentsDailyOperations{position:absolute;inset:0 auto auto 0;width:100%;display:block!important;color:#111827!important;background:#fff!important;padding:12px!important;direction:rtl;font-family:Cairo,Arial,sans-serif}
+  .appointments-daily-print-header{display:block!important;color:#111827!important}
+  .appointments-daily-vehicle{break-inside:avoid;page-break-inside:avoid;border:1px solid #d1d5db!important;background:#fff!important;box-shadow:none!important;margin-bottom:14px;border-radius:0!important}
+  .appointments-daily-vehicle-head{background:#f3f4f6!important;border-bottom:1px solid #d1d5db!important;color:#111827!important;border-radius:0!important}
+  .appointments-daily-vehicle-head h4,.appointments-daily-vehicle-head span{color:#111827!important;background:transparent!important;border:0!important}
+  .appointments-report-table-wrap{overflow:visible!important;border-radius:0!important}
+  .appointments-daily-table{width:100%!important;min-width:0!important;border-collapse:collapse!important;background:#fff!important;font-size:10px!important}
+  .appointments-daily-table th{background:#e5e7eb!important;color:#111827!important;border:1px solid #d1d5db!important;padding:6px!important}
+  .appointments-daily-table td{color:#111827!important;border:1px solid #d1d5db!important;padding:6px!important;background:#fff!important}
+  .appointments-daily-table tfoot td{background:#f3f4f6!important;color:#111827!important;border:1px solid #d1d5db!important;font-weight:900!important}
+  @page{size:A4 landscape;margin:10mm}
+}
+
+/* PETATOE v6.1.177 — Vehicle Operations execution screen */
+.vehicle-ops-shell{max-width:1380px;margin:0 auto;}
+.vehicle-ops-hero{border-color:rgba(212,180,131,.28);background:linear-gradient(135deg,rgba(15,23,42,.88),rgba(87,70,42,.34));}
+.vehicle-ops-card{border-color:rgba(212,180,131,.26);}
+.vehicle-ops-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+.vehicle-ops-controls input,.vehicle-ops-controls select{min-width:180px;}
+.vehicle-ops-summary{margin:14px 0 18px;}
+.vehicle-ops-board{display:flex;flex-direction:column;gap:18px;}
+.vehicle-ops-vehicle-card{border:1px solid rgba(212,180,131,.22);border-radius:22px;background:linear-gradient(180deg,rgba(245,241,232,.075),rgba(15,23,42,.28));box-shadow:0 18px 42px rgba(0,0,0,.18);overflow:hidden;}
+.vehicle-ops-vehicle-card .appointments-route-head{background:linear-gradient(135deg,rgba(212,180,131,.22),rgba(255,255,255,.06));padding:14px 18px;border-bottom:1px solid rgba(212,180,131,.18);}
+.vehicle-ops-list{display:flex;flex-direction:column;gap:14px;padding:16px;}
+.vehicle-ops-session{border:1px solid rgba(255,255,255,.10);border-radius:20px;background:rgba(15,23,42,.54);padding:14px;display:grid;grid-template-columns:1.2fr .9fr;gap:14px;}
+.vehicle-ops-session.active{border-color:rgba(56,189,248,.34);box-shadow:0 0 0 1px rgba(56,189,248,.08) inset;}
+.vehicle-ops-session.done{border-color:rgba(34,197,94,.36);}
+.vehicle-ops-session.cancelled{opacity:.72;border-color:rgba(248,113,113,.34);}
+.vehicle-ops-session-main{display:flex;gap:14px;align-items:flex-start;min-width:0;}
+.vehicle-ops-steps{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;padding-top:4px;}
+.vehicle-ops-step{border:1px solid rgba(212,180,131,.24);background:rgba(255,255,255,.06);color:#f8fafc;border-radius:999px;padding:9px 13px;font-weight:900;cursor:pointer;transition:.18s ease;}
+.vehicle-ops-step:hover{transform:translateY(-1px);background:rgba(212,180,131,.16);}
+.vehicle-ops-step.active{background:linear-gradient(135deg,rgba(212,180,131,.42),rgba(245,241,232,.20));border-color:rgba(212,180,131,.55);color:var(--appt-text-strong);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset;}
+.vehicle-ops-collection{display:grid;grid-template-columns:repeat(3,minmax(130px,1fr));gap:10px;align-items:end;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:12px;}
+.vehicle-ops-collection label{display:flex;flex-direction:column;gap:6px;font-size:12px;font-weight:900;color:#f5f1e8;}
+.vehicle-ops-collection input,.vehicle-ops-collection select,.vehicle-ops-collection textarea{width:100%;border-radius:14px;border:1px solid rgba(212,180,131,.22);background:rgba(15,23,42,.72);color:var(--appt-text-strong);padding:10px 12px;outline:none;font-family:inherit;}
+.vehicle-ops-notes{grid-column:1/-1;}
+.vehicle-ops-notes textarea{min-height:72px;resize:vertical;}
+.vehicle-ops-money{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap;color:#f8fafc;font-size:13px;}
+.vehicle-ops-money span{background:rgba(212,180,131,.11);border:1px solid rgba(212,180,131,.18);border-radius:999px;padding:7px 10px;}
+.vehicle-ops-collection .btn{grid-column:1/-1;justify-content:center;}
+.vehicle-ops-log{grid-column:1/-1;border-top:1px dashed rgba(212,180,131,.18);padding-top:8px;color:#cbd5e1;display:flex;flex-direction:column;gap:3px;}
+@media(max-width:900px){.vehicle-ops-session{grid-template-columns:1fr}.vehicle-ops-collection{grid-template-columns:1fr}.vehicle-ops-session-main{flex-direction:column}.vehicle-ops-controls input,.vehicle-ops-controls select{min-width:100%;}}
+
+
+/* PETATOE v6.1.178 — Vehicle execution reports */
+.vehicle-ops-reports-card{margin-top:18px;border-color:rgba(212,180,131,.24);}
+.vehicle-ops-reports-summary{margin:14px 0 18px;}
+.vehicle-ops-reports{display:grid;grid-template-columns:1fr;gap:16px;}
+.vehicle-exec-report-table-card{border-color:rgba(212,180,131,.24);background:linear-gradient(135deg,rgba(245,241,232,.07),rgba(15,23,42,.45));}
+.vehicle-exec-report-table{min-width:1040px;}
+.vehicle-exec-report-table th,.vehicle-exec-report-table td{font-size:12px;}
+.vehicle-exec-report-table tfoot td{background:rgba(212,180,131,.18)!important;color:var(--appt-text-strong)!important;font-weight:950;}
+@media(max-width:900px){.vehicle-ops-reports-card .appointments-card-head{align-items:stretch}.vehicle-ops-reports-card .vehicle-ops-controls input,.vehicle-ops-reports-card .vehicle-ops-controls select{min-width:100%;}}
+
+/* v6.1.180 - Vehicle Operations Execution UI Redesign */
+.vehicle-ops-card .appointments-card-head{align-items:flex-start;gap:18px}
+.vehicle-ops-board{gap:22px}
+.vehicle-ops-vehicle-card-pro{border-color:rgba(34,197,94,.22);background:linear-gradient(180deg,rgba(7,19,34,.72),rgba(15,23,42,.54));box-shadow:0 24px 70px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.055)}
+.vehicle-ops-vehicle-card-pro .appointments-route-head{background:linear-gradient(135deg,rgba(20,184,166,.18),rgba(59,130,246,.10));border-bottom:1px solid rgba(148,163,184,.14)}
+.vehicle-ops-list-pro{gap:22px;padding:18px}
+.vehicle-ops-pro{position:relative;overflow:hidden;border-radius:28px;padding:18px;background:radial-gradient(circle at 70% 0%,rgba(14,165,233,.10),transparent 30%),linear-gradient(135deg,rgba(15,23,42,.82),rgba(9,20,35,.88));border:1px solid rgba(34,197,94,.18);box-shadow:0 22px 58px rgba(0,0,0,.26)}
+.vehicle-ops-pro:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.035),transparent);pointer-events:none}
+.vehicle-ops-pro.done{border-color:rgba(34,197,94,.35)}
+.vehicle-ops-pro.active{border-color:rgba(56,189,248,.34)}
+.vehicle-ops-pro-head{position:relative;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;margin-bottom:16px}
+.vehicle-ops-time{min-width:88px;text-align:center;border-inline-start:1px solid rgba(148,163,184,.16);padding-inline-start:14px;color:#f8fafc}
+.vehicle-ops-time b{display:block;font-size:30px;line-height:1;font-weight:1000;letter-spacing:.5px}
+.vehicle-ops-time small{display:block;margin-top:8px;color:#aebdd0;font-weight:900}
+.vehicle-ops-title h3{margin:0 0 6px;color:var(--appt-text-strong);font-size:20px;font-weight:1000}
+.vehicle-ops-title p{margin:0 0 12px;color:#dbe7f5;font-weight:900;font-size:15px}
+.vehicle-ops-pills{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.vehicle-ops-pills span{display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(148,163,184,.16);background:rgba(148,163,184,.10);border-radius:999px;padding:8px 11px;color:#e6edf6;font-size:12px;font-weight:900}
+.vehicle-ops-progress{position:relative;display:grid;grid-template-columns:repeat(5,minmax(120px,1fr));align-items:center;gap:10px;margin:14px 0 18px;direction:rtl}
+.vehicle-ops-progress>i{height:2px;background:linear-gradient(90deg,rgba(34,197,94,.70),rgba(56,189,248,.35));border-radius:999px;display:none}
+.vehicle-ops-progress-step{min-height:66px;display:flex;align-items:center;gap:11px;border:1px solid rgba(148,163,184,.14);border-radius:20px;background:rgba(15,23,42,.50);padding:11px 13px;color:#dbe7f5;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.vehicle-ops-progress-step.done{background:linear-gradient(135deg,rgba(16,185,129,.20),rgba(15,23,42,.45));border-color:rgba(16,185,129,.34)}
+.vehicle-ops-progress-step.active{background:linear-gradient(135deg,rgba(99,102,241,.28),rgba(14,165,233,.14));border-color:rgba(99,102,241,.48);box-shadow:0 0 0 1px rgba(99,102,241,.10),0 12px 34px rgba(0,0,0,.18)}
+.vehicle-ops-progress-num{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;background:linear-gradient(135deg,#14b8a6,#22c55e);color:var(--appt-text-strong);font-weight:1000;box-shadow:0 10px 24px rgba(20,184,166,.20)}
+.vehicle-ops-progress-step.active .vehicle-ops-progress-num{background:linear-gradient(135deg,#7c3aed,#38bdf8)}
+.vehicle-ops-progress-step b{display:block;color:var(--appt-text-strong);font-weight:1000;font-size:13px}
+.vehicle-ops-progress-step small{display:block;color:#aebdd0;font-weight:900;font-size:12px;margin-top:3px}
+.vehicle-ops-action-row{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 16px}
+.vehicle-ops-step{display:inline-flex;align-items:center;gap:7px;border-radius:16px;padding:11px 15px;background:rgba(30,41,59,.72);border:1px solid rgba(148,163,184,.18);color:#f8fafc}
+.vehicle-ops-step span{font-size:15px}
+.vehicle-ops-step.done{border-color:rgba(34,197,94,.28);background:rgba(34,197,94,.12)}
+.vehicle-ops-step.active{background:linear-gradient(135deg,rgba(59,130,246,.32),rgba(124,58,237,.25));border-color:rgba(96,165,250,.45)}
+.vehicle-ops-pro-grid{position:relative;display:grid;grid-template-columns:minmax(260px,.85fr) minmax(420px,1.55fr);gap:18px;align-items:start}
+.vehicle-ops-info-panel{display:flex;flex-direction:column;gap:13px}
+.vehicle-ops-info-card{border:1px solid rgba(148,163,184,.14);border-radius:20px;background:linear-gradient(180deg,rgba(30,41,59,.50),rgba(15,23,42,.46));padding:16px;color:#e8f0fb}
+.vehicle-ops-info-card h4{margin:0 0 12px;color:var(--appt-text-strong);font-weight:1000;text-align:center}
+.vehicle-ops-info-card p{margin:6px 0;color:#cfd8e6;font-weight:800}
+.vehicle-ops-mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.vehicle-ops-mini-grid span{border:1px solid rgba(148,163,184,.12);border-radius:16px;background:rgba(15,23,42,.40);padding:12px;text-align:center}
+.vehicle-ops-mini-grid small{display:block;color:#aebdd0;font-weight:900;margin-bottom:6px}
+.vehicle-ops-mini-grid b{display:block;color:var(--appt-text-strong);font-size:18px;font-weight:1000}
+.vehicle-ops-execution-panel{border:1px solid rgba(148,163,184,.16);border-radius:22px;background:linear-gradient(180deg,rgba(15,23,42,.62),rgba(8,18,33,.70));overflow:hidden;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.vehicle-ops-panel-tabs{display:flex;gap:28px;border-bottom:1px solid rgba(148,163,184,.14);padding:13px 18px;background:var(--appt-bg-deep)}
+.vehicle-ops-panel-tabs span{position:relative;color:#cbd5e1;font-weight:1000;padding-bottom:8px}
+.vehicle-ops-panel-tabs span.active{color:#22c55e}
+.vehicle-ops-panel-tabs span.active:after{content:"";position:absolute;right:0;left:0;bottom:-14px;height:2px;background:#22c55e;border-radius:999px}
+.vehicle-ops-collection-pro{display:grid;grid-template-columns:repeat(2,minmax(180px,1fr));gap:13px;border:0;background:transparent;border-radius:0;padding:18px}
+.vehicle-ops-finance-cards{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:6px}
+.vehicle-ops-finance-cards span{border:1px solid rgba(148,163,184,.16);border-radius:16px;background:rgba(15,23,42,.44);padding:13px;text-align:center}
+.vehicle-ops-finance-cards small{display:block;color:#aebdd0;font-weight:900;margin-bottom:8px}
+.vehicle-ops-finance-cards b{display:block;color:var(--appt-text-strong);font-size:18px;font-weight:1000}
+.vehicle-ops-finance-cards span:first-child b{color:#22c55e}.vehicle-ops-finance-cards span:nth-child(2) b{color:#38bdf8}.vehicle-ops-finance-cards span:nth-child(3) b{color:#f8fafc}
+.vehicle-ops-collection-pro input,.vehicle-ops-collection-pro select,.vehicle-ops-collection-pro textarea{background:rgba(51,65,85,.70);border-color:rgba(148,163,184,.22);min-height:46px}
+.vehicle-ops-collection-pro label{color:#f8fafc;font-size:13px}
+.vehicle-ops-collection-pro .vehicle-ops-notes{grid-column:1/-1}.vehicle-ops-collection-pro textarea{min-height:105px}.vehicle-ops-save{grid-column:1/-1;min-height:50px;border-radius:18px;font-size:15px;font-weight:1000;background:linear-gradient(135deg,var(--appt-success-a),var(--appt-success-b))!important;border-color:rgba(34,197,94,.45)!important}
+.vehicle-ops-log-pro{padding:0 18px 16px;border-top:0;color:#aebdd0}
+@media(max-width:1100px){.vehicle-ops-progress{grid-template-columns:1fr}.vehicle-ops-pro-grid{grid-template-columns:1fr}.vehicle-ops-finance-cards{grid-template-columns:1fr}.vehicle-ops-collection-pro{grid-template-columns:1fr}.vehicle-ops-pro-head{grid-template-columns:1fr}.vehicle-ops-time{text-align:start;border:0;padding:0}.vehicle-ops-panel-tabs{overflow:auto;gap:18px}}
+
+/* PETATOE v6.1.181 — Vehicle workflow screen real redesign */
+.vehicle-ops-board{display:block;}
+.vehicle-ops-workspace{display:grid;grid-template-columns:360px minmax(520px,1fr) 360px;gap:18px;align-items:stretch;margin-top:18px;direction:rtl;}
+.vehicle-ops-queue,.vehicle-ops-current,.vehicle-ops-payment{border:1px solid rgba(56,189,248,.16);border-radius:24px;background:linear-gradient(180deg,rgba(7,19,34,.78),rgba(15,23,42,.60));box-shadow:0 22px 58px rgba(0,0,0,.24),inset 0 1px 0 rgba(255,255,255,.045);overflow:hidden;}
+.vehicle-ops-section-head,.vehicle-ops-current-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(148,163,184,.14);background:linear-gradient(135deg,rgba(14,165,233,.10),rgba(16,185,129,.06));}
+.vehicle-ops-section-head h3,.vehicle-ops-current-head h3,.vehicle-ops-payment h3{margin:0;color:var(--appt-text-strong);font-size:18px;font-weight:1000;}
+.vehicle-ops-section-head span{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:linear-gradient(135deg,var(--appt-success-a),var(--appt-success-b));color:var(--appt-text-strong);font-weight:1000;box-shadow:0 12px 26px rgba(16,185,129,.22)}
+.vehicle-ops-filter-chip{margin:14px 16px 8px;min-height:42px;display:flex;align-items:center;justify-content:center;border-radius:16px;background:rgba(30,41,59,.58);border:1px solid rgba(148,163,184,.16);color:#dbeafe;font-weight:900;}
+.vehicle-ops-queue-list{display:flex;flex-direction:column;gap:10px;padding:12px 16px 18px;max-height:548px;overflow:auto;}
+.vehicle-ops-queue-item{width:100%;display:grid;grid-template-columns:70px 1fr auto;gap:12px;align-items:center;text-align:inherit;border-radius:18px;border:1px solid rgba(148,163,184,.13);background:linear-gradient(135deg,rgba(15,23,42,.72),rgba(30,41,59,.38));color:#e5edf7;padding:14px 12px;cursor:pointer;transition:.18s ease;}
+.vehicle-ops-queue-item:hover{transform:translateY(-1px);border-color:rgba(56,189,248,.34);background:linear-gradient(135deg,rgba(14,165,233,.11),rgba(15,23,42,.68));}
+.vehicle-ops-queue-item.active{border-color:rgba(34,197,94,.70);box-shadow:0 0 0 1px rgba(34,197,94,.18),0 16px 32px rgba(0,0,0,.18);background:linear-gradient(135deg,rgba(16,185,129,.20),rgba(15,23,42,.70));}
+.vehicle-ops-queue-item.closed{opacity:.68;}
+.vehicle-ops-queue-item .queue-time{font-size:16px;color:var(--appt-text-strong);font-weight:1000;}
+.vehicle-ops-queue-item .queue-main b{display:block;color:var(--appt-text-strong);font-size:15px;font-weight:1000;margin-bottom:4px;}
+.vehicle-ops-queue-item .queue-main small{display:block;color:#aebdd0;font-size:11px;font-weight:800;line-height:1.6;}
+.vehicle-ops-queue-item em{font-style:normal;display:inline-flex;align-items:center;justify-content:center;min-width:54px;border-radius:999px;padding:7px 10px;background:rgba(14,165,233,.16);color:#38bdf8;font-size:12px;font-weight:1000;}
+.vehicle-ops-queue-item.active em{background:rgba(16,185,129,.24);color:#86efac;}
+.vehicle-ops-queue-item.closed em{background:rgba(34,197,94,.14);color:#a7f3d0;}
+.vehicle-ops-current{padding-bottom:18px;}
+.vehicle-ops-current-head>div{display:flex;gap:9px;flex-wrap:wrap;}
+.vehicle-now-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:9px 14px;background:linear-gradient(135deg,#10b981,#16a34a);color:var(--appt-text-strong);font-weight:1000;}
+.vehicle-ops-current-card{margin:16px 18px;border:1px solid rgba(148,163,184,.14);border-radius:22px;background:radial-gradient(circle at 74% 12%,rgba(14,165,233,.12),transparent 24%),rgba(15,23,42,.50);overflow:hidden;}
+.vehicle-ops-info-split{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid rgba(148,163,184,.13);}
+.vehicle-ops-info-split>div{padding:18px;border-inline-start:1px solid rgba(148,163,184,.12);text-align:center;}
+.vehicle-ops-info-split>div:last-child{border-inline-start:0;}
+.vehicle-ops-info-split h4{margin:0 0 10px;color:#9fb1c7;font-size:13px;font-weight:1000;}
+.vehicle-ops-info-split b{display:block;color:var(--appt-text-strong);font-size:20px;font-weight:1000;margin-bottom:8px;}
+.vehicle-ops-info-split p{margin:5px 0;color:#dbe7f5;font-size:13px;font-weight:850;}
+.vehicle-ops-service-strip{display:flex;gap:8px;align-items:center;padding:13px 18px;border-bottom:1px solid rgba(148,163,184,.11);color:#dbe7f5;font-weight:850;}
+.vehicle-ops-service-strip:last-child{border-bottom:0;}
+.vehicle-ops-service-strip b{color:var(--appt-text-strong);}
+.vehicle-ops-session-note{margin:14px 18px 0;}
+.vehicle-ops-session-note h4{margin:0 0 10px;color:var(--appt-text-strong);font-weight:1000;font-size:16px;}
+.vehicle-ops-session-note textarea{width:100%;min-height:86px;border-radius:18px;border:1px solid rgba(148,163,184,.18);background:rgba(51,65,85,.46);color:var(--appt-text-strong);padding:14px;resize:vertical;font-family:inherit;outline:none;}
+.vehicle-ops-session-note small{display:block;text-align:left;color:#94a3b8;font-weight:900;margin-top:6px;}
+.vehicle-ops-current>.vehicle-ops-save{margin:12px 18px 0;width:calc(100% - 36px);min-height:50px;border-radius:18px;font-size:15px;font-weight:1000;background:linear-gradient(135deg,var(--appt-success-a),var(--appt-success-b))!important;border-color:rgba(34,197,94,.45)!important;}
+.vehicle-ops-payment{padding:0 16px 18px;}
+.vehicle-ops-payment h3{padding:18px 0;text-align:center;border-bottom:1px solid rgba(148,163,184,.14);}
+.vehicle-ops-payment label{display:flex;flex-direction:column;gap:8px;margin:13px 0;color:#f8fafc;font-weight:1000;font-size:13px;}
+.vehicle-ops-payment input,.vehicle-ops-payment select{width:100%;min-height:50px;border-radius:16px;border:1px solid rgba(148,163,184,.18);background:rgba(51,65,85,.58);color:var(--appt-text-strong);padding:0 14px;outline:none;font-family:inherit;font-weight:900;}
+.vehicle-ops-payment .vehicle-ops-finance-cards{grid-template-columns:repeat(3,1fr);margin:16px 0 12px;}
+.vehicle-ops-collect{width:100%;min-height:54px;border-radius:18px;margin:12px 0;background:linear-gradient(135deg,#22c55e,#7c3aed)!important;border-color:rgba(124,58,237,.35)!important;font-size:16px;font-weight:1000;}
+.vehicle-ops-mini-log{border-top:1px dashed rgba(148,163,184,.18);padding-top:12px;color:#aebdd0;display:flex;flex-direction:column;gap:4px;}
+.vehicle-ops-mini-log h4{margin:0 0 8px;color:var(--appt-text-strong);font-size:14px;font-weight:1000;}
+.vehicle-ops-bottom-bar{margin-top:18px;display:grid;grid-template-columns:260px 1fr 170px 190px;gap:12px;align-items:center;border:1px solid rgba(56,189,248,.14);border-radius:22px;background:linear-gradient(135deg,rgba(15,23,42,.82),rgba(7,19,34,.80));padding:14px 16px;box-shadow:0 18px 42px rgba(0,0,0,.20);direction:rtl;}
+.vehicle-ops-bottom-bar>div{border-inline-start:1px solid rgba(148,163,184,.13);padding-inline-start:12px;min-height:54px;display:flex;flex-direction:column;justify-content:center;}
+.vehicle-ops-bottom-bar>div:last-child{border-inline-start:0;}
+.vehicle-ops-bottom-bar b{color:var(--appt-text-strong);font-size:17px;font-weight:1000;}
+.vehicle-ops-bottom-bar small{color:#aebdd0;font-weight:900;margin-top:5px;}
+.vehicle-ops-bottom-progress{min-width:0;}
+.vehicle-ops-bottom-progress h4{margin:0 0 8px;color:var(--appt-text-strong);text-align:center;font-size:14px;font-weight:1000;}
+.vehicle-ops-progress-bottom{margin:0;grid-template-columns:repeat(5,minmax(95px,1fr));gap:8px;}
+.vehicle-ops-progress-bottom .vehicle-ops-progress-step{min-height:54px;padding:8px 10px;border-radius:16px;}
+.vehicle-ops-progress-bottom .vehicle-ops-progress-num{width:28px;height:28px;font-size:12px;}
+.vehicle-ops-progress-bottom .vehicle-ops-progress-step b{font-size:12px;}
+.vehicle-ops-progress-bottom .vehicle-ops-progress-step small{font-size:11px;}
+.vehicle-ops-step{border-radius:16px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;min-width:126px;min-height:72px;gap:4px;}
+.vehicle-ops-step b{font-size:13px;}.vehicle-ops-step small{font-size:11px;color:#cbd5e1;}
+@media(max-width:1280px){.vehicle-ops-workspace{grid-template-columns:320px 1fr}.vehicle-ops-payment{grid-column:1/-1}.vehicle-ops-bottom-bar{grid-template-columns:1fr 1fr}.vehicle-ops-bottom-progress{grid-column:1/-1;order:-1}.vehicle-ops-progress-bottom{grid-template-columns:1fr}}
+@media(max-width:900px){.vehicle-ops-workspace{grid-template-columns:1fr}.vehicle-ops-info-split{grid-template-columns:1fr}.vehicle-ops-info-split>div{border-inline-start:0;border-bottom:1px solid rgba(148,163,184,.12)}.vehicle-ops-bottom-bar{grid-template-columns:1fr}.vehicle-ops-queue-list{max-height:none}}
+
+/* PETATOE v6.1.182 — Vehicle Operations two-tab workflow */
+.vehicle-ops-tabs{display:flex;gap:10px;align-items:center;justify-content:flex-start;margin:18px 0 12px;direction:rtl;flex-wrap:wrap}
+.vehicle-ops-tab{border:1px solid rgba(148,163,184,.18);border-radius:18px;background:rgba(15,23,42,.62);color:#cbd5e1;min-height:46px;padding:0 18px;font-weight:1000;cursor:pointer;transition:.18s ease;font-family:inherit}
+.vehicle-ops-tab:hover{border-color:rgba(56,189,248,.42);color:var(--appt-text-strong);transform:translateY(-1px)}
+.vehicle-ops-tab.active{background:linear-gradient(135deg,rgba(16,185,129,.34),rgba(14,165,233,.22));border-color:rgba(34,197,94,.58);color:var(--appt-text-strong);box-shadow:0 14px 30px rgba(16,185,129,.16)}
+.vehicle-ops-day-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px;align-items:start;direction:rtl;margin-top:12px}
+.vehicle-ops-day-list,.vehicle-ops-day-side,.vehicle-ops-current-main{border:1px solid rgba(56,189,248,.16);border-radius:24px;background:linear-gradient(180deg,rgba(7,19,34,.78),rgba(15,23,42,.60));box-shadow:0 22px 58px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.045);overflow:hidden}
+.vehicle-ops-day-list-scroll{display:flex;flex-direction:column;gap:10px;padding:14px 16px 18px;max-height:620px;overflow:auto}
+.vehicle-ops-day-row{width:100%;display:grid;grid-template-columns:44px 90px minmax(220px,1fr) minmax(150px,220px) 120px 95px 105px;gap:12px;align-items:center;text-align:inherit;border-radius:18px;border:1px solid rgba(148,163,184,.13);background:linear-gradient(135deg,rgba(15,23,42,.72),rgba(30,41,59,.36));color:#e5edf7;padding:13px 12px;cursor:pointer;transition:.18s ease;position:relative;overflow:hidden;font-family:inherit}
+.vehicle-ops-day-row:hover{transform:translateY(-1px);border-color:rgba(56,189,248,.36);background:linear-gradient(135deg,rgba(14,165,233,.12),rgba(15,23,42,.70))}
+.vehicle-ops-day-row.active{border-color:rgba(34,197,94,.70);box-shadow:0 0 0 1px rgba(34,197,94,.18),0 16px 32px rgba(0,0,0,.18);background:linear-gradient(135deg,rgba(16,185,129,.20),rgba(15,23,42,.70))}
+.vehicle-ops-day-row.closed{opacity:.68}
+.day-row-num{width:32px;height:32px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;background:rgba(14,165,233,.16);color:#7dd3fc;font-weight:1000}
+.day-row-time{color:var(--appt-text-strong);font-weight:1000;font-size:16px}.day-row-time small{display:block;color:#94a3b8;font-size:11px;margin-top:3px}
+.day-row-main b{display:block;color:var(--appt-text-strong);font-size:15px;font-weight:1000}.day-row-main small,.day-row-team small{display:block;color:#aebdd0;font-size:11px;font-weight:850;line-height:1.6}
+.vehicle-ops-day-row em{font-style:normal;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:7px 9px;background:rgba(14,165,233,.16);color:#38bdf8;font-size:12px;font-weight:1000;white-space:nowrap}
+.vehicle-ops-row-progress{height:7px;border-radius:999px;background:rgba(15,23,42,.8);overflow:hidden;border:1px solid rgba(148,163,184,.12)}
+.vehicle-ops-row-progress i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#22c55e,#38bdf8)}
+.vehicle-ops-day-side{padding:18px;display:flex;flex-direction:column;gap:12px}.vehicle-ops-day-side h3{margin:0;color:var(--appt-text-strong);font-size:18px;font-weight:1000}.vehicle-ops-day-side small{color:#aebdd0;font-weight:850;line-height:1.8}.vehicle-ops-day-side .btn{width:100%;min-height:46px;border-radius:16px}
+.vehicle-ops-current-mini{border:1px solid rgba(148,163,184,.14);border-radius:18px;background:rgba(15,23,42,.50);padding:16px;text-align:center}.vehicle-ops-current-mini b{color:var(--appt-text-strong);font-size:19px}.vehicle-ops-current-mini p{color:#cbd5e1;margin:8px 0;font-weight:850}
+.vehicle-ops-current-layout{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:stretch;margin-top:12px;direction:rtl}.vehicle-ops-current-main{padding-bottom:18px}.vehicle-ops-status-panel{margin:14px 18px;border:1px solid rgba(148,163,184,.14);border-radius:20px;background:var(--appt-bg-deep);padding:14px}.vehicle-ops-status-panel h4{margin:0 0 12px;color:var(--appt-text-strong);font-weight:1000}.vehicle-ops-step-row{display:grid;grid-template-columns:repeat(5,minmax(100px,1fr));gap:10px}.vehicle-ops-step-row .vehicle-ops-step{width:100%;min-width:0;background:rgba(30,41,59,.62);border:1px solid rgba(148,163,184,.16);color:#e5edf7;cursor:pointer;font-family:inherit}.vehicle-ops-step-row .vehicle-ops-step.done{background:linear-gradient(135deg,rgba(34,197,94,.25),rgba(14,165,233,.13));border-color:rgba(34,197,94,.38)}.vehicle-ops-step-row .vehicle-ops-step.active{box-shadow:0 0 0 2px rgba(56,189,248,.18);border-color:rgba(56,189,248,.55)}
+@media(max-width:1200px){.vehicle-ops-day-layout,.vehicle-ops-current-layout{grid-template-columns:1fr}.vehicle-ops-day-row{grid-template-columns:40px 80px 1fr 110px}.day-row-team,.vehicle-ops-row-progress{display:none}.vehicle-ops-step-row{grid-template-columns:1fr}}
+@media(max-width:760px){.vehicle-ops-day-row{grid-template-columns:1fr;gap:8px}.vehicle-ops-tabs{position:sticky;top:0;z-index:3;background:rgba(2,6,23,.78);backdrop-filter:blur(12px);padding:8px;border-radius:18px}.vehicle-ops-tab{flex:1}}
+
+/* PETATOE v6.1.183 — Vehicle session close/reopen/confirm controls */
+.vehicle-ops-day-row.confirmed{border-color:rgba(168,85,247,.48);background:linear-gradient(135deg,rgba(88,28,135,.24),rgba(15,23,42,.72))}
+.vehicle-ops-day-row.closed{border-color:rgba(148,163,184,.28)}
+.appointments-status.confirmed{background:rgba(168,85,247,.18);color:#ddd6fe;border-color:rgba(168,85,247,.35)}
+.appointments-status.closed{background:rgba(100,116,139,.18);color:#e2e8f0;border-color:rgba(148,163,184,.30)}
+.vehicle-ops-step.locked{opacity:.58;cursor:not-allowed;filter:grayscale(.35)}
+.vehicle-ops-admin-actions{margin:14px 18px;border:1px solid rgba(234,179,8,.18);border-radius:20px;background:linear-gradient(135deg,rgba(234,179,8,.08),rgba(15,23,42,.44));padding:14px}
+.vehicle-ops-admin-actions h4{margin:0 0 12px;color:var(--appt-text-strong);font-weight:1000}
+.vehicle-ops-admin-actions>div{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.vehicle-ops-admin-actions .btn{min-height:42px;border-radius:15px;font-weight:1000}
+.vehicle-ops-admin-actions small{color:#aebdd0;font-weight:850}
+.vehicle-ops-row-actions{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-start;margin-top:2px}
+.vehicle-ops-row-actions button{border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.56);color:#e5edf7;border-radius:12px;min-height:32px;padding:0 12px;font-family:inherit;font-weight:1000;cursor:pointer}
+.vehicle-ops-row-actions button:hover{border-color:rgba(56,189,248,.42);color:var(--appt-text-strong)}
+.vehicle-ops-row-actions button.close{background:rgba(234,179,8,.14);border-color:rgba(234,179,8,.30);color:#fde68a}
+.vehicle-ops-row-actions button.reopen{background:rgba(59,130,246,.14);border-color:rgba(96,165,250,.30);color:#bfdbfe}
+.vehicle-ops-row-actions button.confirm{background:rgba(168,85,247,.16);border-color:rgba(168,85,247,.34);color:#ddd6fe}
+.vehicle-ops-payment input:disabled,.vehicle-ops-payment select:disabled,.vehicle-ops-session-note textarea:disabled{opacity:.62;cursor:not-allowed;background:rgba(30,41,59,.36)}
+.vehicle-ops-save:disabled,.vehicle-ops-collect:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.35)}
+@media(max-width:1200px){.vehicle-ops-row-actions{justify-content:stretch}.vehicle-ops-row-actions button{flex:1}}
+
+/* v6.1.184 - Vehicle Operations Audit Trail */
+.vehicle-ops-history-panel{
+  margin-top:18px;
+  border:1px solid rgba(245,158,11,.18);
+  border-radius:24px;
+  background:linear-gradient(180deg,rgba(15,23,42,.72),rgba(7,19,34,.64));
+  box-shadow:0 20px 54px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04);
+  overflow:hidden;
+  direction:rtl;
+}
+.vehicle-ops-history-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:16px 18px;
+  border-bottom:1px solid rgba(148,163,184,.14);
+  background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(15,23,42,.58));
+}
+.vehicle-ops-history-head h4{margin:0;color:var(--appt-text-strong);font-size:18px;font-weight:1000}
+.vehicle-ops-history-head span{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:7px 12px;background:rgba(245,158,11,.14);color:#fde68a;font-weight:1000;font-size:12px}
+.vehicle-ops-history-list{display:flex;flex-direction:column;gap:10px;padding:14px;max-height:360px;overflow:auto}
+.vehicle-ops-history-item{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;border:1px solid rgba(148,163,184,.12);border-radius:18px;background:linear-gradient(135deg,rgba(30,41,59,.46),rgba(15,23,42,.44));padding:12px}
+.vehicle-ops-history-item .history-index{width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:rgba(14,165,233,.16);color:#7dd3fc;font-weight:1000;font-size:12px}
+.vehicle-ops-history-item b{display:block;color:var(--appt-text-strong);font-size:14px;font-weight:1000;margin-bottom:5px}
+.vehicle-ops-history-item small{display:block;color:#aebdd0;font-weight:850;line-height:1.6}
+.vehicle-ops-history-item p{margin:6px 0 0;color:#dbe7f5;font-size:13px;font-weight:850;line-height:1.7}
+.vehicle-ops-history-item em{display:block;margin-top:6px;color:#fde68a;font-style:normal;font-size:12px;font-weight:900}
+@media(max-width:760px){.vehicle-ops-history-item{grid-template-columns:1fr}.vehicle-ops-history-item .history-index{width:auto;border-radius:999px;padding:7px 12px}}
+
+/* v6.1.185 — Operations workflow guards + active light */
+.appointments-status.incomplete,
+.appointments-status-input.incomplete{
+  background:rgba(245,158,11,.18)!important;
+  color:#fde68a!important;
+  border-color:rgba(245,158,11,.42);
+}
+.vehicle-ops-tab.active,
+.vehicle-ops-day-row.active,
+.vehicle-ops-step.active,
+.vehicle-ops-progress-step.active,
+.appointments-chip.active,
+.appointments-tab.active{
+  position:relative;
+  box-shadow:0 0 0 1px rgba(34,211,238,.28),0 0 24px rgba(34,211,238,.16),0 18px 38px rgba(0,0,0,.22)!important;
+}
+.vehicle-ops-tab.active:after,
+.vehicle-ops-day-row.active:after,
+.vehicle-ops-step.active:after{
+  content:"";
+  position:absolute;
+  inset:2px;
+  border-radius:inherit;
+  border:1px solid rgba(255,255,255,.10);
+  pointer-events:none;
+}
+.vehicle-ops-step.locked,
+.vehicle-ops-step:disabled{
+  opacity:.52!important;
+  cursor:not-allowed!important;
+  transform:none!important;
+}
+.vehicle-ops-day-row.incomplete{
+  border-color:rgba(245,158,11,.40)!important;
+  background:linear-gradient(135deg,rgba(245,158,11,.13),rgba(15,23,42,.70))!important;
+}
+.vehicle-ops-row-actions button.close{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.35);color:#fde68a}
+.vehicle-ops-row-actions button.reopen{background:rgba(14,165,233,.16);border-color:rgba(56,189,248,.35);color:#bae6fd}
+.vehicle-ops-row-actions button.confirm{background:rgba(34,197,94,.18);border-color:rgba(34,197,94,.35);color:#bbf7d0}
+.vehicle-ops-session-note select:focus,
+.vehicle-ops-session-note input:focus,
+.vehicle-ops-session-note textarea:focus{
+  border-color:rgba(34,211,238,.85);
+  box-shadow:0 0 0 3px rgba(34,211,238,.14);
+}
+
+/* v6.1.186 — Operations KPI Dashboard */
+.operation-kpi-shell{direction:rtl}
+.operation-kpi-card{overflow:hidden}
+.operation-kpi-summary .appointments-dispatch-summary-card b{color:var(--appt-text-strong)}
+.operation-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0}
+.operation-kpi-card-mini{position:relative;min-height:132px;border:1px solid rgba(148,163,184,.15);border-radius:24px;background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(8,27,45,.58));padding:18px;box-shadow:0 18px 40px rgba(0,0,0,.23),inset 0 1px 0 rgba(255,255,255,.04);overflow:hidden}
+.operation-kpi-card-mini:before{content:"";position:absolute;inset:auto -40px -70px auto;width:150px;height:150px;border-radius:50%;background:rgba(34,211,238,.10);filter:blur(4px)}
+.operation-kpi-card-mini span{display:inline-flex;width:38px;height:38px;align-items:center;justify-content:center;border-radius:14px;background:rgba(34,211,238,.12);font-size:20px;margin-bottom:12px}
+.operation-kpi-card-mini b{display:block;color:var(--appt-text-strong);font-size:28px;font-weight:1000;line-height:1.2}
+.operation-kpi-card-mini small{display:block;color:#dbeafe;font-weight:950;margin-top:6px}
+.operation-kpi-card-mini em{display:block;color:#94a3b8;font-style:normal;font-size:12px;font-weight:850;margin-top:5px}
+.operation-kpi-card-mini.ok span{background:rgba(34,197,94,.14)}
+.operation-kpi-card-mini.warn span{background:rgba(245,158,11,.15)}
+.operation-kpi-card-mini.warn:before{background:rgba(245,158,11,.10)}
+.operation-kpi-two-col{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-bottom:18px}
+.operation-kpi-panel{border:1px solid rgba(148,163,184,.14);border-radius:24px;background:linear-gradient(180deg,rgba(15,23,42,.72),rgba(7,19,34,.62));padding:16px;box-shadow:0 18px 40px rgba(0,0,0,.18)}
+.operation-kpi-panel h4{margin:0 0 14px;color:var(--appt-text-strong);font-size:18px;font-weight:1000}
+.operation-kpi-payment-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.operation-kpi-pay-card{border:1px solid rgba(34,211,238,.15);border-radius:18px;background:rgba(15,23,42,.56);padding:13px}
+.operation-kpi-pay-card b{display:block;color:var(--appt-text-strong);font-weight:1000;margin-bottom:5px}
+.operation-kpi-pay-card span,.operation-kpi-pay-card small{display:block;color:#9fb3c8;font-weight:850;font-size:12px;margin-top:4px}
+.operation-kpi-pay-card strong{display:block;color:#bbf7d0;font-size:18px;font-weight:1000;margin-top:6px}
+.operation-kpi-quality{display:flex;flex-direction:column;gap:10px}
+.operation-kpi-quality p{margin:0;display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid rgba(148,163,184,.12);border-radius:16px;background:rgba(15,23,42,.52);padding:12px;color:#cbd5e1;font-weight:900}
+.operation-kpi-quality b{color:var(--appt-text-strong);font-size:18px}
+.operation-kpi-table-card{margin-top:16px}
+.operation-kpi-table th,.operation-kpi-table td{white-space:nowrap}
+#nav .pet-v142-items button[data-tab="operationKpis"].active,
+.operation-kpi-controls input:not(:placeholder-shown),
+.operation-kpi-controls select:not([value="all"]){box-shadow:0 0 0 1px rgba(34,211,238,.28),0 0 20px rgba(34,211,238,.12)!important}
+@media(max-width:1180px){.operation-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.operation-kpi-two-col{grid-template-columns:1fr}}
+@media(max-width:720px){.operation-kpi-grid,.operation-kpi-payment-grid{grid-template-columns:1fr}.operation-kpi-card-mini{min-height:auto}.operation-kpi-card-mini b{font-size:24px}}
+
+
+/* v6.1.186.1 — Strong Active Highlight Visibility Fix
+   Scope: Operations module navigation, internal vehicle tabs, selected appointment rows,
+   workflow status steps, filters and KPI controls. Visual only, no data/business logic changes. */
+#nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"] > .pet-v142-toggle,
+#nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"].open > .pet-v142-toggle{
+  position:relative!important;
+  border-color:rgba(212,180,131,.38)!important;
+  background:linear-gradient(135deg,rgba(212,180,131,.16),rgba(15,23,42,.62))!important;
+}
+#nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"] > .pet-v142-toggle::before{
+  content:"";
+  position:absolute;
+  inset-block:8px;
+  inset-inline-start:6px;
+  width:4px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#f5f1e8,#d4b483);
+  opacity:.75;
+  box-shadow:0 0 16px rgba(212,180,131,.32);
+}
+#nav.pet-v142-nav .pet-v142-direct.active,
+#nav.pet-v142-nav .pet-v142-items button.active,
+#nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"] .pet-v142-items button.active{
+  position:relative!important;
+  color:var(--appt-text-strong)!important;
+  border-color:rgba(245,241,232,.72)!important;
+  background:
+    radial-gradient(circle at 18% 50%,rgba(245,241,232,.20),transparent 34%),
+    linear-gradient(135deg,rgba(212,180,131,.34),rgba(34,211,238,.18) 52%,rgba(15,23,42,.76))!important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.22) inset,
+    0 0 0 2px rgba(212,180,131,.22),
+    0 0 28px rgba(212,180,131,.32),
+    0 14px 34px rgba(0,0,0,.34)!important;
+  transform:translateX(-2px)!important;
+}
+#nav.pet-v142-nav .pet-v142-items button.active::before,
+#nav.pet-v142-nav .pet-v142-direct.active::before{
+  content:"";
+  position:absolute;
+  inset-block:7px;
+  inset-inline-start:6px;
+  width:5px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#fff7ed,#22d3ee);
+  box-shadow:0 0 18px rgba(34,211,238,.55),0 0 24px rgba(212,180,131,.38);
+}
+#nav.pet-v142-nav .pet-v142-items button.active .pet-v142-title,
+#nav.pet-v142-nav .pet-v142-items button.active .pet-v142-sub{
+  color:var(--appt-text-strong)!important;
+  text-shadow:0 0 10px rgba(255,255,255,.16)!important;
+}
+#nav.pet-v142-nav .pet-v142-items button.active .pet-v142-sub{opacity:.92!important;}
+.vehicle-ops-tabs{gap:12px!important;margin:12px 0 16px!important;}
+.vehicle-ops-tab.active,
+.appointments-tab.active{
+  color:var(--appt-text-strong)!important;
+  border-color:rgba(245,241,232,.76)!important;
+  background:
+    radial-gradient(circle at 22% 50%,rgba(255,255,255,.24),transparent 36%),
+    linear-gradient(135deg,rgba(212,180,131,.42),rgba(34,211,238,.24) 55%,rgba(15,23,42,.68))!important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.20) inset,
+    0 0 0 2px rgba(212,180,131,.22),
+    0 0 30px rgba(34,211,238,.24),
+    0 16px 34px rgba(0,0,0,.28)!important;
+  transform:translateY(-2px)!important;
+}
+.vehicle-ops-tab.active::before,
+.appointments-tab.active::before{
+  content:"";
+  position:absolute;
+  left:18px;
+  right:18px;
+  bottom:-6px;
+  height:4px;
+  border-radius:999px;
+  background:linear-gradient(90deg,#d4b483,#22d3ee,#f5f1e8);
+  box-shadow:0 0 18px rgba(34,211,238,.42);
+}
+.vehicle-ops-day-row.active,
+.vehicle-ops-session.active,
+.vehicle-ops-pro.active{
+  border-color:rgba(245,241,232,.66)!important;
+  background:
+    radial-gradient(circle at 80% 0%,rgba(34,211,238,.16),transparent 32%),
+    linear-gradient(135deg,rgba(212,180,131,.18),rgba(15,23,42,.82))!important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.16) inset,
+    0 0 0 2px rgba(212,180,131,.18),
+    0 0 34px rgba(34,211,238,.20),
+    0 20px 48px rgba(0,0,0,.30)!important;
+}
+.vehicle-ops-day-row.active::before,
+.vehicle-ops-session.active::before,
+.vehicle-ops-pro.active::before{
+  content:"";
+  position:absolute;
+  inset-block:12px;
+  inset-inline-start:10px;
+  width:5px;
+  border-radius:999px;
+  background:linear-gradient(180deg,#22d3ee,#d4b483);
+  box-shadow:0 0 18px rgba(34,211,238,.45);
+  z-index:2;
+}
+.vehicle-ops-progress-step.active,
+.vehicle-ops-step.active{
+  color:var(--appt-text-strong)!important;
+  border-color:rgba(245,241,232,.76)!important;
+  background:
+    radial-gradient(circle at 20% 40%,rgba(255,255,255,.24),transparent 38%),
+    linear-gradient(135deg,rgba(14,165,233,.34),rgba(212,180,131,.28),rgba(15,23,42,.70))!important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.18) inset,
+    0 0 0 2px rgba(34,211,238,.18),
+    0 0 30px rgba(34,211,238,.28),
+    0 14px 30px rgba(0,0,0,.26)!important;
+  transform:translateY(-2px)!important;
+}
+.vehicle-ops-progress-step.active .vehicle-ops-progress-num{
+  background:linear-gradient(135deg,#f5f1e8,#22d3ee)!important;
+  color:#082f49!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.30),0 0 22px rgba(34,211,238,.42)!important;
+}
+.vehicle-ops-step.active::after,
+.vehicle-ops-progress-step.active::after{
+  content:"الحالة الحالية";
+  position:absolute;
+  top:-10px;
+  inset-inline-end:14px;
+  border-radius:999px;
+  padding:3px 8px;
+  background:linear-gradient(135deg,#d4b483,#22d3ee);
+  color:#0f172a;
+  font-size:10px;
+  font-weight:1000;
+  box-shadow:0 8px 20px rgba(0,0,0,.22);
+}
+.vehicle-ops-controls select:focus,
+.vehicle-ops-controls input:focus,
+.operation-kpi-controls select:focus,
+.operation-kpi-controls input:focus,
+.vehicle-ops-controls select:not([value="all"]),
+.operation-kpi-controls select:not([value="all"]){
+  border-color:rgba(245,241,232,.72)!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.14),0 0 20px rgba(212,180,131,.18)!important;
+}
+@media(max-width:760px){
+  #nav.pet-v142-nav .pet-v142-direct.active,
+  #nav.pet-v142-nav .pet-v142-items button.active{transform:none!important;}
+  .vehicle-ops-tab.active,.appointments-tab.active,.vehicle-ops-progress-step.active,.vehicle-ops-step.active{transform:none!important;}
+}
+
+/* PETATOE v6.1.186.2 — Operations Golden Active Light Consistency Fix
+   Scope: Operations Management section only. Visual-only enhancement.
+   Goal: make active state clear without hiding button/step data. */
+:root{
+  --pet-op-gold:#d4b483;
+  --pet-op-gold-soft:#f5f1e8;
+  --pet-op-gold-deep:#8b6f3d;
+  --pet-op-cyan:#22d3ee;
+  --pet-op-green:#22c55e;
+}
+
+/* Operations sidebar group + active child screens */
+#nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"] > .pet-v142-toggle{
+  position:relative!important;
+  border-color:rgba(212,180,131,.42)!important;
+  background:linear-gradient(135deg,rgba(212,180,131,.18),rgba(15,23,42,.72))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08),0 10px 26px rgba(0,0,0,.18)!important;
+}
+#nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"] > .pet-v142-toggle::before{
+  content:""!important;
+  position:absolute!important;
+  inset-block:8px!important;
+  inset-inline-start:7px!important;
+  width:5px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,var(--pet-op-gold-soft),var(--pet-op-gold))!important;
+  box-shadow:0 0 16px rgba(212,180,131,.48)!important;
+  opacity:1!important;
+}
+#nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"] .pet-v142-items button.active,
+#nav.pet-v142-nav .pet-v142-items button[data-tab="vehicleOperations"].active,
+#nav.pet-v142-nav .pet-v142-items button[data-tab="vehicleOperationsReports"].active,
+#nav.pet-v142-nav .pet-v142-items button[data-tab="operationKpis"].active,
+#nav.pet-v142-nav .pet-v142-items button[data-tab="appointments"].active{
+  color:var(--appt-text-strong)!important;
+  border-color:rgba(245,241,232,.86)!important;
+  background:
+    radial-gradient(circle at 9% 50%,rgba(245,241,232,.25),transparent 32%),
+    linear-gradient(135deg,rgba(212,180,131,.45),rgba(15,23,42,.82) 58%,rgba(8,47,73,.74))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 0 0 1px rgba(255,255,255,.12),
+    0 0 0 2px rgba(212,180,131,.28),
+    0 0 24px rgba(212,180,131,.42),
+    0 18px 36px rgba(0,0,0,.36)!important;
+}
+#nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"] .pet-v142-items button.active::before{
+  content:""!important;
+  position:absolute!important;
+  inset-block:8px!important;
+  inset-inline-start:7px!important;
+  width:6px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,var(--pet-op-gold-soft),var(--pet-op-gold),var(--pet-op-cyan))!important;
+  box-shadow:0 0 18px rgba(212,180,131,.62),0 0 28px rgba(34,211,238,.22)!important;
+}
+#nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"] .pet-v142-items button.active::after{
+  content:"الشاشة الحالية"!important;
+  position:absolute!important;
+  inset-inline-end:10px!important;
+  top:8px!important;
+  width:auto!important;
+  height:auto!important;
+  padding:2px 8px!important;
+  border-radius:999px!important;
+  background:linear-gradient(135deg,var(--pet-op-gold),var(--pet-op-gold-soft))!important;
+  color:#0f172a!important;
+  font-size:9px!important;
+  font-weight:1000!important;
+  opacity:.95!important;
+  box-shadow:0 6px 16px rgba(0,0,0,.22)!important;
+}
+
+/* Active tabs inside operations screens */
+.vehicle-ops-tabs .vehicle-ops-tab,
+.vehicle-ops-panel-tabs span,
+.appointments-tabs .appointments-tab{
+  position:relative;
+}
+.vehicle-ops-tab.active,
+.appointments-tab.active,
+.vehicle-ops-panel-tabs span.active{
+  color:var(--appt-text-strong)!important;
+  border-color:rgba(245,241,232,.82)!important;
+  background:
+    radial-gradient(circle at 18% 46%,rgba(245,241,232,.22),transparent 34%),
+    linear-gradient(135deg,rgba(212,180,131,.42),rgba(15,23,42,.78) 55%,rgba(8,47,73,.62))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 0 0 2px rgba(212,180,131,.24),
+    0 0 26px rgba(212,180,131,.34),
+    0 14px 30px rgba(0,0,0,.25)!important;
+}
+.vehicle-ops-tab.active::before,
+.appointments-tab.active::before{
+  content:""!important;
+  position:absolute!important;
+  left:18px!important;
+  right:18px!important;
+  bottom:-6px!important;
+  height:4px!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,var(--pet-op-gold),var(--pet-op-gold-soft),var(--pet-op-cyan))!important;
+  box-shadow:0 0 16px rgba(212,180,131,.52)!important;
+}
+
+/* Active selected appointments/current cards */
+.vehicle-ops-day-row.active,
+.vehicle-ops-queue-item.active,
+.vehicle-ops-session.active,
+.vehicle-ops-pro.active{
+  position:relative!important;
+  border-color:rgba(245,241,232,.72)!important;
+  background:
+    radial-gradient(circle at 85% 5%,rgba(212,180,131,.20),transparent 36%),
+    linear-gradient(135deg,rgba(212,180,131,.20),rgba(15,23,42,.86))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    inset 0 0 0 1px rgba(255,255,255,.08),
+    0 0 0 2px rgba(212,180,131,.18),
+    0 0 28px rgba(212,180,131,.28),
+    0 18px 40px rgba(0,0,0,.30)!important;
+}
+.vehicle-ops-day-row.active::before,
+.vehicle-ops-queue-item.active::before,
+.vehicle-ops-session.active::before,
+.vehicle-ops-pro.active::before{
+  content:""!important;
+  position:absolute!important;
+  inset-block:12px!important;
+  inset-inline-start:10px!important;
+  width:5px!important;
+  border-radius:999px!important;
+  background:linear-gradient(180deg,var(--pet-op-gold-soft),var(--pet-op-gold),var(--pet-op-cyan))!important;
+  box-shadow:0 0 18px rgba(212,180,131,.50)!important;
+  z-index:3!important;
+}
+.vehicle-ops-day-row.active em,
+.vehicle-ops-queue-item.active em{
+  background:linear-gradient(135deg,rgba(212,180,131,.32),rgba(34,197,94,.22))!important;
+  border:1px solid rgba(212,180,131,.34)!important;
+  color:var(--appt-text-strong)7ed!important;
+}
+
+/* Workflow active step: keep label visible, never cover button text */
+.vehicle-ops-step.active,
+.vehicle-ops-progress-step.active,
+.vehicle-ops-step-row .vehicle-ops-step.active{
+  position:relative!important;
+  overflow:visible!important;
+  color:var(--appt-text-strong)!important;
+  border-color:rgba(245,241,232,.78)!important;
+  background:
+    radial-gradient(circle at 50% 15%,rgba(245,241,232,.20),transparent 34%),
+    linear-gradient(135deg,rgba(212,180,131,.44),rgba(15,23,42,.80) 62%,rgba(8,47,73,.65))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 0 0 1px rgba(255,255,255,.10),
+    0 0 0 2px rgba(212,180,131,.24),
+    0 0 28px rgba(212,180,131,.36),
+    0 14px 30px rgba(0,0,0,.25)!important;
+  transform:translateY(-2px)!important;
+}
+.vehicle-ops-step.active::after,
+.vehicle-ops-progress-step.active::after{
+  content:"الحالة الحالية"!important;
+  position:absolute!important;
+  top:-18px!important;
+  inset-inline-start:50%!important;
+  inset-inline-end:auto!important;
+  transform:translateX(-50%)!important;
+  z-index:8!important;
+  white-space:nowrap!important;
+  border-radius:999px!important;
+  padding:4px 10px!important;
+  background:linear-gradient(135deg,var(--pet-op-gold),var(--pet-op-gold-soft))!important;
+  color:#0f172a!important;
+  font-size:10px!important;
+  font-weight:1000!important;
+  line-height:1!important;
+  box-shadow:0 8px 18px rgba(0,0,0,.28),0 0 16px rgba(212,180,131,.34)!important;
+  pointer-events:none!important;
+}
+.vehicle-ops-step.active b,
+.vehicle-ops-step.active span,
+.vehicle-ops-step.active small,
+.vehicle-ops-progress-step.active b,
+.vehicle-ops-progress-step.active span,
+.vehicle-ops-progress-step.active small{
+  color:var(--appt-text-strong)!important;
+  text-shadow:0 1px 8px rgba(0,0,0,.36)!important;
+  position:relative!important;
+  z-index:4!important;
+}
+.vehicle-ops-progress-step.active .vehicle-ops-progress-num{
+  background:linear-gradient(135deg,var(--pet-op-gold-soft),var(--pet-op-gold))!important;
+  color:#0f172a!important;
+  box-shadow:0 0 0 2px rgba(255,255,255,.24),0 0 20px rgba(212,180,131,.42)!important;
+}
+
+/* Completed status remains green; active/current is gold */
+.vehicle-ops-step.done:not(.active),
+.vehicle-ops-progress-step.done:not(.active){
+  background:linear-gradient(135deg,rgba(34,197,94,.24),rgba(15,23,42,.70))!important;
+  border-color:rgba(34,197,94,.38)!important;
+}
+.vehicle-ops-step.locked,
+.vehicle-ops-step:disabled{
+  opacity:.48!important;
+  filter:saturate(.65)!important;
+  box-shadow:none!important;
+}
+
+/* Active filters and KPI controls in Operations */
+.vehicle-ops-controls select:focus,
+.vehicle-ops-controls input:focus,
+.operation-kpi-controls select:focus,
+.operation-kpi-controls input:focus,
+.vehicle-ops-controls select:not([value="all"]),
+.operation-kpi-controls select:not([value="all"]){
+  border-color:rgba(245,241,232,.74)!important;
+  background:linear-gradient(135deg,rgba(212,180,131,.12),rgba(15,23,42,.54))!important;
+  box-shadow:0 0 0 1px rgba(255,255,255,.12),0 0 20px rgba(212,180,131,.22)!important;
+}
+
+/* Guard against duplicated old active labels hiding content */
+.vehicle-ops-status-panel .vehicle-ops-step.active::after{
+  top:-16px!important;
+  font-size:9px!important;
+  padding:3px 8px!important;
+}
+@media(max-width:760px){
+  .vehicle-ops-step.active,
+  .vehicle-ops-progress-step.active,
+  .vehicle-ops-tab.active,
+  .appointments-tab.active{transform:none!important;}
+  .vehicle-ops-step.active::after,
+  .vehicle-ops-progress-step.active::after{display:none!important;}
+  #nav.pet-v142-nav .pet-v142-group[data-group="operationManagement"] .pet-v142-items button.active::after{display:none!important;}
+}
+
+/* v6.1.188 — Fix workflow status active light readability
+   Scope: Operations > Vehicle Operations workflow status buttons only.
+   Goal: keep active gold highlight clear without covering step title/time. */
+.vehicle-ops-status-panel .vehicle-ops-step.active,
+.vehicle-ops-step-row .vehicle-ops-step.active,
+.vehicle-ops-progress-step.active{
+  position:relative!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  min-height:86px!important;
+  color:var(--appt-text-strong)fff!important;
+  border:1px solid rgba(245, 199, 125, .92)!important;
+  background:
+    linear-gradient(135deg, rgba(212,180,131,.32), rgba(15,23,42,.88) 54%, rgba(8,47,73,.52))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    inset 0 0 0 1px rgba(255,255,255,.08),
+    0 0 0 2px rgba(245,199,125,.16),
+    0 0 22px rgba(245,199,125,.28),
+    0 10px 22px rgba(0,0,0,.28)!important;
+  transform:translateY(-1px)!important;
+}
+.vehicle-ops-status-panel .vehicle-ops-step.active::after,
+.vehicle-ops-step-row .vehicle-ops-step.active::after,
+.vehicle-ops-progress-step.active::after{
+  display:none!important;
+  content:none!important;
+}
+.vehicle-ops-status-panel .vehicle-ops-step.active::before,
+.vehicle-ops-step-row .vehicle-ops-step.active::before,
+.vehicle-ops-progress-step.active::before{
+  content:""!important;
+  position:absolute!important;
+  inset:8px!important;
+  border-radius:inherit!important;
+  border:1px solid rgba(245,199,125,.70)!important;
+  background:
+    radial-gradient(circle at 50% 18%, rgba(245,199,125,.30), transparent 34%),
+    linear-gradient(180deg, rgba(245,199,125,.10), transparent 62%)!important;
+  box-shadow:0 0 24px rgba(245,199,125,.28)!important;
+  z-index:0!important;
+  pointer-events:none!important;
+}
+.vehicle-ops-status-panel .vehicle-ops-step.active span,
+.vehicle-ops-status-panel .vehicle-ops-step.active b,
+.vehicle-ops-status-panel .vehicle-ops-step.active small,
+.vehicle-ops-step-row .vehicle-ops-step.active span,
+.vehicle-ops-step-row .vehicle-ops-step.active b,
+.vehicle-ops-step-row .vehicle-ops-step.active small,
+.vehicle-ops-progress-step.active span,
+.vehicle-ops-progress-step.active b,
+.vehicle-ops-progress-step.active small,
+.vehicle-ops-progress-step.active > div{
+  position:relative!important;
+  z-index:2!important;
+  color:var(--appt-text-strong)!important;
+  text-shadow:0 1px 7px rgba(0,0,0,.55)!important;
+}
+.vehicle-ops-status-panel .vehicle-ops-step.active b,
+.vehicle-ops-step-row .vehicle-ops-step.active b,
+.vehicle-ops-progress-step.active b{
+  font-weight:1000!important;
+  letter-spacing:.1px!important;
+}
+.vehicle-ops-status-panel .vehicle-ops-step.active small,
+.vehicle-ops-step-row .vehicle-ops-step.active small,
+.vehicle-ops-progress-step.active small{
+  color:#f8fafc!important;
+  opacity:.96!important;
+}
+.vehicle-ops-progress-step.active .vehicle-ops-progress-num{
+  position:relative!important;
+  z-index:3!important;
+  background:linear-gradient(135deg,#f5f1e8,#d4b483)!important;
+  color:#111827!important;
+  box-shadow:0 0 0 2px rgba(255,255,255,.18),0 0 20px rgba(245,199,125,.36)!important;
+}
+/* status row layout consistency */
+.vehicle-ops-step-row{
+  align-items:stretch!important;
+  gap:12px!important;
+}
+.vehicle-ops-step-row .vehicle-ops-step{
+  min-height:82px!important;
+  padding:14px 12px!important;
+}
+
+/* v6.1.189 — Operations payment attachment + final states layout */
+.vehicle-ops-step-row{
+  grid-template-columns:repeat(7,minmax(92px,1fr))!important;
+}
+.vehicle-ops-attachment-label{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+  border:1px dashed rgba(212,180,131,.44)!important;
+  border-radius:16px!important;
+  background:linear-gradient(135deg,rgba(212,180,131,.10),rgba(15,23,42,.58))!important;
+  padding:12px!important;
+  color:#f8fafc!important;
+  cursor:pointer!important;
+}
+.vehicle-ops-attachment-label input[type="file"]{
+  display:none!important;
+}
+.vehicle-ops-attachment-label span{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:42px!important;
+  border-radius:14px!important;
+  background:rgba(15,23,42,.62)!important;
+  border:1px solid rgba(245,199,125,.24)!important;
+  color:#f5f1e8!important;
+  font-weight:1000!important;
+}
+.vehicle-ops-attachment-label small{
+  color:#cbd5e1!important;
+  font-weight:800!important;
+  text-align:center!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.vehicle-ops-attachment-preview{
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+  padding:8px!important;
+  border-radius:14px!important;
+  border:1px solid rgba(34,197,94,.24)!important;
+  background:rgba(34,197,94,.08)!important;
+}
+.vehicle-ops-attachment-preview img{
+  width:48px!important;
+  height:48px!important;
+  object-fit:cover!important;
+  border-radius:12px!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+}
+.vehicle-ops-attachment-preview b{
+  color:var(--appt-text-strong)!important;
+  font-size:12px!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+.vehicle-ops-step-row .vehicle-ops-step b{font-size:12px!important;}
+.vehicle-ops-step-row .vehicle-ops-step small{font-size:10px!important;}
+@media(max-width:1500px){.vehicle-ops-step-row{grid-template-columns:repeat(4,minmax(100px,1fr))!important;}}
+@media(max-width:900px){.vehicle-ops-step-row{grid-template-columns:repeat(2,minmax(100px,1fr))!important;}}
+
+/* v6.1.190 — Operations current order session details table UI
+   Scope: إدارة التشغيل > تشغيل السيارات > الطلب الحالي
+   Visual-only replacement for scattered details block with a professional grouped table. */
+.vehicle-ops-session-table-card{
+  margin:16px 18px 14px!important;
+  border:1px solid rgba(212,180,131,.34)!important;
+  border-radius:22px!important;
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at 78% 8%,rgba(212,180,131,.12),transparent 28%),
+    linear-gradient(180deg,rgba(7,19,34,.82),rgba(15,23,42,.62))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 18px 38px rgba(0,0,0,.24)!important;
+}
+.vehicle-ops-session-table-title{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:12px!important;
+  padding:14px 18px!important;
+  border-bottom:1px solid rgba(212,180,131,.22)!important;
+  background:linear-gradient(90deg,transparent,rgba(212,180,131,.12),transparent)!important;
+  text-align:center!important;
+}
+.vehicle-ops-session-table-title span,
+.vehicle-ops-session-table-title::before,
+.vehicle-ops-session-table-title::after{
+  content:""!important;
+  display:block!important;
+  width:72px!important;
+  height:2px!important;
+  border-radius:999px!important;
+  background:linear-gradient(90deg,transparent,#d4b483,transparent)!important;
+  box-shadow:0 0 12px rgba(212,180,131,.35)!important;
+}
+.vehicle-ops-session-table-title h4{
+  margin:0!important;
+  color:#f5c77d!important;
+  font-size:18px!important;
+  font-weight:1000!important;
+  white-space:nowrap!important;
+}
+.vehicle-ops-session-table-title small{
+  color:#cbd5e1!important;
+  font-weight:800!important;
+  font-size:11px!important;
+  margin-inline-start:8px!important;
+}
+.vehicle-ops-details-table-wrap{
+  width:100%!important;
+  overflow:auto!important;
+}
+.vehicle-ops-details-table{
+  width:100%!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  direction:rtl!important;
+  table-layout:fixed!important;
+}
+.vehicle-ops-details-table th,
+.vehicle-ops-details-table td{
+  border-inline-start:1px solid rgba(148,163,184,.12)!important;
+  border-bottom:1px solid rgba(148,163,184,.12)!important;
+}
+.vehicle-ops-details-table tr:last-child td{border-bottom:0!important;}
+.vehicle-ops-details-section th{
+  padding:10px 18px!important;
+  text-align:right!important;
+  color:#f5c77d!important;
+  font-size:13px!important;
+  font-weight:1000!important;
+  background:linear-gradient(90deg,rgba(212,180,131,.16),rgba(15,23,42,.28),transparent)!important;
+}
+.vehicle-ops-details-section span{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:28px!important;
+  height:28px!important;
+  margin-inline-end:8px!important;
+  border-radius:10px!important;
+  background:rgba(212,180,131,.16)!important;
+  border:1px solid rgba(212,180,131,.22)!important;
+}
+.vehicle-ops-details-table td{
+  padding:13px 14px!important;
+  text-align:center!important;
+  background:rgba(15,23,42,.34)!important;
+  vertical-align:middle!important;
+}
+.vehicle-ops-details-table tr:nth-child(4n+2) td,
+.vehicle-ops-details-table tr:nth-child(4n+4) td{
+  background:rgba(30,41,59,.30)!important;
+}
+.vehicle-ops-details-table td small{
+  display:block!important;
+  margin-bottom:7px!important;
+  color:#d4b483!important;
+  font-size:12px!important;
+  font-weight:1000!important;
+}
+.vehicle-ops-details-table td b{
+  display:block!important;
+  color:#f8fafc!important;
+  font-size:14px!important;
+  font-weight:1000!important;
+  line-height:1.7!important;
+  word-break:break-word!important;
+}
+.vehicle-ops-details-notes{
+  text-align:center!important;
+  color:#cbd5e1!important;
+  min-height:44px!important;
+}
+.vehicle-ops-details-notes b{
+  color:#cbd5e1!important;
+  font-weight:850!important;
+}
+@media(max-width:980px){
+  .vehicle-ops-session-table-title{flex-wrap:wrap!important;}
+  .vehicle-ops-session-table-title span,
+  .vehicle-ops-session-table-title::before,
+  .vehicle-ops-session-table-title::after{width:42px!important;}
+  .vehicle-ops-details-table{min-width:760px!important;}
+}
+
+/* v6.1.191 — Stage based current order UI */
+.vehicle-ops-current-stage-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 300px;
+  gap:18px;
+  align-items:start;
+  margin-top:12px;
+  direction:rtl;
+}
+.vehicle-ops-current-main.stage-based{
+  border:1px solid rgba(245,190,95,.20);
+  border-radius:24px;
+  background:linear-gradient(180deg,rgba(7,19,34,.82),rgba(15,23,42,.62));
+  box-shadow:0 22px 58px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.05);
+  overflow:hidden;
+  padding-bottom:18px;
+}
+.vehicle-ops-status-panel-top{
+  margin:16px 18px 12px!important;
+  border-color:rgba(245,190,95,.22)!important;
+  background:linear-gradient(135deg,rgba(2,6,23,.72),rgba(30,41,59,.45))!important;
+}
+.vehicle-ops-stage-alert{
+  margin:0 18px 14px;
+  padding:13px 16px;
+  border-radius:16px;
+  border:1px solid rgba(245,190,95,.35);
+  background:linear-gradient(90deg,rgba(245,158,11,.12),rgba(14,165,233,.06));
+  color:#f9d58a;
+  font-weight:900;
+  text-align:center;
+}
+.vehicle-ops-stage-card{
+  margin:14px 18px;
+  padding:16px;
+  border-radius:22px;
+  border:1px solid rgba(148,163,184,.15);
+  background:linear-gradient(180deg,rgba(15,23,42,.64),rgba(2,6,23,.32));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.vehicle-ops-stage-title{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:12px;
+  margin-bottom:14px;
+  border-bottom:1px solid rgba(148,163,184,.13);
+  padding-bottom:12px;
+}
+.vehicle-ops-stage-title>span{
+  width:44px;height:44px;border-radius:15px;display:grid;place-items:center;
+  background:linear-gradient(135deg,rgba(245,190,95,.22),rgba(14,165,233,.10));
+  border:1px solid rgba(245,190,95,.28);
+  color:#ffd38a;font-size:20px;
+}
+.vehicle-ops-stage-title h4{margin:0;color:var(--appt-text-strong);font-weight:1000;font-size:19px;}
+.vehicle-ops-stage-title p{margin:4px 0 0;color:#b9c5d6;font-weight:800;font-size:12px;}
+.vehicle-ops-payment-grid-stage{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:14px;
+}
+.vehicle-ops-finance-cards.stage{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin:0;
+}
+.vehicle-ops-stage-payment label{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+  margin:0;
+  color:#f8fafc;
+  font-weight:1000;
+  font-size:13px;
+}
+.vehicle-ops-stage-payment input,
+.vehicle-ops-stage-payment select{
+  width:100%;min-height:52px;border-radius:16px;border:1px solid rgba(148,163,184,.20);
+  background:rgba(51,65,85,.58);color:var(--appt-text-strong);padding:0 14px;outline:none;font-family:inherit;font-weight:900;
+}
+.vehicle-ops-attachment-label.stage{
+  border:1px dashed rgba(245,190,95,.34);
+  border-radius:18px;
+  padding:12px;
+  background:rgba(245,158,11,.06);
+}
+.vehicle-ops-attachment-label.stage input{display:none;}
+.vehicle-ops-attachment-label.stage span{
+  min-height:42px;border-radius:14px;display:grid;place-items:center;
+  border:1px solid rgba(245,190,95,.25);background:rgba(2,6,23,.32);color:var(--appt-text-strong);
+}
+.vehicle-ops-attachment-preview.stage{
+  display:flex;align-items:center;gap:12px;min-height:72px;
+  padding:10px;border-radius:16px;background:rgba(16,185,129,.10);border:1px solid rgba(16,185,129,.25);
+}
+.vehicle-ops-attachment-preview.stage img{width:62px;height:52px;border-radius:12px;object-fit:cover;border:1px solid rgba(255,255,255,.20);}
+.vehicle-ops-collect.stage,.vehicle-ops-save.stage{margin-top:14px;width:100%;min-height:54px;border-radius:16px;font-size:16px;font-weight:1000;}
+.vehicle-ops-session-note.stage{margin-top:14px;}
+.vehicle-ops-stage-hint{
+  margin-top:12px;padding:10px 12px;border-radius:14px;
+  background:rgba(245,158,11,.10);border:1px solid rgba(245,190,95,.24);
+  color:#f8dca6;font-weight:900;text-align:center;font-size:12px;
+}
+.vehicle-ops-final-grid{
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;
+}
+.vehicle-ops-final-grid span{
+  display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;
+  min-height:76px;border-radius:16px;background:rgba(15,23,42,.56);border:1px solid rgba(148,163,184,.15);
+}
+.vehicle-ops-final-grid small{color:#f4c873;font-weight:1000;}
+.vehicle-ops-final-grid b{color:var(--appt-text-strong);font-weight:1000;}
+.vehicle-ops-final-summary.confirmed{border-color:rgba(34,197,94,.28);background:linear-gradient(135deg,rgba(22,163,74,.10),rgba(2,6,23,.36));}
+.vehicle-ops-final-attachment{margin-top:14px;border-top:1px solid rgba(148,163,184,.12);padding-top:14px;}
+.vehicle-ops-final-attachment>b{display:block;color:#f4c873;margin-bottom:8px;}
+.vehicle-ops-quick-side{
+  display:flex;flex-direction:column;gap:14px;
+}
+.vehicle-ops-quick-side .vehicle-ops-mini-log,
+.vehicle-ops-quick-side .vehicle-ops-current-mini{
+  border:1px solid rgba(245,190,95,.18);
+  border-radius:22px;
+  background:linear-gradient(180deg,rgba(7,19,34,.72),rgba(15,23,42,.54));
+  padding:16px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+}
+.vehicle-ops-quick-side .vehicle-ops-mini-log h4{margin:0 0 10px;color:var(--appt-text-strong);font-weight:1000;}
+.vehicle-ops-quick-side .vehicle-ops-mini-log small{display:block;color:#c9d4e5;font-weight:800;margin:7px 0;}
+.vehicle-ops-current-main.stage-based .vehicle-ops-details-table-wrap{margin:0!important;}
+@media(max-width:1280px){
+  .vehicle-ops-current-stage-layout{grid-template-columns:1fr;}
+  .vehicle-ops-quick-side{grid-row:auto;}
+  .vehicle-ops-payment-grid-stage{grid-template-columns:1fr;}
+  .vehicle-ops-final-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:760px){
+  .vehicle-ops-finance-cards.stage,.vehicle-ops-final-grid{grid-template-columns:1fr;}
+}
+
+
+/* PHASE T1 — Appointment History UX Refactor */
+.appointments-table{min-width:980px}
+.appointments-table .appointments-date-cell{white-space:nowrap}
+.appointments-date-sub{display:block;margin-top:4px;color:rgba(226,232,240,.62);font-size:11px;font-weight:800;direction:ltr;text-align:right}
+.appointments-animal-cell{max-width:340px;white-space:normal;line-height:1.7}
+.appointment-details-btn{height:38px;border-radius:13px;white-space:nowrap}
+.appointment-details-modal{position:fixed;inset:0;z-index:99999;display:flex;justify-content:flex-start;align-items:stretch;padding:18px;direction:rtl}
+.appointment-details-backdrop{position:absolute;inset:0;background:rgba(2,6,23,.62);backdrop-filter:blur(10px)}
+.appointment-details-panel{position:relative;width:min(560px,96vw);max-height:calc(100vh - 36px);overflow:auto;border-radius:24px;border:1px solid rgba(129,140,248,.55);background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(30,41,59,.92));box-shadow:0 24px 80px rgba(0,0,0,.55),0 0 40px rgba(99,102,241,.16);padding:18px;color:var(--appt-text-strong)}
+.appointment-details-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid rgba(148,163,184,.18)}
+.appointment-details-head h3{margin:0;font-size:22px;font-weight:950}.appointment-details-head p{margin:4px 0 0;color:rgba(226,232,240,.62);font-weight:800}.appointment-details-close{width:42px;height:42px;border-radius:14px;border:1px solid rgba(148,163,184,.20);background:rgba(15,23,42,.60);color:#cbd5e1;font-size:26px;cursor:pointer}.appointment-details-status{min-width:86px;text-align:left}
+.appointment-details-hero{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}.appointment-details-hero>div{border-radius:18px;border:1px solid rgba(148,163,184,.18);background:linear-gradient(135deg,rgba(30,41,59,.68),rgba(15,23,42,.54));padding:14px}.appointment-details-hero span,.appointment-detail-item span{display:block;color:rgba(226,232,240,.58);font-size:12px;font-weight:900}.appointment-details-hero strong{display:block;margin-top:5px;font-size:18px;font-weight:950}.appointment-details-hero small{display:block;margin-top:4px;color:rgba(226,232,240,.68);font-weight:800}
+.appointment-details-section{margin-top:12px;border-radius:18px;border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.34);overflow:hidden}.appointment-details-section h4{margin:0;padding:12px 14px;border-bottom:1px solid rgba(148,163,184,.14);font-size:14px;font-weight:950}.appointment-details-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px}.appointment-detail-item{border-radius:14px;background:rgba(30,41,59,.46);border:1px solid rgba(148,163,184,.12);padding:10px;min-height:64px}.appointment-detail-item.wide{grid-column:1/-1}.appointment-detail-item b{display:block;margin-top:6px;font-weight:950;color:#f8fafc;word-break:break-word}.appointment-detail-item .appointments-status-input{width:100%;margin-top:6px}.appointment-details-notes{padding:14px;color:rgba(226,232,240,.78);font-weight:850;min-height:54px}.appointment-details-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.appointment-details-actions .btn{flex:1 1 140px;min-height:42px}
+@media(max-width:760px){.appointments-table{min-width:820px}.appointment-details-modal{padding:10px}.appointment-details-panel{width:100%;max-height:calc(100vh - 20px);border-radius:20px}.appointment-details-hero,.appointment-details-grid{grid-template-columns:1fr}}
+
+
+/* PETATOE v6.4.73 — Appointment History details hover popover */
+.appointment-details-hover-btn{min-width:118px;justify-content:center;transition:transform .16s ease,box-shadow .16s ease,border-color .16s ease;background:linear-gradient(135deg,rgba(51,65,85,.82),rgba(30,41,59,.74));border-color:rgba(148,163,184,.35)}
+.appointment-details-hover-btn:hover,.appointment-details-hover-btn:focus{transform:translateY(-1px);border-color:rgba(96,165,250,.78);box-shadow:0 0 0 1px rgba(96,165,250,.18),0 14px 30px rgba(37,99,235,.20);outline:none}
+.appointment-details-popover{position:fixed;z-index:999999;display:none;max-width:calc(100vw - 20px);max-height:calc(100vh - 20px);overflow:auto;direction:rtl;border:1px solid rgba(96,165,250,.62);border-radius:18px;background:radial-gradient(circle at 18% 0%,rgba(59,130,246,.16),transparent 36%),linear-gradient(145deg,rgba(15,23,42,.96),rgba(8,19,35,.96));box-shadow:0 28px 80px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.05) inset;backdrop-filter:blur(18px);padding:14px;color:#e5eefb;font-family:Cairo,Arial,sans-serif;animation:apptPopoverIn .14s ease-out}
+.appointment-details-popover:before{content:"";position:absolute;top:-9px;left:42px;width:16px;height:16px;transform:rotate(45deg);background:rgba(15,23,42,.96);border-top:1px solid rgba(96,165,250,.62);border-left:1px solid rgba(96,165,250,.62)}
+.appointment-details-popover.above:before{top:auto;bottom:-9px;border-top:0;border-left:0;border-right:1px solid rgba(96,165,250,.62);border-bottom:1px solid rgba(96,165,250,.62)}
+@keyframes apptPopoverIn{from{opacity:0;transform:translateY(6px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.appointment-popover-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:4px 4px 12px;border-bottom:1px solid rgba(148,163,184,.16)}
+.appointment-popover-head small{display:block;color:#7f93af;font-weight:900;font-size:11px;margin-bottom:3px}.appointment-popover-head h3{margin:0;color:#fff;font-size:18px;font-weight:1000}.appointment-popover-head p{margin:3px 0 0;color:#b8c5d8;font-size:12px;font-weight:850}.appointment-popover-hero{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.appointment-popover-hero>div{border:1px solid rgba(148,163,184,.16);background:rgba(15,23,42,.48);border-radius:14px;padding:10px}.appointment-popover-hero span,.appointment-popover-item span,.appointment-popover-notes span{display:block;color:#91a3ba;font-size:11px;font-weight:900}.appointment-popover-hero b{display:block;color:#fff;font-size:14px;font-weight:1000;margin-top:3px}.appointment-popover-hero small{display:block;color:#c8d3e4;font-size:11px;font-weight:800;margin-top:3px;line-height:1.5}.appointment-popover-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.appointment-popover-section{border:1px solid rgba(148,163,184,.16);background:linear-gradient(135deg,rgba(15,23,42,.50),rgba(30,41,59,.30));border-radius:15px;padding:10px;min-width:0}.appointment-popover-section h4{margin:0 0 8px;color:#fff;font-size:13px;font-weight:1000}.appointment-popover-item{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-top:1px dashed rgba(148,163,184,.14);padding:7px 0}.appointment-popover-item:first-of-type{border-top:0}.appointment-popover-item span i{font-style:normal;margin-inline-end:5px;color:#60a5fa}.appointment-popover-item b{color:#edf4ff;font-size:12px;font-weight:950;text-align:left;direction:rtl;max-width:62%;word-break:break-word}.appointment-popover-item.success b{color:#22c55e}.appointment-popover-item.danger b{color:#fb7185}.appointment-popover-item.wide{display:block}.appointment-popover-item.wide b{display:block;max-width:100%;text-align:right;margin-top:3px}.appointment-popover-notes{margin-top:10px;border:1px solid rgba(148,163,184,.16);background:rgba(15,23,42,.42);border-radius:14px;padding:10px}.appointment-popover-notes b{display:block;color:#e5eefb;font-size:12px;font-weight:850;margin-top:4px;white-space:normal;word-break:break-word}.appointment-popover-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 2px 0;margin-top:8px;border-top:1px solid rgba(148,163,184,.12);color:#9fb0c6;font-size:11px;font-weight:900}
+@media(max-width:760px){.appointment-details-popover{width:calc(100vw - 20px)!important;left:10px!important;right:auto!important}.appointment-popover-grid,.appointment-popover-hero{grid-template-columns:1fr}.appointment-popover-item b{max-width:68%}}
+
+/* PETATOE v6.4.74 — Fix appointment details popover finance rows
+   Prevent global .success/.danger Liquid Glass button/card styles from overriding
+   the small key/value rows inside the appointment hover popover. */
+.appointment-details-popover .appointment-popover-item.success,
+.appointment-details-popover .appointment-popover-item.danger{
+  background:transparent!important;
+  background-image:none!important;
+  color:inherit!important;
+  border-radius:0!important;
+  box-shadow:none!important;
+  min-height:0!important;
+  height:auto!important;
+  width:auto!important;
+  padding:7px 0!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  overflow:visible!important;
+}
+.appointment-details-popover .appointment-popover-item.success::before,
+.appointment-details-popover .appointment-popover-item.success::after,
+.appointment-details-popover .appointment-popover-item.danger::before,
+.appointment-details-popover .appointment-popover-item.danger::after{
+  content:none!important;
+  display:none!important;
+}
+.appointment-details-popover .appointment-popover-item.success span,
+.appointment-details-popover .appointment-popover-item.danger span{
+  color:#91a3ba!important;
+  background:transparent!important;
+  position:static!important;
+  z-index:auto!important;
+}
+.appointment-details-popover .appointment-popover-item.success b,
+.appointment-details-popover .appointment-popover-item.danger b{
+  background:transparent!important;
+  position:static!important;
+  z-index:auto!important;
+  max-width:62%!important;
+  text-align:left!important;
+  direction:rtl!important;
+  word-break:break-word!important;
+}
+.appointment-details-popover .appointment-popover-item.success b{color:#22c55e!important;}
+.appointment-details-popover .appointment-popover-item.danger b{color:#fb7185!important;}
+.appointment-details-popover .appointment-popover-item span i{
+  display:inline!important;
+  width:auto!important;
+  height:auto!important;
+  min-width:0!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  transform:none!important;
+  color:#60a5fa!important;
+  font-style:normal!important;
+}
+
+
+/* PETATOE v6.4.75 — Appointment popover finance icon cleanup
+   Root cause: generic .success/.danger classes inherited Liquid Glass button/card effects.
+   Finance rows now use scoped classes only, and all decorative pseudo-elements are disabled inside the popover rows. */
+.appointment-details-popover .appointment-popover-item.success,
+.appointment-details-popover .appointment-popover-item.danger{
+  all:unset!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  border-top:1px dashed rgba(148,163,184,.14)!important;
+  padding:7px 0!important;
+  box-sizing:border-box!important;
+  color:inherit!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:none!important;
+  overflow:visible!important;
+}
+.appointment-details-popover .appointment-popover-item,
+.appointment-details-popover .appointment-popover-item *,
+.appointment-details-popover .appointment-popover-item *::before,
+.appointment-details-popover .appointment-popover-item *::after{
+  box-shadow:none!important;
+  text-shadow:none!important;
+}
+.appointment-details-popover .appointment-popover-item::before,
+.appointment-details-popover .appointment-popover-item::after,
+.appointment-details-popover .appointment-popover-item span::before,
+.appointment-details-popover .appointment-popover-item span::after,
+.appointment-details-popover .appointment-popover-item b::before,
+.appointment-details-popover .appointment-popover-item b::after,
+.appointment-details-popover .appointment-popover-item i::before,
+.appointment-details-popover .appointment-popover-item i::after{
+  content:none!important;
+  display:none!important;
+}
+.appointment-details-popover .appointment-popover-item span{
+  display:block!important;
+  color:#91a3ba!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  background:transparent!important;
+  position:static!important;
+  z-index:auto!important;
+  min-width:0!important;
+  width:auto!important;
+  height:auto!important;
+  border:0!important;
+  transform:none!important;
+}
+.appointment-details-popover .appointment-popover-item b{
+  display:block!important;
+  color:#edf4ff!important;
+  font-size:12px!important;
+  font-weight:950!important;
+  max-width:62%!important;
+  text-align:left!important;
+  direction:rtl!important;
+  word-break:break-word!important;
+  background:transparent!important;
+  position:static!important;
+  z-index:auto!important;
+  min-width:0!important;
+  width:auto!important;
+  height:auto!important;
+  border:0!important;
+  transform:none!important;
+}
+.appointment-details-popover .appointment-popover-item.appt-money-paid b{color:#22c55e!important;}
+.appointment-details-popover .appointment-popover-item.appt-money-remaining b{color:#fb7185!important;}
+.appointment-details-popover .appt-popover-icon,
+.appointment-details-popover .appointment-popover-item span i{
+  display:inline!important;
+  margin-inline-end:5px!important;
+  color:#60a5fa!important;
+  font-style:normal!important;
+  font-size:11px!important;
+  line-height:1!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  text-shadow:none!important;
+  transform:none!important;
+  width:auto!important;
+  height:auto!important;
+  min-width:0!important;
+  padding:0!important;
+  border-radius:0!important;
+  overflow:visible!important;
+}
+
+/* PETATOE v6.4.76 — Appointment details popover arrow removal
+   Root cause: the popover pointer triangle (.appointment-details-popover::before)
+   could be visually rendered over the financial rows after viewport clamping.
+   Remove the pointer completely to prevent the black diamond from appearing. */
+.appointment-details-popover::before,
+.appointment-details-popover::after,
+.appointment-details-popover.above::before,
+.appointment-details-popover.above::after{
+  content:none!important;
+  display:none!important;
+  width:0!important;
+  height:0!important;
+  border:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  transform:none!important;
+}
+.appointment-details-popover{
+  overflow:auto!important;
+  isolation:isolate!important;
+}
+.appointment-details-popover .appointment-popover-section,
+.appointment-details-popover .appointment-popover-item,
+.appointment-details-popover .appointment-popover-item span,
+.appointment-details-popover .appointment-popover-item b{
+  isolation:isolate!important;
+}
+
+
+/* PETATOE v6.4.84 — Vehicle Operations full-width day board + current-step style actions */
+.vehicle-ops-day-layout{
+  grid-template-columns:1fr!important;
+  width:100%!important;
+  max-width:none!important;
+}
+.vehicle-ops-day-list{
+  width:100%!important;
+  max-width:none!important;
+}
+.vehicle-ops-day-side{
+  width:100%!important;
+  max-width:none!important;
+  display:grid!important;
+  grid-template-columns:minmax(260px,1fr) minmax(220px,.7fr)!important;
+  align-items:center!important;
+}
+.vehicle-ops-day-side h3,
+.vehicle-ops-day-side small{grid-column:1/-1!important}
+.vehicle-ops-day-side .vehicle-ops-current-mini{text-align:center!important}
+.vehicle-ops-day-row{
+  grid-template-columns:48px 105px minmax(260px,1.2fr) minmax(170px,230px) 120px 105px 118px minmax(170px,230px)!important;
+  gap:14px!important;
+  padding:18px 18px!important;
+  min-height:118px!important;
+  overflow:visible!important;
+}
+.vehicle-ops-row-actions{
+  grid-column:auto!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  gap:12px!important;
+  margin:0!important;
+  flex-wrap:nowrap!important;
+}
+.vehicle-ops-row-actions .vehicle-ops-circle-action{
+  width:82px!important;
+  height:82px!important;
+  min-width:82px!important;
+  min-height:82px!important;
+  padding:0!important;
+  border-radius:999px!important;
+  display:inline-flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+  color:#f8fafc!important;
+  font-family:inherit!important;
+  font-weight:1000!important;
+  line-height:1.1!important;
+  cursor:pointer!important;
+  position:relative!important;
+  overflow:hidden!important;
+  border:1px solid rgba(212,180,131,.48)!important;
+  background:radial-gradient(circle at 50% 18%,rgba(245,241,232,.22),transparent 32%),linear-gradient(135deg,rgba(32,54,78,.82),rgba(15,23,42,.92))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 0 0 2px rgba(212,180,131,.12),0 0 22px rgba(212,180,131,.16),0 12px 28px rgba(0,0,0,.26)!important;
+  transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease!important;
+}
+.vehicle-ops-row-actions .vehicle-ops-circle-action:hover{
+  transform:translateY(-2px)!important;
+  border-color:rgba(245,218,168,.78)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.20),0 0 0 3px rgba(212,180,131,.18),0 0 28px rgba(212,180,131,.30),0 16px 34px rgba(0,0,0,.32)!important;
+}
+.vehicle-ops-row-actions .vehicle-ops-circle-action.open{
+  background:radial-gradient(circle at 50% 18%,rgba(134,239,172,.24),transparent 34%),linear-gradient(135deg,rgba(16,185,129,.30),rgba(15,23,42,.86))!important;
+  border-color:rgba(34,197,94,.48)!important;
+}
+.vehicle-ops-row-actions .vehicle-ops-circle-action.reopen{
+  background:radial-gradient(circle at 50% 18%,rgba(251,191,36,.24),transparent 34%),linear-gradient(135deg,rgba(212,180,131,.30),rgba(15,23,42,.88))!important;
+  border-color:rgba(212,180,131,.58)!important;
+}
+.vehicle-ops-row-actions .vehicle-ops-circle-action.close{
+  background:radial-gradient(circle at 50% 18%,rgba(251,191,36,.22),transparent 34%),linear-gradient(135deg,rgba(234,179,8,.22),rgba(15,23,42,.88))!important;
+  border-color:rgba(234,179,8,.44)!important;
+}
+.vehicle-ops-row-actions .vehicle-ops-circle-action.confirm{
+  background:radial-gradient(circle at 50% 18%,rgba(196,181,253,.22),transparent 34%),linear-gradient(135deg,rgba(124,58,237,.25),rgba(15,23,42,.88))!important;
+  border-color:rgba(168,85,247,.46)!important;
+}
+.vehicle-ops-action-icon{
+  display:block!important;
+  font-size:22px!important;
+  line-height:1!important;
+}
+.vehicle-ops-row-actions .vehicle-ops-circle-action b{
+  display:block!important;
+  font-size:13px!important;
+  white-space:normal!important;
+  max-width:72px!important;
+  text-align:center!important;
+}
+@media(max-width:1280px){
+  .vehicle-ops-day-row{grid-template-columns:44px 90px minmax(220px,1fr) minmax(150px,210px) 110px 100px minmax(160px,220px)!important}
+  .vehicle-ops-row-actions{grid-column:1/-1!important;justify-content:flex-start!important}
+}
+@media(max-width:900px){
+  .vehicle-ops-day-side{grid-template-columns:1fr!important}
+  .vehicle-ops-day-row{grid-template-columns:1fr!important;min-height:0!important}
+  .vehicle-ops-row-actions{justify-content:stretch!important;flex-wrap:wrap!important}
+  .vehicle-ops-row-actions .vehicle-ops-circle-action{width:88px!important;height:88px!important;min-width:88px!important;flex:1 1 120px!important;border-radius:24px!important}
+}
+
+
+/* PHASE T8 - Approved Vehicle Day Action Buttons */
+.vehicle-ops-row-actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:28px!important;
+  min-width:260px!important;
+}
+
+.vehicle-ops-circle-action{
+  width:96px!important;
+  height:96px!important;
+  min-width:96px!important;
+  min-height:96px!important;
+  border-radius:999px!important;
+}
+
+.vehicle-ops-circle-action.open{
+  border:2px solid rgba(16,185,129,.55)!important;
+  box-shadow:0 0 0 3px rgba(16,185,129,.10),0 0 24px rgba(16,185,129,.28)!important;
+}
+
+.vehicle-ops-circle-action.reopen{
+  border:2px solid rgba(245,158,11,.55)!important;
+  box-shadow:0 0 0 3px rgba(245,158,11,.10),0 0 24px rgba(245,158,11,.28)!important;
+}
+
+.vehicle-ops-action-icon{
+  font-size:30px!important;
+  line-height:1!important;
+}
+
+.vehicle-ops-circle-action b{
+  display:block!important;
+  font-size:15px!important;
+  margin-top:6px!important;
+}
+
+
+/* PHASE T8C - Keep approved circular vehicle action design, change position only.
+   الزرين فتح / فتح مرة أخرى يظلان بنفس التصميم الدائري، لكن جنب بعض داخل الكارت. */
+.vehicle-ops-row-actions{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:18px!important;
+  width:auto!important;
+  min-width:210px!important;
+  max-width:260px!important;
+  margin:0!important;
+  padding:0!important;
+  align-self:center!important;
+  justify-self:end!important;
+}
+
+.vehicle-ops-row-actions .vehicle-ops-circle-action{
+  flex:0 0 96px!important;
+  width:96px!important;
+  height:96px!important;
+  min-width:96px!important;
+  min-height:96px!important;
+  max-width:96px!important;
+  max-height:96px!important;
+  border-radius:999px!important;
+  padding:0!important;
+  display:inline-flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:6px!important;
+}
+
+/* Prevent any full-width strip style from previous phase */
+.vehicle-ops-row-actions .vehicle-ops-circle-action,
+.vehicle-ops-row-actions button.vehicle-ops-circle-action{
+  inline-size:96px!important;
+  block-size:96px!important;
+}
+
+/* Ensure the row allocates a side-by-side actions slot inside the appointment card */
+.vehicle-ops-day-row{
+  align-items:center!important;
+}
+
+.vehicle-ops-day-row .vehicle-ops-row-actions{
+  grid-row:1!important;
+}
+
+/* RTL desktop layout: keep actions at the visual right end of the card */
+@media (min-width: 1101px){
+  .vehicle-ops-day-row{
+    grid-template-columns:
+      minmax(110px, 150px)
+      minmax(80px, 120px)
+      minmax(110px, 150px)
+      minmax(130px, 180px)
+      minmax(240px, 1fr)
+      minmax(90px, 115px)
+      46px
+      minmax(220px, 260px)!important;
+    gap:18px!important;
+  }
+  .vehicle-ops-day-row .vehicle-ops-row-actions{
+    grid-column:8!important;
+  }
+}
+
+/* Smaller screens: still side-by-side, but smaller circles */
+@media (max-width: 1100px){
+  .vehicle-ops-row-actions{
+    gap:14px!important;
+    min-width:180px!important;
+    max-width:220px!important;
+  }
+  .vehicle-ops-row-actions .vehicle-ops-circle-action{
+    flex-basis:82px!important;
+    width:82px!important;
+    height:82px!important;
+    min-width:82px!important;
+    min-height:82px!important;
+    max-width:82px!important;
+    max-height:82px!important;
+    inline-size:82px!important;
+    block-size:82px!important;
+  }
+}
+
+
+/* PHASE T8D - Force vehicle action buttons horizontal and centered.
+   الزرين فتح / فتح مرة أخرى جنب بعض في منتصف مساحة الأكشن داخل كارت جدول اليوم. */
+.vehicle-ops-day-row .vehicle-ops-row-actions,
+.vehicle-ops-row-actions{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-content:center!important;
+  gap:22px!important;
+  width:260px!important;
+  min-width:260px!important;
+  max-width:260px!important;
+  height:112px!important;
+  min-height:112px!important;
+  margin:0 auto!important;
+  padding:0!important;
+  float:none!important;
+  clear:none!important;
+  writing-mode:horizontal-tb!important;
+  transform:none!important;
+  place-self:center!important;
+  align-self:center!important;
+  justify-self:center!important;
+}
+
+.vehicle-ops-row-actions > *,
+.vehicle-ops-row-actions .vehicle-ops-circle-action,
+.vehicle-ops-row-actions button.vehicle-ops-circle-action{
+  position:relative!important;
+  display:inline-flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:center!important;
+  vertical-align:middle!important;
+  float:none!important;
+  clear:none!important;
+  margin:0!important;
+  transform:none!important;
+}
+
+/* Keep approved circular button design while forcing same row */
+.vehicle-ops-row-actions .vehicle-ops-circle-action,
+.vehicle-ops-row-actions button.vehicle-ops-circle-action{
+  flex:0 0 96px!important;
+  width:96px!important;
+  height:96px!important;
+  min-width:96px!important;
+  min-height:96px!important;
+  max-width:96px!important;
+  max-height:96px!important;
+  inline-size:96px!important;
+  block-size:96px!important;
+  border-radius:999px!important;
+  padding:0!important;
+}
+
+/* Put the action slot in the middle of its own area, not stuck to the far edge */
+@media (min-width:1101px){
+  .vehicle-ops-day-row{
+    grid-template-columns:
+      minmax(105px, 145px)
+      minmax(82px, 115px)
+      minmax(105px, 145px)
+      minmax(120px, 165px)
+      minmax(220px, 1fr)
+      minmax(82px, 105px)
+      46px
+      300px!important;
+    align-items:center!important;
+  }
+  .vehicle-ops-day-row .vehicle-ops-row-actions{
+    grid-column:8!important;
+    grid-row:1!important;
+    justify-self:center!important;
+    align-self:center!important;
+  }
+}
+
+/* Prevent accidental vertical stacking on narrow views */
+@media (max-width:1100px){
+  .vehicle-ops-day-row .vehicle-ops-row-actions,
+  .vehicle-ops-row-actions{
+    flex-direction:row!important;
+    width:230px!important;
+    min-width:230px!important;
+    max-width:230px!important;
+    height:96px!important;
+    min-height:96px!important;
+    gap:18px!important;
+  }
+  .vehicle-ops-row-actions .vehicle-ops-circle-action,
+  .vehicle-ops-row-actions button.vehicle-ops-circle-action{
+    flex-basis:82px!important;
+    width:82px!important;
+    height:82px!important;
+    min-width:82px!important;
+    min-height:82px!important;
+    max-width:82px!important;
+    max-height:82px!important;
+    inline-size:82px!important;
+    block-size:82px!important;
+  }
+}
+
+/* PETATOE v6.4.90 - Clean direct view for Operation Management > Master Data.
+   Hide only the appointments dashboard shell elements when the active internal tab is master. */
+#appointments.appointments-master-only .appointments-hero,
+#appointments.appointments-master-only #appointmentsKpis,
+#appointments.appointments-master-only .appointments-tabs{
+  display:none !important;
+}
+
+/* PETATOE v6.4.92 - Master data category filter + customers + vehicle staff binding */
+.appointments-master-head-row{align-items:flex-start;gap:16px}
+.appointments-master-actions-head{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;justify-content:flex-start}
+.appointments-master-section-picker{display:flex;flex-direction:column;gap:6px;color:var(--appt-text-soft);font-weight:900;font-size:12px;min-width:240px}
+.appointments-master-section-picker select,
+.appointments-master-search input{
+  height:42px;border-radius:14px;border:1px solid rgba(148,163,184,.30);background:var(--appt-bg-deep);color:var(--appt-text-strong);padding:0 12px;font-family:Cairo,Arial,sans-serif;font-weight:900;outline:none;min-width:0
+}
+.appointments-master-section-picker select:focus,
+.appointments-master-search input:focus{border-color:rgba(139,92,246,.75);box-shadow:0 0 0 3px rgba(139,92,246,.14)}
+.appointments-master-single{display:block}
+.appointments-master-single .appointments-master-box{display:none;min-height:320px}
+.appointments-master-single .appointments-master-box.active{display:block}
+.appointments-master-customer-add{grid-template-columns:minmax(120px,.7fr) minmax(170px,1fr) minmax(190px,1.15fr) minmax(140px,.85fr) auto}
+.appointments-master-vehicle-add{grid-template-columns:minmax(180px,1fr) minmax(180px,1fr) minmax(180px,1fr) auto}
+.appointments-master-service-add{grid-template-columns:minmax(220px,1fr) minmax(120px,.35fr) auto}
+.appointments-master-note{margin:0 0 12px;color:var(--appt-text-soft);font-size:13px;font-weight:800}
+.appointments-master-customer-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;justify-content:flex-start}
+.appointments-master-customer-tools .btn{min-height:38px;border-radius:14px;font-weight:900}
+.appointments-master-search{margin:0 0 12px;max-width:420px}
+.appointments-master-table-wrap{overflow:auto;border-radius:18px;border:1px solid rgba(148,163,184,.18);background:rgba(15,23,42,.18)}
+.appointments-master-table{width:100%;border-collapse:collapse;min-width:720px;color:var(--appt-text-strong);font-size:13px}
+.appointments-master-table th,.appointments-master-table td{padding:12px 14px;border-bottom:1px solid rgba(148,163,184,.14);text-align:right;vertical-align:middle}
+.appointments-master-table th{color:var(--appt-text-strong);font-weight:950;background:rgba(15,23,42,.18)}
+.appointments-master-table tr:last-child td{border-bottom:none}
+.appointments-master-action{height:28px;border-radius:999px;border:1px solid rgba(96,165,250,.28);background:rgba(59,130,246,.14);color:#bfdbfe;font-family:Cairo,Arial,sans-serif;font-weight:900;font-size:12px;padding:0 10px;margin-inline-start:6px;cursor:pointer}
+.appointments-master-action.danger{border-color:rgba(248,113,113,.30);background:rgba(239,68,68,.13);color:#fecaca}
+@media(max-width:1100px){.appointments-master-customer-add,.appointments-master-vehicle-add,.appointments-master-service-add{grid-template-columns:1fr}.appointments-master-actions-head{width:100%}.appointments-master-section-picker{width:100%}}
+/* PETATOE v6.4.101 - grouped appointment form + multi services */
+.appointments-span-5{grid-column:1/-1}.appointment-form-block{border:1px solid rgba(148,163,184,.22);border-radius:22px;background:linear-gradient(135deg,rgba(15,23,42,.34),rgba(30,58,75,.28));padding:16px;display:grid;gap:14px}.appointment-form-block h4{margin:0;color:var(--appt-text-strong);font-size:18px;font-weight:950;text-align:right}.appointment-form-row{display:grid;gap:12px}.appointment-form-row-1{grid-template-columns:1fr}.appointment-form-row-3{grid-template-columns:repeat(3,minmax(0,1fr))}.appointment-form-row-5{grid-template-columns:repeat(5,minmax(0,1fr))}.appointment-form-row-6{grid-template-columns:repeat(6,minmax(0,1fr))}.appointment-services-editor{display:grid;gap:10px}.appointment-services-editor-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--appt-text-strong);font-weight:950}.appointment-add-service-btn,.appointment-add-animal-btn{border-color:rgba(34,197,94,.40)!important;color:#bbf7d0!important}.appointment-animals-editor{display:grid;gap:10px}.appointment-animals-editor-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--appt-text-strong);font-weight:950}.appointment-animals-grid{display:grid;grid-template-columns:minmax(180px,1.2fr) minmax(150px,1fr) minmax(150px,1fr) minmax(120px,.8fr) minmax(76px,.45fr) minmax(92px,.55fr);gap:10px;align-items:center}.appointment-animals-grid-head{color:rgba(226,232,240,.78);font-size:12px;font-weight:950;padding:0 8px}.appointment-animal-row{border:1px solid rgba(148,163,184,.15);border-radius:18px;background:rgba(15,23,42,.24);padding:10px}.appointment-services-grid{display:grid;grid-template-columns:minmax(220px,1.45fr) minmax(170px,1fr) minmax(100px,.62fr) minmax(105px,.62fr) minmax(105px,.62fr) minmax(92px,.55fr);gap:10px;align-items:center}.appointment-services-grid-head{color:rgba(226,232,240,.78);font-size:12px;font-weight:950;padding:0 8px}.appointment-service-row{border:1px solid rgba(148,163,184,.15);border-radius:18px;background:rgba(15,23,42,.24);padding:10px}.appointment-services-total{display:flex;align-items:center;justify-content:flex-start;gap:12px;flex-wrap:wrap;border:1px dashed rgba(34,197,94,.35);border-radius:16px;padding:10px 14px;color:rgba(226,232,240,.84);font-weight:900}.appointment-services-total strong{color:#86efac;font-size:20px}.appointment-services-total small{color:rgba(226,232,240,.64);font-weight:800}@media(max-width:1100px){.appointment-form-row-3,.appointment-form-row-5,.appointment-form-row-6{grid-template-columns:repeat(2,minmax(0,1fr))}.appointment-services-grid,.appointment-animals-grid{grid-template-columns:1fr 1fr}.appointment-services-grid-head,.appointment-animals-grid-head{display:none}}@media(max-width:680px){.appointment-form-row-3,.appointment-form-row-5,.appointment-form-row-6,.appointment-services-grid,.appointment-animals-grid{grid-template-columns:1fr}.appointment-form-block{padding:12px}}
+
+
+/* PETATOE v6.4.104 - Customers & Animals CRM layout phase 1 */
+.appointments-crm-layout{display:grid;grid-template-columns:minmax(260px,340px) minmax(0,1fr);gap:16px;align-items:start}
+.appointments-crm-list,.appointments-crm-profile-card,.appointments-crm-panel{border-radius:24px;border:1px solid rgba(214,196,154,.20);background:linear-gradient(135deg,rgba(245,241,232,.075),rgba(15,23,42,.50));box-shadow:0 18px 42px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.07);backdrop-filter:blur(16px);overflow:hidden}
+.appointments-crm-list-head,.appointments-crm-profile-head,.appointments-crm-panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(214,196,154,.16);background:linear-gradient(135deg,rgba(214,196,154,.15),rgba(255,255,255,.055))}
+.appointments-crm-list-head h4,.appointments-crm-profile-head h4,.appointments-crm-panel-head h4{margin:0;color:var(--appt-text-strong);font-size:15px;font-weight:950}
+.appointments-crm-list-head span,.appointments-crm-profile-head b,.appointments-crm-panel-head small{display:inline-flex;align-items:center;min-height:28px;border-radius:999px;padding:0 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.10);color:var(--appt-text-strong);font-size:12px;font-weight:900}
+.appointments-crm-list-scroll{display:grid;gap:8px;max-height:620px;overflow:auto;padding:10px}
+.appointments-crm-customer-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:right;border-radius:16px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.055);color:var(--appt-text-strong);padding:11px 12px;cursor:pointer;font-family:Cairo,Arial,sans-serif}
+.appointments-crm-customer-row span{display:grid;gap:3px}.appointments-crm-customer-row b{font-size:13px;font-weight:950}.appointments-crm-customer-row small,.appointments-crm-customer-row em{color:rgba(245,241,232,.70);font-size:11px;font-weight:850;font-style:normal}
+.appointments-crm-customer-row.active{border-color:rgba(214,196,154,.55);background:linear-gradient(135deg,rgba(214,196,154,.20),rgba(34,211,238,.10));box-shadow:0 0 0 3px rgba(214,196,154,.08)}
+.appointments-crm-main{display:grid;gap:16px;min-width:0}.appointments-crm-profile-head span{display:block;color:rgba(245,241,232,.68);font-size:12px;font-weight:850;margin-bottom:4px}
+.appointments-crm-info-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:14px}
+.appointments-crm-info-grid div{border-radius:16px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.055);padding:11px 12px;min-height:70px}
+.appointments-crm-info-grid span{display:block;color:rgba(245,241,232,.64);font-size:11px;font-weight:850;margin-bottom:6px}.appointments-crm-info-grid b{display:block;color:var(--appt-text-strong);font-size:13px;font-weight:950;word-break:break-word}
+.appointments-crm-panel .appointments-report-table-wrap{border:0;border-radius:0;background:transparent}.appointments-crm-table{min-width:720px}
+@media(max-width:1100px){.appointments-crm-layout{grid-template-columns:1fr}.appointments-crm-list-scroll{max-height:320px}.appointments-crm-info-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.appointments-crm-info-grid{grid-template-columns:1fr}.appointments-crm-list-head,.appointments-crm-profile-head,.appointments-crm-panel-head{display:grid}.appointments-crm-customer-row{align-items:flex-start}}
+
+/* v6.4.106 Customers & Animals CRM Phase 2 */
+.appointments-crm-search-wrap{padding:10px 10px 0}
+.appointments-crm-search-wrap input{width:100%;min-height:44px;border-radius:16px;border:1px solid rgba(255,255,255,.13);background:rgba(15,23,42,.32);color:var(--appt-text-strong);padding:0 14px;font-family:Cairo,Arial,sans-serif;font-weight:850;outline:none}
+.appointments-crm-search-wrap input:focus{border-color:rgba(34,211,238,.42);box-shadow:0 0 0 3px rgba(34,211,238,.08)}
+.appointments-crm-customer-row{transition:border-color .18s ease,background .18s ease,transform .18s ease,box-shadow .18s ease}
+.appointments-crm-customer-row:hover{border-color:rgba(34,211,238,.32);background:rgba(255,255,255,.085);transform:translateY(-1px)}
+.appointments-crm-customer-row.active{border-color:rgba(214,196,154,.70);background:linear-gradient(135deg,rgba(214,196,154,.22),rgba(34,211,238,.12));box-shadow:0 0 0 3px rgba(214,196,154,.10),0 14px 24px rgba(0,0,0,.18)}
+.appointments-crm-customer-row em{display:grid;justify-items:start;gap:3px;min-width:74px;text-align:left}
+.appointments-crm-customer-row em small{font-size:10px;color:rgba(245,241,232,.52)}
+.appointments-crm-customer-row em strong{display:inline-flex;align-items:center;min-height:22px;border-radius:999px;padding:0 8px;background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.25);color:#86efac;font-size:10px;font-style:normal;font-weight:950}
+.appointments-crm-empty-state{min-height:220px;border-radius:24px;border:1px dashed rgba(214,196,154,.24);display:grid;place-content:center;text-align:center;gap:8px;color:var(--appt-text-strong);background:rgba(255,255,255,.035)}
+.appointments-crm-empty-state b{font-size:18px;font-weight:950}.appointments-crm-empty-state span{color:rgba(245,241,232,.66);font-size:13px;font-weight:850}
+.appointments-crm-table-empty{padding:18px;color:rgba(245,241,232,.68);font-weight:900;text-align:center}
+
+/* v6.4.110 - Customers CRM no-results state keeps layout/search visible */
+.appointments-crm-list-empty{
+  margin:10px;
+  padding:18px 14px;
+  border:1px dashed rgba(255,255,255,.22);
+  border-radius:18px;
+  color:rgba(255,255,255,.86);
+  text-align:center;
+  background:rgba(5,18,32,.22);
+}
+.appointments-crm-list-empty b{display:block;font-weight:900;margin-bottom:6px;}
+.appointments-crm-list-empty small{display:block;color:rgba(255,255,255,.62);font-weight:700;line-height:1.7;}
+.appointments-crm-no-selection{min-height:180px;display:flex;align-items:center;justify-content:center;}
+
+/* v6.4.111 - Customers CRM phase 3: keep selected profile visible and clear search */
+.appointments-crm-search-wrap{display:flex;gap:8px;align-items:center;}
+.appointments-crm-search-wrap input{min-width:0;flex:1;}
+.appointments-crm-clear-search{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.10);color:inherit;border-radius:14px;padding:10px 14px;font-weight:800;cursor:pointer;white-space:nowrap;}
+.appointments-crm-clear-search:hover{background:rgba(255,255,255,.16);}
+.appointments-crm-list-empty small{line-height:1.8;}
+
+/* PETATOE v6.4.115 - CRM customer database report full width and isolated search */
+.appointments-customer-db-report-wide{margin-top:18px;width:100%;grid-column:1/-1}.appointments-crm-report-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.appointments-crm-report-actions input{min-width:260px;max-width:420px}
+
+/* PETATOE v6.4.119 - service target uses normal dropdown filter */
+.appointment-service-targets{min-height:46px;}
+.appointment-service-targets option{padding:4px 8px;}
+
+
+/* PETATOE v6.4.120 - grouped appointment tabs */
+.appointments-tab-groups{
+  align-items:flex-start;
+  justify-content:flex-end;
+  gap:12px;
+}
+.appointments-tab-group{
+  position:relative;
+  border:1px solid rgba(148,163,184,.28);
+  border-radius:22px;
+  background:linear-gradient(135deg,rgba(51,65,85,.56),rgba(15,23,42,.46));
+  box-shadow:0 10px 26px rgba(2,6,23,.14);
+  overflow:hidden;
+  min-width:220px;
+}
+.appointments-tab-group summary{
+  list-style:none;
+  cursor:pointer;
+  min-height:48px;
+  padding:0 18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  color:var(--appt-text-strong);
+  font-family:Cairo,Arial,sans-serif;
+  font-weight:950;
+  user-select:none;
+}
+.appointments-tab-group summary::-webkit-details-marker{display:none}
+.appointments-tab-group summary::before{
+  content:'▾';
+  color:rgba(226,232,240,.72);
+  font-size:13px;
+  transition:transform .18s ease;
+}
+.appointments-tab-group[open] summary::before{transform:rotate(180deg)}
+.appointments-tab-group[open]{
+  border-color:rgba(34,211,238,.32);
+  box-shadow:0 18px 42px rgba(34,211,238,.10);
+}
+.appointments-tab-group-items{
+  display:flex;
+  flex-wrap:wrap;
+  gap:9px;
+  padding:0 12px 12px;
+  justify-content:center;
+}
+.appointments-tab-group-items .appointments-tab{
+  height:40px;
+  padding:0 14px;
+}
+@media(max-width:900px){
+  .appointments-tab-groups{justify-content:stretch}
+  .appointments-tab-group{width:100%;min-width:0}
+}
+
+/* PETATOE v6.4.121 - align appointment tab groups to the right in RTL order */
+.appointments-tab-groups{
+  direction:rtl;
+  justify-content:flex-start;
+  width:100%;
+}
+.appointments-tab-group{
+  direction:rtl;
+}
+.appointments-tab-group-items{
+  direction:rtl;
+}
+@media(max-width:900px){
+  .appointments-tab-groups{justify-content:stretch;}
+}
+
+/* v6.4.123 - Appointment reports compact rows */
+.appointments-report-more-row td{
+  opacity:.78;
+  font-weight:700;
+  border-top:1px dashed rgba(255,255,255,.16);
+}
+
+/* v6.4.124: Appointment reports full-width vertical layout */
+.appointments-appointment-reports-fullwidth{grid-template-columns:1fr!important;width:100%}
+.appointments-appointment-reports-fullwidth .appointments-report-table-card{grid-column:1/-1!important;width:100%}
+.appointments-appointment-reports-fullwidth .appointments-report-table-wrap{width:100%}
+
+/* v6.4.125 - Local financial appointments report filters and pagination */
+.appointments-finance-filter-row{
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-start;
+  gap:14px;
+  margin:12px 0 14px;
+  direction:rtl;
+  flex-wrap:wrap;
+}
+.appointments-finance-local-filters{
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-start;
+  gap:10px;
+  direction:rtl;
+  flex:0 0 auto;
+}
+.appointments-finance-local-filters label{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  color:rgba(255,255,255,.82);
+  font-weight:800;
+  min-width:150px;
+  max-width:170px;
+}
+.appointments-finance-local-filters label span{font-size:13px;line-height:1.1}
+.appointments-finance-local-filters select{
+  width:100%;
+  min-height:40px;
+  border-radius:14px;
+  border:1px solid rgba(160,190,220,.28);
+  background:rgba(20,42,62,.58);
+  color:#fff;
+  padding:0 12px;
+  font-weight:800;
+  outline:none;
+  font-size:13px;
+}
+
+.appointments-finance-reset-btn{
+  min-height:40px;
+  border-radius:14px;
+  border:1px solid rgba(160,190,220,.35);
+  background:rgba(80,110,140,.45);
+  color:#fff;
+  padding:0 14px;
+  font-weight:900;
+  cursor:pointer;
+  white-space:nowrap;
+  align-self:flex-end;
+}
+.appointments-finance-reset-btn:hover{filter:brightness(1.12)}
+
+.appointments-finance-result-count{
+  color:rgba(255,255,255,.78);
+  font-weight:900;
+  min-height:40px;
+  display:flex;
+  align-items:center;
+  padding:0 14px;
+  border:1px solid rgba(160,190,220,.18);
+  background:rgba(15,23,42,.24);
+  border-radius:14px;
+  white-space:nowrap;
+}
+.appointments-finance-load-more{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  padding:16px 0 4px;
+  color:rgba(255,255,255,.78);
+  font-weight:800;
+}
+.appointments-finance-load-more button{
+  border:1px solid rgba(160,190,220,.35);
+  background:rgba(80,110,140,.55);
+  color:#fff;
+  border-radius:18px;
+  padding:10px 18px;
+  font-weight:900;
+  cursor:pointer;
+}
+.appointments-finance-load-more button:hover{filter:brightness(1.12)}
+@media(max-width:900px){.appointments-finance-filter-row{justify-content:stretch}.appointments-finance-local-filters{width:100%;flex-direction:column}.appointments-finance-local-filters label{min-width:100%;max-width:none}
+.appointments-finance-reset-btn{
+  min-height:40px;
+  border-radius:14px;
+  border:1px solid rgba(160,190,220,.35);
+  background:rgba(80,110,140,.45);
+  color:#fff;
+  padding:0 14px;
+  font-weight:900;
+  cursor:pointer;
+  white-space:nowrap;
+  align-self:flex-end;
+}
+.appointments-finance-reset-btn:hover{filter:brightness(1.12)}
+
+.appointments-finance-result-count{width:100%;justify-content:center}}

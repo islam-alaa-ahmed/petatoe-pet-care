@@ -1,0 +1,17 @@
+/* PETATOE v6.1.284 — CSS Components Boundary
+   Purpose: prepare a safe project-wide components CSS boundary before splitting main.css.
+   This file is intentionally non-destructive: no rules are moved from main.css yet.
+   Main visual output remains controlled by existing CSS files.
+*/
+
+:root{
+  --pet-component-boundary-ready: 1;
+}
+
+/* Boundary markers only. No visual override. */
+.pet-component-boundary,
+.pet-card-boundary,
+.pet-table-boundary,
+.pet-filter-boundary{
+  --pet-component-scope: initial;
+}

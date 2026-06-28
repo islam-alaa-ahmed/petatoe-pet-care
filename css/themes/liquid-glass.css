@@ -1,0 +1,3120 @@
+/* PETATOE v4.2 TRUE Liquid Glass UI
+   UI-only layer: real transparent glass refinement; no business logic changes. */
+:root{
+  --lg-font:"Cairo",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --lg-radius-xs:10px;
+  --lg-radius-sm:14px;
+  --lg-radius:20px;
+  --lg-radius-lg:28px;
+  --lg-blur:22px;
+  --lg-speed:220ms;
+  --lg-ease:cubic-bezier(.22,1,.36,1);
+  --lg-primary:#38bdf8;
+  --lg-primary-2:#8b5cf6;
+  --lg-accent:#22c55e;
+  --lg-warn:#f59e0b;
+  --lg-danger:#ef4444;
+  --lg-success:#10b981;
+  --lg-shadow:0 24px 80px rgba(2,6,23,.28);
+  --lg-shadow-soft:0 14px 40px rgba(15,23,42,.18);
+  --lg-border:rgba(255,255,255,.18);
+  --lg-border-strong:rgba(255,255,255,.32);
+  --lg-glass:rgba(15,23,42,.58);
+  --lg-glass-soft:rgba(15,23,42,.38);
+  --lg-text:#f8fafc;
+  --lg-muted:#cbd5e1;
+  --lg-field:rgba(15,23,42,.48);
+  --lg-field-border:rgba(148,163,184,.25);
+  --lg-table-row:rgba(15,23,42,.28);
+  --lg-table-row-hover:rgba(56,189,248,.10);
+  --lg-bg-a:#020617;
+  --lg-bg-b:#0f172a;
+  --lg-bg-c:#1e1b4b;
+}
+html[data-theme="light"], body.light, body.light-mode{
+  --lg-glass:rgba(255,255,255,.72);
+  --lg-glass-soft:rgba(255,255,255,.50);
+  --lg-text:#0f172a;
+  --lg-muted:#475569;
+  --lg-border:rgba(15,23,42,.10);
+  --lg-border-strong:rgba(15,23,42,.18);
+  --lg-field:rgba(255,255,255,.70);
+  --lg-field-border:rgba(15,23,42,.14);
+  --lg-table-row:rgba(255,255,255,.45);
+  --lg-table-row-hover:rgba(14,165,233,.12);
+  --lg-shadow:0 24px 80px rgba(15,23,42,.12);
+  --lg-shadow-soft:0 14px 38px rgba(15,23,42,.10);
+  --lg-bg-a:#eef6ff;
+  --lg-bg-b:#f8fafc;
+  --lg-bg-c:#e0e7ff;
+}
+html,body{font-family:var(--lg-font)!important;}
+body{
+  color:var(--lg-text);
+  background:
+    radial-gradient(circle at 12% 5%, rgba(56,189,248,.24), transparent 30%),
+    radial-gradient(circle at 85% 12%, rgba(139,92,246,.26), transparent 34%),
+    radial-gradient(circle at 70% 88%, rgba(34,197,94,.14), transparent 30%),
+    linear-gradient(135deg,var(--lg-bg-a),var(--lg-bg-b) 48%,var(--lg-bg-c)) !important;
+  background-attachment:fixed!important;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size:42px 42px;mask-image:radial-gradient(circle at 50% 20%, #000 0, transparent 72%);opacity:.42;
+}
+body::after{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:linear-gradient(110deg,transparent 0%,rgba(255,255,255,.08) 42%,transparent 64%);
+  transform:translateX(-65%);animation:lg-shine 18s linear infinite;opacity:.45;
+}
+@keyframes lg-shine{0%{transform:translateX(-80%)}50%,100%{transform:translateX(90%)}}
+.app,.page,.main{background:transparent!important;}
+.main{transition:filter var(--lg-speed) var(--lg-ease)}
+.topbar,.panel,.card,.kpi,.pdf-modal-card,.pet-modal,#globalSearchBox,#petatoeLoader,.filters,.export-toolbar,.section-head,.table-wrap,.ytd-banner,.insights .insight,.value-list,.smart-card,.settings-card,.report-card,.modal,.dialog,.popover,.dropdown-menu{
+  position:relative;
+  border:1px solid var(--lg-border)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.045)),var(--lg-glass)!important;
+  box-shadow:var(--lg-shadow-soft)!important;
+  backdrop-filter:blur(var(--lg-blur)) saturate(145%)!important;
+  -webkit-backdrop-filter:blur(var(--lg-blur)) saturate(145%)!important;
+}
+.topbar::before,.panel::before,.card::before,.kpi::before,.pdf-modal-card::before,.pet-modal::before,.table-wrap::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:linear-gradient(135deg,rgba(255,255,255,.22),transparent 30%,rgba(56,189,248,.06) 70%,transparent);
+  opacity:.62;
+}
+.topbar{border-radius:0 0 var(--lg-radius-lg) var(--lg-radius-lg)!important;margin:0 0 18px!important;padding:14px 18px!important;}
+.panel{border-radius:var(--lg-radius-lg)!important;padding:18px!important;overflow:hidden;}
+.card,.kpi,.table-wrap,.export-toolbar,.filters,.section-head{border-radius:var(--lg-radius)!important;overflow:hidden;}
+.card,.kpi{transition:transform var(--lg-speed) var(--lg-ease),box-shadow var(--lg-speed) var(--lg-ease),border-color var(--lg-speed) var(--lg-ease)!important;}
+.card:hover,.kpi:hover{transform:translateY(-3px);border-color:rgba(56,189,248,.34)!important;box-shadow:var(--lg-shadow)!important;}
+.section-head h2,.card-title b,.chart-head b,h1,h2,h3{color:var(--lg-text)!important;letter-spacing:-.02em;}
+p,small,.section-head p,.chart-head small,.sar-note,.muted{color:var(--lg-muted)!important;}
+.side-launcher{
+  border:1px solid var(--lg-border-strong)!important;border-radius:22px!important;
+  background:linear-gradient(135deg,rgba(56,189,248,.20),rgba(139,92,246,.18)),var(--lg-glass)!important;
+  box-shadow:var(--lg-shadow)!important;backdrop-filter:blur(var(--lg-blur)) saturate(160%)!important;
+  transition:transform var(--lg-speed) var(--lg-ease),box-shadow var(--lg-speed) var(--lg-ease)!important;
+}
+.side-launcher:hover{transform:translateY(-2px) scale(1.01);}
+.nav,.pet-v142-nav,.sidebar,.side,.drawer{
+  border:1px solid var(--lg-border)!important;border-radius:var(--lg-radius-lg)!important;
+  background:linear-gradient(160deg,rgba(255,255,255,.13),rgba(255,255,255,.04)),rgba(2,6,23,.42)!important;
+  box-shadow:var(--lg-shadow)!important;backdrop-filter:blur(28px) saturate(160%)!important;-webkit-backdrop-filter:blur(28px) saturate(160%)!important;
+}
+html[data-theme="light"] .nav,html[data-theme="light"] .pet-v142-nav,html[data-theme="light"] .sidebar,body.light .nav{background:linear-gradient(160deg,rgba(255,255,255,.82),rgba(255,255,255,.52))!important;}
+.pet-v142-nav button,.nav button,.sidebar button,.side button{
+  border:1px solid transparent!important;border-radius:16px!important;color:var(--lg-text)!important;
+  background:transparent!important;transition:transform var(--lg-speed) var(--lg-ease),background var(--lg-speed) var(--lg-ease),border-color var(--lg-speed) var(--lg-ease)!important;
+}
+.pet-v142-nav button:hover,.nav button:hover,.sidebar button:hover,.side button:hover{
+  background:rgba(56,189,248,.12)!important;border-color:rgba(56,189,248,.24)!important;transform:translateX(-2px);
+}
+.pet-v142-nav button.active,.nav button.active,.sidebar button.active,.side button.active,.lg-active-tab{
+  background:linear-gradient(135deg,rgba(56,189,248,.26),rgba(139,92,246,.22))!important;
+  border-color:rgba(125,211,252,.42)!important;box-shadow:0 12px 32px rgba(56,189,248,.18),inset 0 1px rgba(255,255,255,.18)!important;
+}
+.pet-v142-title,.pet-v142-sub{color:inherit!important}.pet-v142-sub{opacity:.72}
+button,.btn,.exp-btn,.reports-btn,.hamb,.pill.toggle,.top-paw-up-btn,.pet-modal-close,.pdf-tb-actions button,input[type="button"],input[type="submit"]{
+  border-radius:15px!important;border:1px solid var(--lg-border)!important;color:var(--lg-text)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.045)),var(--lg-glass-soft)!important;
+  box-shadow:0 10px 24px rgba(2,6,23,.14)!important;transition:transform var(--lg-speed) var(--lg-ease),box-shadow var(--lg-speed) var(--lg-ease),border-color var(--lg-speed) var(--lg-ease),filter var(--lg-speed) var(--lg-ease)!important;
+}
+button:hover,.btn:hover,.exp-btn:hover,.reports-btn:hover{transform:translateY(-2px);border-color:rgba(125,211,252,.42)!important;filter:saturate(1.08);}
+button:active,.btn:active,.exp-btn:active,.reports-btn:active{transform:translateY(0) scale(.985);}
+.btn-primary,.exp-btn-excel{background:linear-gradient(135deg,rgba(14,165,233,.92),rgba(79,70,229,.88))!important;color:#fff!important;border-color:rgba(255,255,255,.22)!important;}
+.exp-btn-pdf,.btn-danger,.danger{background:linear-gradient(135deg,rgba(239,68,68,.94),rgba(190,18,60,.88))!important;color:#fff!important;}
+.btn-success,.success{background:linear-gradient(135deg,rgba(16,185,129,.92),rgba(21,128,61,.88))!important;color:#fff!important;}
+.btn-ghost{background:rgba(255,255,255,.08)!important;}
+.lg-ripple{position:absolute;border-radius:999px;pointer-events:none;transform:scale(0);background:rgba(255,255,255,.35);animation:lg-ripple .58s var(--lg-ease);}
+@keyframes lg-ripple{to{transform:scale(3.2);opacity:0}}
+input,select,textarea,.search,#globalSearchInput{
+  border-radius:15px!important;border:1px solid var(--lg-field-border)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(255,255,255,.04)),var(--lg-field)!important;color:var(--lg-text)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.08),0 10px 28px rgba(2,6,23,.10)!important;outline:none!important;
+  transition:border-color var(--lg-speed) var(--lg-ease),box-shadow var(--lg-speed) var(--lg-ease),background var(--lg-speed) var(--lg-ease)!important;
+}
+input:focus,select:focus,textarea:focus{border-color:rgba(56,189,248,.58)!important;box-shadow:0 0 0 4px rgba(56,189,248,.13),inset 0 1px rgba(255,255,255,.08)!important;}
+select option{background:#0f172a;color:#f8fafc;}html[data-theme="light"] select option{background:#fff;color:#0f172a;}
+.filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px!important;margin:12px 0!important;}
+.table-wrap{padding:0!important;overflow:auto;}
+table{border-collapse:separate!important;border-spacing:0!important;width:100%;}
+th{position:sticky;top:0;z-index:1;color:var(--lg-text)!important;background:linear-gradient(135deg,rgba(56,189,248,.18),rgba(139,92,246,.13)),var(--lg-glass)!important;border-bottom:1px solid var(--lg-border)!important;backdrop-filter:blur(16px)!important;}
+td{color:var(--lg-text)!important;border-color:rgba(148,163,184,.12)!important;}tr{background:var(--lg-table-row)!important;}tr:hover{background:var(--lg-table-row-hover)!important;}
+.pdf-modal-card,.pet-modal,#globalSearchBox{border-radius:var(--lg-radius-lg)!important;box-shadow:var(--lg-shadow)!important;}
+#petatoe-pdf-modal,.pet-modal-overlay,#globalSearchOverlay{backdrop-filter:blur(14px) saturate(140%)!important;-webkit-backdrop-filter:blur(14px) saturate(140%)!important;background:rgba(2,6,23,.50)!important;}
+html[data-theme="light"] #petatoe-pdf-modal,html[data-theme="light"] .pet-modal-overlay,html[data-theme="light"] #globalSearchOverlay{background:rgba(226,232,240,.46)!important;}
+.pill,.avatar,.switch,.ld-logo{border:1px solid var(--lg-border)!important;background:var(--lg-glass-soft)!important;color:var(--lg-text)!important;backdrop-filter:blur(16px)!important;}
+.kpis{gap:14px!important}.kpi{min-height:120px;}
+.chart canvas{filter:drop-shadow(0 12px 24px rgba(2,6,23,.16));}
+.panel.active{animation:lg-panel-in .42s var(--lg-ease) both;}@keyframes lg-panel-in{from{opacity:.0;transform:translateY(10px) scale(.992)}to{opacity:1;transform:none}}
+.lg-tab-pulse{animation:lg-tab-pulse .58s var(--lg-ease)}@keyframes lg-tab-pulse{0%{box-shadow:0 0 0 0 rgba(56,189,248,.24)}100%{box-shadow:0 0 0 18px rgba(56,189,248,0)}}
+@media (max-width:900px){.topbar{border-radius:0 0 22px 22px!important;padding:10px!important}.panel{padding:12px!important;border-radius:22px!important}.filters{gap:8px}.filters select,.filters input{min-width:130px}.card,.kpi{border-radius:18px!important}.side-launcher{border-radius:18px!important}}
+@media print{body{background:#fff!important;color:#111!important}.topbar,.side-launcher,.nav,.sidebar,.filters,.export-toolbar{box-shadow:none!important;backdrop-filter:none!important}.card,.panel,.table-wrap{background:#fff!important;color:#111!important;border-color:#ddd!important;box-shadow:none!important}body::before,body::after,.card::before,.panel::before{display:none!important}}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){.topbar,.panel,.card,.kpi,.filters,.table-wrap,.nav,.pet-v142-nav{background:rgba(15,23,42,.94)!important}html[data-theme="light"] .topbar,html[data-theme="light"] .panel,html[data-theme="light"] .card,html[data-theme="light"] .kpi{background:rgba(255,255,255,.96)!important}}
+
+/* PETATOE v4.2 TRUE Liquid Glass refinement
+   هدف الطبقة: شفافية حقيقية أعلى مع الحفاظ على قراءة الجداول والتقارير. */
+:root{
+  --lg-blur:34px;
+  --lg-glass:rgba(255,255,255,.075);
+  --lg-glass-soft:rgba(255,255,255,.050);
+  --lg-glass-ultra:rgba(255,255,255,.030);
+  --lg-border:rgba(255,255,255,.245);
+  --lg-border-strong:rgba(255,255,255,.38);
+  --lg-highlight:rgba(255,255,255,.30);
+  --lg-inner-shadow:inset 0 1px 0 rgba(255,255,255,.22), inset 0 -1px 0 rgba(255,255,255,.06);
+  --lg-surface-shadow:0 24px 70px rgba(0,0,0,.22), 0 8px 22px rgba(0,0,0,.12);
+  --lg-text:#f8fbff;
+  --lg-muted:rgba(226,232,240,.82);
+  --lg-field:rgba(255,255,255,.065);
+  --lg-table-row:rgba(255,255,255,.045);
+  --lg-table-row-hover:rgba(125,211,252,.115);
+}
+html[data-theme="light"], body.light, body.light-mode{
+  --lg-glass:rgba(255,255,255,.34);
+  --lg-glass-soft:rgba(255,255,255,.22);
+  --lg-glass-ultra:rgba(255,255,255,.14);
+  --lg-border:rgba(255,255,255,.62);
+  --lg-border-strong:rgba(255,255,255,.82);
+  --lg-highlight:rgba(255,255,255,.72);
+  --lg-inner-shadow:inset 0 1px 0 rgba(255,255,255,.86), inset 0 -1px 0 rgba(15,23,42,.04);
+  --lg-surface-shadow:0 24px 70px rgba(15,23,42,.10), 0 8px 22px rgba(15,23,42,.07);
+  --lg-text:#0c1220;
+  --lg-muted:rgba(51,65,85,.82);
+  --lg-field:rgba(255,255,255,.30);
+  --lg-table-row:rgba(255,255,255,.26);
+  --lg-table-row-hover:rgba(14,165,233,.12);
+}
+body{
+  background:
+    radial-gradient(circle at 10% 10%, rgba(14,165,233,.34), transparent 28%),
+    radial-gradient(circle at 78% 8%, rgba(168,85,247,.32), transparent 30%),
+    radial-gradient(circle at 18% 88%, rgba(16,185,129,.22), transparent 28%),
+    radial-gradient(circle at 88% 82%, rgba(245,158,11,.15), transparent 26%),
+    linear-gradient(135deg,#030712 0%,#07111f 42%,#10113a 100%) !important;
+  background-attachment:fixed!important;
+}
+html[data-theme="light"] body, body.light, body.light-mode{
+  background:
+    radial-gradient(circle at 10% 12%, rgba(14,165,233,.30), transparent 30%),
+    radial-gradient(circle at 82% 8%, rgba(139,92,246,.24), transparent 32%),
+    radial-gradient(circle at 18% 88%, rgba(16,185,129,.18), transparent 28%),
+    linear-gradient(135deg,#edf7ff 0%,#f8fbff 45%,#eef2ff 100%) !important;
+}
+body::before{
+  opacity:.55!important;
+  background-image:
+    linear-gradient(rgba(255,255,255,.060) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px),
+    radial-gradient(circle at 50% 20%, rgba(255,255,255,.12), transparent 45%)!important;
+  background-size:44px 44px,44px 44px,100% 100%!important;
+}
+.topbar,.panel,.card,.kpi,.pdf-modal-card,.pet-modal,#globalSearchBox,#petatoeLoader,.filters,.export-toolbar,.section-head,.table-wrap,.ytd-banner,.insights .insight,.value-list,.smart-card,.settings-card,.report-card,.modal,.dialog,.popover,.dropdown-menu{
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.20) 0%, rgba(255,255,255,.055) 38%, rgba(255,255,255,.025) 100%)!important;
+  border:1px solid var(--lg-border)!important;
+  box-shadow:var(--lg-surface-shadow),var(--lg-inner-shadow)!important;
+  backdrop-filter:blur(var(--lg-blur)) saturate(185%) brightness(1.08)!important;
+  -webkit-backdrop-filter:blur(var(--lg-blur)) saturate(185%) brightness(1.08)!important;
+}
+html[data-theme="light"] .topbar,html[data-theme="light"] .panel,html[data-theme="light"] .card,html[data-theme="light"] .kpi,html[data-theme="light"] .pdf-modal-card,html[data-theme="light"] .pet-modal,html[data-theme="light"] #globalSearchBox,html[data-theme="light"] .filters,html[data-theme="light"] .export-toolbar,html[data-theme="light"] .section-head,html[data-theme="light"] .table-wrap,html[data-theme="light"] .smart-card,html[data-theme="light"] .settings-card,html[data-theme="light"] .report-card,body.light .topbar,body.light .panel,body.light .card,body.light .kpi{
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.46) 0%, rgba(255,255,255,.22) 42%, rgba(255,255,255,.12) 100%)!important;
+}
+.topbar::before,.panel::before,.card::before,.kpi::before,.pdf-modal-card::before,.pet-modal::before,.table-wrap::before{
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.50), transparent 24%, rgba(255,255,255,.08) 55%, transparent 74%),
+    radial-gradient(circle at 18% 0%, rgba(255,255,255,.22), transparent 36%)!important;
+  opacity:.68!important;
+}
+.card::after,.kpi::after,.panel::after,.smart-card::after,.report-card::after,.table-wrap::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(110deg,transparent 0%,rgba(255,255,255,.12) 18%,transparent 34%);
+  opacity:.42;transform:translateX(-62%);
+  transition:transform 680ms var(--lg-ease),opacity 680ms var(--lg-ease);
+}
+.card:hover::after,.kpi:hover::after,.panel:hover::after,.smart-card:hover::after,.report-card:hover::after,.table-wrap:hover::after{transform:translateX(70%);opacity:.62;}
+.card:hover,.kpi:hover,.smart-card:hover,.report-card:hover{
+  transform:translateY(-5px)!important;
+  border-color:var(--lg-border-strong)!important;
+  box-shadow:0 32px 90px rgba(0,0,0,.28),0 12px 28px rgba(56,189,248,.10),var(--lg-inner-shadow)!important;
+}
+.nav,.pet-v142-nav,.sidebar,.side,.drawer{
+  background:
+    linear-gradient(150deg,rgba(255,255,255,.18),rgba(255,255,255,.045) 52%,rgba(255,255,255,.025))!important;
+  border:1px solid var(--lg-border)!important;
+  box-shadow:0 28px 90px rgba(0,0,0,.26),var(--lg-inner-shadow)!important;
+  backdrop-filter:blur(38px) saturate(190%) brightness(1.08)!important;
+  -webkit-backdrop-filter:blur(38px) saturate(190%) brightness(1.08)!important;
+}
+html[data-theme="light"] .nav,html[data-theme="light"] .pet-v142-nav,html[data-theme="light"] .sidebar,html[data-theme="light"] .side,html[data-theme="light"] .drawer,body.light .nav,body.light .sidebar{
+  background:linear-gradient(150deg,rgba(255,255,255,.48),rgba(255,255,255,.24) 54%,rgba(255,255,255,.14))!important;
+}
+.pet-v142-nav button,.nav button,.sidebar button,.side button{
+  background:rgba(255,255,255,.035)!important;
+  backdrop-filter:blur(18px) saturate(160%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%)!important;
+}
+.pet-v142-nav button:hover,.nav button:hover,.sidebar button:hover,.side button:hover{
+  background:rgba(255,255,255,.115)!important;
+  border-color:rgba(255,255,255,.34)!important;
+}
+.pet-v142-nav button.active,.nav button.active,.sidebar button.active,.side button.active,.lg-active-tab{
+  background:
+    linear-gradient(135deg,rgba(125,211,252,.28),rgba(196,181,253,.18)),
+    rgba(255,255,255,.12)!important;
+  border-color:rgba(255,255,255,.46)!important;
+  box-shadow:0 16px 42px rgba(56,189,248,.18),inset 0 1px 0 rgba(255,255,255,.36)!important;
+}
+button,.btn,.exp-btn,.reports-btn,.hamb,.pill.toggle,.top-paw-up-btn,.pet-modal-close,.pdf-tb-actions button,input[type="button"],input[type="submit"]{
+  background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.055))!important;
+  backdrop-filter:blur(22px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(170%)!important;
+  box-shadow:0 12px 28px rgba(0,0,0,.13),inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+.btn-primary,.exp-btn-excel{background:linear-gradient(135deg,rgba(14,165,233,.64),rgba(79,70,229,.48)),rgba(255,255,255,.08)!important;}
+.exp-btn-pdf,.btn-danger,.danger{background:linear-gradient(135deg,rgba(239,68,68,.68),rgba(190,18,60,.50)),rgba(255,255,255,.08)!important;}
+.btn-success,.success{background:linear-gradient(135deg,rgba(16,185,129,.66),rgba(21,128,61,.48)),rgba(255,255,255,.08)!important;}
+input,select,textarea,.search,#globalSearchInput{
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.045))!important;
+  backdrop-filter:blur(18px) saturate(165%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(165%)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 10px 24px rgba(0,0,0,.09)!important;
+}
+th{
+  background:linear-gradient(135deg,rgba(125,211,252,.18),rgba(196,181,253,.10)),rgba(255,255,255,.08)!important;
+  backdrop-filter:blur(22px) saturate(180%)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(180%)!important;
+}
+tr{background:var(--lg-table-row)!important;}
+td{background:transparent!important;}
+.table-wrap table{background:rgba(255,255,255,.025)!important;}
+/* القراءة أهم في التقارير والجداول الثقيلة: شفافية موجودة لكن بدون فقدان النص */
+.report-page,.pdf-preview,.print-area,.invoice-preview,.treasury-statement,.warehouse-statement{
+  background:linear-gradient(135deg,rgba(255,255,255,.13),rgba(255,255,255,.055))!important;
+  backdrop-filter:blur(24px) saturate(165%)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(165%)!important;
+}
+#petatoe-pdf-modal,.pet-modal-overlay,#globalSearchOverlay{
+  background:rgba(2,6,23,.28)!important;
+  backdrop-filter:blur(18px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(170%)!important;
+}
+html[data-theme="light"] #petatoe-pdf-modal,html[data-theme="light"] .pet-modal-overlay,html[data-theme="light"] #globalSearchOverlay{background:rgba(226,232,240,.22)!important;}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  .topbar,.panel,.card,.kpi,.filters,.table-wrap,.nav,.pet-v142-nav{background:rgba(15,23,42,.78)!important}
+  html[data-theme="light"] .topbar,html[data-theme="light"] .panel,html[data-theme="light"] .card,html[data-theme="light"] .kpi{background:rgba(255,255,255,.82)!important}
+}
+
+/* PETATOE v4.3 Apple Liquid Glass + Enterprise Dashboard
+   UI-only overrides for Dashboard/Charts/Header; no business logic changes. */
+:root{
+  --lg-header-h:78px;
+  --lg-enterprise-blue:rgba(59,130,246,.26);
+  --lg-enterprise-cyan:rgba(34,211,238,.22);
+  --lg-enterprise-violet:rgba(139,92,246,.24);
+  --lg-enterprise-panel:rgba(8,18,38,.34);
+  --lg-enterprise-panel-2:rgba(15,23,42,.22);
+  --lg-chart-grid:rgba(226,232,240,.13);
+  --lg-chart-ink:#f8fbff;
+}
+html[data-theme="light"],body.light,body.light-mode{
+  --lg-enterprise-panel:rgba(255,255,255,.42);
+  --lg-enterprise-panel-2:rgba(255,255,255,.30);
+  --lg-chart-grid:rgba(15,23,42,.11);
+  --lg-chart-ink:#0f172a;
+}
+body{
+  padding-top:var(--lg-header-h)!important;
+}
+.topbar{
+  position:fixed!important;
+  top:0!important;
+  right:0!important;
+  left:0!important;
+  width:100%!important;
+  height:var(--lg-header-h)!important;
+  z-index:100000!important;
+  margin:0!important;
+  border-radius:0 0 26px 26px!important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.045) 48%,rgba(255,255,255,.02)),
+    rgba(3,10,25,.44)!important;
+  border:1px solid rgba(255,255,255,.24)!important;
+  border-top:0!important;
+  box-shadow:0 22px 70px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.20)!important;
+  backdrop-filter:blur(42px) saturate(190%) brightness(1.08)!important;
+  -webkit-backdrop-filter:blur(42px) saturate(190%) brightness(1.08)!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  padding:8px 18px!important;
+}
+html[data-theme="light"] .topbar,body.light .topbar,body.light-mode .topbar{
+  background:linear-gradient(135deg,rgba(255,255,255,.62),rgba(255,255,255,.26)),rgba(255,255,255,.28)!important;
+}
+.topbar::after{
+  content:"";position:absolute;left:20px;right:20px;bottom:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(125,211,252,.70),rgba(167,139,250,.55),transparent);
+  opacity:.75;
+}
+.topbar .top-left,.topbar .top-right{
+  min-width:0!important;
+  flex:1 1 auto!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.topbar .top-left{justify-content:flex-start!important;}
+.topbar .top-right{justify-content:flex-end!important;}
+.topbar .search,#topbarSearch{
+  flex:0 1 320px!important;
+  width:clamp(180px,22vw,360px)!important;
+  max-width:360px!important;
+  min-width:160px!important;
+  margin:0!important;
+}
+.topbar .reports-btn{
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+}
+@media(max-width:1100px){
+  :root{--lg-header-h:74px;}
+  .topbar{padding:8px 12px!important;gap:8px!important;}
+  .topbar .search,#topbarSearch{display:none!important;}
+  .topbar .reports-btn{padding-inline:12px!important;}
+}
+@media(max-width:700px){
+  :root{--lg-header-h:70px;}
+  .topbar .reports-btn{font-size:0!important;padding:10px 12px!important;}
+  .topbar .reports-btn::first-letter{font-size:16px!important;}
+  .topbar .pill:not(.toggle){display:none!important;}
+}
+#dashboard{
+  isolation:isolate;
+}
+#dashboard .section-head{
+  min-height:86px;
+  align-items:center!important;
+  border-radius:28px!important;
+  padding:18px 22px!important;
+  margin-bottom:16px!important;
+  background:
+    linear-gradient(135deg,rgba(34,211,238,.20),rgba(139,92,246,.18) 45%,rgba(255,255,255,.040)),
+    var(--lg-enterprise-panel)!important;
+  border:1px solid rgba(255,255,255,.28)!important;
+  box-shadow:0 24px 80px rgba(2,6,23,.23), inset 0 1px 0 rgba(255,255,255,.20)!important;
+  backdrop-filter:blur(40px) saturate(190%)!important;
+  -webkit-backdrop-filter:blur(40px) saturate(190%)!important;
+}
+#dashboard .section-head h2{
+  font-size:26px!important;
+  font-weight:950!important;
+  letter-spacing:-.035em!important;
+  text-shadow:0 8px 28px rgba(0,0,0,.25)!important;
+}
+#dashboard .section-head p{font-weight:800!important;opacity:.86!important;}
+#dashboard .filters{
+  justify-content:flex-start!important;
+  padding:14px 16px!important;
+  border-radius:26px!important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.035)),
+    var(--lg-enterprise-panel-2)!important;
+  box-shadow:0 20px 60px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+#dashboard .filters select,#dashboard .filters button,#dashboard #chartType{
+  min-height:46px!important;
+  border-radius:17px!important;
+  font-weight:950!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.04))!important;
+  border-color:rgba(255,255,255,.25)!important;
+}
+#dashboard .kpis{
+  display:grid!important;
+  grid-template-columns:repeat(6,minmax(160px,1fr))!important;
+  gap:14px!important;
+  margin:12px 0 16px!important;
+}
+#dashboard .kpis .kpi{
+  min-height:152px!important;
+  padding:20px 18px 18px!important;
+  border-radius:24px!important;
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at 18% 20%,rgba(56,189,248,.20),transparent 32%),
+    radial-gradient(circle at 85% 12%,rgba(139,92,246,.18),transparent 34%),
+    linear-gradient(145deg,rgba(255,255,255,.165),rgba(255,255,255,.035) 54%,rgba(255,255,255,.015)),
+    rgba(3,10,25,.30)!important;
+  border:1px solid rgba(255,255,255,.25)!important;
+  box-shadow:0 22px 68px rgba(0,0,0,.20), inset 0 1px 0 rgba(255,255,255,.20)!important;
+  backdrop-filter:blur(40px) saturate(195%) brightness(1.08)!important;
+  -webkit-backdrop-filter:blur(40px) saturate(195%) brightness(1.08)!important;
+}
+html[data-theme="light"] #dashboard .kpis .kpi,body.light #dashboard .kpis .kpi{
+  background:
+    radial-gradient(circle at 18% 20%,rgba(14,165,233,.18),transparent 34%),
+    radial-gradient(circle at 85% 12%,rgba(139,92,246,.14),transparent 34%),
+    linear-gradient(145deg,rgba(255,255,255,.60),rgba(255,255,255,.24) 58%,rgba(255,255,255,.14))!important;
+}
+#dashboard .kpis .kpi::before{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.52),transparent 22%,rgba(255,255,255,.07) 60%,transparent),
+    radial-gradient(circle at 12% 0%,rgba(255,255,255,.25),transparent 36%)!important;
+  opacity:.72!important;
+}
+#dashboard .kpis .kpi::after{
+  content:"";position:absolute;inset:auto 14px 12px 14px;height:38px;border-radius:999px;pointer-events:none;
+  background:linear-gradient(90deg,rgba(56,189,248,.0),rgba(56,189,248,.42),rgba(139,92,246,.32),rgba(34,197,94,.0));
+  filter:blur(18px);opacity:.42;
+}
+#dashboard .kpis .kpi:hover{
+  transform:translateY(-7px) scale(1.012)!important;
+  border-color:rgba(125,211,252,.52)!important;
+  box-shadow:0 34px 100px rgba(0,0,0,.28),0 0 0 1px rgba(125,211,252,.15),inset 0 1px 0 rgba(255,255,255,.28)!important;
+}
+#dashboard .kpis .kpi b,#dashboard .kpis .kpi strong,#dashboard .kpis .kpi .kpi-value{
+  font-size:24px!important;
+  line-height:1.15!important;
+  font-weight:950!important;
+  color:#fff!important;
+  text-shadow:0 8px 28px rgba(0,0,0,.35)!important;
+}
+html[data-theme="light"] #dashboard .kpis .kpi b,html[data-theme="light"] #dashboard .kpis .kpi strong,html[data-theme="light"] #dashboard .kpis .kpi .kpi-value,body.light #dashboard .kpis .kpi b{
+  color:#0f172a!important;text-shadow:none!important;
+}
+#dashboard .kpis .kpi span,#dashboard .kpis .kpi small{font-weight:800!important;color:var(--lg-muted)!important;}
+#dashboard .monthly-wide-card,
+#dashboard .payment-below-card,
+#dashboard .grid > .card{
+  border-radius:30px!important;
+  padding:20px!important;
+  overflow:hidden!important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.035) 48%,rgba(255,255,255,.014)),
+    radial-gradient(circle at 86% 12%,rgba(139,92,246,.18),transparent 35%),
+    radial-gradient(circle at 14% 78%,rgba(34,211,238,.14),transparent 40%),
+    rgba(3,10,25,.26)!important;
+  border:1px solid rgba(255,255,255,.25)!important;
+  box-shadow:0 28px 90px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.20)!important;
+  backdrop-filter:blur(42px) saturate(195%) brightness(1.06)!important;
+  -webkit-backdrop-filter:blur(42px) saturate(195%) brightness(1.06)!important;
+}
+html[data-theme="light"] #dashboard .monthly-wide-card,
+html[data-theme="light"] #dashboard .payment-below-card,
+html[data-theme="light"] #dashboard .grid > .card,body.light #dashboard .monthly-wide-card,body.light #dashboard .payment-below-card{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.62),rgba(255,255,255,.24) 54%,rgba(255,255,255,.14)),
+    radial-gradient(circle at 86% 12%,rgba(139,92,246,.12),transparent 35%),
+    radial-gradient(circle at 14% 78%,rgba(14,165,233,.12),transparent 40%)!important;
+}
+#dashboard .card-title,#dashboard .chart-head{
+  min-height:52px!important;
+  padding:0 2px 12px!important;
+  margin-bottom:6px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+}
+#dashboard .card-title b,#dashboard .chart-head b{
+  font-size:20px!important;
+  font-weight:950!important;
+  color:var(--lg-chart-ink)!important;
+}
+#dashboard .chart{
+  position:relative!important;
+  border-radius:24px!important;
+  padding:14px 16px 10px!important;
+  overflow:hidden!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.075),rgba(255,255,255,.020)),
+    rgba(4,12,28,.18)!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13), inset 0 -1px 0 rgba(255,255,255,.05)!important;
+}
+html[data-theme="light"] #dashboard .chart,body.light #dashboard .chart{
+  background:linear-gradient(180deg,rgba(255,255,255,.40),rgba(255,255,255,.18))!important;
+  border-color:rgba(255,255,255,.58)!important;
+}
+#dashboard .chart::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    linear-gradient(rgba(255,255,255,.050) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px),
+    radial-gradient(circle at 50% -20%,rgba(125,211,252,.18),transparent 42%);
+  background-size:42px 42px,42px 42px,100% 100%;
+  opacity:.46;
+}
+#dashboard .chart canvas{
+  position:relative!important;
+  z-index:1!important;
+  filter:drop-shadow(0 12px 18px rgba(0,0,0,.20));
+}
+#dashboard .monthly-wide-chart{height:430px!important;min-height:430px!important;}
+#dashboard .payment-below-card .chart.sm,
+#dashboard .grid .chart.sm{height:330px!important;min-height:330px!important;}
+#dashboard .value-list,
+#dashboard .value-item{
+  border-radius:18px!important;
+  background:rgba(255,255,255,.050)!important;
+  border-color:rgba(255,255,255,.16)!important;
+}
+@media(max-width:1320px){#dashboard .kpis{grid-template-columns:repeat(3,minmax(170px,1fr))!important;}}
+@media(max-width:760px){
+  #dashboard .kpis{grid-template-columns:1fr!important;}
+  #dashboard .monthly-wide-chart{height:360px!important;min-height:360px!important;}
+  #dashboard .section-head{align-items:flex-start!important;}
+}
+@media print{
+  body{padding-top:0!important;}
+  .topbar{position:static!important;height:auto!important;}
+}
+
+/* ==========================================================================
+   PETATOE v4.4 APPLE LIQUID GLASS FULL UI
+   UI-only refinement layer:
+   - Enterprise KPI Glass Cylinders
+   - Bubble Icon System
+   - Apple Analytics Chart Panels
+   - Stable sticky header/search layout
+   - Dark/Light Liquid Glass palette
+   ========================================================================== */
+
+:root{
+  color-scheme:dark;
+  --lg-apple-bg:#07111F;
+  --lg-apple-bg-2:#0B1730;
+  --lg-apple-bg-3:#10213D;
+  --lg-apple-surface:rgba(18,28,45,0.45);
+  --lg-apple-surface-2:rgba(18,28,45,0.34);
+  --lg-apple-surface-strong:rgba(18,28,45,0.68);
+  --lg-apple-border:rgba(255,255,255,0.12);
+  --lg-apple-border-strong:rgba(255,255,255,0.22);
+  --lg-apple-text:#F8FAFC;
+  --lg-apple-muted:#94A3B8;
+  --lg-apple-accent:#60A5FA;
+  --lg-apple-cyan:#22D3EE;
+  --lg-apple-violet:#A78BFA;
+  --lg-apple-success:#34D399;
+  --lg-apple-warning:#FBBF24;
+  --lg-apple-danger:#FB7185;
+  --lg-apple-orange:#FB923C;
+  --lg-apple-indigo:#818CF8;
+  --lg-apple-emerald:#10B981;
+  --lg-apple-shadow:0 26px 80px rgba(0,0,0,.38);
+  --lg-apple-shadow-soft:0 16px 46px rgba(0,0,0,.24);
+  --lg-apple-blur:34px;
+  --lg-kpi-h:158px;
+  --lg-kpi-radius:999px;
+  --lg-enterprise-table:rgba(8,18,34,.78);
+  --lg-enterprise-table-row:rgba(15,23,42,.56);
+}
+html[data-theme="light"],
+body.light,
+body.light-mode{
+  color-scheme:light;
+  --lg-apple-bg:#F4F8FC;
+  --lg-apple-bg-2:#EEF6FF;
+  --lg-apple-bg-3:#E7EEF9;
+  --lg-apple-surface:rgba(255,255,255,0.55);
+  --lg-apple-surface-2:rgba(255,255,255,0.42);
+  --lg-apple-surface-strong:rgba(255,255,255,0.82);
+  --lg-apple-border:rgba(255,255,255,0.70);
+  --lg-apple-border-strong:rgba(148,163,184,0.38);
+  --lg-apple-text:#0F172A;
+  --lg-apple-muted:#64748B;
+  --lg-apple-accent:#2563EB;
+  --lg-apple-cyan:#0891B2;
+  --lg-apple-violet:#7C3AED;
+  --lg-apple-success:#059669;
+  --lg-apple-warning:#D97706;
+  --lg-apple-danger:#E11D48;
+  --lg-apple-orange:#EA580C;
+  --lg-apple-indigo:#4F46E5;
+  --lg-apple-emerald:#047857;
+  --lg-apple-shadow:0 26px 80px rgba(15,23,42,.12);
+  --lg-apple-shadow-soft:0 16px 46px rgba(15,23,42,.10);
+  --lg-enterprise-table:rgba(255,255,255,.88);
+  --lg-enterprise-table-row:rgba(255,255,255,.66);
+}
+
+/* Background depth: enterprise Apple analytics instead of flat gray/neon */
+html,
+body{
+  min-height:100%;
+  color:var(--lg-apple-text)!important;
+}
+body{
+  background:
+    radial-gradient(circle at 8% 4%, color-mix(in srgb, var(--lg-apple-accent) 30%, transparent), transparent 30%),
+    radial-gradient(circle at 88% 9%, color-mix(in srgb, var(--lg-apple-violet) 26%, transparent), transparent 34%),
+    radial-gradient(circle at 80% 84%, color-mix(in srgb, var(--lg-apple-emerald) 14%, transparent), transparent 34%),
+    linear-gradient(135deg,var(--lg-apple-bg),var(--lg-apple-bg-2) 46%,var(--lg-apple-bg-3))!important;
+  background-attachment:fixed!important;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:-1;
+  opacity:.42;
+  background:
+    linear-gradient(120deg,rgba(255,255,255,.055),transparent 30%,rgba(255,255,255,.035) 58%,transparent 78%),
+    radial-gradient(circle at 50% -16%,rgba(255,255,255,.10),transparent 42%);
+}
+
+/* Stable enterprise sticky header: no disappearing, no search overlap */
+.topbar,
+.header,
+.app-header,
+.main-header,
+.pet-topbar,
+#topbar,
+#header,
+header{
+  position:sticky!important;
+  top:0!important;
+  z-index:99999!important;
+  isolation:isolate!important;
+  overflow:visible!important;
+  transform:none!important;
+  backdrop-filter:blur(32px) saturate(180%)!important;
+  -webkit-backdrop-filter:blur(32px) saturate(180%)!important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.18),rgba(255,255,255,.052)),
+    var(--lg-apple-surface)!important;
+  border-bottom:1px solid var(--lg-apple-border)!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+.topbar *,
+.header *,
+.app-header *,
+.main-header *,
+.pet-topbar *,
+#topbar *,
+#header *,
+header *{
+  min-width:0;
+}
+.topbar,
+.header,
+.app-header,
+.main-header,
+.pet-topbar{
+  display:flex!important;
+  align-items:center!important;
+  gap:12px!important;
+}
+.topbar .search,
+.topbar .search-box,
+.topbar .global-search,
+.topbar input[type="search"],
+.topbar input[type="text"],
+.header .search,
+.header .search-box,
+.header input[type="search"],
+.header input[type="text"],
+.app-header .search,
+.app-header .search-box,
+.app-header input[type="search"],
+.app-header input[type="text"]{
+  flex:1 1 300px!important;
+  max-width:min(480px,42vw)!important;
+  min-width:180px!important;
+}
+.topbar .actions,
+.header .actions,
+.app-header .actions,
+.main-header .actions,
+.topbar .header-actions,
+.header .header-actions,
+.app-header .header-actions{
+  flex:0 0 auto!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:8px!important;
+  white-space:nowrap!important;
+}
+@media(max-width:920px){
+  .topbar .search,
+  .topbar .search-box,
+  .topbar .global-search,
+  .topbar input[type="search"],
+  .topbar input[type="text"],
+  .header .search,
+  .header .search-box,
+  .header input[type="search"],
+  .header input[type="text"],
+  .app-header .search,
+  .app-header .search-box,
+  .app-header input[type="search"],
+  .app-header input[type="text"]{
+    max-width:100%!important;
+    flex-basis:100%!important;
+  }
+}
+
+/* Sidebar/navigation glass */
+.sidebar,
+.side,
+.side-nav,
+.app-sidebar,
+#sidebar,
+nav.sidebar{
+  background:
+    linear-gradient(150deg,rgba(255,255,255,.17),rgba(255,255,255,.045) 45%,rgba(255,255,255,.025)),
+    var(--lg-apple-surface)!important;
+  border:1px solid var(--lg-apple-border)!important;
+  box-shadow:var(--lg-apple-shadow-soft), inset 0 1px 0 rgba(255,255,255,.18)!important;
+  backdrop-filter:blur(34px) saturate(180%)!important;
+  -webkit-backdrop-filter:blur(34px) saturate(180%)!important;
+}
+.sidebar button,
+.sidebar a,
+.side button,
+.side a,
+.side-nav button,
+.side-nav a,
+.app-sidebar button,
+.app-sidebar a,
+#sidebar button,
+#sidebar a,
+[data-tab],
+.lg-active-tab{
+  transition:transform .22s cubic-bezier(.22,1,.36,1), background .22s ease, border-color .22s ease, box-shadow .22s ease, color .22s ease!important;
+}
+.sidebar button:hover,
+.sidebar a:hover,
+.side button:hover,
+.side a:hover,
+.side-nav button:hover,
+.side-nav a:hover,
+.app-sidebar button:hover,
+.app-sidebar a:hover,
+#sidebar button:hover,
+#sidebar a:hover,
+[data-tab]:hover{
+  transform:translateY(-1px)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.052))!important;
+  border-color:var(--lg-apple-border-strong)!important;
+}
+.lg-active-tab,
+.sidebar .active,
+.side .active,
+.side-nav .active,
+.app-sidebar .active,
+#sidebar .active{
+  background:
+    linear-gradient(135deg,color-mix(in srgb,var(--lg-apple-accent) 36%, transparent),color-mix(in srgb,var(--lg-apple-cyan) 18%, transparent)),
+    rgba(255,255,255,.10)!important;
+  color:var(--lg-apple-text)!important;
+  border-color:color-mix(in srgb,var(--lg-apple-accent) 44%, transparent)!important;
+  box-shadow:0 12px 32px color-mix(in srgb,var(--lg-apple-accent) 18%, transparent), inset 0 1px 0 rgba(255,255,255,.22)!important;
+}
+
+/* Global glass buttons */
+button,
+.btn,
+.exp-btn,
+.report-btn,
+.reports-btn,
+.pdf-btn,
+.excel-btn,
+.action-btn,
+button[type="button"],
+button[type="submit"]{
+  border-radius:999px!important;
+  border:1px solid var(--lg-apple-border)!important;
+  color:var(--lg-apple-text)!important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.045)),
+    var(--lg-apple-surface-2)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.18)!important;
+  backdrop-filter:blur(20px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(170%)!important;
+  transition:transform .2s cubic-bezier(.22,1,.36,1), box-shadow .2s ease, border-color .2s ease, background .2s ease!important;
+}
+button:hover,
+.btn:hover,
+.exp-btn:hover,
+.report-btn:hover,
+.reports-btn:hover,
+.pdf-btn:hover,
+.excel-btn:hover,
+.action-btn:hover{
+  transform:translateY(-2px)!important;
+  box-shadow:0 16px 38px rgba(0,0,0,.18),0 0 0 1px color-mix(in srgb,var(--lg-apple-accent) 18%, transparent), inset 0 1px 0 rgba(255,255,255,.25)!important;
+}
+button:active,
+.btn:active,
+.exp-btn:active,
+.report-btn:active,
+.reports-btn:active,
+.pdf-btn:active,
+.excel-btn:active,
+.action-btn:active{
+  transform:translateY(0) scale(.985)!important;
+}
+.pdf-btn,
+button.danger,
+.btn-danger,
+.report-btn.danger{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--lg-apple-danger) 32%, transparent),rgba(255,255,255,.055))!important;
+  border-color:color-mix(in srgb,var(--lg-apple-danger) 42%, transparent)!important;
+}
+.excel-btn,
+button.success,
+.btn-success{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--lg-apple-success) 32%, transparent),rgba(255,255,255,.055))!important;
+  border-color:color-mix(in srgb,var(--lg-apple-success) 42%, transparent)!important;
+}
+
+/* Glass controls */
+input,
+select,
+textarea,
+.lg-field,
+.lg-select,
+.filter-input,
+.filter-select,
+.search-box input{
+  color:var(--lg-apple-text)!important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.055)),
+    var(--lg-apple-surface-2)!important;
+  border:1px solid var(--lg-apple-border)!important;
+  border-radius:16px!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 8px 18px rgba(0,0,0,.08)!important;
+  backdrop-filter:blur(18px) saturate(160%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%)!important;
+}
+input:focus,
+select:focus,
+textarea:focus,
+.lg-field:focus,
+.lg-select:focus{
+  outline:none!important;
+  border-color:color-mix(in srgb,var(--lg-apple-accent) 54%, transparent)!important;
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--lg-apple-accent) 16%, transparent), inset 0 1px 0 rgba(255,255,255,.20)!important;
+}
+input::placeholder,
+textarea::placeholder{color:var(--lg-apple-muted)!important;}
+
+/* Dashboard enterprise shell */
+#dashboard,
+.panel#dashboard,
+#dashboard.panel{
+  position:relative!important;
+}
+#dashboard .section-head,
+#dashboard .dash-head,
+#dashboard .dashboard-head,
+#dashboard .filters,
+#dashboard .filter-row{
+  border-radius:28px!important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.040)),
+    var(--lg-apple-surface-2)!important;
+  border:1px solid var(--lg-apple-border)!important;
+  box-shadow:var(--lg-apple-shadow-soft), inset 0 1px 0 rgba(255,255,255,.16)!important;
+  backdrop-filter:blur(28px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(28px) saturate(170%)!important;
+}
+
+/* Enterprise KPI Glass Cylinders */
+#dashboard .kpis{
+  gap:18px!important;
+  align-items:stretch!important;
+}
+#dashboard .kpis .kpi,
+#dashboard .summary-card,
+#dashboard .smart-exec-kpi,
+#dashboard .exec-kpi,
+#dashboard .bi-kpi,
+#dashboard .com-kpi,
+#dashboard .pdf-kpi,
+#dashboard .pet-dd-kpi,
+#dashboard .new-cust-kpi,
+#dashboard .inactive-cust-kpi,
+#dashboard .contract-kpi,
+#dashboard .ai-forecast-kpi,
+#dashboard .sales-target-kpi,
+#dashboard .pz-kpi{
+  position:relative!important;
+  isolation:isolate!important;
+  min-height:var(--lg-kpi-h)!important;
+  border-radius:42px!important;
+  padding:22px 24px!important;
+  overflow:hidden!important;
+  background:
+    radial-gradient(circle at 18% 0%,rgba(255,255,255,.26),transparent 30%),
+    radial-gradient(circle at 88% 78%,color-mix(in srgb,var(--lg-apple-accent) 20%, transparent),transparent 35%),
+    linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.050) 52%,rgba(255,255,255,.026)),
+    var(--lg-apple-surface)!important;
+  border:1px solid var(--lg-apple-border)!important;
+  box-shadow:
+    var(--lg-apple-shadow-soft),
+    inset 0 1px 0 rgba(255,255,255,.24),
+    inset 0 -1px 0 rgba(255,255,255,.060)!important;
+  backdrop-filter:blur(var(--lg-apple-blur)) saturate(185%)!important;
+  -webkit-backdrop-filter:blur(var(--lg-apple-blur)) saturate(185%)!important;
+  transition:transform .24s cubic-bezier(.22,1,.36,1), box-shadow .24s ease, border-color .24s ease!important;
+}
+#dashboard .kpis .kpi::before,
+#dashboard .summary-card::before,
+#dashboard .smart-exec-kpi::before,
+#dashboard .exec-kpi::before,
+#dashboard .bi-kpi::before,
+#dashboard .com-kpi::before,
+#dashboard .pdf-kpi::before,
+#dashboard .pet-dd-kpi::before{
+  content:"";
+  position:absolute;
+  inset:1px;
+  border-radius:inherit;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    linear-gradient(120deg,rgba(255,255,255,.34),rgba(255,255,255,.060) 24%,transparent 48%),
+    radial-gradient(circle at 12% 0%,rgba(255,255,255,.30),transparent 32%);
+  opacity:.78;
+}
+#dashboard .kpis .kpi::after,
+#dashboard .summary-card::after,
+#dashboard .smart-exec-kpi::after,
+#dashboard .exec-kpi::after,
+#dashboard .bi-kpi::after,
+#dashboard .com-kpi::after,
+#dashboard .pdf-kpi::after,
+#dashboard .pet-dd-kpi::after{
+  content:"";
+  position:absolute;
+  left:22px;
+  right:22px;
+  bottom:16px;
+  height:4px;
+  border-radius:999px;
+  pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--lg-apple-accent),var(--lg-apple-cyan),transparent);
+  opacity:.72;
+  filter:drop-shadow(0 0 10px color-mix(in srgb,var(--lg-apple-accent) 42%, transparent));
+}
+#dashboard .kpis .kpi:hover,
+#dashboard .summary-card:hover,
+#dashboard .smart-exec-kpi:hover,
+#dashboard .exec-kpi:hover,
+#dashboard .bi-kpi:hover,
+#dashboard .com-kpi:hover,
+#dashboard .pdf-kpi:hover,
+#dashboard .pet-dd-kpi:hover{
+  transform:translateY(-5px)!important;
+  border-color:var(--lg-apple-border-strong)!important;
+  box-shadow:
+    0 30px 80px rgba(0,0,0,.24),
+    0 0 0 1px color-mix(in srgb,var(--lg-apple-accent) 16%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.26)!important;
+}
+#dashboard .kpis .kpi i,
+#dashboard .kpis .kpi .ico,
+#dashboard .kpis .kpi .icon,
+#dashboard .summary-card i,
+#dashboard .summary-card .ico,
+#dashboard .smart-exec-kpi i,
+#dashboard .exec-kpi i,
+#dashboard .bi-kpi i,
+#dashboard .com-kpi i,
+#dashboard .pdf-kpi i{
+  width:54px!important;
+  height:54px!important;
+  min-width:54px!important;
+  min-height:54px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:50%!important;
+  background:
+    radial-gradient(circle at 34% 20%,rgba(255,255,255,.50),rgba(255,255,255,.080) 45%,rgba(255,255,255,.020)),
+    color-mix(in srgb,var(--lg-apple-accent) 18%, transparent)!important;
+  border:1px solid color-mix(in srgb,var(--lg-apple-accent) 38%, rgba(255,255,255,.16))!important;
+  box-shadow:
+    0 12px 30px color-mix(in srgb,var(--lg-apple-accent) 24%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.32)!important;
+  font-style:normal!important;
+}
+#dashboard .kpis .kpi:nth-child(1){--lg-apple-accent:var(--lg-apple-success);}
+#dashboard .kpis .kpi:nth-child(2){--lg-apple-accent:var(--lg-apple-violet);}
+#dashboard .kpis .kpi:nth-child(3){--lg-apple-accent:var(--lg-apple-cyan);}
+#dashboard .kpis .kpi:nth-child(4){--lg-apple-accent:var(--lg-apple-accent);}
+#dashboard .kpis .kpi:nth-child(5){--lg-apple-accent:var(--lg-apple-warning);}
+#dashboard .kpis .kpi:nth-child(6){--lg-apple-accent:var(--lg-apple-orange);}
+#dashboard .kpis .kpi b,
+#dashboard .kpis .kpi strong,
+#dashboard .kpis .kpi .kpi-value,
+#dashboard .summary-card b,
+#dashboard .summary-card strong,
+#dashboard .smart-exec-kpi b,
+#dashboard .exec-kpi b,
+#dashboard .bi-kpi b,
+#dashboard .com-kpi b,
+#dashboard .pdf-kpi b{
+  color:var(--lg-apple-text)!important;
+  font-size:clamp(24px,2.05vw,34px)!important;
+  line-height:1.05!important;
+  font-weight:950!important;
+  letter-spacing:-.03em!important;
+}
+#dashboard .kpis .kpi span,
+#dashboard .kpis .kpi small,
+#dashboard .summary-card span,
+#dashboard .summary-card small{
+  color:var(--lg-apple-muted)!important;
+  font-weight:800!important;
+}
+
+/* Apple Enterprise Analytics charts */
+#dashboard .monthly-wide-card,
+#dashboard .payment-below-card,
+#dashboard .report-chart-card,
+#dashboard .chart-card,
+#dashboard .grid > .card,
+.chart-card,
+.report-chart-card,
+.sales-intel-chart,
+.smart-service-cylinder-chart,
+.fleet-chart,
+.new-cust-chart,
+.inactive-cust-chart,
+.pdf-approved-chart-card{
+  position:relative!important;
+  isolation:isolate!important;
+  overflow:hidden!important;
+  border-radius:34px!important;
+  background:
+    radial-gradient(circle at 12% 0%,rgba(255,255,255,.20),transparent 30%),
+    radial-gradient(circle at 92% 20%,color-mix(in srgb,var(--lg-apple-violet) 15%, transparent),transparent 36%),
+    linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.045) 52%,rgba(255,255,255,.022)),
+    var(--lg-apple-surface)!important;
+  border:1px solid var(--lg-apple-border)!important;
+  box-shadow:var(--lg-apple-shadow-soft), inset 0 1px 0 rgba(255,255,255,.20)!important;
+  backdrop-filter:blur(32px) saturate(180%)!important;
+  -webkit-backdrop-filter:blur(32px) saturate(180%)!important;
+}
+#dashboard .monthly-wide-card::before,
+#dashboard .payment-below-card::before,
+#dashboard .report-chart-card::before,
+#dashboard .chart-card::before,
+#dashboard .grid > .card::before,
+.chart-card::before,
+.report-chart-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    linear-gradient(125deg,rgba(255,255,255,.24),transparent 28%,rgba(255,255,255,.050) 54%,transparent 78%),
+    radial-gradient(circle at 50% -18%,rgba(255,255,255,.14),transparent 42%);
+  opacity:.66;
+}
+#dashboard .chart,
+.chart,
+canvas{
+  max-width:100%;
+}
+#dashboard .chart,
+.report-chart-card .chart,
+.chart-card .chart,
+.sales-intel-chart .chart{
+  border-radius:26px!important;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.080),rgba(255,255,255,.028)),
+    color-mix(in srgb,var(--lg-apple-bg) 38%, transparent)!important;
+  border:1px solid color-mix(in srgb,var(--lg-apple-border) 72%, transparent)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12)!important;
+}
+#dashboard .chart-head,
+#dashboard .card-title,
+.chart-head,
+.card-title{
+  color:var(--lg-apple-text)!important;
+}
+#dashboard .chart-head b,
+#dashboard .card-title b,
+.chart-head b,
+.card-title b{
+  color:var(--lg-apple-text)!important;
+  font-weight:950!important;
+}
+#dashboard .chart-head span,
+#dashboard .card-title span,
+.chart-head span,
+.card-title span{
+  color:var(--lg-apple-muted)!important;
+}
+
+/* Enterprise readable tables/reports: glass but not over-transparent */
+table,
+.table,
+.data-table,
+.report-table,
+.tr-statement-table,
+.wh-statement-table{
+  color:var(--lg-apple-text)!important;
+  background:var(--lg-enterprise-table)!important;
+  border-collapse:separate!important;
+  border-spacing:0!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+  border:1px solid var(--lg-apple-border)!important;
+  box-shadow:0 10px 26px rgba(0,0,0,.10)!important;
+}
+thead,
+table thead,
+.table thead{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.050)),
+    var(--lg-apple-surface-strong)!important;
+  backdrop-filter:blur(18px) saturate(150%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%)!important;
+}
+th{
+  color:var(--lg-apple-text)!important;
+  font-weight:900!important;
+}
+td{
+  color:var(--lg-apple-text)!important;
+  border-color:color-mix(in srgb,var(--lg-apple-border) 70%, transparent)!important;
+}
+tbody tr{
+  background:var(--lg-enterprise-table-row)!important;
+}
+tbody tr:hover{
+  background:color-mix(in srgb,var(--lg-apple-accent) 12%, var(--lg-enterprise-table-row))!important;
+}
+
+/* Modal/popups */
+.modal,
+.pet-modal,
+.dialog,
+.popup,
+[role="dialog"]{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.17),rgba(255,255,255,.052)),
+    var(--lg-apple-surface-strong)!important;
+  border:1px solid var(--lg-apple-border)!important;
+  box-shadow:var(--lg-apple-shadow)!important;
+  backdrop-filter:blur(34px) saturate(180%)!important;
+  -webkit-backdrop-filter:blur(34px) saturate(180%)!important;
+}
+
+/* Smoothness guard: transform-only interactions */
+#dashboard .kpis .kpi,
+button,
+.btn,
+.sidebar button,
+.sidebar a,
+.card,
+.chart-card{
+  will-change:transform;
+}
+
+/* Responsive dashboard cylinders */
+@media(max-width:1320px){
+  #dashboard .kpis{grid-template-columns:repeat(3,minmax(190px,1fr))!important;}
+}
+@media(max-width:840px){
+  #dashboard .kpis{grid-template-columns:repeat(2,minmax(160px,1fr))!important;}
+  :root{--lg-kpi-h:144px;}
+}
+@media(max-width:560px){
+  #dashboard .kpis{grid-template-columns:1fr!important;}
+  :root{--lg-kpi-h:136px;}
+  #dashboard .kpis .kpi{border-radius:34px!important;}
+}
+
+/* Print safety: do not glassify print output */
+@media print{
+  body{background:#fff!important;color:#000!important;}
+  .topbar,.header,.app-header,.main-header,.pet-topbar,#topbar,#header,header{position:static!important;box-shadow:none!important;background:#fff!important;border-bottom:1px solid #ddd!important;}
+  table,.table,.data-table,.report-table{background:#fff!important;color:#000!important;box-shadow:none!important;}
+}
+
+/* v4.4 dynamic UI helper classes */
+.lg-enterprise-kpi[data-lg-tone="sales"]{--lg-apple-accent:var(--lg-apple-success)!important;}
+.lg-enterprise-kpi[data-lg-tone="tax"]{--lg-apple-accent:var(--lg-apple-violet)!important;}
+.lg-enterprise-kpi[data-lg-tone="transactions"]{--lg-apple-accent:var(--lg-apple-cyan)!important;}
+.lg-enterprise-kpi[data-lg-tone="customers"]{--lg-apple-accent:#3B82F6!important;}
+.lg-enterprise-kpi[data-lg-tone="average"]{--lg-apple-accent:var(--lg-apple-warning)!important;}
+.lg-enterprise-kpi[data-lg-tone="profit"]{--lg-apple-accent:var(--lg-apple-orange)!important;}
+.lg-enterprise-kpi[data-lg-tone="reports"]{--lg-apple-accent:var(--lg-apple-cyan)!important;}
+.lg-enterprise-kpi[data-lg-tone="treasury"]{--lg-apple-accent:var(--lg-apple-emerald)!important;}
+.lg-icon-bubble{
+  width:54px!important;height:54px!important;min-width:54px!important;min-height:54px!important;
+  border-radius:50%!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;
+  background:radial-gradient(circle at 35% 20%,rgba(255,255,255,.55),rgba(255,255,255,.10) 42%,rgba(255,255,255,.03)),color-mix(in srgb,var(--lg-apple-accent) 16%, transparent)!important;
+  border:1px solid color-mix(in srgb,var(--lg-apple-accent) 42%, rgba(255,255,255,.16))!important;
+  box-shadow:0 14px 34px color-mix(in srgb,var(--lg-apple-accent) 24%, transparent),inset 0 1px 0 rgba(255,255,255,.32)!important;
+}
+.lg-kpi-trend-line{
+  position:absolute;left:24px;right:24px;bottom:16px;height:4px;border-radius:999px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--lg-apple-accent) 90%, white 0%),color-mix(in srgb,var(--lg-apple-cyan) 78%, transparent),transparent)!important;
+  box-shadow:0 0 16px color-mix(in srgb,var(--lg-apple-accent) 36%, transparent);
+  opacity:.78;
+}
+.lg-kpi-number{font-variant-numeric:tabular-nums!important;}
+.lg-kpi-label{letter-spacing:-.01em!important;}
+.lg-apple-chart-panel{position:relative!important;}
+.lg-apple-chart-panel canvas{filter:drop-shadow(0 12px 20px rgba(0,0,0,.18));}
+.lg-glass-button,.lg-glass-control{font-family:var(--lg-font,"Cairo",system-ui)!important;}
+.petatoe-apple-liquid-glass-v44{scroll-padding-top:92px!important;}
+
+/* === PETATOE v4.4.10 DYNAMIC PETATOE DOCK MENU ===
+   UI-only correction based on the accepted v4.4 baseline:
+   - PETATOE launcher stays in the header when sidebar is closed.
+   - On open, the same PETATOE launcher docks into the sidebar top area dynamically.
+   - Sidebar navigation starts below the header/launcher zone, not at the very top.
+   - Old hamburger remains hidden; no duplicate PETATOE brand inside sidebar.
+   - Router/DataSource/business logic untouched. */
+:root{
+  --pet-header-height:78px;
+  --pet-header-gap:18px;
+  --pet-launcher-w:190px;
+  --pet-launcher-h:54px;
+  --pet-sidebar-pad-x:14px;
+  --pet-sidebar-dock-top:14px;
+  --pet-sidebar-nav-offset:calc(var(--pet-header-height) + 20px);
+}
+html,body{
+  padding-top:0!important;
+  scroll-padding-top:calc(var(--pet-header-height) + 14px)!important;
+}
+body,.app{padding-top:0!important;}
+.topbar{
+  position:sticky!important;
+  top:0!important;
+  right:auto!important;
+  left:auto!important;
+  width:auto!important;
+  min-height:var(--pet-header-height)!important;
+  height:auto!important;
+  z-index:99990!important;
+  margin:0 0 var(--pet-header-gap)!important;
+  padding:10px 18px!important;
+  border-radius:0 0 26px 26px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:12px!important;
+  overflow:visible!important;
+  transform:none!important;
+}
+.topbar .top-left,
+.topbar .top-right{
+  min-width:0!important;
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.topbar .top-left{flex:1 1 auto!important;justify-content:flex-start!important;}
+.topbar .top-right{flex:0 0 auto!important;justify-content:flex-end!important;}
+.topbar .hamb{display:none!important;}
+.topbar .side-launcher,
+.topbar #sideLauncher{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  left:auto!important;
+  bottom:auto!important;
+  z-index:2!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:10px!important;
+  width:var(--pet-launcher-w)!important;
+  min-width:var(--pet-launcher-w)!important;
+  max-width:var(--pet-launcher-w)!important;
+  height:var(--pet-launcher-h)!important;
+  margin:0!important;
+  padding:8px 14px!important;
+  flex:0 0 var(--pet-launcher-w)!important;
+  white-space:nowrap!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:none!important;
+  transition:
+    top .32s cubic-bezier(.22,1,.36,1),
+    right .32s cubic-bezier(.22,1,.36,1),
+    transform .24s cubic-bezier(.22,1,.36,1),
+    box-shadow .24s ease,
+    background .24s ease,
+    border-color .24s ease!important;
+}
+.topbar .side-launcher:hover,
+.topbar #sideLauncher:hover{transform:translateY(-1px)!important;}
+.topbar .side-launcher .launch-logo,
+.topbar #sideLauncher .launch-logo{
+  width:36px!important;height:36px!important;min-width:36px!important;
+  display:inline-flex!important;align-items:center!important;justify-content:center!important;flex:0 0 36px!important;
+}
+.topbar .side-launcher .launch-text,
+.topbar #sideLauncher .launch-text{
+  display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;
+  line-height:1.05!important;min-width:0!important;
+}
+.topbar .side-launcher .launch-text b,
+.topbar #sideLauncher .launch-text b{font-size:16px!important;font-weight:900!important;}
+.topbar .side-launcher .launch-text small,
+.topbar #sideLauncher .launch-text small{font-size:9px!important;opacity:.82!important;}
+.topbar .search,#topbarSearch{
+  flex:1 1 260px!important;
+  width:auto!important;
+  min-width:180px!important;
+  max-width:min(360px,30vw)!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  margin:0!important;
+}
+.topbar .reports-btn,.topbar .top-paw-up-btn,.topbar .pill,.topbar .user{
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+}
+/* Keep one brand only: the header PETATOE launcher. */
+#sidebar > .brand,
+.sidebar > .brand,
+#sidebar .brand:first-child,
+.sidebar .brand:first-child{
+  display:none!important;
+  visibility:hidden!important;
+  height:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+#sidebar,.sidebar{
+  top:0!important;
+  padding-inline:var(--pet-sidebar-pad-x)!important;
+  padding-top:var(--pet-sidebar-nav-offset)!important;
+  overflow-x:visible!important;
+}
+#sidebar > nav,
+.sidebar > nav,
+#sidebar > .nav,
+.sidebar > .nav,
+#nav.petatoe-accordion-nav{
+  margin-top:0!important;
+  padding-top:0!important;
+}
+/* When the menu opens, the same PETATOE button docks into the sidebar instead of leaving a duplicate. */
+body.sidebar-open .topbar .side-launcher,
+body.sidebar-open .topbar #sideLauncher{
+  position:fixed!important;
+  top:var(--pet-sidebar-dock-top)!important;
+  right:calc((var(--side) - var(--pet-launcher-w)) / 2)!important;
+  left:auto!important;
+  z-index:100001!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  transform:translateY(0) scale(1)!important;
+  box-shadow:
+    0 18px 42px rgba(0,0,0,.34),
+    0 0 28px color-mix(in srgb,var(--lg-apple-violet) 24%, transparent),
+    inset 0 1px 0 rgba(255,255,255,.28)!important;
+}
+body.sidebar-open .topbar .side-launcher:hover,
+body.sidebar-open .topbar #sideLauncher:hover{
+  transform:translateY(-1px) scale(1.01)!important;
+}
+@media(max-width:1100px){
+  :root{--pet-header-height:72px;--pet-launcher-w:58px;--pet-launcher-h:52px;--pet-sidebar-nav-offset:84px;}
+  .topbar{padding:8px 12px!important;gap:8px!important;}
+  .topbar .side-launcher .launch-text,
+  .topbar #sideLauncher .launch-text{display:none!important;}
+  .topbar .search,#topbarSearch{display:none!important;}
+  body.sidebar-open .topbar .side-launcher,
+  body.sidebar-open .topbar #sideLauncher{
+    right:calc(min(86vw,var(--side)) - var(--pet-launcher-w) - 16px)!important;
+  }
+}
+@media(max-width:700px){
+  :root{--pet-header-height:68px;--pet-launcher-w:54px;--pet-launcher-h:50px;--pet-sidebar-nav-offset:82px;}
+  .topbar .pill:not(.toggle),.topbar .user small{display:none!important;}
+  .topbar .reports-btn{padding-inline:10px!important;}
+}
+@media print{
+  .topbar .side-launcher,.topbar #sideLauncher{display:none!important;}
+  .topbar{position:static!important;margin:0!important;}
+}
+
+/* === PETATOE v4.4.11 DYNAMIC HEADER/SIDEBAR LAYOUT FIX === */
+/* UI-only correction:
+   - When sidebar is open, the header and page content reserve the sidebar width and move left cleanly.
+   - When sidebar is closed, reports/dashboard fill the full viewport width again.
+   - PETATOE launcher docks inside the sidebar top area without duplicating the brand.
+   - No router/data/render wrappers. */
+:root{
+  --pet-dyn-side:var(--side,258px);
+  --pet-dyn-header-h:78px;
+  --pet-dyn-gap:18px;
+  --pet-dyn-launcher-w:190px;
+  --pet-dyn-launcher-h:54px;
+}
+html,body,.app{
+  width:100%!important;
+  max-width:100%!important;
+  overflow-x:hidden!important;
+}
+.main{
+  width:100%!important;
+  max-width:100%!important;
+  margin-right:0!important;
+  transition:width .34s cubic-bezier(.22,1,.36,1), margin-right .34s cubic-bezier(.22,1,.36,1)!important;
+}
+body.sidebar-open .main{
+  width:calc(100% - var(--pet-dyn-side))!important;
+  max-width:calc(100% - var(--pet-dyn-side))!important;
+  margin-right:var(--pet-dyn-side)!important;
+}
+.topbar{
+  width:100%!important;
+  max-width:100%!important;
+  margin-right:0!important;
+  transition:
+    width .34s cubic-bezier(.22,1,.36,1),
+    max-width .34s cubic-bezier(.22,1,.36,1),
+    margin-right .34s cubic-bezier(.22,1,.36,1),
+    padding .24s ease,
+    border-radius .24s ease!important;
+}
+body.sidebar-open .topbar{
+  width:100%!important;
+  max-width:100%!important;
+  margin-right:0!important;
+}
+.page,.panel,.card,.grid,.dashboard-main-grid,.smart-panel,.smart-tab-section,.table-wrap,.monthly-wide-card,.payment-below-card{
+  max-width:100%!important;
+}
+body:not(.sidebar-open) .page,
+body:not(.sidebar-open) .panel{
+  width:100%!important;
+}
+body.sidebar-open .page,
+body.sidebar-open .panel{
+  width:100%!important;
+}
+#sidebar,.sidebar{
+  width:var(--pet-dyn-side)!important;
+  max-width:var(--pet-dyn-side)!important;
+  padding-top:calc(var(--pet-dyn-header-h) + 20px)!important;
+  transition:transform .34s cubic-bezier(.22,1,.36,1), box-shadow .34s ease!important;
+}
+/* closed: sidebar خارج الشاشة، المحتوى والهيدر بعرض كامل */
+body:not(.sidebar-open) #sidebar,
+body:not(.sidebar-open) .sidebar{
+  transform:translateX(112%)!important;
+  box-shadow:none!important;
+}
+/* open: sidebar ظاهر، المحتوى يتقلص ديناميكياً */
+body.sidebar-open #sidebar,
+body.sidebar-open .sidebar{
+  transform:translateX(0)!important;
+  box-shadow:-18px 0 65px rgba(0,0,0,.38)!important;
+}
+.topbar .side-launcher,
+.topbar #sideLauncher{
+  will-change:top,right,transform!important;
+}
+body.sidebar-open .topbar .side-launcher,
+body.sidebar-open .topbar #sideLauncher{
+  position:fixed!important;
+  top:12px!important;
+  right:calc((var(--pet-dyn-side) - var(--pet-dyn-launcher-w)) / 2)!important;
+  width:var(--pet-dyn-launcher-w)!important;
+  min-width:var(--pet-dyn-launcher-w)!important;
+  max-width:var(--pet-dyn-launcher-w)!important;
+  height:var(--pet-dyn-launcher-h)!important;
+  z-index:100001!important;
+}
+body:not(.sidebar-open) .topbar .side-launcher,
+body:not(.sidebar-open) .topbar #sideLauncher{
+  position:relative!important;
+  top:auto!important;
+  right:auto!important;
+  left:auto!important;
+  transform:none!important;
+}
+/* منع أي brand مكرر داخل القائمة؛ زر PETATOE الحقيقي هو الموجود في الهيدر ويتنقل بالديناميكية */
+#sidebar > .brand,
+.sidebar > .brand,
+#sidebar .brand:first-child,
+.sidebar .brand:first-child{
+  display:none!important;
+}
+@media(min-width:1101px){
+  body:not(.sidebar-open) .main{width:100%!important;max-width:100%!important;margin-right:0!important;}
+  body.sidebar-open .main{width:calc(100% - var(--pet-dyn-side))!important;max-width:calc(100% - var(--pet-dyn-side))!important;margin-right:var(--pet-dyn-side)!important;}
+  body.sidebar-open .overlay.show{display:none!important;}
+}
+@media(max-width:1100px){
+  :root{--pet-dyn-side:min(86vw,var(--side,258px));--pet-dyn-launcher-w:58px;--pet-dyn-launcher-h:52px;--pet-dyn-header-h:72px;}
+  .main,body.sidebar-open .main{width:100%!important;max-width:100%!important;margin-right:0!important;}
+  body.sidebar-open .topbar .side-launcher,
+  body.sidebar-open .topbar #sideLauncher{
+    right:calc(var(--pet-dyn-side) - var(--pet-dyn-launcher-w) - 16px)!important;
+  }
+}
+@media(max-width:700px){
+  :root{--pet-dyn-launcher-w:54px;--pet-dyn-launcher-h:50px;--pet-dyn-header-h:68px;}
+}
+
+/* === PETATOE v4.4.12 TRUE DYNAMIC SIDEBAR / HEADER LAYOUT ===
+   الهدف: زر PETATOE نفسه يتحرك فعليًا من الهيدر إلى داخل القائمة عند الفتح،
+   وليس كـ fixed overlay فوق البحث. عند الغلق يرجع للهيدر، والمحتوى يملأ العرض. */
+:root{
+  --pet-v4412-side:var(--side,258px);
+  --pet-v4412-top:var(--top,76px);
+  --pet-v4412-gap:18px;
+  --pet-v4412-launcher-w:190px;
+  --pet-v4412-launcher-h:54px;
+}
+html,body,.app{width:100%!important;max-width:100%!important;overflow-x:hidden!important;}
+.app{display:block!important;}
+.main{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  margin-right:0!important;
+  transition:width .34s cubic-bezier(.22,1,.36,1),max-width .34s cubic-bezier(.22,1,.36,1),margin-right .34s cubic-bezier(.22,1,.36,1)!important;
+}
+body.sidebar-open .main{
+  width:calc(100% - var(--pet-v4412-side))!important;
+  max-width:calc(100% - var(--pet-v4412-side))!important;
+  margin-right:var(--pet-v4412-side)!important;
+}
+.topbar{
+  position:sticky!important;
+  top:0!important;
+  z-index:90000!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+  inset-inline:auto!important;
+  padding-right:26px!important;
+  padding-left:26px!important;
+  transition:padding .24s ease, border-radius .24s ease, box-shadow .24s ease!important;
+}
+body.sidebar-open .topbar{
+  width:100%!important;
+  max-width:100%!important;
+  margin:0!important;
+}
+.topbar .top-left{min-width:0!important;flex:1 1 auto!important;}
+.topbar .top-right{flex:0 0 auto!important;}
+.topbar #topbarSearch,.topbar .search{
+  flex:1 1 260px!important;
+  min-width:180px!important;
+  max-width:min(360px,30vw)!important;
+}
+/* Sidebar visibility and spacing */
+#sidebar,.sidebar{
+  position:fixed!important;
+  top:0!important;
+  right:0!important;
+  width:var(--pet-v4412-side)!important;
+  max-width:var(--pet-v4412-side)!important;
+  height:100vh!important;
+  padding-top:18px!important;
+  padding-inline:14px!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  transform:translateX(112%)!important;
+  transition:transform .34s cubic-bezier(.22,1,.36,1), box-shadow .34s ease!important;
+  z-index:80000!important;
+}
+body.sidebar-open #sidebar,body.sidebar-open .sidebar{
+  transform:translateX(0)!important;
+  box-shadow:-18px 0 65px rgba(0,0,0,.38)!important;
+}
+#sidebar > .brand,.sidebar > .brand,#sidebar .brand:first-child,.sidebar .brand:first-child{
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  padding:0!important;
+  margin:0!important;
+  border:0!important;
+  overflow:hidden!important;
+}
+#sidebar > nav,.sidebar > nav,#nav.petatoe-accordion-nav{
+  margin-top:calc(var(--pet-v4412-top) + 14px)!important;
+  padding-top:0!important;
+}
+/* Header launcher default: داخل الهيدر فقط، بدون fixed */
+.topbar #sideLauncher,.topbar .side-launcher{
+  position:relative!important;
+  inset:auto!important;
+  top:auto!important;
+  right:auto!important;
+  left:auto!important;
+  bottom:auto!important;
+  width:var(--pet-v4412-launcher-w)!important;
+  min-width:var(--pet-v4412-launcher-w)!important;
+  max-width:var(--pet-v4412-launcher-w)!important;
+  height:var(--pet-v4412-launcher-h)!important;
+  flex:0 0 var(--pet-v4412-launcher-w)!important;
+  opacity:1!important;
+  transform:none!important;
+  pointer-events:auto!important;
+  z-index:2!important;
+}
+/* When JS moves the real PETATOE button inside the sidebar, it becomes normal sidebar content. */
+#sidebar .petatoe-sidebar-docked-launcher{
+  position:absolute!important;
+  top:12px!important;
+  right:calc((var(--pet-v4412-side) - var(--pet-v4412-launcher-w)) / 2)!important;
+  left:auto!important;
+  bottom:auto!important;
+  width:var(--pet-v4412-launcher-w)!important;
+  min-width:var(--pet-v4412-launcher-w)!important;
+  max-width:var(--pet-v4412-launcher-w)!important;
+  height:var(--pet-v4412-launcher-h)!important;
+  margin:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  z-index:3!important;
+  transform:none!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+#sidebar .petatoe-sidebar-docked-launcher:hover{transform:translateY(-1px)!important;}
+/* Header placeholder keeps spacing stable while the real button is docked in the sidebar. */
+.petatoe-launcher-placeholder{
+  width:var(--pet-v4412-launcher-w)!important;
+  min-width:var(--pet-v4412-launcher-w)!important;
+  height:var(--pet-v4412-launcher-h)!important;
+  flex:0 0 var(--pet-v4412-launcher-w)!important;
+  display:none;
+}
+body.sidebar-open .petatoe-launcher-placeholder{display:block!important;}
+/* Full-width recovery when sidebar closes */
+body:not(.sidebar-open) .main,
+body:not(.sidebar-open) .page,
+body:not(.sidebar-open) .panel{
+  width:100%!important;
+  max-width:100%!important;
+  margin-right:0!important;
+}
+.page,.panel,.card,.grid,.dashboard-main-grid,.table-wrap,.monthly-wide-card,.payment-below-card{max-width:100%!important;}
+@media(min-width:1101px){body.sidebar-open .overlay.show{display:none!important;}}
+@media(max-width:1100px){
+  :root{--pet-v4412-side:min(86vw,var(--side,258px));--pet-v4412-launcher-w:58px;--pet-v4412-launcher-h:52px;--pet-v4412-top:72px;}
+  .main,body.sidebar-open .main{width:100%!important;max-width:100%!important;margin-right:0!important;}
+  .topbar #sideLauncher .launch-text,.topbar .side-launcher .launch-text,
+  #sidebar .petatoe-sidebar-docked-launcher .launch-text{display:none!important;}
+  .petatoe-launcher-placeholder{width:58px!important;min-width:58px!important;flex-basis:58px!important;}
+  #sidebar .petatoe-sidebar-docked-launcher{right:calc(var(--pet-v4412-side) - var(--pet-v4412-launcher-w) - 16px)!important;}
+  body.sidebar-open .overlay.show{display:block!important;}
+}
+
+/* === PETATOE v4.4.13 Sidebar Tabs Offset Correction ===
+   Keeps the real PETATOE launcher docked in the sidebar, then pushes
+   accordion tabs below the docked launcher/header area to prevent overlap.
+   UI-only: no router/data/render changes. */
+:root{
+  --pet-v4413-sidebar-tabs-offset: calc(var(--pet-v4412-top, 76px) + var(--pet-v4412-launcher-h, 54px) + 18px);
+}
+body.sidebar-open #sidebar > nav,
+body.sidebar-open .sidebar > nav,
+body.sidebar-open #sidebar > .nav,
+body.sidebar-open .sidebar > .nav,
+body.sidebar-open #nav.petatoe-accordion-nav{
+  margin-top: var(--pet-v4413-sidebar-tabs-offset) !important;
+  padding-top: 0 !important;
+}
+body.sidebar-open #sidebar .petatoe-sidebar-docked-launcher{
+  top: 14px !important;
+}
+@media(max-width:1100px){
+  :root{--pet-v4413-sidebar-tabs-offset: calc(var(--pet-v4412-top, 72px) + var(--pet-v4412-launcher-h, 52px) + 16px);}
+}
+@media(max-width:700px){
+  :root{--pet-v4413-sidebar-tabs-offset: calc(var(--pet-v4412-top, 68px) + var(--pet-v4412-launcher-h, 50px) + 14px);}
+}
+
+/* === PETATOE v4.4.14 Apple Liquid Glass Accessible Palette ===
+   Visual-only palette refinement. Keeps Liquid Glass, improves contrast/readability
+   in dark and light modes without changing router, data source, calculations, or exports. */
+:root{
+  color-scheme:dark;
+  --lg-bg-a:#08111F;
+  --lg-bg-b:#101A2C;
+  --lg-bg-c:#1B2550;
+  --lg-page-bg:#08111F;
+  --lg-surface:#101A2C;
+  --lg-surface-2:#172238;
+  --lg-glass:rgba(255,255,255,.08);
+  --lg-glass-soft:rgba(255,255,255,.055);
+  --lg-glass-strong:rgba(255,255,255,.12);
+  --lg-field:rgba(16,26,44,.66);
+  --lg-table-row:rgba(255,255,255,.035);
+  --lg-table-row-hover:rgba(96,165,250,.12);
+  --lg-border:rgba(255,255,255,.14);
+  --lg-border-strong:rgba(255,255,255,.24);
+  --lg-text:#F8FAFC;
+  --lg-text-strong:#FFFFFF;
+  --lg-muted:#CBD5E1;
+  --lg-muted-2:#94A3B8;
+  --lg-primary:#7C5CFF;
+  --lg-primary-2:#A78BFA;
+  --lg-primary-dark:#5A45E6;
+  --lg-info:#38BDF8;
+  --lg-accent:#38BDF8;
+  --lg-cyan:#22D3EE;
+  --lg-success:#22C55E;
+  --lg-warn:#F59E0B;
+  --lg-danger:#EF4444;
+  --lg-orange:#F97316;
+  --lg-green:#22C55E;
+  --lg-violet:#A855F7;
+  --lg-blue:#3B82F6;
+  --lg-shadow:0 24px 80px rgba(0,0,0,.35);
+  --lg-shadow-soft:0 16px 42px rgba(0,0,0,.24);
+  --lg-inner-shadow:inset 0 1px 0 rgba(255,255,255,.16), inset 0 -1px 0 rgba(255,255,255,.055);
+  --lg-focus-ring:0 0 0 4px rgba(56,189,248,.18);
+  --lg-chart-grid:rgba(203,213,225,.18);
+  --lg-chart-axis:#CBD5E1;
+}
+html[data-theme="light"],body.light,body.light-mode{
+  color-scheme:light;
+  --lg-bg-a:#F5F7FB;
+  --lg-bg-b:#FFFFFF;
+  --lg-bg-c:#EEF4FF;
+  --lg-page-bg:#F5F7FB;
+  --lg-surface:#FFFFFF;
+  --lg-surface-2:#F8FAFC;
+  --lg-glass:rgba(255,255,255,.78);
+  --lg-glass-soft:rgba(255,255,255,.64);
+  --lg-glass-strong:rgba(255,255,255,.88);
+  --lg-field:rgba(255,255,255,.82);
+  --lg-table-row:rgba(255,255,255,.76);
+  --lg-table-row-hover:rgba(37,99,235,.08);
+  --lg-border:rgba(15,23,42,.12);
+  --lg-border-strong:rgba(15,23,42,.20);
+  --lg-text:#0F172A;
+  --lg-text-strong:#020617;
+  --lg-muted:#475569;
+  --lg-muted-2:#64748B;
+  --lg-primary:#7C5CFF;
+  --lg-primary-2:#A78BFA;
+  --lg-primary-dark:#5A45E6;
+  --lg-info:#2563EB;
+  --lg-accent:#0EA5E9;
+  --lg-cyan:#0891B2;
+  --lg-success:#16A34A;
+  --lg-warn:#D97706;
+  --lg-danger:#DC2626;
+  --lg-orange:#EA580C;
+  --lg-green:#16A34A;
+  --lg-violet:#7C3AED;
+  --lg-blue:#2563EB;
+  --lg-shadow:0 24px 70px rgba(15,23,42,.13);
+  --lg-shadow-soft:0 14px 38px rgba(15,23,42,.09);
+  --lg-inner-shadow:inset 0 1px 0 rgba(255,255,255,.82), inset 0 -1px 0 rgba(15,23,42,.035);
+  --lg-focus-ring:0 0 0 4px rgba(37,99,235,.14);
+  --lg-chart-grid:rgba(15,23,42,.10);
+  --lg-chart-axis:#334155;
+}
+body{
+  color:var(--lg-text)!important;
+  background:
+    radial-gradient(circle at 14% 4%, color-mix(in srgb,var(--lg-info) 20%, transparent), transparent 32%),
+    radial-gradient(circle at 86% 12%, color-mix(in srgb,var(--lg-primary) 22%, transparent), transparent 34%),
+    linear-gradient(135deg,var(--lg-bg-a),var(--lg-bg-b) 52%,var(--lg-bg-c))!important;
+}
+html[data-theme="light"] body,body.light,body.light-mode{
+  color:var(--lg-text)!important;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(124,92,255,.12), transparent 30%),
+    radial-gradient(circle at 88% 8%, rgba(14,165,233,.14), transparent 30%),
+    linear-gradient(135deg,var(--lg-bg-a),var(--lg-bg-b) 50%,var(--lg-bg-c))!important;
+}
+/* Readability-first glass surfaces */
+.topbar,.panel,.card,.kpi,.pdf-modal-card,.pet-modal,#globalSearchBox,#petatoeLoader,.filters,.export-toolbar,.section-head,.table-wrap,.ytd-banner,.insights .insight,.value-list,.smart-card,.settings-card,.report-card,.modal,.dialog,.popover,.dropdown-menu{
+  color:var(--lg-text)!important;
+  border-color:var(--lg-border)!important;
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.16),rgba(255,255,255,.045)),
+    var(--lg-glass)!important;
+  box-shadow:var(--lg-shadow-soft),var(--lg-inner-shadow)!important;
+  backdrop-filter:blur(var(--lg-blur,24px)) saturate(165%)!important;
+  -webkit-backdrop-filter:blur(var(--lg-blur,24px)) saturate(165%)!important;
+}
+html[data-theme="light"] .topbar,html[data-theme="light"] .panel,html[data-theme="light"] .card,html[data-theme="light"] .kpi,html[data-theme="light"] .filters,html[data-theme="light"] .table-wrap,html[data-theme="light"] .smart-card,html[data-theme="light"] .settings-card,html[data-theme="light"] .report-card,
+body.light .topbar,body.light .panel,body.light .card,body.light .kpi,body.light .filters,body.light .table-wrap,body.light .smart-card,body.light .settings-card,body.light .report-card{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.92),rgba(255,255,255,.64)),
+    var(--lg-glass)!important;
+}
+/* Text contrast lock */
+h1,h2,h3,h4,.section-head h2,.chart-head b,.card-title b,.kpi b,.kpi strong,.lg-kpi-number,.value,.kpi-value,
+.pet-v142-title,.topbar b,.topbar strong,.panel-title,.report-title{
+  color:var(--lg-text-strong)!important;
+  text-shadow:0 1px 2px rgba(0,0,0,.22);
+}
+html[data-theme="light"] h1,html[data-theme="light"] h2,html[data-theme="light"] h3,html[data-theme="light"] h4,html[data-theme="light"] .section-head h2,html[data-theme="light"] .chart-head b,html[data-theme="light"] .card-title b,html[data-theme="light"] .kpi b,html[data-theme="light"] .kpi strong,html[data-theme="light"] .lg-kpi-number,html[data-theme="light"] .value,html[data-theme="light"] .kpi-value,
+body.light h1,body.light h2,body.light h3,body.light h4,body.light .section-head h2,body.light .chart-head b,body.light .card-title b,body.light .kpi b,body.light .kpi strong,body.light .lg-kpi-number,body.light .value,body.light .kpi-value{
+  color:var(--lg-text-strong)!important;
+  text-shadow:none!important;
+}
+p,small,span,.section-head p,.chart-head small,.sar-note,.muted,.lg-kpi-label,.kpi span,.kpi small,.card small{
+  color:var(--lg-muted)!important;
+}
+/* KPI accessible cylinders with controlled color accents */
+#dashboard .kpis .kpi,.lg-enterprise-kpi,.lg-kpi-cylinder{
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255,255,255,.16), transparent 32%),
+    linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.045)),
+    rgba(16,26,44,.58)!important;
+  border-color:rgba(255,255,255,.18)!important;
+}
+html[data-theme="light"] #dashboard .kpis .kpi,html[data-theme="light"] .lg-enterprise-kpi,html[data-theme="light"] .lg-kpi-cylinder,
+body.light #dashboard .kpis .kpi,body.light .lg-enterprise-kpi,body.light .lg-kpi-cylinder{
+  background:
+    radial-gradient(circle at 20% 0%, rgba(255,255,255,.95), transparent 34%),
+    linear-gradient(180deg,rgba(255,255,255,.86),rgba(248,250,252,.70)),
+    rgba(255,255,255,.78)!important;
+  border-color:rgba(15,23,42,.12)!important;
+}
+#dashboard .kpis .kpi b,#dashboard .kpis .kpi strong,#dashboard .kpis .kpi .value{font-weight:800!important;color:var(--lg-text-strong)!important;}
+#dashboard .kpis .kpi span,#dashboard .kpis .kpi small{font-weight:700!important;color:var(--lg-muted)!important;}
+/* KPI tone variables */
+#dashboard .kpis .kpi:nth-child(1),.lg-enterprise-kpi[data-lg-tone="sales"]{--lg-kpi-accent:var(--lg-green);}
+#dashboard .kpis .kpi:nth-child(2),.lg-enterprise-kpi[data-lg-tone="tax"]{--lg-kpi-accent:var(--lg-violet);}
+#dashboard .kpis .kpi:nth-child(3),.lg-enterprise-kpi[data-lg-tone="transactions"]{--lg-kpi-accent:var(--lg-cyan);}
+#dashboard .kpis .kpi:nth-child(4),.lg-enterprise-kpi[data-lg-tone="customers"]{--lg-kpi-accent:var(--lg-blue);}
+#dashboard .kpis .kpi:nth-child(5),.lg-enterprise-kpi[data-lg-tone="average"]{--lg-kpi-accent:var(--lg-warn);}
+#dashboard .kpis .kpi:nth-child(6),.lg-enterprise-kpi[data-lg-tone="profit"]{--lg-kpi-accent:var(--lg-orange);}
+#dashboard .kpis .kpi::before,.lg-icon-bubble,.kpi .icon,.kpi .ico,.kpi-icon,.card-icon{
+  border-color:color-mix(in srgb,var(--lg-kpi-accent,var(--lg-primary)) 48%, rgba(255,255,255,.25))!important;
+  background:
+    radial-gradient(circle at 30% 20%,rgba(255,255,255,.38),transparent 32%),
+    linear-gradient(135deg,color-mix(in srgb,var(--lg-kpi-accent,var(--lg-primary)) 70%, transparent),rgba(255,255,255,.08))!important;
+  box-shadow:0 10px 28px color-mix(in srgb,var(--lg-kpi-accent,var(--lg-primary)) 30%, transparent),inset 0 1px 0 rgba(255,255,255,.30)!important;
+}
+/* Buttons, filters, and focus states */
+button,.btn,.exp-btn,.reports-btn,.hamb,.pill.toggle,.top-paw-up-btn,.pet-modal-close,.pdf-tb-actions button,input[type="button"],input[type="submit"]{
+  color:var(--lg-text-strong)!important;
+  border-color:var(--lg-border)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.14),rgba(255,255,255,.055)),var(--lg-glass-strong)!important;
+}
+html[data-theme="light"] button,html[data-theme="light"] .btn,html[data-theme="light"] .exp-btn,html[data-theme="light"] .reports-btn,html[data-theme="light"] .hamb,
+body.light button,body.light .btn,body.light .exp-btn,body.light .reports-btn,body.light .hamb{color:var(--lg-text-strong)!important;}
+.btn-primary,.reports-btn,.btn-info{background:linear-gradient(135deg,var(--lg-info),var(--lg-primary))!important;color:#fff!important;}
+.exp-btn-excel,.btn-success,.success{background:linear-gradient(135deg,var(--lg-success),#0F9F6E)!important;color:#fff!important;}
+.exp-btn-pdf,.btn-danger,.danger{background:linear-gradient(135deg,var(--lg-danger),#BE123C)!important;color:#fff!important;}
+input,select,textarea,.search,#globalSearchInput{
+  color:var(--lg-text-strong)!important;
+  border-color:var(--lg-field-border,var(--lg-border))!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.035)),var(--lg-field)!important;
+}
+html[data-theme="light"] input,html[data-theme="light"] select,html[data-theme="light"] textarea,html[data-theme="light"] .search,html[data-theme="light"] #globalSearchInput,
+body.light input,body.light select,body.light textarea,body.light .search,body.light #globalSearchInput{color:var(--lg-text-strong)!important;background:rgba(255,255,255,.88)!important;}
+input::placeholder,textarea::placeholder{color:var(--lg-muted-2)!important;opacity:1!important;}
+input:focus,select:focus,textarea:focus{border-color:var(--lg-info)!important;box-shadow:var(--lg-focus-ring),inset 0 1px rgba(255,255,255,.08)!important;}
+/* Tables and reports: readable, not over-transparent */
+table,td,th{color:var(--lg-text)!important;}
+th{background:linear-gradient(135deg,color-mix(in srgb,var(--lg-info) 14%, transparent),color-mix(in srgb,var(--lg-primary) 11%, transparent)),var(--lg-glass-strong)!important;color:var(--lg-text-strong)!important;}
+tr{background:var(--lg-table-row)!important;}td{border-color:rgba(148,163,184,.16)!important;}
+html[data-theme="light"] tr,body.light tr{background:#FFFFFF!important;}html[data-theme="light"] td,body.light td{color:#0F172A!important;border-color:#E2E8F0!important;}
+/* Chart readability */
+.chart-card,.monthly-wide-card,.payment-below-card,.lg-apple-chart-panel{border-color:var(--lg-border)!important;background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.035)),var(--lg-glass)!important;}
+canvas{filter:saturate(.96) contrast(1.04);}
+/* Avoid invisible icons/links */
+a,.link{color:var(--lg-info)!important;}svg,canvas{max-width:100%;}.icon,.ico,i{color:inherit;}
+
+/* PETATOE v5.0.1 - Header visibility root fix
+   Keep the Liquid Glass topbar fixed above all scrollable content and reserve
+   a real top offset for the main content. This only touches layout CSS. */
+@media screen{
+  :root{
+    --pet-header-height:78px;
+    --pet-header-gap:18px;
+    --pet-fixed-header-offset:calc(var(--pet-header-height) + var(--pet-header-gap));
+  }
+
+  html,
+  body{
+    scroll-padding-top:var(--pet-fixed-header-offset)!important;
+  }
+
+  body,
+  .app{
+    padding-top:0!important;
+  }
+
+  .main{
+    padding-top:var(--pet-fixed-header-offset)!important;
+  }
+
+  .topbar{
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    min-height:var(--pet-header-height)!important;
+    height:var(--pet-header-height)!important;
+    margin:0!important;
+    z-index:2147483000!important;
+    transform:none!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+
+  @media(max-width:900px){
+    :root{
+      --pet-header-height:74px;
+      --pet-header-gap:14px;
+    }
+  }
+
+  @media(max-width:560px){
+    :root{
+      --pet-header-height:70px;
+      --pet-header-gap:12px;
+    }
+  }
+}
+
+/* === PETATOE v5.0.2 Header / PDF Modal / Menu Button Stability Fix ===
+   Scope: UI positioning only. No data, router, reports calculations, or boot changes.
+   Fixes:
+   1) Header remains fixed above normal scroll and PDF modal state.
+   2) PDF modal starts below the fixed header instead of pushing/covering it.
+   3) PETATOE menu launcher never disappears/clips when sidebar opens; it stays in header. */
+:root{
+  --pet-v502-header-h: var(--pet-v4412-top, 76px);
+}
+html, body{
+  scroll-padding-top: calc(var(--pet-v502-header-h) + 16px) !important;
+}
+body .topbar,
+.topbar{
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: var(--pet-v502-header-h) !important;
+  margin: 0 !important;
+  z-index: 120000 !important;
+  overflow: visible !important;
+  transform: none !important;
+  isolation: isolate !important;
+}
+body .main,
+.main{
+  padding-top: calc(var(--pet-v502-header-h) + 18px) !important;
+}
+body.sidebar-open .topbar,
+body:not(.sidebar-open) .topbar{
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+}
+body.sidebar-open .topbar #sideLauncher,
+body.sidebar-open .topbar .side-launcher,
+body:not(.sidebar-open) .topbar #sideLauncher,
+body:not(.sidebar-open) .topbar .side-launcher{
+  position: relative !important;
+  inset: auto !important;
+  top: auto !important;
+  right: auto !important;
+  left: auto !important;
+  bottom: auto !important;
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: none !important;
+  z-index: 120010 !important;
+}
+#sidebar #sideLauncher.petatoe-sidebar-docked-launcher,
+.sidebar #sideLauncher.petatoe-sidebar-docked-launcher{
+  position: relative !important;
+  top: auto !important;
+  right: auto !important;
+  display: flex !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+.petatoe-launcher-placeholder{
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  flex-basis: 0 !important;
+}
+#petatoe-pdf-modal{
+  top: var(--pet-v502-header-h) !important;
+  height: calc(100vh - var(--pet-v502-header-h)) !important;
+  z-index: 110000 !important;
+  padding-top: 18px !important;
+}
+#petatoe-pdf-modal.show{
+  display: flex !important;
+}
+@media(max-width:1100px){
+  :root{--pet-v502-header-h: var(--pet-v4412-top, 72px);}
+  body .main,.main{padding-top: calc(var(--pet-v502-header-h) + 14px) !important;}
+}
+@media(max-width:700px){
+  :root{--pet-v502-header-h: var(--pet-v4412-top, 68px);}
+}
+@media print{
+  .topbar{display:none !important;}
+  .main{padding-top:0 !important;}
+  #petatoe-pdf-modal{top:0 !important;height:auto !important;padding:0 !important;}
+}
+
+/* =========================================================
+   PETATOE v5.0.4 - Top Liquid Glass Smart Reports Nav Restored
+   Keeps the reports navigation in its original top location.
+   UI only: no boot, data, router, reports logic.
+   ========================================================= */
+#smartTabs.smart-actions-row{
+  position:relative!important;
+  inset:auto!important;
+  transform:none!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-height:68px!important;
+  margin:10px 0 18px!important;
+  padding:9px 10px!important;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  direction:rtl!important;
+  border-radius:36px!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  background:linear-gradient(135deg,rgba(15,23,42,.62),rgba(30,41,59,.42))!important;
+  box-shadow:0 18px 48px rgba(2,6,23,.22), inset 0 1px 0 rgba(255,255,255,.18)!important;
+  backdrop-filter:blur(24px) saturate(1.18)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(1.18)!important;
+  z-index:20!important;
+  scrollbar-width:none!important;
+}
+#smartTabs.smart-actions-row::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;}
+#smartTabs .smart-pill{
+  position:relative!important;
+  flex:0 0 auto!important;
+  min-width:112px!important;
+  max-width:230px!important;
+  height:50px!important;
+  padding:0 15px!important;
+  border-radius:28px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:8px!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  background:rgba(255,255,255,.075)!important;
+  color:rgba(255,255,255,.90)!important;
+  font:900 12px/1.1 Cairo,system-ui,sans-serif!important;
+  letter-spacing:0!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.13)!important;
+  backdrop-filter:blur(16px) saturate(1.12)!important;
+  -webkit-backdrop-filter:blur(16px) saturate(1.12)!important;
+}
+#smartTabs .smart-pill::before{
+  content:"•";
+  flex:0 0 auto;
+  width:24px;
+  height:24px;
+  display:grid;
+  place-items:center;
+  font-size:17px;
+  line-height:1;
+  filter:drop-shadow(0 5px 12px rgba(0,0,0,.25));
+}
+#smartTabs .smart-pill[data-smart-tab="overview"]::before{content:"⌂";font-size:22px;}
+#smartTabs .smart-pill[data-smart-tab="sales"]::before{content:"▰";color:#38bdf8;}
+#smartTabs .smart-pill[data-smart-tab="vehicles"]::before{content:"🚐";font-size:16px;}
+#smartTabs .smart-pill[data-smart-tab="customers"]::before{content:"👥";font-size:16px;}
+#smartTabs .smart-pill[data-smart-tab="services"]::before{content:"✦";color:#f472b6;}
+#smartTabs .smart-pill[data-smart-tab="advanced"]::before{content:"▣";color:#a78bfa;}
+#smartTabs .smart-pill[data-smart-tab="forecast"]::before{content:"⌁";font-size:22px;color:#22d3ee;}
+#smartTabs .smart-pill[data-smart-tab="recommendations"]::before{content:"◈";color:#facc15;}
+#smartTabs .smart-pill[data-smart-tab="business"]::before{content:"✦";color:#34d399;}
+#smartTabs .smart-pill.active{
+  min-width:160px!important;
+  color:#fff!important;
+  border-color:rgba(255,255,255,.25)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.24),rgba(255,255,255,.12))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 14px 34px rgba(2,6,23,.20)!important;
+}
+#smartTabs .smart-pill.active::after{
+  content:"";
+  position:absolute;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#ff2d55;
+  box-shadow:0 0 0 3px rgba(255,45,85,.13),0 0 18px rgba(255,45,85,.7);
+  right:18px;
+  bottom:10px;
+}
+html[data-theme="light"] #smartTabs.smart-actions-row,
+body.light #smartTabs.smart-actions-row{
+  background:linear-gradient(135deg,rgba(255,255,255,.76),rgba(226,232,240,.55))!important;
+  border-color:rgba(15,23,42,.10)!important;
+  box-shadow:0 18px 48px rgba(15,23,42,.14),inset 0 1px 0 rgba(255,255,255,.72)!important;
+}
+html[data-theme="light"] #smartTabs .smart-pill,
+body.light #smartTabs .smart-pill{
+  color:rgba(15,23,42,.86)!important;
+  background:rgba(255,255,255,.42)!important;
+  border-color:rgba(15,23,42,.08)!important;
+}
+html[data-theme="light"] #smartTabs .smart-pill.active,
+body.light #smartTabs .smart-pill.active{
+  color:#0f172a!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.90),rgba(226,232,240,.68))!important;
+}
+@media(max-width:900px){
+  #smartTabs.smart-actions-row{border-radius:31px!important;margin-top:8px!important;padding:8px!important;}
+  #smartTabs .smart-pill{min-width:92px!important;max-width:156px!important;height:48px!important;font-size:10.5px!important;padding-inline:10px!important;}
+  #smartTabs .smart-pill.active{min-width:132px!important;}
+}
+@media(max-width:560px){
+  #smartTabs .smart-pill{min-width:62px!important;font-size:0!important;gap:0!important;}
+  #smartTabs .smart-pill::before{font-size:20px!important;}
+  #smartTabs .smart-pill.active{min-width:126px!important;font-size:11px!important;gap:7px!important;}
+}
+@media print{
+  #smartTabs.smart-actions-row{display:none!important;}
+}
+
+/* =========================================================
+   PETATOE v5.0.5 - Smart Nav Icon Size & Edge Clipping Fix
+   UI only: smaller tab icons, safer pill spacing, no boot/data changes.
+   ========================================================= */
+#smartTabs.smart-actions-row{
+  padding-inline:16px!important;
+  gap:7px!important;
+  scroll-padding-inline:16px!important;
+}
+#smartTabs .smart-pill{
+  gap:7px!important;
+  padding-inline:13px!important;
+  overflow:hidden!important;
+}
+#smartTabs .smart-pill::before{
+  width:18px!important;
+  height:18px!important;
+  min-width:18px!important;
+  max-width:18px!important;
+  font-size:13px!important;
+  line-height:18px!important;
+  transform:none!important;
+  overflow:visible!important;
+  filter:drop-shadow(0 3px 7px rgba(0,0,0,.20))!important;
+}
+#smartTabs .smart-pill[data-smart-tab="overview"]::before,
+#smartTabs .smart-pill[data-smart-tab="forecast"]::before{
+  font-size:15px!important;
+}
+#smartTabs .smart-pill[data-smart-tab="vehicles"]::before,
+#smartTabs .smart-pill[data-smart-tab="customers"]::before{
+  font-size:13px!important;
+}
+#smartTabs .smart-pill.active::before{
+  width:20px!important;
+  height:20px!important;
+  min-width:20px!important;
+  max-width:20px!important;
+  font-size:15px!important;
+  line-height:20px!important;
+}
+#smartTabs .smart-pill.active[data-smart-tab="overview"]::before,
+#smartTabs .smart-pill.active[data-smart-tab="forecast"]::before{
+  font-size:16px!important;
+}
+#smartTabs .smart-pill.active[data-smart-tab="vehicles"]::before,
+#smartTabs .smart-pill.active[data-smart-tab="customers"]::before{
+  font-size:15px!important;
+}
+#smartTabs .smart-pill.active::after{
+  width:7px!important;
+  height:7px!important;
+  right:16px!important;
+  bottom:9px!important;
+}
+@media(max-width:900px){
+  #smartTabs.smart-actions-row{padding-inline:12px!important;gap:6px!important;}
+  #smartTabs .smart-pill{gap:6px!important;padding-inline:10px!important;}
+  #smartTabs .smart-pill::before{width:17px!important;height:17px!important;min-width:17px!important;max-width:17px!important;font-size:12px!important;line-height:17px!important;}
+  #smartTabs .smart-pill.active::before{width:19px!important;height:19px!important;min-width:19px!important;max-width:19px!important;font-size:14px!important;line-height:19px!important;}
+}
+@media(max-width:560px){
+  #smartTabs .smart-pill::before{font-size:16px!important;width:20px!important;height:20px!important;min-width:20px!important;max-width:20px!important;line-height:20px!important;}
+  #smartTabs .smart-pill.active::before{font-size:15px!important;width:19px!important;height:19px!important;min-width:19px!important;max-width:19px!important;line-height:19px!important;}
+}
+
+/* =========================================================
+   PETATOE v5.0.6 - Promete Liquid Palette Design System
+   Scope: visual palette + liquid glass UI only.
+   No boot/data/router/report logic changes.
+   ========================================================= */
+:root{
+  /* Promete Liquid Palette - Dark */
+  --promete-canvas:#0F1219;
+  --promete-canvas-2:#101827;
+  --promete-glass:rgba(22,28,38,.55);
+  --promete-glass-soft:rgba(30,35,45,.40);
+  --promete-primary:#18E7F9;
+  --promete-secondary:#8A61FF;
+  --promete-text:#F9FAFB;
+  --promete-text-soft:#B9C3D5;
+  --promete-warning:#FFB547;
+  --promete-danger:#FF5A7A;
+  --promete-success:#38DCC8;
+  --promete-border:rgba(255,255,255,.08);
+  --promete-border-strong:rgba(255,255,255,.16);
+  --promete-shadow:0 24px 70px rgba(0,0,0,.34);
+  --promete-fluid-shadow:0 1px 1px rgba(255,255,255,.08) inset,0 22px 60px rgba(0,0,0,.25);
+
+  /* Bridge old PETATOE variables to new palette */
+  --bg:#0F1219!important;
+  --bg2:#101827!important;
+  --panel:rgba(22,28,38,.55)!important;
+  --panel2:rgba(30,35,45,.44)!important;
+  --stroke:rgba(255,255,255,.09)!important;
+  --text:#F9FAFB!important;
+  --muted:#B9C3D5!important;
+  --dim:#7A879B!important;
+  --purple:#8A61FF!important;
+  --cyan:#18E7F9!important;
+  --blue:#18E7F9!important;
+  --green:#38DCC8!important;
+  --orange:#FFB547!important;
+  --pink:#FF5A7A!important;
+  --red:#FF5A7A!important;
+  --yellow:#FFB547!important;
+
+  --lg-primary:#18E7F9!important;
+  --lg-primary-2:#8A61FF!important;
+  --lg-glass:rgba(22,28,38,.55)!important;
+  --lg-glass-soft:rgba(30,35,45,.40)!important;
+  --lg-text:#F9FAFB!important;
+  --lg-muted:#B9C3D5!important;
+  --lg-border:rgba(255,255,255,.09)!important;
+  --lg-border-strong:rgba(255,255,255,.16)!important;
+  --lg-bg-a:#0F1219!important;
+  --lg-bg-b:#101827!important;
+  --lg-bg-c:#15182A!important;
+  --lg-shadow:0 24px 70px rgba(0,0,0,.34)!important;
+  --lg-shadow-soft:0 1px 1px rgba(255,255,255,.08) inset,0 22px 60px rgba(0,0,0,.25)!important;
+}
+html[data-theme="light"],body.light,body.light-mode{
+  --promete-canvas:#F4F7FB;
+  --promete-canvas-2:#EAF1F9;
+  --promete-glass:rgba(255,255,255,.45);
+  --promete-glass-soft:rgba(255,255,255,.30);
+  --promete-primary:#1EA7B6;
+  --promete-secondary:#654DE3;
+  --promete-text:#1A212D;
+  --promete-text-soft:#526172;
+  --promete-warning:#D98A00;
+  --promete-danger:#E54868;
+  --promete-success:#1EA7B6;
+  --promete-border:rgba(26,33,45,.10);
+  --promete-border-strong:rgba(26,33,45,.18);
+  --promete-shadow:0 18px 50px rgba(26,33,45,.12);
+  --promete-fluid-shadow:0 1px 1px rgba(255,255,255,.80) inset,0 18px 45px rgba(26,33,45,.10);
+
+  --bg:#F4F7FB!important;
+  --bg2:#EAF1F9!important;
+  --panel:rgba(255,255,255,.45)!important;
+  --panel2:rgba(255,255,255,.56)!important;
+  --stroke:rgba(26,33,45,.10)!important;
+  --text:#1A212D!important;
+  --muted:#526172!important;
+  --dim:#7D8A9A!important;
+  --purple:#654DE3!important;
+  --cyan:#1EA7B6!important;
+  --blue:#1EA7B6!important;
+  --green:#1EA7B6!important;
+  --orange:#D98A00!important;
+  --pink:#E54868!important;
+  --red:#E54868!important;
+  --yellow:#D98A00!important;
+
+  --lg-primary:#1EA7B6!important;
+  --lg-primary-2:#654DE3!important;
+  --lg-glass:rgba(255,255,255,.45)!important;
+  --lg-glass-soft:rgba(255,255,255,.30)!important;
+  --lg-text:#1A212D!important;
+  --lg-muted:#526172!important;
+  --lg-border:rgba(26,33,45,.10)!important;
+  --lg-border-strong:rgba(26,33,45,.18)!important;
+  --lg-bg-a:#F4F7FB!important;
+  --lg-bg-b:#EAF1F9!important;
+  --lg-bg-c:#F8FBFF!important;
+  --lg-shadow:0 18px 50px rgba(26,33,45,.12)!important;
+  --lg-shadow-soft:0 1px 1px rgba(255,255,255,.80) inset,0 18px 45px rgba(26,33,45,.10)!important;
+}
+body{
+  background:
+    radial-gradient(circle at 14% 6%, color-mix(in srgb,var(--promete-primary) 20%,transparent), transparent 32%),
+    radial-gradient(circle at 86% 12%, color-mix(in srgb,var(--promete-secondary) 22%,transparent), transparent 36%),
+    radial-gradient(circle at 72% 92%, color-mix(in srgb,var(--promete-primary) 11%,transparent), transparent 34%),
+    linear-gradient(135deg,var(--promete-canvas),var(--promete-canvas-2))!important;
+  color:var(--promete-text)!important;
+}
+html[data-theme="light"] body,body.light,body.light-mode{
+  background:
+    radial-gradient(circle at 14% 6%, rgba(30,167,182,.16), transparent 32%),
+    radial-gradient(circle at 86% 12%, rgba(101,77,227,.14), transparent 36%),
+    linear-gradient(135deg,#F4F7FB,#EAF1F9 54%,#F8FBFF)!important;
+}
+body::before{
+  background-image:
+    linear-gradient(rgba(255,255,255,.030) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.026) 1px,transparent 1px)!important;
+  background-size:54px 54px!important;
+  opacity:.42!important;
+}
+html[data-theme="light"] body::before,body.light::before,body.light-mode::before{
+  background-image:
+    linear-gradient(rgba(26,33,45,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(26,33,45,.030) 1px,transparent 1px)!important;
+  opacity:.30!important;
+}
+.topbar,
+.panel,.card,.kpi,.smart-card,.smart-panel,.smart-kpi,.report-card,.settings-card,
+.table-wrap,.filters,.export-toolbar,.section-head,.metric,.summary-card,.mini,.insight,
+.pdf-modal-card,.pet-modal,#globalSearchBox,.dropdown-menu,.popover,.modal,.dialog{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.095),rgba(255,255,255,.025)),
+    var(--promete-glass)!important;
+  border:1px solid var(--promete-border)!important;
+  box-shadow:var(--promete-fluid-shadow)!important;
+  backdrop-filter:blur(20px) saturate(155%)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(155%)!important;
+}
+html[data-theme="light"] .topbar,
+html[data-theme="light"] .panel,html[data-theme="light"] .card,html[data-theme="light"] .kpi,html[data-theme="light"] .smart-card,html[data-theme="light"] .smart-panel,html[data-theme="light"] .smart-kpi,html[data-theme="light"] .report-card,html[data-theme="light"] .table-wrap,html[data-theme="light"] .filters,html[data-theme="light"] .export-toolbar,html[data-theme="light"] .section-head,
+body.light .topbar,body.light .panel,body.light .card,body.light .kpi,body.light .smart-card,body.light .table-wrap{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.64),rgba(255,255,255,.24)),
+    var(--promete-glass)!important;
+  box-shadow:var(--promete-fluid-shadow)!important;
+}
+.topbar::before,.panel::before,.card::before,.kpi::before,.smart-card::before,.smart-panel::before,.table-wrap::before{
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.20),transparent 28%,color-mix(in srgb,var(--promete-primary) 9%,transparent) 70%,transparent)!important;
+  opacity:.65!important;
+}
+html[data-theme="light"] .topbar::before,html[data-theme="light"] .panel::before,html[data-theme="light"] .card::before,html[data-theme="light"] .kpi::before,html[data-theme="light"] .smart-card::before,html[data-theme="light"] .table-wrap::before{
+  background:linear-gradient(135deg,rgba(255,255,255,.82),transparent 34%,rgba(30,167,182,.055) 76%,transparent)!important;
+}
+.card:hover,.kpi:hover,.smart-card:hover,.smart-panel:hover,.report-card:hover{
+  border-color:color-mix(in srgb,var(--promete-primary) 36%,transparent)!important;
+  box-shadow:0 1px 1px rgba(255,255,255,.10) inset,0 26px 76px rgba(0,0,0,.30),0 0 28px color-mix(in srgb,var(--promete-primary) 13%,transparent)!important;
+}
+html[data-theme="light"] .card:hover,html[data-theme="light"] .kpi:hover,html[data-theme="light"] .smart-card:hover,html[data-theme="light"] .smart-panel:hover{
+  box-shadow:0 1px 1px rgba(255,255,255,.85) inset,0 24px 58px rgba(26,33,45,.13),0 0 24px rgba(30,167,182,.13)!important;
+}
+.kpi .ico,.pet-kpi-icon,.summary-card .sum-ico,.pet-icon,.smart-ico{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--promete-primary) 22%,transparent),color-mix(in srgb,var(--promete-secondary) 18%,transparent))!important;
+  color:var(--promete-primary)!important;
+  box-shadow:0 0 24px color-mix(in srgb,var(--promete-primary) 18%,transparent)!important;
+}
+.kpi b,.metric b,.summary-card b,.mini b,.insight .big,.pet-kpi-content b,
+h1,h2,h3,.section-head h2,.chart-head b,.card-title b,th,td{
+  color:var(--promete-text)!important;
+}
+.kpi span,.kpi small,.metric span,.summary-card small,.mini span,.mini small,p,small,.muted,.section-head p,.chart-head small{
+  color:var(--promete-text-soft)!important;
+}
+button,.btn,.reports-btn,.chip,.year-chip,.metric-chip,.view-chip,.pill,.hamb,
+input,select,textarea{
+  border-color:var(--promete-border)!important;
+  color:var(--promete-text)!important;
+}
+input,select,textarea,.search,.filters select,.filters input,.form input,.form select{
+  background:var(--promete-glass-soft)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.055)!important;
+}
+html[data-theme="light"] input,html[data-theme="light"] select,html[data-theme="light"] textarea,html[data-theme="light"] .search,
+html[data-theme="light"] .filters select,html[data-theme="light"] .filters input,html[data-theme="light"] .form input,html[data-theme="light"] .form select{
+  background:rgba(255,255,255,.58)!important;
+  color:#1A212D!important;
+}
+.btn-primary,.reports-btn,.chip.active,.year-chip.active,.metric-chip.active,.view-chip.active,.smart-pill.active,
+.nav button.active,.pet-v142-nav button.active,.lg-active-tab{
+  background:linear-gradient(135deg,color-mix(in srgb,var(--promete-primary) 28%,transparent),color-mix(in srgb,var(--promete-secondary) 32%,transparent))!important;
+  border-color:color-mix(in srgb,var(--promete-primary) 36%,transparent)!important;
+  box-shadow:0 14px 34px color-mix(in srgb,var(--promete-secondary) 18%,transparent),inset 0 1px rgba(255,255,255,.20)!important;
+  color:var(--promete-text)!important;
+}
+.btn-primary:hover,.reports-btn:hover,.smart-pill:hover,.chip:hover,.year-chip:hover,.metric-chip:hover,.view-chip:hover{
+  transform:translateY(-1px)!important;
+  border-color:color-mix(in srgb,var(--promete-primary) 44%,transparent)!important;
+}
+/* Smart reports navigation: image-inspired liquid glass dock, kept at top */
+#smartTabs.smart-actions-row{
+  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.025)),rgba(16,20,30,.42)!important;
+  border:1px solid var(--promete-border-strong)!important;
+  box-shadow:0 20px 52px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.10)!important;
+  backdrop-filter:blur(24px) saturate(160%)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(160%)!important;
+}
+html[data-theme="light"] #smartTabs.smart-actions-row{
+  background:linear-gradient(135deg,rgba(255,255,255,.72),rgba(255,255,255,.32)),rgba(255,255,255,.45)!important;
+  box-shadow:0 18px 46px rgba(26,33,45,.13),inset 0 1px rgba(255,255,255,.72)!important;
+}
+#smartTabs .smart-pill{
+  background:rgba(255,255,255,.055)!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+  color:var(--promete-text)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.055)!important;
+}
+html[data-theme="light"] #smartTabs .smart-pill{
+  background:rgba(255,255,255,.45)!important;
+  border-color:rgba(26,33,45,.085)!important;
+}
+#smartTabs .smart-pill.active{
+  background:linear-gradient(135deg,rgba(24,231,249,.20),rgba(138,97,255,.18))!important;
+  border-color:rgba(24,231,249,.24)!important;
+  box-shadow:0 12px 35px rgba(24,231,249,.11),0 10px 32px rgba(138,97,255,.13),inset 0 1px rgba(255,255,255,.13)!important;
+}
+html[data-theme="light"] #smartTabs .smart-pill.active{
+  background:linear-gradient(135deg,rgba(30,167,182,.18),rgba(101,77,227,.15))!important;
+  border-color:rgba(30,167,182,.22)!important;
+}
+#smartTabs .smart-pill.active::after{background:var(--promete-danger)!important;box-shadow:0 0 12px var(--promete-danger)!important;}
+.table-wrap table th{background:color-mix(in srgb,var(--promete-glass-soft) 76%,transparent)!important;color:var(--promete-text-soft)!important;}
+.table-wrap table tr:hover td{background:color-mix(in srgb,var(--promete-primary) 8%,transparent)!important;}
+.metric-up{color:var(--promete-success)!important}.metric-down{color:var(--promete-danger)!important}
+.badge.cash,.badge.net,.badge.vana{color:var(--promete-primary)!important;background:color-mix(in srgb,var(--promete-primary) 13%,transparent)!important}
+.badge.vanb{color:var(--promete-secondary)!important;background:color-mix(in srgb,var(--promete-secondary) 13%,transparent)!important}
+/* Chart containers get the same smoked/frosted panel behavior as the reference design. */
+.chart,.monthly-wide-chart,.smart-chart-md,.smart-chart-lg,.smart-chart-xl{
+  border-radius:18px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012))!important;
+}
+html[data-theme="light"] .chart,html[data-theme="light"] .monthly-wide-chart,html[data-theme="light"] .smart-chart-md,html[data-theme="light"] .smart-chart-lg,html[data-theme="light"] .smart-chart-xl{
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.18))!important;
+}
+@media print{
+  :root,html[data-theme="light"]{--promete-text:#111827!important;--promete-text-soft:#475569!important;}
+  body{background:#fff!important;color:#111827!important;}
+}
+
+/* =========================================================
+   PETATOE v5.0.8 — Crystal Glass Dashboards
+   Applies the approved high-end Liquid Glass chart/dashboard look
+   globally without changing data, boot, router or reports logic.
+========================================================= */
+:root{
+  --crystal-panel-bg: linear-gradient(135deg,rgba(255,255,255,.115),rgba(255,255,255,.028)),rgba(16,22,34,.58);
+  --crystal-chart-bg: linear-gradient(180deg,rgba(255,255,255,.070),rgba(255,255,255,.016)),rgba(11,19,34,.48);
+  --crystal-border: rgba(210,232,255,.18);
+  --crystal-border-strong: rgba(210,232,255,.32);
+  --crystal-grid: rgba(202,226,255,.115);
+  --crystal-glow-cyan: rgba(24,231,249,.20);
+  --crystal-glow-purple: rgba(138,97,255,.18);
+  --crystal-soft-shadow: 0 22px 70px rgba(0,0,0,.30), inset 0 1px rgba(255,255,255,.13), inset 0 -1px rgba(255,255,255,.045);
+  --crystal-card-shadow: 0 16px 44px rgba(0,0,0,.24), inset 0 1px rgba(255,255,255,.12);
+  --crystal-radius-xl: 30px;
+  --crystal-radius-lg: 24px;
+  --crystal-radius-md: 18px;
+}
+html[data-theme="light"],body.light,body.light-mode{
+  --crystal-panel-bg: linear-gradient(135deg,rgba(255,255,255,.78),rgba(255,255,255,.34)),rgba(255,255,255,.50);
+  --crystal-chart-bg: linear-gradient(180deg,rgba(255,255,255,.74),rgba(255,255,255,.24)),rgba(255,255,255,.44);
+  --crystal-border: rgba(26,33,45,.105);
+  --crystal-border-strong: rgba(30,167,182,.24);
+  --crystal-grid: rgba(26,33,45,.070);
+  --crystal-glow-cyan: rgba(30,167,182,.13);
+  --crystal-glow-purple: rgba(101,77,227,.12);
+  --crystal-soft-shadow: 0 20px 54px rgba(26,33,45,.13), inset 0 1px rgba(255,255,255,.78);
+  --crystal-card-shadow: 0 14px 38px rgba(26,33,45,.105), inset 0 1px rgba(255,255,255,.80);
+}
+
+/* Main dashboard/report panels */
+.panel,
+.card,
+.smart-panel,
+.smart-card,
+.report-card,
+.settings-card,
+.tr-card,
+.wh-card,
+.ob-card,
+.monthly-wide-card,
+.payment-below-card{
+  position:relative!important;
+  overflow:hidden;
+  border-radius:var(--crystal-radius-xl)!important;
+  background:var(--crystal-panel-bg)!important;
+  border:1px solid var(--crystal-border)!important;
+  box-shadow:var(--crystal-soft-shadow)!important;
+  backdrop-filter:blur(24px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(170%)!important;
+}
+.panel::before,
+.card::before,
+.smart-panel::before,
+.smart-card::before,
+.report-card::before,
+.settings-card::before,
+.tr-card::before,
+.wh-card::before,
+.ob-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:
+    radial-gradient(circle at 18% 0%,rgba(255,255,255,.18),transparent 26%),
+    radial-gradient(circle at 84% 6%,var(--crystal-glow-purple),transparent 34%),
+    linear-gradient(135deg,rgba(255,255,255,.13),transparent 38%,rgba(24,231,249,.040));
+  opacity:.78;
+  z-index:0;
+}
+.panel>* , .card>* , .smart-panel>* , .smart-card>* , .report-card>* , .settings-card>* , .tr-card>* , .wh-card>* , .ob-card>*{position:relative;z-index:1;}
+
+/* KPI cards: top-summary glass cards like the approved reference */
+.kpis,
+.smart-kpi-grid,
+.smart-dash-kpis,
+.customer-yoy-kpis,
+.tr-kpis,
+.wh-kpis,
+.ob-kpis,
+.summary-grid{
+  gap:16px!important;
+}
+.kpi,
+.smart-kpi,
+.metric,
+.summary-card,
+.mini,
+.insight,
+.tr-kpi,
+.wh-kpi,
+.ob-kpi,
+.pet-kpi-card{
+  position:relative!important;
+  overflow:hidden!important;
+  border-radius:22px!important;
+  min-height:104px;
+  background:linear-gradient(135deg,rgba(255,255,255,.10),rgba(255,255,255,.028)),rgba(22,31,48,.52)!important;
+  border:1px solid var(--crystal-border)!important;
+  box-shadow:var(--crystal-card-shadow)!important;
+  backdrop-filter:blur(22px) saturate(165%)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(165%)!important;
+}
+html[data-theme="light"] .kpi,html[data-theme="light"] .smart-kpi,html[data-theme="light"] .metric,html[data-theme="light"] .summary-card,html[data-theme="light"] .mini,html[data-theme="light"] .insight,html[data-theme="light"] .tr-kpi,html[data-theme="light"] .wh-kpi,html[data-theme="light"] .ob-kpi,html[data-theme="light"] .pet-kpi-card{
+  background:linear-gradient(135deg,rgba(255,255,255,.82),rgba(255,255,255,.36)),rgba(255,255,255,.50)!important;
+}
+.kpi::after,
+.smart-kpi::after,
+.metric::after,
+.summary-card::after,
+.mini::after,
+.insight::after,
+.tr-kpi::after,
+.wh-kpi::after,
+.ob-kpi::after,
+.pet-kpi-card::after{
+  content:"";
+  position:absolute;
+  top:-45%;
+  right:-15%;
+  width:70%;
+  height:90%;
+  transform:rotate(20deg);
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);
+  opacity:.46;
+  pointer-events:none;
+}
+.kpi:hover,.smart-kpi:hover,.metric:hover,.summary-card:hover,.mini:hover,.insight:hover,.tr-kpi:hover,.wh-kpi:hover,.ob-kpi:hover,.pet-kpi-card:hover,
+.card:hover,.smart-panel:hover,.smart-card:hover{
+  transform:translateY(-3px)!important;
+  border-color:var(--crystal-border-strong)!important;
+  box-shadow:0 22px 72px rgba(0,0,0,.28),0 0 34px var(--crystal-glow-cyan),inset 0 1px rgba(255,255,255,.16)!important;
+}
+
+/* Chart panels and canvases */
+.chart,
+.pet-chart-wrap,
+.monthly-wide-chart,
+.smart-chart-md,
+.smart-chart-lg,
+.smart-chart-xl,
+.chart.xl,
+.chart.sm{
+  position:relative!important;
+  overflow:hidden!important;
+  border-radius:24px!important;
+  padding:14px!important;
+  background:var(--crystal-chart-bg)!important;
+  border:1px solid rgba(210,232,255,.145)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.10),inset 0 -1px rgba(255,255,255,.035),0 16px 46px rgba(0,0,0,.16)!important;
+  backdrop-filter:blur(18px) saturate(155%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(155%)!important;
+}
+.chart::before,
+.pet-chart-wrap::before,
+.monthly-wide-chart::before,
+.smart-chart-md::before,
+.smart-chart-lg::before,
+.smart-chart-xl::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:
+    linear-gradient(180deg,rgba(255,255,255,.08),transparent 22%),
+    radial-gradient(circle at 50% 0%,rgba(24,231,249,.08),transparent 36%),
+    linear-gradient(var(--crystal-grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--crystal-grid) 1px,transparent 1px);
+  background-size:auto,auto,54px 54px,54px 54px;
+  opacity:.62;
+}
+.chart canvas,
+.pet-chart-wrap canvas{
+  position:relative!important;
+  z-index:2!important;
+  filter:drop-shadow(0 16px 28px rgba(0,0,0,.18));
+}
+.card-title,.chart-head,.section-head{
+  border-radius:20px!important;
+}
+.chart-head b,.card-title b,.section-head h2{
+  letter-spacing:-.25px;
+  text-shadow:0 1px 10px rgba(0,0,0,.18);
+}
+
+/* Date/filter chips matching the chart reference */
+.year-strip,.filters,.export-toolbar,.smart-actions-row,#smartTabs.smart-actions-row{
+  border-radius:22px!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.085),rgba(255,255,255,.020)),rgba(18,25,38,.44)!important;
+  border:1px solid var(--crystal-border)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.10),0 14px 34px rgba(0,0,0,.16)!important;
+  backdrop-filter:blur(20px) saturate(150%)!important;
+  -webkit-backdrop-filter:blur(20px) saturate(150%)!important;
+}
+html[data-theme="light"] .year-strip,html[data-theme="light"] .filters,html[data-theme="light"] .export-toolbar,html[data-theme="light"] .smart-actions-row,html[data-theme="light"] #smartTabs.smart-actions-row{
+  background:linear-gradient(135deg,rgba(255,255,255,.74),rgba(255,255,255,.28)),rgba(255,255,255,.50)!important;
+}
+
+/* Bottom/summary strips and value lists */
+.value-list,
+.payment-row,
+.sar-note,
+.customer-yoy-period-banner,
+.ytd-banner{
+  border-radius:18px!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.075),rgba(255,255,255,.018)),rgba(18,25,38,.34)!important;
+  border:1px solid rgba(210,232,255,.12)!important;
+  box-shadow:inset 0 1px rgba(255,255,255,.08)!important;
+}
+
+/* Keep PDF/print readable; glass is screen-only. */
+@media print{
+  .panel,.card,.kpi,.smart-panel,.smart-card,.report-card,.chart,.pet-chart-wrap,.monthly-wide-chart{
+    background:#fff!important;
+    color:#111827!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+  .panel::before,.card::before,.kpi::before,.smart-panel::before,.smart-card::before,.chart::before,.pet-chart-wrap::before,.monthly-wide-chart::before{display:none!important;}
+}
+
+
+/* PETATOE v5.1 Dark Luxury Black Gold */
+:root{
+ --lg-primary:#D4AF37;
+ --lg-primary-2:#18E7F9;
+ --lg-accent:#F6C453;
+ --lg-glass:rgba(22,28,38,.55);
+ --lg-bg-a:#0F1219;
+ --lg-bg-b:#121826;
+ --lg-bg-c:#1a1f2e;
+}
+body{
+background:
+ radial-gradient(circle at 20% 10%, rgba(212,175,55,.12), transparent 28%),
+ radial-gradient(circle at 85% 12%, rgba(24,231,249,.10), transparent 30%),
+ linear-gradient(135deg,#0F1219,#121826 45%,#1a1f2e)!important;
+}
+.topbar,.panel,.card,.kpi,.section-head,.table-wrap{
+ border-color:rgba(212,175,55,.18)!important;
+ box-shadow:0 10px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08)!important;
+}
+
+/* =========================================================
+   PETATOE v5.1.1 — Dark Luxury Circular Charts Polish
+   UI-only: glass pills/legends around doughnut and pie charts.
+========================================================= */
+.petatoe-enterprise-glass-body .chart.pay,
+.petatoe-enterprise-glass-body .smart-chart,
+.petatoe-enterprise-glass-body .chart:has(canvas){
+  isolation:isolate;
+}
+.petatoe-enterprise-glass-body .payment-row,
+.petatoe-enterprise-glass-body .value-list .value-item{
+  border:1px solid rgba(212,175,55,.22)!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.060),rgba(8,10,14,.38))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 12px 34px rgba(0,0,0,.25)!important;
+  backdrop-filter:blur(18px) saturate(160%)!important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%)!important;
+}
+.petatoe-enterprise-glass-body .payment-row:hover,
+.petatoe-enterprise-glass-body .value-list .value-item:hover{
+  border-color:rgba(246,196,83,.46)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 16px 44px rgba(212,175,55,.14)!important;
+  transform:translateY(-1px);
+}
+.petatoe-enterprise-glass-body .value-dot,
+.petatoe-enterprise-glass-body .payment-row .pay-arrow{
+  filter:drop-shadow(0 0 8px currentColor);
+}
+.petatoe-enterprise-glass-body canvas[id*="Pie"],
+.petatoe-enterprise-glass-body canvas[id*="pie"],
+.petatoe-enterprise-glass-body canvas[id*="Payment"],
+.petatoe-enterprise-glass-body canvas[id*="payment"],
+.petatoe-enterprise-glass-body canvas[id*="Tier"],
+.petatoe-enterprise-glass-body canvas[id*="tier"]{
+  filter:drop-shadow(0 18px 32px rgba(212,175,55,.12));
+}
+
+/* PETATOE v5.1.3 — Cylindrical dashboards high-contrast luxury palette */
+:root{
+  --series-total:#F6C453;
+  --series-total-deep:#D4AF37;
+  --series-van-a:#18E7F9;
+  --series-van-a-deep:#00B8D4;
+  --series-van-b:#A66BFF;
+  --series-van-b-deep:#7E4DFF;
+  --series-customer:#7EE35F;
+  --series-customer-deep:#39D98A;
+  --comparison-current:#18E7F9;
+  --comparison-previous:#F6C453;
+  --comparison-diff-positive:#A66BFF;
+  --comparison-diff-negative:#FF5A7A;
+  --chart-label:#F9FAFB;
+}
+.chart canvas,
+.sales-intel-chart canvas,
+.smart-chart-md canvas{
+  filter:saturate(1.22) brightness(1.06) contrast(1.08);
+}
+.card:has(canvas),
+.smart-panel:has(canvas),
+.sales-intel-panel:has(canvas){
+  background:
+    radial-gradient(circle at 18% 0%, rgba(246,196,83,.055), transparent 34%),
+    radial-gradient(circle at 84% 8%, rgba(24,231,249,.045), transparent 30%),
+    linear-gradient(135deg,rgba(255,255,255,.07),rgba(255,255,255,.018)),
+    rgba(10,14,18,.74)!important;
+  border-color:rgba(246,196,83,.20)!important;
+}
+
+
+/* PETATOE v5.1.4 - Merge Forecast + Business Intelligence into one Smart Reports section */
+#smartTabs .smart-pill[data-smart-tab="business"]{display:none!important;}
+#smartTabs .smart-pill.smart-pill-merged-ai,
+#smartTabs .smart-pill[data-smart-tab="forecast"]{
+  min-width:210px;
+}
+#smartTabs .smart-pill[data-smart-tab="forecast"]::before{
+  content:"✦⌁"!important;
+  font-size:15px!important;
+  letter-spacing:-2px;
+  color:var(--gold-bright,#F6C453)!important;
+  text-shadow:0 0 14px rgba(246,196,83,.45),0 0 18px rgba(24,231,249,.25);
+}
+.merged-ai-divider{
+  display:flex;align-items:center;justify-content:center;gap:14px;margin:22px 0 16px;
+  color:var(--gold-bright,#F6C453);font:950 16px Cairo;
+}
+.merged-ai-divider:before,.merged-ai-divider:after{content:"";height:1px;flex:1;max-width:360px;background:linear-gradient(90deg,transparent,rgba(246,196,83,.45),transparent);}
+.merged-ai-divider span{
+  padding:9px 18px;border-radius:999px;border:1px solid rgba(246,196,83,.24);
+  background:linear-gradient(135deg,rgba(246,196,83,.12),rgba(24,231,249,.06));
+  box-shadow:0 12px 34px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.10);
+}
+.merged-bi-area{margin-top:10px;}
+
+/* =========================================================
+   PETATOE v5.1.13 — Payment method cards full glass tint
+   Match each payment summary card with the corresponding doughnut segment.
+   UI only: no data / boot changes.
+========================================================= */
+#dashboard .payment-below-card #payValues .payment-glass-row,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row{
+  position:relative!important;
+  overflow:hidden!important;
+  min-height:88px!important;
+  padding:16px 22px!important;
+  border-radius:22px!important;
+  border:1.5px solid color-mix(in srgb,var(--pay-c) 72%,rgba(255,255,255,.18))!important;
+  background:
+    radial-gradient(circle at 13% 50%, color-mix(in srgb,var(--pay-c) 30%,transparent) 0%, transparent 23%),
+    linear-gradient(135deg,color-mix(in srgb,var(--pay-c) 26%,rgba(255,255,255,.07)),rgba(15,22,32,.56) 48%,color-mix(in srgb,var(--pay-c) 12%,rgba(255,255,255,.04)))!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    inset 0 -1px 0 color-mix(in srgb,var(--pay-c) 28%,transparent),
+    0 0 0 1px rgba(255,255,255,.03),
+    0 14px 34px rgba(0,0,0,.28),
+    0 0 28px color-mix(in srgb,var(--pay-c) 22%,transparent)!important;
+  backdrop-filter:blur(22px) saturate(170%)!important;
+  -webkit-backdrop-filter:blur(22px) saturate(170%)!important;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row::before,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto 0;
+  height:42%;
+  border-radius:inherit;
+  background:linear-gradient(180deg,rgba(255,255,255,.19),rgba(255,255,255,.035) 48%,transparent)!important;
+  pointer-events:none;
+  opacity:.82;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row::after,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row::after{
+  content:"";
+  position:absolute;
+  width:74px;
+  height:74px;
+  border-radius:50%;
+  inset:50% auto auto 34px;
+  transform:translateY(-50%);
+  background:radial-gradient(circle,color-mix(in srgb,var(--pay-c) 62%,rgba(255,255,255,.55)) 0%,color-mix(in srgb,var(--pay-c) 20%,transparent) 46%,transparent 72%);
+  filter:blur(10px);
+  opacity:.58;
+  pointer-events:none;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row:hover,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row:hover{
+  transform:translateY(-2px)!important;
+  border-color:color-mix(in srgb,var(--pay-c) 90%,#fff)!important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.24),
+    0 18px 42px rgba(0,0,0,.32),
+    0 0 36px color-mix(in srgb,var(--pay-c) 34%,transparent)!important;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row .pay-name,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row .pay-name{
+  color:#f9fafb!important;
+  gap:14px!important;
+  z-index:1;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row .pay-name > span:first-child,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row .pay-name > span:first-child{
+  color:#f9fafb!important;
+  text-shadow:0 2px 14px rgba(0,0,0,.55)!important;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row .pay-arrow,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row .pay-arrow{
+  color:var(--pay-c)!important;
+  filter:drop-shadow(0 0 8px var(--pay-c))!important;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row .pay-icon,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row .pay-icon{
+  width:54px!important;
+  height:54px!important;
+  border-radius:50%!important;
+  display:inline-grid!important;
+  place-items:center!important;
+  color:var(--pay-c)!important;
+  background:radial-gradient(circle at 38% 30%,rgba(255,255,255,.32),color-mix(in srgb,var(--pay-c) 28%,transparent) 58%,rgba(255,255,255,.04))!important;
+  border:1.2px solid color-mix(in srgb,var(--pay-c) 78%,rgba(255,255,255,.24))!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 0 24px color-mix(in srgb,var(--pay-c) 30%,transparent)!important;
+  font-size:22px!important;
+  line-height:1!important;
+  flex:0 0 auto!important;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row .pay-amount,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row .pay-amount{
+  z-index:1;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row .pay-amount b,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row .pay-amount b{
+  color:#fff!important;
+  text-shadow:0 2px 14px rgba(0,0,0,.58)!important;
+}
+#dashboard .payment-below-card #payValues .payment-glass-row .pay-amount small,
+.petatoe-enterprise-glass-body #payValues .payment-glass-row .pay-amount small{
+  color:var(--pay-c)!important;
+  text-shadow:0 0 12px color-mix(in srgb,var(--pay-c) 65%,transparent)!important;
+  font-weight:950!important;
+}
+#dashboard .payment-below-card #payValues .payment-cash{--pay-c:#F6C453!important;}
+#dashboard .payment-below-card #payValues .payment-network{--pay-c:#18E7F9!important;}
+#dashboard .payment-below-card #payValues .payment-bank{--pay-c:#D7DEE8!important;}
+#dashboard .payment-below-card #payValues .payment-total{--pay-c:#B99AFF!important;}
+@media(max-width:980px){
+  #dashboard .payment-below-card #payValues .payment-glass-row{min-height:78px!important;padding:14px 16px!important;}
+  #dashboard .payment-below-card #payValues .payment-glass-row .pay-icon{width:46px!important;height:46px!important;font-size:19px!important;}
+}
+
+/* PETATOE v6.1.82 — Phase 6-A UI/UX readability and mobile containment
+   Scope: CSS-only. No data, reports calculations, export, or routing changes. */
+html[data-theme="light"] .btn-ghost,
+body.light .btn-ghost{
+  color:#0f172a!important;
+  background:rgba(255,255,255,.92)!important;
+  border-color:rgba(15,23,42,.16)!important;
+}
+html[data-theme="light"] .btn-ghost:hover,
+body.light .btn-ghost:hover{
+  color:#4c1d95!important;
+  border-color:rgba(124,58,237,.28)!important;
+}
+html[data-theme="light"] :where(.chip.active,.year-chip.active,.metric-chip.active,.view-chip.active,.smart-pill.active,.smart-tab.active),
+body.light :where(.chip.active,.year-chip.active,.metric-chip.active,.view-chip.active,.smart-pill.active,.smart-tab.active){
+  color:#fff!important;
+  text-shadow:none!important;
+}
+@media(max-width:760px){
+  .page,
+  .panel,
+  .card,
+  .chart-card,
+  .smart-card,
+  .smart-panel{
+    max-width:100%!important;
+    min-width:0!important;
+  }
+  .section-head,
+  .card-title,
+  .chart-head,
+  .report-control-bar,
+  .smart-hero-actions{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  .section-head > *,
+  .card-title > *,
+  .chart-head > *,
+  .report-control-bar > *,
+  .smart-hero-actions > *{
+    min-width:0!important;
+  }
+  .actions,
+  .report-control-group,
+  .year-strip,
+  .smart-hero-actions{
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    scrollbar-width:thin;
+  }
+}
+
+/* PETATOE v6.1.83 — Phase 6-B UI/UX table, modal and active-state QA
+   Scope: CSS-only. No data, export, routing, or report-calculation changes. */
+:where(button,.btn,.exp-btn,.reports-btn,.chip,.year-chip,.metric-chip,.view-chip,.smart-pill,.smart-tab,.nav button,.sidebar button):focus-visible{
+  outline:2px solid rgba(56,189,248,.82)!important;
+  outline-offset:3px!important;
+  box-shadow:0 0 0 4px rgba(56,189,248,.16), var(--lg-shadow, 0 12px 30px rgba(0,0,0,.16))!important;
+}
+html[data-theme="light"] :where(button,.btn,.exp-btn,.reports-btn,.chip,.year-chip,.metric-chip,.view-chip,.smart-pill,.smart-tab,.nav button,.sidebar button):focus-visible,
+body.light :where(button,.btn,.exp-btn,.reports-btn,.chip,.year-chip,.metric-chip,.view-chip,.smart-pill,.smart-tab,.nav button,.sidebar button):focus-visible{
+  outline-color:rgba(14,165,233,.9)!important;
+  box-shadow:0 0 0 4px rgba(14,165,233,.18), 0 12px 28px rgba(15,23,42,.12)!important;
+}
+:where(.table-wrap,.report-scroll,.smart-table-clean,.smart-table,.pet-table-wrap,.data-table-wrap){
+  max-width:100%!important;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+:where(.table-wrap,.report-scroll,.smart-table-clean,.smart-table,.pet-table-wrap,.data-table-wrap) table{
+  max-width:none;
+}
+:where(.modal,.dialog,.popover,.pdf-modal-card,.pet-modal,.pet-modal-content,.modal-content){
+  max-width:min(96vw, 1180px)!important;
+  max-height:calc(100vh - 28px)!important;
+}
+:where(.modal,.dialog,.popover,.pdf-modal-card,.pet-modal,.pet-modal-content,.modal-content) :where(.table-wrap,.report-scroll){
+  max-height:calc(100vh - 220px)!important;
+}
+@media(max-width:760px){
+  :where(.page,.main,.content,.panel,.card,.kpi,.chart-card,.report-card,.smart-card,.settings-card){
+    box-sizing:border-box!important;
+  }
+  :where(.btn,.exp-btn,.reports-btn,button,input,select,textarea){
+    max-width:100%!important;
+  }
+  :where(.actions,.toolbar,.export-toolbar,.pdf-tb-actions,.report-actions,.card-actions,.section-actions,.button-row,.btn-row){
+    max-width:100%!important;
+    min-width:0!important;
+    flex-wrap:wrap!important;
+  }
+  :where(.actions,.toolbar,.export-toolbar,.pdf-tb-actions,.report-actions,.card-actions,.section-actions,.button-row,.btn-row) > *{
+    min-width:0!important;
+  }
+  :where(.modal,.dialog,.popover,.pdf-modal-card,.pet-modal,.pet-modal-content,.modal-content){
+    width:calc(100vw - 20px)!important;
+    max-width:calc(100vw - 20px)!important;
+    max-height:calc(100vh - 20px)!important;
+    margin:10px auto!important;
+    overflow:auto!important;
+  }
+}
+
+/* PETATOE v6.1.84 — Phase 6-C mobile spacing and overlay final QA
+   Scope: CSS-only. Keeps final action buttons, sticky controls and overlays visible on narrow screens. */
+:where(.modal,.dialog,.popover,.dropdown-menu,.pet-select-menu,.pdf-modal-card,.pet-modal,.pet-modal-content,.modal-content){
+  overscroll-behavior:contain;
+}
+:where(.modal,.dialog,.popover,.pdf-modal-card,.pet-modal,.pet-modal-content,.modal-content){
+  box-sizing:border-box!important;
+}
+@media(max-width:760px){
+  :where(.main,.page,.content,.panel.active){
+    padding-bottom:max(96px, env(safe-area-inset-bottom, 0px) + 72px)!important;
+  }
+  :where(.section-head,.card-title,.chart-head,.report-control-bar,.filters,.export-toolbar){
+    overflow:visible!important;
+  }
+  :where(.topbar,.header,.app-header){
+    max-width:100vw!important;
+    overflow-x:clip!important;
+  }
+  :where(.topbar,.header,.app-header) :where(h1,h2,h3,.title,.user,.username,.plant-name){
+    min-width:0!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+  :where(.fixed-actions,.sticky-actions,.form-actions,.save-actions,.footer-actions){
+    max-width:calc(100vw - 20px)!important;
+    margin-inline:auto!important;
+    padding-bottom:env(safe-area-inset-bottom, 0px)!important;
+  }
+}
