@@ -85,6 +85,12 @@
   };
 
   QueryBuilder.prototype.limit = function(n){ return this._param('limit', n); };
+  QueryBuilder.prototype.offset = function(n){ return this._param('offset', Math.max(0, Number(n)||0)); };
+  QueryBuilder.prototype.range = function(from, to){
+    from = Math.max(0, Number(from)||0);
+    to = Math.max(from, Number(to)||from);
+    return this.offset(from).limit((to - from) + 1);
+  };
   QueryBuilder.prototype.order = function(column, opts){
     opts = opts || {};
     var value = column + '.' + (opts.ascending === false ? 'desc' : 'asc');

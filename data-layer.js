@@ -57,6 +57,40 @@
     }
   }
 
+
+  async function readAll(table, options){
+    options = options || {};
+    var ready = ensureClient();
+    if(ready.error) return ready.error;
+    var pageSize = Math.max(1, Math.min(Number(options.pageSize || 1000) || 1000, 1000));
+    var maxRows = options.maxRows === false ? Infinity : (Number(options.maxRows || 0) || Infinity);
+    var offset = Math.max(0, Number(options.offset || 0) || 0);
+    var all = [];
+    var pages = 0;
+    try{
+      while(all.length < maxRows){
+        var from = offset + all.length;
+        var to = from + Math.min(pageSize, maxRows - all.length) - 1;
+        var q = ready.client.from(table).select(options.columns || '*');
+        if(options.eq && typeof options.eq === 'object'){
+          Object.keys(options.eq).forEach(function(k){ q = q.eq(k, options.eq[k]); });
+        }
+        if(options.order){ q = q.order(options.order.column || options.order, { ascending: options.order.ascending !== false }); }
+        if(typeof q.range === 'function') q = q.range(from, to);
+        else { q = q.limit(pageSize); if(typeof q.offset === 'function') q = q.offset(from); }
+        var res = unwrap(await q);
+        pages++;
+        if(!res.ok) return res;
+        var rows = Array.isArray(res.data) ? res.data : [];
+        all = all.concat(rows);
+        if(rows.length < pageSize) break;
+      }
+      return ok(all, { table:table, rows:all.length, pages:pages, pageSize:pageSize });
+    }catch(error){
+      return fail(error && error.message ? error.message : String(error), error);
+    }
+  }
+
   async function count(table){
     var ready = ensureClient();
     if(ready.error) return ready.error;
@@ -237,14 +271,15 @@
   }
   async function readSalesRecords(options){
     options = options || {};
-    var res = await read('sales_records', {
+    var res = await readAll('sales_records', {
       columns: options.columns || '*',
-      limit: options.limit || 10000,
+      pageSize: options.pageSize || 1000,
+      maxRows: options.maxRows === undefined ? false : options.maxRows,
       order: options.order || { column:'invoice_date', ascending:true }
     });
     if(!res.ok) return res;
     var rows = (res.data || []).map(mapSalesRecordFromSupabase);
-    return ok(rows, { table:'sales_records', rows:rows.length, count:res.count });
+    return ok(rows, { table:'sales_records', rows:rows.length, pages:res.pages, pageSize:res.pageSize });
   }
 
   function salesRecordFilters(recordOrId){
@@ -332,6 +367,7 @@
     __writeOnlyWhenCalled: true,
     getClient: getClient,
     read: read,
+    readAll: readAll,
     select: select,
     count: count,
     insert: insert,
@@ -369,5 +405,5 @@
 
   window.PETATOEDataLayer = api;
   window.petatoeDataLayerHealth = health;
-  console.log('✅ PETATOE Data Layer loaded — SALES_UNIFICATION_PHASE1 ready, no LocalStorage migration');
+  console.log('✅ PETATOE Data Layer loaded — SALES_PAGINATION_FIX ready, no LocalStorage migration');
 })();
