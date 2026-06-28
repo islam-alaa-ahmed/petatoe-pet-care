@@ -247,6 +247,59 @@
     return ok(rows, { table:'sales_records', rows:rows.length, count:res.count });
   }
 
+  function salesRecordFilters(recordOrId){
+    var rec = (recordOrId && typeof recordOrId === 'object') ? recordOrId : { id: recordOrId };
+    var id = asText(rec.supabase_id || rec.id);
+    var legacy = asText(rec.legacy_id || rec.legacyId || rec.id);
+    if(rec.supabase_id) return { id: rec.supabase_id };
+    if(id && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) return { id: id };
+    if(legacy) return { legacy_id: legacy };
+    return null;
+  }
+
+  async function deleteSalesRecord(recordOrId){
+    var filters = salesRecordFilters(recordOrId);
+    if(!filters) return fail('Cannot delete sales record: no Supabase id or legacy_id was found', recordOrId);
+    var res = await remove('sales_records', filters);
+    if(res && res.ok) res.deleted = Array.isArray(res.data) ? res.data.length : null;
+    return res;
+  }
+
+  async function deleteSalesInvoice(invoiceNo){
+    invoiceNo = asText(invoiceNo);
+    if(!invoiceNo) return fail('Cannot delete sales invoice: invoice number is empty');
+    var res = await remove('sales_records', { invoice_no: invoiceNo });
+    if(res && res.ok) res.deleted = Array.isArray(res.data) ? res.data.length : null;
+    return res;
+  }
+
+  async function deleteAllSalesRecords(){
+    var ready = ensureClient();
+    if(ready.error) return ready.error;
+    try{
+      var res;
+      if(ready.client.from('sales_records').not){
+        res = await ready.client.from('sales_records').delete().not('id','is',null);
+      }else{
+        res = await ready.client.from('sales_records').delete().neq('invoice_no','__PETATOE_NEVER_MATCH__');
+      }
+      var out = unwrap(res);
+      if(out && out.ok) out.deleted = Array.isArray(out.data) ? out.data.length : null;
+      return out;
+    }catch(error){
+      return fail(error && error.message ? error.message : String(error), error);
+    }
+  }
+
+  async function updateSalesRecord(recordOrId, values){
+    var filters = salesRecordFilters(recordOrId);
+    if(!filters) return fail('Cannot update sales record: no Supabase id or legacy_id was found', recordOrId);
+    var payload = mapSalesRecordForSupabase(values || recordOrId || {}, 0);
+    delete payload.legacy_payload;
+    Object.keys(payload).forEach(function(k){ if(payload[k] === '' || payload[k] === null || payload[k] === undefined) delete payload[k]; });
+    return update('sales_records', payload, filters);
+  }
+
   async function select(table, options){
     return read(table, options || {});
   }
@@ -287,6 +340,10 @@
     remove: remove,
     insertSalesRecords: insertSalesRecords,
     readSalesRecords: readSalesRecords,
+    deleteSalesRecord: deleteSalesRecord,
+    deleteSalesInvoice: deleteSalesInvoice,
+    deleteAllSalesRecords: deleteAllSalesRecords,
+    updateSalesRecord: updateSalesRecord,
     getLastCommit: getLastCommit,
     mapSalesRecordForSupabase: mapSalesRecordForSupabase,
     mapSalesRecordFromSupabase: mapSalesRecordFromSupabase,

@@ -97,6 +97,14 @@
   QueryBuilder.prototype.lt = function(column, value){ return this._param(column, 'lt.' + String(value)); };
   QueryBuilder.prototype.lte = function(column, value){ return this._param(column, 'lte.' + String(value)); };
   QueryBuilder.prototype.ilike = function(column, value){ return this._param(column, 'ilike.' + String(value)); };
+  QueryBuilder.prototype.is = function(column, value){ return this._param(column, 'is.' + String(value)); };
+  QueryBuilder.prototype.not = function(column, operator, value){
+    var v = 'not.' + String(operator || 'eq');
+    if(value !== undefined && value !== null) v += '.' + String(value);
+    else if(String(operator) === 'is') v += '.null';
+    return this._param(column, v);
+  };
+  QueryBuilder.prototype.rawFilter = function(column, expression){ return this._param(column, String(expression || '')); };
 
   QueryBuilder.prototype.insert = function(rows, options){
     this.method = 'POST';
