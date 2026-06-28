@@ -1513,18 +1513,50 @@ function getYear(r){let pd=r&&r.date?parseDate(r.date):'';let m=String(pd).match
 function openDB(){if(dbReady)return dbReady;dbReady=new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE,{keyPath:'key'})};req.onsuccess=e=>res(e.target.result);req.onerror=e=>rej(e.target.error)});return dbReady}
 async function loadRecords(){try{const db=await openDB();const out=await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readonly');const st=tx.objectStore(DB_STORE);const rq=st.get('records');rq.onsuccess=()=>res((rq.result&&Array.isArray(rq.result.value))?rq.result.value:[]);rq.onerror=()=>rej(rq.error)});return (window.PETATOEDataSource?window.PETATOEDataSource.syncRecordsCache(out):out)}catch(e){try{return window.PETATOEDataSource.getRecordsSync()}catch(_){return[]}}}
 async function persistRecords(){try{window.PETATOEDataSource.syncRecordsCache(records);}catch(_e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",_e);}try{const db=await openDB();await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put({key:'records',value:records,updatedAt:new Date().toISOString()});tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}catch(e){try{window.PETATOEDataSource.syncRecordsCache(records)}catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",_);}}}
-function petatoeSyncSalesRecordsFromDataSource(reason){
+function petatoeDiscountAbs(v){return Math.abs(parseNum(v));}
+function petatoeNormalizeSalesRowsForReports(rows){
+  return (Array.isArray(rows)?rows:[]).map(function(r){
+    var x=Object.assign({},r||{});
+    x.disc=petatoeDiscountAbs(x.disc);
+    x.totalInc=parseNum(x.totalInc!=null?x.totalInc:(x.total_inc!=null?x.total_inc:x.total));
+    x.totalEx=parseNum(x.totalEx!=null?x.totalEx:(x.total_ex!=null?x.total_ex:(x.totalInc?x.totalInc-parseNum(x.tax):0)));
+    x.tax=parseNum(x.tax);
+    return x;
+  });
+}
+function petatoeApplyCanonicalSalesRows(rows, reason, source){
+  rows=petatoeNormalizeSalesRowsForReports(rows);
+  records=rows.slice();
+  try{window.records=records;}catch(_e){}
+  try{if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.setRuntimeRecords==='function')window.PETATOEDataSource.setRuntimeRecords(records, reason||'canonical-sales-sync');}catch(_e){}
+  try{if(Array.isArray(window.importData))window.importData=[];}catch(_e){}
+  try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex();}catch(_e){}
+  try{populateFilters();}catch(_e){}
+  try{renderDashboardAll();}catch(_e){console.warn('[PETATOE Sales Source Bridge] dashboard render skipped',_e);}
+  try{if(document.getElementById('records')&&document.getElementById('records').classList.contains('active')&&typeof renderRecords==='function')renderRecords();}catch(_e){}
   try{
+    window.__PETATOE_SALES_REPORTS_SOURCE_STATUS__={
+      source:source||'PETATOEDataLayer.readSalesRecords',
+      rows:records.length,
+      totalInc:records.reduce(function(s,r){return s+parseNum(r.totalInc)},0),
+      reason:reason||'sync',
+      time:new Date().toISOString()
+    };
+  }catch(_e){}
+  return true;
+}
+async function petatoeSyncSalesRecordsFromDataSource(reason){
+  try{
+    if(window.PETATOEDataLayer&&typeof window.PETATOEDataLayer.readSalesRecords==='function'){
+      var res=await window.PETATOEDataLayer.readSalesRecords({maxRows:false,pageSize:1000});
+      if(res&&res.ok&&Array.isArray(res.data)){
+        return petatoeApplyCanonicalSalesRows(res.data,reason||'supabase-direct-sync','Supabase sales_records');
+      }
+      try{console.warn('[PETATOE Sales Source Bridge] direct Supabase read failed',res);}catch(_e){}
+    }
     const rows=(window.PETATOEDataSource&&typeof window.PETATOEDataSource.getRecordsSync==='function')?window.PETATOEDataSource.getRecordsSync():[];
     if(!Array.isArray(rows))return false;
-    records=rows.slice();
-    try{window.records=records;}catch(_e){}
-    try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex();}catch(_e){}
-    try{populateFilters();}catch(_e){}
-    try{renderDashboardAll();}catch(_e){console.warn('[PETATOE Sales Source Bridge] dashboard render skipped',_e);}
-    try{if(document.getElementById('records')&&document.getElementById('records').classList.contains('active')&&typeof renderRecords==='function')renderRecords();}catch(_e){}
-    try{window.__PETATOE_SALES_REPORTS_SOURCE_STATUS__={source:'PETATOEDataSource/Supabase runtime cache',rows:records.length,reason:reason||'sync',time:new Date().toISOString()};}catch(_e){}
-    return true;
+    return petatoeApplyCanonicalSalesRows(rows,reason||'fallback-sync','PETATOEDataSource fallback');
   }catch(e){
     try{console.warn('[PETATOE Sales Source Bridge] sync failed',e);}catch(_e){}
     return false;
@@ -1536,25 +1568,15 @@ function petatoeScheduleSalesSourceSync(reason){
 }
 document.addEventListener('petatoe:records-changed',function(e){petatoeScheduleSalesSourceSync((e&&e.detail&&e.detail.reason)||'records-changed');});
 window.addEventListener('load',function(){
-  setTimeout(async function(){
-    try{
-      if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
-        await window.PETATOEDataSource.refreshSalesRecordsFromSupabase('reports-bridge-window-load');
-      }
-    }catch(e){try{console.warn('[PETATOE Sales Source Bridge] Supabase refresh skipped',e);}catch(_e){}}
-    petatoeSyncSalesRecordsFromDataSource('window-load');
-  },900);
+  setTimeout(function(){petatoeSyncSalesRecordsFromDataSource('window-load');},900);
 },{once:true});
 window.petatoeSyncSalesReportsFromSupabase=function(){
   return Promise.resolve().then(async function(){
-    if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
-      await window.PETATOEDataSource.refreshSalesRecordsFromSupabase('manual-sales-reports-sync');
-    }
-    petatoeSyncSalesRecordsFromDataSource('manual-sales-reports-sync');
+    await petatoeSyncSalesRecordsFromDataSource('manual-sales-reports-sync');
     return window.__PETATOE_SALES_REPORTS_SOURCE_STATUS__||null;
   });
 };
-function save(){persistRecords();petatoeSyncSalesRecordsFromDataSource('save');populateFilters();renderDashboardAll()}
+function save(){persistRecords();petatoeScheduleSalesSourceSync('save');populateFilters();renderDashboardAll()}
 /* PETATOE v6.4.5 RX1: Navigation controller extracted to router/navigation-controller.js */
 
 /* PETATOE v3.11.35: tab rendering subscribers moved to components/tab-render-subscribers.js */
@@ -2794,7 +2816,7 @@ function autoCalcRow(row){
   row=row&&row.closest?row.closest('.entry-item-row'):row;
   if(!row)return;
   const get=f=>parseNum((row.querySelector(`[data-field="${f}"]`)||{}).value);
-  const price=get('price'),qty=get('qty')||1,disc=get('disc'),tax=get('tax'),ex=price*qty-disc;
+  const price=get('price'),qty=get('qty')||1,disc=Math.abs(get('disc')),tax=get('tax'),ex=price*qty-disc;
   const exEl=row.querySelector('[data-field="totalEx"]'),incEl=row.querySelector('[data-field="totalInc"]');
   if(exEl)exEl.value=ex.toFixed(2);
   if(incEl)incEl.value=(ex+tax).toFixed(2);
@@ -2850,7 +2872,7 @@ function saveRecord(){
   const items=collectEntryItems();
   if(!common.date||!common.invoice||!common.client||!items.length){toast('املأ التاريخ والعميل وصنف واحد على الأقل');return;}
   const rows=items.map((it,idx)=>({id:editingId&&idx===0?editingId:Date.now()+Math.random()+idx,manualEntry:true,...common,...it}));
-  rows.forEach(r=>{if(!r.totalEx&&r.price)r.totalEx=(parseNum(r.price)*(parseNum(r.qty)||1))-parseNum(r.disc); if(!r.totalInc)r.totalInc=parseNum(r.totalEx)+parseNum(r.tax)});
+  rows.forEach(r=>{if(!r.totalEx&&r.price)r.totalEx=(parseNum(r.price)*(parseNum(r.qty)||1))-Math.abs(parseNum(r.disc)); if(!r.totalInc)r.totalInc=parseNum(r.totalEx)+parseNum(r.tax); r.disc=Math.abs(parseNum(r.disc));});
   if(editingId){let i=records.findIndex(x=>String(x.id)===String(editingId)); if(i>-1)records[i]=rows[0];}
   else{records.push(...rows); setNextManualInvoiceAfter(common.invoice);}
   try{document.dispatchEvent(new CustomEvent('petatoe:record-saved',{detail:{mode:beforeEditingId?'edit':'add',beforeLen:beforeLen,beforeId:beforeEditingId,beforeRecord:beforeRecord,rows:rows,invoice:common.invoice,client:common.client,item:items[0]&&items[0].item}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
