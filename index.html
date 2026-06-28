@@ -1514,13 +1514,25 @@ function openDB(){if(dbReady)return dbReady;dbReady=new Promise((res,rej)=>{cons
 async function loadRecords(){try{const db=await openDB();const out=await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readonly');const st=tx.objectStore(DB_STORE);const rq=st.get('records');rq.onsuccess=()=>res((rq.result&&Array.isArray(rq.result.value))?rq.result.value:[]);rq.onerror=()=>rej(rq.error)});return (window.PETATOEDataSource?window.PETATOEDataSource.syncRecordsCache(out):out)}catch(e){try{return window.PETATOEDataSource.getRecordsSync()}catch(_){return[]}}}
 async function persistRecords(){try{window.PETATOEDataSource.syncRecordsCache(records);}catch(_e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",_e);}try{const db=await openDB();await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put({key:'records',value:records,updatedAt:new Date().toISOString()});tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}catch(e){try{window.PETATOEDataSource.syncRecordsCache(records)}catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",_);}}}
 function petatoeDiscountAbs(v){return Math.abs(parseNum(v));}
+function petatoeCanonicalNumber(row, names){
+  row=row||{};
+  for(var i=0;i<names.length;i++){
+    var name=names[i];
+    if(Object.prototype.hasOwnProperty.call(row,name) && row[name]!==null && row[name]!==undefined && row[name]!== ''){
+      return parseNum(row[name]);
+    }
+  }
+  return 0;
+}
 function petatoeNormalizeSalesRowsForReports(rows){
   return (Array.isArray(rows)?rows:[]).map(function(r){
     var x=Object.assign({},r||{});
-    x.disc=petatoeDiscountAbs(x.disc);
-    x.totalInc=parseNum(x.totalInc!=null?x.totalInc:(x.total_inc!=null?x.total_inc:x.total));
-    x.totalEx=parseNum(x.totalEx!=null?x.totalEx:(x.total_ex!=null?x.total_ex:(x.totalInc?x.totalInc-parseNum(x.tax):0)));
+    x.disc=petatoeDiscountAbs(x.disc!=null?x.disc:x.discount);
+    // Database totals are canonical. Prioritize Supabase snake_case/canonical fields over legacy runtime camelCase.
+    x.totalInc=petatoeCanonicalNumber(x,['__canonicalTotalInc','total_inc','totalInc','total']);
+    x.totalEx=petatoeCanonicalNumber(x,['__canonicalTotalEx','total_ex','totalEx']);
     x.tax=parseNum(x.tax);
+    if(!x.totalEx && x.totalInc) x.totalEx=parseNum(x.totalInc)-parseNum(x.tax);
     return x;
   });
 }
@@ -1538,7 +1550,7 @@ function petatoeApplyCanonicalSalesRows(rows, reason, source){
     window.__PETATOE_SALES_REPORTS_SOURCE_STATUS__={
       source:source||'PETATOEDataLayer.readSalesRecords',
       rows:records.length,
-      totalInc:records.reduce(function(s,r){return s+parseNum(r.totalInc)},0),
+      totalInc:records.reduce(function(s,r){return s+petatoeCanonicalNumber(r,['__canonicalTotalInc','total_inc','totalInc','total'])},0),
       reason:reason||'sync',
       time:new Date().toISOString()
     };

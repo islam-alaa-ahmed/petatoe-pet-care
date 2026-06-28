@@ -230,6 +230,11 @@
   }
   function mapSalesRecordFromSupabase(r){
     r = r || {};
+    // PETATOE v8.0.2 hotfix: the database total_inc is the canonical sales total.
+    // Do not let legacy camelCase/cached payload values override it in dashboard/report totals.
+    var canonicalTotalInc = asNumber(r.total_inc);
+    var canonicalTotalEx = asNumber(r.total_ex);
+    var canonicalTax = asNumber(r.tax);
     return {
       id: r.legacy_id || r.id,
       invoice: r.invoice_no || '',
@@ -240,10 +245,14 @@
       pay: r.payment_method || '',
       qty: asNumber(r.qty),
       price: asNumber(r.price),
-      disc: asNumber(r.discount),
-      tax: asNumber(r.tax),
-      totalEx: asNumber(r.total_ex),
-      totalInc: asNumber(r.total_inc),
+      disc: Math.abs(asNumber(r.discount)),
+      tax: canonicalTax,
+      totalEx: canonicalTotalEx,
+      totalInc: canonicalTotalInc,
+      total_inc: canonicalTotalInc,
+      total_ex: canonicalTotalEx,
+      __canonicalTotalInc: canonicalTotalInc,
+      __canonicalTotalEx: canonicalTotalEx,
       invoiceType: r.invoice_type || '',
       supabase_id: r.id,
       source: 'supabase'
