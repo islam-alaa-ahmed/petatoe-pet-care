@@ -2,6 +2,7 @@
    Read-only connection verification. This file does NOT migrate or modify data. */
 (function(){
   'use strict';
+  console.log('✅ PETATOE Supabase Health Check script loaded');
 
   function getConfig(){
     return window.PETATOE_SUPABASE_CONFIG || null;
@@ -51,7 +52,7 @@
   async function petatoeSupabaseHealthCheck(){
     var cfg = getConfig();
     if(!cfg || !cfg.url || !cfg.publishableKey){
-      console.error('❌ PETATOE Supabase config missing');
+      console.error('❌ PETATOE Supabase config missing — supabase-config.js did not load or config is incomplete');
       return { ok:false, error:'CONFIG_MISSING' };
     }
 
@@ -100,6 +101,7 @@
   }
 
   window.petatoeSupabaseHealthCheck = petatoeSupabaseHealthCheck;
+  window.supabaseHealthCheck = petatoeSupabaseHealthCheck;
 
   window.addEventListener('load', function(){
     setTimeout(function(){
