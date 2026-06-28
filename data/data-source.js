@@ -118,6 +118,13 @@
     return recordsCache;
   }
   function getRecordsSync(){return ensureCache()}
+  function setRuntimeRecords(arr, reason){
+    recordsCache=normalizeRecords(arr);
+    publishLegacy(recordsCache);
+    notifyRecordsChanged(reason || 'runtime-records-sync');
+    try{ w.__PETATOE_SALES_SOURCE_STATUS__={source:'supabase-runtime-cache',rows:recordsCache.length,time:new Date().toISOString(),reason:reason||'runtime-records-sync'}; }catch(_e){}
+    return recordsCache;
+  }
   function setRecordsSync(arr){
     recordsCache=normalizeRecords(arr);
     publishLegacy(recordsCache);
@@ -125,9 +132,42 @@
     notifyRecordsChanged('set-records');
     return recordsCache;
   }
-  function syncRecordsCache(arr){
-    if(Array.isArray(arr)) return setRecordsSync(arr);
+  function syncRecordsCache(arr, options){
+    if(Array.isArray(arr)){
+      options=options||{};
+      if(options.persist === true) return setRecordsSync(arr);
+      return setRuntimeRecords(arr, options.reason || 'sync-records-cache');
+    }
     return getRecordsSync();
+  }
+  async function refreshSalesRecordsFromSupabase(reason){
+    try{
+      if(!w.PETOTOEDataLayer && !w.PETATOEDataLayer) return {ok:false,error:{message:'PETATOEDataLayer is not ready'}};
+      var dl=w.PETATOEDataLayer;
+      if(!dl || typeof dl.readSalesRecords!=='function') return {ok:false,error:{message:'PETATOEDataLayer.readSalesRecords is not ready'}};
+      var res=await dl.readSalesRecords({limit:20000});
+      if(!res || !res.ok){
+        try{console.warn('[PETATOEDataSource] Supabase sales refresh failed',res)}catch(_e){}
+        return res || {ok:false,error:{message:'Empty DataLayer response'}};
+      }
+      setRuntimeRecords(res.data || [], reason || 'supabase-sales-refresh');
+      return {ok:true,rows:(res.data||[]).length,result:res};
+    }catch(e){
+      try{console.warn('[PETATOEDataSource] Supabase sales refresh crashed',e)}catch(_e){}
+      return {ok:false,error:{message:e&&e.message?e.message:String(e)}};
+    }
+  }
+  function bootSupabaseSalesRefresh(){
+    var attempts=0;
+    function tick(){
+      attempts++;
+      if(w.PETATOEDataLayer && typeof w.PETATOEDataLayer.readSalesRecords==='function'){
+        refreshSalesRecordsFromSupabase('boot-supabase-sales-refresh');
+        return;
+      }
+      if(attempts < 40) setTimeout(tick, 250);
+    }
+    setTimeout(tick, 250);
   }
   function getCurrentUserRaw(){
     var st=S();
@@ -163,7 +203,9 @@
   w.PETATOEDataSource.getRecords=getRecordsSync;
   w.PETATOEDataSource.setRecordsSync=setRecordsSync;
   w.PETATOEDataSource.setRecords=setRecordsSync;
+  w.PETATOEDataSource.setRuntimeRecords=setRuntimeRecords;
   w.PETATOEDataSource.syncRecordsCache=syncRecordsCache;
+  w.PETATOEDataSource.refreshSalesRecordsFromSupabase=refreshSalesRecordsFromSupabase;
   w.PETATOEDataSource.normalizeRecord=normalizeRecord;
   w.PETATOEDataSource.normalizeRecords=normalizeRecords;
   w.PETATOEDataSource.auditRecords=auditRecords;
@@ -179,8 +221,9 @@
   w.PETATOEDataSource.getCurrentUserName=getCurrentUserName;
   w.PETATOEDataSource.migrateCurrentUser=migrateCurrentUser;
   w.PETATOEDataSource.__ready=true;
-  w.PETATOEDataSource.version='3.11.23';
+  w.PETATOEDataSource.version='3.11.24-sales-supabase-unified';
 
   ensureCache();
   migrateCurrentUser();
+  bootSupabaseSalesRefresh();
 })(window);
