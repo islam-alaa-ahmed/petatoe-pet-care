@@ -1513,7 +1513,48 @@ function getYear(r){let pd=r&&r.date?parseDate(r.date):'';let m=String(pd).match
 function openDB(){if(dbReady)return dbReady;dbReady=new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE,{keyPath:'key'})};req.onsuccess=e=>res(e.target.result);req.onerror=e=>rej(e.target.error)});return dbReady}
 async function loadRecords(){try{const db=await openDB();const out=await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readonly');const st=tx.objectStore(DB_STORE);const rq=st.get('records');rq.onsuccess=()=>res((rq.result&&Array.isArray(rq.result.value))?rq.result.value:[]);rq.onerror=()=>rej(rq.error)});return (window.PETATOEDataSource?window.PETATOEDataSource.syncRecordsCache(out):out)}catch(e){try{return window.PETATOEDataSource.getRecordsSync()}catch(_){return[]}}}
 async function persistRecords(){try{window.PETATOEDataSource.syncRecordsCache(records);}catch(_e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",_e);}try{const db=await openDB();await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put({key:'records',value:records,updatedAt:new Date().toISOString()});tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}catch(e){try{window.PETATOEDataSource.syncRecordsCache(records)}catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",_);}}}
-function save(){persistRecords();populateFilters();renderDashboardAll()}
+function petatoeSyncSalesRecordsFromDataSource(reason){
+  try{
+    const rows=(window.PETATOEDataSource&&typeof window.PETATOEDataSource.getRecordsSync==='function')?window.PETATOEDataSource.getRecordsSync():[];
+    if(!Array.isArray(rows))return false;
+    records=rows.slice();
+    try{window.records=records;}catch(_e){}
+    try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex();}catch(_e){}
+    try{populateFilters();}catch(_e){}
+    try{renderDashboardAll();}catch(_e){console.warn('[PETATOE Sales Source Bridge] dashboard render skipped',_e);}
+    try{if(document.getElementById('records')&&document.getElementById('records').classList.contains('active')&&typeof renderRecords==='function')renderRecords();}catch(_e){}
+    try{window.__PETATOE_SALES_REPORTS_SOURCE_STATUS__={source:'PETATOEDataSource/Supabase runtime cache',rows:records.length,reason:reason||'sync',time:new Date().toISOString()};}catch(_e){}
+    return true;
+  }catch(e){
+    try{console.warn('[PETATOE Sales Source Bridge] sync failed',e);}catch(_e){}
+    return false;
+  }
+}
+function petatoeScheduleSalesSourceSync(reason){
+  clearTimeout(window.__PETATOE_SALES_REPORTS_SYNC_TIMER__);
+  window.__PETATOE_SALES_REPORTS_SYNC_TIMER__=setTimeout(function(){petatoeSyncSalesRecordsFromDataSource(reason||'scheduled');},80);
+}
+document.addEventListener('petatoe:records-changed',function(e){petatoeScheduleSalesSourceSync((e&&e.detail&&e.detail.reason)||'records-changed');});
+window.addEventListener('load',function(){
+  setTimeout(async function(){
+    try{
+      if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
+        await window.PETATOEDataSource.refreshSalesRecordsFromSupabase('reports-bridge-window-load');
+      }
+    }catch(e){try{console.warn('[PETATOE Sales Source Bridge] Supabase refresh skipped',e);}catch(_e){}}
+    petatoeSyncSalesRecordsFromDataSource('window-load');
+  },900);
+},{once:true});
+window.petatoeSyncSalesReportsFromSupabase=function(){
+  return Promise.resolve().then(async function(){
+    if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
+      await window.PETATOEDataSource.refreshSalesRecordsFromSupabase('manual-sales-reports-sync');
+    }
+    petatoeSyncSalesRecordsFromDataSource('manual-sales-reports-sync');
+    return window.__PETATOE_SALES_REPORTS_SOURCE_STATUS__||null;
+  });
+};
+function save(){persistRecords();petatoeSyncSalesRecordsFromDataSource('save');populateFilters();renderDashboardAll()}
 /* PETATOE v6.4.5 RX1: Navigation controller extracted to router/navigation-controller.js */
 
 /* PETATOE v3.11.35: tab rendering subscribers moved to components/tab-render-subscribers.js */
