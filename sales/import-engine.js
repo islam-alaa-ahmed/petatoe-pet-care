@@ -10,6 +10,8 @@
   let importMode='full';
   let stagedPaymentMap={};
   let lastImportErrors=[];
+  let pendingOverrideReplace=false;
+  let pendingOverrideContext='validation';
   const arLetters='أإآاىيهةؤئء';
   function normText(v){return String(v??'').trim().replace(/\s+/g,' ').replace(/ي/g,'ى').replace(/ة/g,'ه').toLowerCase();}
   function normHeader(v){return normText(v).replace(/[\u064B-\u065F]/g,'').replace(/[()\[\]{}\-_/\\.:،,]/g,'').replace(/\s+/g,'');}
@@ -30,6 +32,101 @@
     return parts.map(x=>normText(x)).join('|');
   }
   function makeError(row,col,msg,value){return {row,col,cell:cellRef(row,col),msg,value};}
+
+
+  function storageReadJSON(key, fallback){
+    try{ if(window.PETATOEStorage && typeof window.PETATOEStorage.readJSON==='function') return window.PETATOEStorage.readJSON(key, fallback); }catch(_e){}
+    try{ const raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback; }catch(_e){ return fallback; }
+  }
+  function findCurrentFullUser(){
+    let cu=null;
+    try{ cu=(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function')?window.PETATOEAuth.currentUser():null; }catch(_e){}
+    if(!cu){ try{ cu=window.__PETATOE_ACTIVE_USER__||window.currentUser||null; }catch(_e){} }
+    const id=String((cu&&(cu.id||cu.username||cu.email||cu.fullName))||'').trim().toLowerCase();
+    const keys=['petatoe_users_v108','petatoe_users_v139','petatoe_users_v2','petatoe_users','PETATOE_USERS'];
+    for(const k of keys){
+      const arr=storageReadJSON(k,[]);
+      if(!Array.isArray(arr)) continue;
+      const u=arr.find(x=>{
+        if(!x||typeof x!=='object') return false;
+        return [x.id,x.username,x.email,x.fullName,x.name,x.login].some(v=>String(v||'').trim().toLowerCase()===id);
+      });
+      if(u) return u;
+    }
+    return cu;
+  }
+  function isSuperAdminUser(u){
+    const role=normText((u&&(u.role||u.job||u.type||u.permission))||'');
+    const id=normText((u&&(u.id||u.username||u.fullName||u.name))||'');
+    return id==='admin'||id==='u_admin'||role.indexOf('super')>=0||role.indexOf('سوبر')>=0;
+  }
+  function verifyOverridePassword(password){
+    const full=findCurrentFullUser();
+    if(!isSuperAdminUser(full)) return {ok:false, reason:'هذه العملية متاحة فقط لمستخدم Super Admin'};
+    const p=String(password||'');
+    if(!p) return {ok:false, reason:'أدخل كلمة مرور Super Admin'};
+    try{ if(window.PETATOEPasswordSecurity && typeof window.PETATOEPasswordSecurity.verifyPassword==='function' && window.PETATOEPasswordSecurity.verifyPassword(p, full)) return {ok:true,user:full}; }catch(_e){}
+    if(full && full.password && String(full.password)===p) return {ok:true,user:full};
+    return {ok:false, reason:'كلمة مرور Super Admin غير صحيحة'};
+  }
+  function auditOverride(reason, replace){
+    try{
+      const u=findCurrentFullUser()||{};
+      const detail='Override import by '+String(u.username||u.fullName||u.id||'Super Admin')+' | rows='+String((importData||[]).length)+' | errors='+String((lastImportErrors||[]).length)+' | mode='+String(importMode)+' | replace='+String(!!replace)+' | reason='+(reason||'-');
+      if(window.__PETATOE_SETTINGS_API__ && typeof window.__PETATOE_SETTINGS_API__.audit==='function') window.__PETATOE_SETTINGS_API__.audit('Import Validation Override', detail, 'warn');
+      const key='petatoe_import_override_audit';
+      const list=storageReadJSON(key,[]); if(Array.isArray(list)){ list.push({time:new Date().toISOString(),user:u.username||u.fullName||u.id||'Super Admin',rows:(importData||[]).length,errors:(lastImportErrors||[]).length,mode:importMode,replace:!!replace,reason:reason||''}); localStorage.setItem(key,JSON.stringify(list.slice(-300))); }
+    }catch(e){ try{ console.warn('[PETATOE Import Override] audit failed', e); }catch(_e){} }
+  }
+  function forceImportAfterOverride(reason){
+    if(!(importData&&importData.length)){ toast('لا توجد بيانات قابلة للرفع بعد التخطي'); return; }
+    const replace=!!pendingOverrideReplace;
+    auditOverride(reason, replace);
+    const existingRows=dsRecords().slice();
+    const nextRows=replace?[...importData]:existingRows.concat(importData);
+    dsSetRecords(nextRows);
+    try{ if(window.PETATOESmartTabs&&typeof window.PETATOESmartTabs.notifyDataChanged==='function')window.PETATOESmartTabs.notifyDataChanged('import-override-confirmed');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/import-engine.js",e);}
+    importData=[]; if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex();
+    const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
+    const box=document.getElementById('importErrors'); if(box){box.style.display='none'; clearNode(box);}
+    save(); toast('تم رفع البيانات بتجاوز قواعد التحقق بواسطة Super Admin');
+  }
+  function ensureOverrideStyle(){
+    if(document.getElementById('pet-import-override-style')) return;
+    const st=document.createElement('style'); st.id='pet-import-override-style';
+    st.textContent='.pet-import-override-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}.pet-import-override-btn{border:1px solid rgba(245,158,11,.65);background:linear-gradient(135deg,rgba(245,158,11,.24),rgba(239,68,68,.18));color:#fff;border-radius:16px;padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 12px 30px rgba(245,158,11,.18)}.pet-import-override-note{font-size:12px;color:var(--muted)}.pet-override-modal-backdrop{position:fixed;inset:0;z-index:999999;background:rgba(2,6,23,.58);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px}.pet-override-modal{width:min(520px,96vw);border-radius:24px;border:1px solid rgba(148,163,184,.35);background:linear-gradient(135deg,rgba(15,23,42,.96),rgba(30,41,59,.92));box-shadow:0 30px 90px rgba(0,0,0,.45);padding:22px;color:#fff;direction:rtl}.pet-override-modal h3{margin:0 0 8px;font-size:22px}.pet-override-modal p{margin:0 0 14px;color:rgba(226,232,240,.82);line-height:1.7}.pet-override-modal label{display:block;margin:12px 0 6px;font-weight:800}.pet-override-modal input,.pet-override-modal textarea{width:100%;box-sizing:border-box;border-radius:14px;border:1px solid rgba(148,163,184,.35);background:rgba(15,23,42,.66);color:#fff;padding:11px 12px;outline:none}.pet-override-modal textarea{min-height:70px;resize:vertical}.pet-override-modal .pet-override-check{display:flex;gap:8px;align-items:flex-start;margin:12px 0;color:rgba(226,232,240,.86)}.pet-override-modal .pet-override-check input{width:auto;margin-top:4px}.pet-override-modal .pet-override-error{color:#fecaca;font-weight:800;min-height:20px;margin-top:8px}.pet-override-modal .pet-override-actions{display:flex;gap:10px;justify-content:flex-start;margin-top:14px}.pet-override-modal button{border:0;border-radius:14px;padding:10px 14px;font-weight:900;cursor:pointer}.pet-override-cancel{background:rgba(148,163,184,.22);color:#e5e7eb}.pet-override-confirm{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}';
+    document.head.appendChild(st);
+  }
+  function openOverrideModal(){
+    ensureOverrideStyle();
+    const full=findCurrentFullUser();
+    if(!isSuperAdminUser(full)){ toast('تخطي قواعد الرفع متاح فقط لـ Super Admin'); return; }
+    const old=document.getElementById('petImportOverrideModal'); if(old)old.remove();
+    const bd=document.createElement('div'); bd.className='pet-override-modal-backdrop'; bd.id='petImportOverrideModal';
+    bd.innerHTML='<div class="pet-override-modal" role="dialog" aria-modal="true"><h3>🛡️ تخطي قواعد التحقق والرفع</h3><p>سيتم رفع البيانات رغم وجود أخطاء أو تكرار. استخدم هذا الإجراء فقط عند التأكد من صحة الملف ومسؤوليتك عن التجاوز.</p><label>سبب التجاوز / ملاحظة</label><textarea id="petOverrideReason" placeholder="مثال: استيراد اضطراري بعد مراجعة الملف"></textarea><label>كلمة مرور Super Admin</label><input id="petOverridePassword" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور"><label class="pet-override-check"><input id="petOverrideAcknowledge" type="checkbox"><span>أقر أن هذا الإجراء قد يرفع بيانات مخالفة لقواعد التحقق أو مكررة.</span></label><div class="pet-override-error" id="petOverrideError"></div><div class="pet-override-actions"><button type="button" class="pet-override-confirm" id="petOverrideConfirmBtn">تخطي والرفع</button><button type="button" class="pet-override-cancel" id="petOverrideCancelBtn">إلغاء</button></div></div>';
+    document.body.appendChild(bd);
+    const close=()=>bd.remove();
+    bd.querySelector('#petOverrideCancelBtn').addEventListener('click', close);
+    bd.addEventListener('click', e=>{ if(e.target===bd) close(); });
+    setTimeout(()=>{try{bd.querySelector('#petOverridePassword').focus();}catch(_e){}},30);
+    bd.querySelector('#petOverrideConfirmBtn').addEventListener('click', ()=>{
+      const err=bd.querySelector('#petOverrideError');
+      if(!bd.querySelector('#petOverrideAcknowledge').checked){ err.textContent='يجب تأكيد الإقرار قبل التخطي.'; return; }
+      const check=verifyOverridePassword(bd.querySelector('#petOverridePassword').value);
+      if(!check.ok){ err.textContent=check.reason; return; }
+      const reason=bd.querySelector('#petOverrideReason').value||'';
+      close(); forceImportAfterOverride(reason);
+    });
+  }
+  function appendOverrideButton(box){
+    if(!box || document.getElementById('petImportOverrideBtn')) return;
+    ensureOverrideStyle();
+    const wrap=document.createElement('div'); wrap.className='pet-import-override-actions';
+    const btn=document.createElement('button'); btn.type='button'; btn.id='petImportOverrideBtn'; btn.className='pet-import-override-btn'; btn.textContent='🛡️ تخطي الشروط والرفع (Super Admin)';
+    const note=document.createElement('span'); note.className='pet-import-override-note'; note.textContent='يتطلب كلمة مرور Super Admin ويتم تسجيل العملية في سجل التجاوز.';
+    btn.addEventListener('click', openOverrideModal);
+    wrap.appendChild(btn); wrap.appendChild(note); box.appendChild(wrap);
+  }
 
   function clearNode(node){while(node&&node.firstChild)node.removeChild(node.firstChild);}
   function appendText(parent, tag, text, className){const el=document.createElement(tag); if(className)el.className=className; el.textContent=String(text??''); parent.appendChild(el); return el;}
@@ -61,6 +158,7 @@
     });
     box.appendChild(ul);
     if(lastImportErrors.length>80){const more=appendText(box,'div','تم عرض أول 80 خطأ فقط.'); more.style.marginTop='8px'; more.style.color='var(--muted)';}
+    appendOverrideButton(box);
     const pv=document.getElementById('previewCard'); if(pv)pv.style.display='none';
     if(typeof toast==='function')toast('تم منع الرفع - راجع تفاصيل الأخطاء');
   }
@@ -235,7 +333,7 @@
           return;
         }
         result=(importMode==='items')?parseItems(data):parseFull(data);
-        if(result.errors.length){renderErrors(result.errors);return;}
+        if(result.errors.length){ if(result.rows&&result.rows.length) importData=result.rows; pendingOverrideContext='validation'; pendingOverrideReplace=false; renderErrors(result.errors);return;}
         importData=result.rows;
         if(Object.keys(stagedPaymentMap).length)applyPaymentsToRows(importData,stagedPaymentMap);
         showPreview();
@@ -265,6 +363,7 @@
   };
   window.confirmImport=function(replace){
     if(!(importData&&importData.length)){toast('لا توجد بيانات جاهزة للاعتماد');return;}
+    pendingOverrideReplace=!!replace; pendingOverrideContext='confirm';
     const errs=[];
     const dup=duplicateErrorsAgainstExisting(importData,replace); errs.push(...dup);
     if(errs.length){renderErrors(errs);return;}
