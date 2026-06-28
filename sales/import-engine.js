@@ -84,12 +84,7 @@
     auditOverride(reason, replace);
     const existingRows=dsRecords().slice();
     const nextRows=replace?[...importData]:existingRows.concat(importData);
-    dsSetRecords(nextRows);
-    try{ if(window.PETATOESmartTabs&&typeof window.PETATOESmartTabs.notifyDataChanged==='function')window.PETATOESmartTabs.notifyDataChanged('import-override-confirmed');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/import-engine.js",e);}
-    importData=[]; if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex();
-    const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
-    const box=document.getElementById('importErrors'); if(box){box.style.display='none'; clearNode(box);}
-    save(); toast('تم رفع البيانات بتجاوز قواعد التحقق بواسطة Super Admin');
+    commitImportedRows(nextRows,'import-override-confirmed','تم رفع البيانات بتجاوز قواعد التحقق بواسطة Super Admin');
   }
   function ensureOverrideStyle(){
     if(document.getElementById('pet-import-override-style')) return;
@@ -275,8 +270,34 @@
     rows.forEach((r,i)=>{const row=i+2; const k=recordDuplicateKey(r); if(inside[k]!=null)errors.push(makeError(row,1,`السطر مكرر داخل نفس الملف مع الصف ${inside[k]}`,r.invoice)); else inside[k]=row; if(!r.date)errors.push(makeError(row,3,'التاريخ غير صالح',r.date)); if(safeNum(r.totalInc)<0 && !String(r.invoice).includes('-')){} });
   }
 
-  function dsRecords(){try{return (window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[]}catch(e){return []}}
-  function dsSetRecords(arr){try{if(window.PETATOEDataSource&&window.PETATOEDataSource.setRecordsSync){window.PETATOEDataSource.setRecordsSync(Array.isArray(arr)?arr:[]);return true}}catch(e){console.warn('PETATOEImport dsSetRecords failed',e)}return false}
+  function dsRecords(){
+    try{return (window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[]}catch(e){}
+    try{ if(typeof records!=='undefined' && Array.isArray(records)) return records; }catch(_e){}
+    return [];
+  }
+  function dsSetRecords(arr){
+    const safe=Array.isArray(arr)?arr:[];
+    let ok=false;
+    try{ if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.setRecordsSync==='function'){ window.PETATOEDataSource.setRecordsSync(safe); ok=true; } }catch(e){console.warn('PETATOEImport setRecordsSync failed',e)}
+    try{ if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.syncRecordsCache==='function'){ window.PETATOEDataSource.syncRecordsCache(safe); ok=true; } }catch(e){console.warn('PETATOEImport syncRecordsCache failed',e)}
+    try{ if(typeof records!=='undefined'){ records=safe; ok=true; } }catch(e){console.warn('PETATOEImport records assignment failed',e)}
+    try{ window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),rows:safe.length,ok:ok}; }catch(_e){}
+    return ok;
+  }
+  function commitImportedRows(nextRows, eventName, message){
+    const ok=dsSetRecords(nextRows);
+    try{if(window.PETATOESmartTabs&&typeof window.PETATOESmartTabs.notifyDataChanged==='function')window.PETATOESmartTabs.notifyDataChanged(eventName||'import-confirmed');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/import-engine.js",e);}
+    try{ if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex(); }catch(_e){}
+    try{ if(typeof persistRecords==='function') persistRecords(); }catch(e){console.warn('PETATOEImport persistRecords failed',e)}
+    try{ if(typeof save==='function') save(); }catch(e){console.warn('PETATOEImport save failed',e)}
+    try{ if(typeof renderRecords==='function') renderRecords(); }catch(_e){}
+    try{ if(typeof refreshCurrentPage==='function') refreshCurrentPage(); }catch(_e){}
+    importData=[];
+    const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
+    const box=document.getElementById('importErrors'); if(box){box.style.display='none'; clearNode(box);}
+    if(typeof toast==='function')toast(message || (ok?'تم اعتماد البيانات بنجاح':'تمت محاولة حفظ البيانات'));
+    return ok;
+  }
   function applyPaymentsToRows(rows,payMap){let matched=0,missing=[];(rows||[]).forEach(r=>{const k=normText(r.invoice);if(payMap[k]){r.pay=payMap[k];matched++;}else missing.push(r.invoice);});return {matched,missing:[...new Set(missing.filter(Boolean))]};}
   function duplicateErrorsAgainstExisting(rows,replace){
     if(replace)return [];
@@ -369,22 +390,19 @@
     if(errs.length){renderErrors(errs);return;}
     var existingRows=dsRecords().slice();
     var nextRows=replace?[...importData]:existingRows.concat(importData);
-    dsSetRecords(nextRows);
-    try{if(window.PETATOESmartTabs&&typeof window.PETATOESmartTabs.notifyDataChanged==='function')window.PETATOESmartTabs.notifyDataChanged('import-confirmed');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/import-engine.js",e);}
-    importData=[]; if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex();
-    const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
-    save(); toast('تم اعتماد البيانات بنجاح بدون تكرار');
+    commitImportedRows(nextRows,'import-confirmed','تم اعتماد البيانات بنجاح بدون تكرار');
   };
 
   // PETATOE IMPORT OVERRIDE PUBLIC API
-  // Exposes override controls for runtime verification and manual Super Admin override.
+  // Runtime verification helper. No data is written by these helpers unless open() is confirmed by Super Admin.
   window.petatoeImportOverride = {
-    version: 'v8.0.2-import-override-fix',
+    version: 'v8.0.2-import-override-commit-fix',
     isLoaded: true,
     getLastErrors: function(){ return (lastImportErrors||[]).slice(); },
-    canOverride: function(){
-      try{ return isSuperAdminUser(findCurrentFullUser()); }catch(_e){ return false; }
-    },
+    getPendingRowsCount: function(){ try{return (importData||[]).length;}catch(_e){return 0;} },
+    getRecordsCount: function(){ try{return dsRecords().length;}catch(_e){return 0;} },
+    getLastCommit: function(){ return window.__PETATOE_LAST_IMPORT_COMMIT__||null; },
+    canOverride: function(){ try{ return isSuperAdminUser(findCurrentFullUser()); }catch(_e){ return false; } },
     open: function(){ return openOverrideModal(); },
     renderButton: function(){
       const box=document.getElementById('importErrors');
