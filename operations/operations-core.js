@@ -24,6 +24,8 @@
     'addMasterService', 'triggerMasterServicesExcelImport', 'handleMasterServicesExcelImport', 'exportMasterServicesExcel',
     'addAppointmentServiceRow', 'removeAppointmentServiceRow', 'onAppointmentServiceChange', 'recalculateAppointmentServices',
     'addAppointmentAnimalRow', 'removeAppointmentAnimalRow', 'onAppointmentAnimalTypeChange',
+    'addOperationsVehicle', 'addOperationsDriver', 'addOperationsGroomer',
+    'removeOperationsVehicle', 'removeOperationsDriver', 'removeOperationsGroomer',
     'setCustomerDatabaseReportSearch', 'exportCustomersDatabaseReportExcel',
     'setFinanceReportFilter', 'resetFinanceReportFilters', 'showMoreFinanceReportRows',
     'setAppointmentLocalReportFilter', 'resetAppointmentLocalReportFilters', 'showMoreAppointmentLocalReportRows',
