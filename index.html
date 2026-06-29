@@ -2795,18 +2795,42 @@ function renderServices(data){let y=defaultYear(data),yd=byYear(data,y),st=Objec
 
 /* === PETATOE v3.8.18 MANUAL MULTI-ITEM INVOICE ENTRY === */
 const MANUAL_INVOICE_START=20000001;
+const MANUAL_INVOICE_YEAR_SERIAL_WIDTH=5;
 let entryItemRowSeq=0;
-function getNextManualInvoiceNo(){
-  const nums=(records||[]).map(r=>parseInt(String(r.invoice||'').replace(/[^0-9]/g,''),10)).filter(n=>Number.isFinite(n)&&n>=MANUAL_INVOICE_START);
-  let maxExisting=nums.length?Math.max(...nums):(MANUAL_INVOICE_START-1);
-  let stored=parseInt(((window.PETATOEStorage&&window.PETATOEStorage.get)?window.PETATOEStorage.get('petatoe_manual_invoice_next',MANUAL_INVOICE_START):MANUAL_INVOICE_START),10);
-  let next=Math.max(maxExisting+1,Number.isFinite(stored)?stored:MANUAL_INVOICE_START,MANUAL_INVOICE_START);
-  while((records||[]).some(r=>String(r.invoice||'')===String(next)))next++;
-  return String(next);
+function getManualInvoiceSerialYear(){
+  const el=(typeof document!=='undefined')?document.getElementById('e_date'):null;
+  const raw=String((el&&el.value)||'').trim();
+  const m=raw.match(/^(\d{4})/);
+  const y=m?parseInt(m[1],10):(new Date()).getFullYear();
+  return Number.isFinite(y)&&y>1900?y:(new Date()).getFullYear();
+}
+function getManualInvoiceYearPrefix(year){
+  return String(year).slice(-2);
+}
+function getManualInvoiceYearStart(year){
+  return parseInt(getManualInvoiceYearPrefix(year)+'00001',10);
+}
+function getManualInvoiceYearEnd(year){
+  return parseInt(getManualInvoiceYearPrefix(year)+'99999',10);
+}
+function getNextManualInvoiceNo(year){
+  const targetYear=Number.isFinite(parseInt(year,10))?parseInt(year,10):getManualInvoiceSerialYear();
+  const start=getManualInvoiceYearStart(targetYear);
+  const end=getManualInvoiceYearEnd(targetYear);
+  const nums=(records||[]).map(function(r){
+    return parseInt(String(r&&r.invoice||'').replace(/[^0-9]/g,''),10);
+  }).filter(function(n){
+    return Number.isFinite(n)&&n>=start&&n<=end;
+  });
+  const maxExisting=nums.length?Math.max.apply(null,nums):(start-1);
+  return String(maxExisting+1);
 }
 function setNextManualInvoiceAfter(inv){
-  const n=parseInt(String(inv||'').replace(/[^0-9]/g,''),10);
-  if(Number.isFinite(n))if(window.PETATOEStorage&&window.PETATOEStorage.set)window.PETATOEStorage.set('petatoe_manual_invoice_next',String(Math.max(n+1,MANUAL_INVOICE_START)));
+  try{
+    if(window.PETATOEStorage&&window.PETATOEStorage.remove)window.PETATOEStorage.remove('petatoe_manual_invoice_next');
+  }catch(e){
+    window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('index.html',e);
+  }
 }
 function entryCommonHtml(){
   return `
@@ -2874,7 +2898,10 @@ function buildForm(){
     <div id="entryInvoiceTotals" class="entry-invoice-totals"></div>
   </div>`;
   $('e_invoice').value=getNextManualInvoiceNo();
-  $('e_date').addEventListener('change',()=>{$('e_month').value=normalizeMonth('', $('e_date').value)});
+  $('e_date').addEventListener('change',()=>{
+    $('e_month').value=normalizeMonth('', $('e_date').value);
+    if(!editingId&&$('e_invoice'))$('e_invoice').value=getNextManualInvoiceNo();
+  });
   document.querySelectorAll('.entry-item-row').forEach(wireEntryItemRow);
   updateEntryInvoiceTotal();
 }
