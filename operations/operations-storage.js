@@ -212,6 +212,9 @@
     sizes:['Small','Medium','Large','XL'],
     services:[],
     customers:[],
+    vehicles:[],
+    drivers:[],
+    groomers:[],
     vehicleAssignments:[],
     breeds:{
       'كلب':['Husky','Golden Retriever','Pomeranian','German Shepherd','Shih Tzu'],
@@ -288,6 +291,15 @@
     return Object.keys(map).map(function(k){ return map[k]; }).sort(function(a,b){ return String(a.vehicle).localeCompare(String(b.vehicle),'ar'); });
   }
 
+
+  function normalizeNamedList(list){
+    var map = {};
+    (Array.isArray(list) ? list : []).forEach(function(x){
+      var name = typeof x === 'object' ? String(x.name || x.title || x.label || x.vehicle || x.driver || x.groomer || '').trim() : String(x || '').trim();
+      if(name) map[name] = name;
+    });
+    return Object.keys(map).sort(function(a,b){ return a.localeCompare(b,'ar',{numeric:true,sensitivity:'base'}); });
+  }
   function normalizeMasterData(data){
     data = data && typeof data === 'object' ? data : {};
     var out = {
@@ -295,6 +307,9 @@
       sizes: uniqueSorted(data.sizes || []),
       services: normalizeMasterServices(isOnlyLegacyDefaultServices(data.services || []) ? [] : (data.services || [])),
       customers: normalizeMasterCustomers(data.customers || []),
+      vehicles: normalizeNamedList(data.vehicles || []),
+      drivers: normalizeNamedList(data.drivers || []),
+      groomers: normalizeNamedList(data.groomers || []),
       vehicleAssignments: normalizeVehicleAssignments(data.vehicleAssignments || []),
       breeds: {}
     };
