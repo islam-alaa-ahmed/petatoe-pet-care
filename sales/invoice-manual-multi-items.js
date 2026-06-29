@@ -28,6 +28,34 @@
       }
     }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js:commitManualRowsToSupabase",e);}
   }
+  async function deleteInvoiceFromSupabase(no, reason){
+    no=invKey(no);
+    if(!no) return {ok:false,error:'empty invoice number'};
+    if(!(window.PETATOEDataLayer && typeof window.PETATOEDataLayer.deleteSalesInvoice==='function')){
+      return {ok:true,skipped:true,reason:'PETATOEDataLayer.deleteSalesInvoice unavailable'};
+    }
+    try{
+      var res=await window.PETATOEDataLayer.deleteSalesInvoice(no);
+      if(!res || !res.ok){
+        console.warn('[PETATOE Manual Invoice] Supabase invoice delete failed',no,res);
+        return res||{ok:false,error:'Supabase delete failed'};
+      }
+      if(window.PETATOEDataSource && typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
+        try{window.PETATOEDataSource.refreshSalesRecordsFromSupabase(reason||'manual-invoice-delete');}catch(_refreshErr){}
+      }
+      return res;
+    }catch(e){
+      console.warn('[PETATOE Manual Invoice] Supabase invoice delete crashed',e);
+      return {ok:false,error:e&&e.message?e.message:String(e)};
+    }
+  }
+  function stripSupabaseIdentity(rows){
+    return (Array.isArray(rows)?rows:[]).map(function(row){
+      var r=Object.assign({},row||{});
+      try{delete r.supabase_id;delete r.__petatoeManualSupabasePending;delete r.__petatoeSupabasePending;}catch(_e){}
+      return r;
+    });
+  }
   function setArr(v){
     try{
       var safe=Array.isArray(v)?v:[];
@@ -113,9 +141,60 @@ function renderResults(keepFocus){ensureEntryUi();var active=document.activeElem
   function setMode(mode){ensureEntryUi();STATE.mode=mode||'new';var card=document.querySelector('#entry .pet-entry-form-card'),search=id('petEntrySearchPanel'),banner=id('petEntryEditBanner');if(id('petEntryNewBtn'))id('petEntryNewBtn').classList.toggle('active',STATE.mode==='new');if(id('petEntryEditBtn'))id('petEntryEditBtn').classList.toggle('active',STATE.mode==='edit');if(search)search.classList.toggle('show',STATE.mode==='edit');if(STATE.mode==='new'){STATE.selectedInvoice='';if(card)card.classList.remove('entry-hidden-until-select');if(banner)banner.classList.remove('show');try{if(typeof buildForm==='function')buildForm()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}if(id('entryModeText'))id('entryModeText').textContent='إدخال سجل جديد'}else{if(card&&!STATE.selectedInvoice)card.classList.add('entry-hidden-until-select');if(banner)banner.classList.toggle('show',!!STATE.selectedInvoice);if(id('entryModeText'))id('entryModeText').textContent='تعديل / حذف فواتير';renderResults(true);setTimeout(function(){var inp=id('petEntryInvoiceSearch');if(inp)inp.focus()},30)}}
   function setCommon(r,no){if(id('e_van'))id('e_van').value=r.van||id('e_van').value;if(id('e_date'))id('e_date').value=rowDate(r);if(id('e_month'))id('e_month').value=monthVal(r)||id('e_month').value;if(id('e_invoice'))id('e_invoice').value=no;if(id('e_client'))id('e_client').value=r.client||'';if(id('e_pay'))id('e_pay').value=r.pay||id('e_pay').value}
   function loadInvoice(no){normalizeLegacyInvoices();updateItemDatalist();no=invKey(no);var rows=arr().filter(function(r){return invKey(r.invoice)===no});if(!rows.length){note('لم يتم العثور على الفاتورة');renderResults(true);return}STATE.mode='edit';STATE.selectedInvoice=no;ensureEntryUi();overrideEntryItemRowHtml();try{if(typeof buildForm==='function')buildForm()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}setCommon(rows[0]||{},no);var wrap=id('entryItemsWrap');if(wrap){safeClear(wrap);try{entryItemRowSeq=0}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);};rows.forEach(function(r,idx){try{safeAppend(wrap,entryItemRowHtml(idx,r),'invoice item row')}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}});qsa('#entryItemsWrap .entry-item-row').forEach(function(row){try{wireEntryItemRow(row)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}})}try{updateEntryInvoiceTotal()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}var card=document.querySelector('#entry .pet-entry-form-card');if(card)card.classList.remove('entry-hidden-until-select');var banner=id('petEntryEditBanner');if(banner)banner.classList.add('show');var txt=id('petEntryEditBannerText');if(txt){txt.textContent='';txt.appendChild(document.createTextNode('وضع تعديل الفاتورة '));var b=document.createElement('b');b.textContent='#'+no;txt.appendChild(b);txt.appendChild(document.createTextNode(' — الحفظ سيستبدل بيانات الفاتورة بالكامل.'));}if(id('entryModeText'))id('entryModeText').textContent='تعديل فاتورة رقم '+no;renderResults(true);try{card.scrollIntoView({behavior:'smooth',block:'start'})}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}}
-  function deleteInvoice(no){normalizeLegacyInvoices();no=invKey(no);var cnt=arr().filter(function(r){return invKey(r.invoice)===no}).length;if(!cnt){note('الفاتورة غير موجودة');return}if(!confirm('حذف الفاتورة رقم '+no+' بالكامل؟\nعدد البنود: '+cnt))return;setArr(arr().filter(function(r){return invKey(r.invoice)!==no}));STATE.selectedInvoice='';try{editingId=null}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}try{save()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}try{if(typeof renderRecords==='function')renderRecords()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}try{if(window.PETATOESalesInvoiceReport&&window.PETATOESalesInvoiceReport.render)window.PETATOESalesInvoiceReport.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}note('تم حذف الفاتورة');setMode('edit')}
+  async function deleteInvoice(no){
+    normalizeLegacyInvoices();
+    no=invKey(no);
+    var cnt=arr().filter(function(r){return invKey(r.invoice)===no}).length;
+    if(!cnt){note('الفاتورة غير موجودة');return false}
+    if(!confirm('حذف الفاتورة رقم '+no+' بالكامل؟\nعدد البنود: '+cnt))return false;
+    var supabaseDelete=await deleteInvoiceFromSupabase(no,'manual-invoice-delete-button');
+    if(!supabaseDelete || supabaseDelete.ok!==true){
+      note('تعذر حذف الفاتورة من Supabase، لم يتم حذفها محلياً');
+      return false;
+    }
+    setArr(arr().filter(function(r){return invKey(r.invoice)!==no}));
+    STATE.selectedInvoice='';
+    try{editingId=null}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{save()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{if(typeof renderRecords==='function')renderRecords()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{if(window.PETATOESalesInvoiceReport&&window.PETATOESalesInvoiceReport.render)window.PETATOESalesInvoiceReport.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    note('تم حذف الفاتورة');
+    setMode('edit');
+    return true;
+  }
   function collectItems(){try{return typeof collectEntryItems==='function'?collectEntryItems():[]}catch(e){return []}}
-  function saveEntry(){try{if(typeof window.petatoeBeforeSaveRecord==='function'&&window.petatoeBeforeSaveRecord()===false)return false}catch(e){console.warn(e)}var common={van:id('e_van')?id('e_van').value:'',date:id('e_date')?normDate(id('e_date').value):'',month:id('e_month')?(typeof normalizeMonth==='function'?normalizeMonth(id('e_month').value,id('e_date')?id('e_date').value:''):id('e_month').value):'',invoice:id('e_invoice')?invKey(id('e_invoice').value):'',client:id('e_client')?id('e_client').value:'',pay:id('e_pay')?id('e_pay').value:''};var items=collectItems();if(!common.date||!common.invoice||!common.client||!items.length){note('املأ التاريخ والعميل وصنف واحد على الأقل');return false}var old=STATE.selectedInvoice?arr().filter(function(r){return invKey(r.invoice)===STATE.selectedInvoice}):[];var rows=items.map(function(it,idx){var r=Object.assign({},old[idx]||{},it,common);r.id=(old[idx]&&old[idx].id)||(Date.now()+Math.random()+idx);r.manualEntry=true;if(!n(r.totalEx)&&n(r.price))r.totalEx=(n(r.price)*(n(r.qty)||1))-Math.abs(n(r.disc));if(!n(r.totalInc))r.totalInc=n(r.totalEx)+n(r.tax);r.disc=Math.abs(n(r.disc));return r});if(STATE.mode==='edit'&&STATE.selectedInvoice){setArr(arr().filter(function(r){return invKey(r.invoice)!==STATE.selectedInvoice}).concat(rows));STATE.selectedInvoice=common.invoice}else{setArr(arr().concat(rows));try{if(typeof setNextManualInvoiceAfter==='function')setNextManualInvoiceAfter(common.invoice)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}}try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}try{save()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}try{updateItemDatalist()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}try{if(typeof renderRecords==='function')renderRecords()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}try{if(window.PETATOESalesInvoiceReport&&window.PETATOESalesInvoiceReport.render)window.PETATOESalesInvoiceReport.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}try{document.dispatchEvent(new CustomEvent('petatoe:record-saved',{detail:{mode:STATE.mode,invoice:common.invoice}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}note((STATE.mode==='edit'?'تم تعديل الفاتورة رقم ':'تم حفظ الفاتورة رقم ')+common.invoice);if(STATE.mode==='edit')setTimeout(function(){loadInvoice(common.invoice)},50);else setMode('new');return true}
+  async function saveEntry(){
+    try{if(typeof window.petatoeBeforeSaveRecord==='function'&&window.petatoeBeforeSaveRecord()===false)return false}catch(e){console.warn(e)}
+    var common={van:id('e_van')?id('e_van').value:'',date:id('e_date')?normDate(id('e_date').value):'',month:id('e_month')?(typeof normalizeMonth==='function'?normalizeMonth(id('e_month').value,id('e_date')?id('e_date').value:''):id('e_month').value):'',invoice:id('e_invoice')?invKey(id('e_invoice').value):'',client:id('e_client')?id('e_client').value:'',pay:id('e_pay')?id('e_pay').value:''};
+    var items=collectItems();
+    if(!common.date||!common.invoice||!common.client||!items.length){note('املأ التاريخ والعميل وصنف واحد على الأقل');return false}
+    var old=STATE.selectedInvoice?arr().filter(function(r){return invKey(r.invoice)===STATE.selectedInvoice}):[];
+    var rows=items.map(function(it,idx){var r=Object.assign({},old[idx]||{},it,common);r.id=(old[idx]&&old[idx].id)||(Date.now()+Math.random()+idx);r.manualEntry=true;if(!n(r.totalEx)&&n(r.price))r.totalEx=(n(r.price)*(n(r.qty)||1))-Math.abs(n(r.disc));if(!n(r.totalInc))r.totalInc=n(r.totalEx)+n(r.tax);r.disc=Math.abs(n(r.disc));return r});
+    if(STATE.mode==='edit'&&STATE.selectedInvoice){
+      var oldInvoice=STATE.selectedInvoice;
+      var supabaseDelete=await deleteInvoiceFromSupabase(oldInvoice,'manual-invoice-edit-replace');
+      if(!supabaseDelete || supabaseDelete.ok!==true){
+        note('تعذر تحديث الفاتورة في Supabase، لم يتم حفظ التعديل');
+        return false;
+      }
+      rows=stripSupabaseIdentity(rows);
+      setArr(arr().filter(function(r){return invKey(r.invoice)!==oldInvoice}).concat(rows));
+      STATE.selectedInvoice=common.invoice;
+    }else{
+      setArr(arr().concat(rows));
+      try{if(typeof setNextManualInvoiceAfter==='function')setNextManualInvoiceAfter(common.invoice)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    }
+    try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{save()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{updateItemDatalist()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{if(typeof renderRecords==='function')renderRecords()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{if(window.PETATOESalesInvoiceReport&&window.PETATOESalesInvoiceReport.render)window.PETATOESalesInvoiceReport.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{document.dispatchEvent(new CustomEvent('petatoe:record-saved',{detail:{mode:STATE.mode,invoice:common.invoice}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    note((STATE.mode==='edit'?'تم تعديل الفاتورة رقم ':'تم حفظ الفاتورة رقم ')+common.invoice);
+    if(STATE.mode==='edit')setTimeout(function(){loadInvoice(common.invoice)},50);else setMode('new');
+    return true;
+  }
   function clearEntryForm(){STATE.selectedInvoice='';try{if(typeof buildForm==='function')buildForm()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}if(id('entryModeText'))id('entryModeText').textContent='إدخال سجل جديد';renderResults(true)}
   function bindEntryActions(){if(STATE.actionsBound)return;STATE.actionsBound=true;document.addEventListener('click',function(e){var save=e.target&&e.target.closest&&e.target.closest('#saveBtn');if(save){e.preventDefault();e.stopImmediatePropagation();saveEntry();return}var clear=e.target&&e.target.closest&&e.target.closest('#clearEntryBtn');if(clear){e.preventDefault();e.stopImmediatePropagation();clearEntryForm();return}},true)}
   function boot(){normalizeLegacyInvoices();updateItemDatalist();overrideEntryItemRowHtml();ensureEntryUi();if(!STATE.baseSave&&typeof saveRecord==='function')STATE.baseSave=saveRecord;if(!STATE.baseClear&&typeof clearForm==='function')STATE.baseClear=clearForm;window.petatoeEntryLoadInvoice=loadInvoice;window.petatoeEntryDeleteInvoice=deleteInvoice;window.petatoeManualSaveEntry=saveEntry;window.petatoeManualClearEntry=clearEntryForm;bindEntryActions();setMode('new')}
