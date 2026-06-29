@@ -2159,14 +2159,12 @@ function petatoeCloneChartConfig(config){
   catch(e){return Object.assign({}, config||{});}
 }
 function petatoeUpdateExistingChart(id, canvas, normalizedConfig, isSmartTarget){
-  /* PETATOE Phase 2: Chart.js mutates options into internal resolver objects.
-     Updating existing chart instances with cloned resolver-backed options caused
-     runtime warnings/errors such as:
-       - TypeError: t.startsWith is not a function
-       - Ignoring resolver passed as options for scale x/y
-     The stable path is to destroy and recreate the chart instance with a fresh
-     normalized config. This is safer for the current mixed legacy/smart reports
-     chart engine and does not change calculations or data. */
+  /* PETATOE Phase2 Root Fix 2026-06-29:
+     Chart.js 4 mutates chart.options into internal resolver objects. Reusing an
+     existing instance and replacing options/data can leave resolver objects inside
+     scales/plugins, causing: TypeError: t.startsWith is not a function.
+     Stable behavior: always destroy and recreate the chart from a fresh normalized
+     config. This does not change sales calculations or chart datasets. */
   return false;
 }
 function chart(id,config){
@@ -3867,7 +3865,7 @@ function petatoeUpdateWhatIf(){
 </script>
 <script src="smart/smart-reports-filters-real.js"></script>
 <script src="smart/smart-reports-new-customers-real.js"></script>
-<script src="smart/smart-reports-performance-optimizer.js"></script>
+<script src="smart/smart-reports-performance-optimizer.js?v=phase2-rootfix-20260629"></script>
 <script src="smart/smart-data-engine.js"></script>
 <script src="components/safe-render-helpers.js"></script>
 <script src="smart/smart-services.js"></script>
