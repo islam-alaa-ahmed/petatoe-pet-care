@@ -2158,6 +2158,13 @@ function petatoeCloneChartConfig(config){
   try{return JSON.parse(JSON.stringify(config||{}));}
   catch(e){return Object.assign({}, config||{});}
 }
+function petatoeHasChartOptions(config){
+  try{
+    var opts=(config && config.options) || null;
+    if(!opts || typeof opts!=='object') return false;
+    return Object.keys(opts).length>0;
+  }catch(e){return true;}
+}
 function petatoeUpdateExistingChart(id, canvas, normalizedConfig, isSmartTarget){
   var existing=charts[id];
   if(!existing || !normalizedConfig) return false;
@@ -2165,16 +2172,20 @@ function petatoeUpdateExistingChart(id, canvas, normalizedConfig, isSmartTarget)
     var nextType=normalizedConfig.type || (existing.config && existing.config.type);
     var currentType=(existing.config && existing.config.type) || existing.type;
     if(String(nextType||'') !== String(currentType||'')) return false;
+
+    // Chart.js keeps resolver/proxy objects inside options after initialization.
+    // Replacing options/scales/plugins on an existing chart can leak those resolver
+    // objects back into the next update cycle and trigger: t.startsWith is not a function.
+    // Therefore we only perform an in-place update for data-only refreshes.
+    // Any config carrying options/scales/plugins is safely recreated by chart().
+    if(petatoeHasChartOptions(normalizedConfig)) return false;
+
     existing.data=petatoeCloneChartConfig(normalizedConfig.data || {labels:[],datasets:[]});
-    existing.options=petatoeCloneChartConfig(normalizedConfig.options || {});
-    if(existing.config){
-      existing.config.data=existing.data;
-      existing.config.options=existing.options;
-    }
+    if(existing.config){existing.config.data=existing.data;}
     existing.update(isSmartTarget ? 'none' : undefined);
     return true;
   }catch(e){
-    try{console.warn('[PETATOE chart update]', e);}
+    try{console.warn('[PETATOE chart update fallback to recreate]', e);}
     catch(_e){}
     return false;
   }
