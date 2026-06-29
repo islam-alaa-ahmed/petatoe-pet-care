@@ -96,9 +96,7 @@
     patchedChart = true;
   }
 
-  function patchSetSmartTab(){
-    if(patchedTab || typeof window.setSmartTab !== 'function' || window.setSmartTab.__petatoeSmartPerfWrapped) return;
-    var originalSetSmartTab = window.setSmartTab;
+  function makeWrappedSetSmartTab(originalSetSmartTab){
     var wrapped = function petatoePerfSetSmartTab(tab){
       var result = originalSetSmartTab.apply(this, arguments);
       idle(flushVisible, 220);
@@ -106,8 +104,44 @@
       return result;
     };
     wrapped.__petatoeSmartPerfWrapped = true;
-    window.setSmartTab = wrapped;
-    patchedTab = true;
+    return wrapped;
+  }
+
+  function patchSetSmartTab(){
+    if(patchedTab) return;
+
+    var descriptor;
+    try{ descriptor = Object.getOwnPropertyDescriptor(window, 'setSmartTab'); }catch(e){ descriptor = null; }
+
+    if(typeof window.setSmartTab === 'function' && window.setSmartTab.__petatoeSmartPerfWrapped){
+      patchedTab = true;
+      return;
+    }
+
+    /* PETATOE Phase 2: window.setSmartTab is intentionally protected by
+       smart/smart-tabs.js as a read-only compatibility bridge. The optimizer
+       must not assign to it when it is non-writable/non-configurable. */
+    if(typeof window.setSmartTab === 'function' && (!descriptor || descriptor.writable || descriptor.configurable)){
+      try{
+        window.setSmartTab = makeWrappedSetSmartTab(window.setSmartTab);
+        patchedTab = true;
+        return;
+      }catch(e){
+        try{ console.warn('[PETATOE Smart Optimizer] setSmartTab wrapper skipped:', e && e.message ? e.message : e); }catch(_e){}
+      }
+    }
+
+    /* Safe fallback: patch the SmartTabs API object when available. This keeps
+       the performance flush hook without violating the read-only global. */
+    var api = window.PETATOESmartTabs;
+    if(api && typeof api.setSmartTab === 'function' && !api.setSmartTab.__petatoeSmartPerfWrapped){
+      try{
+        api.setSmartTab = makeWrappedSetSmartTab(api.setSmartTab);
+        patchedTab = true;
+      }catch(e){
+        try{ console.warn('[PETATOE Smart Optimizer] PETATOESmartTabs wrapper skipped:', e && e.message ? e.message : e); }catch(_e){}
+      }
+    }
   }
 
   patchChart();
