@@ -24,31 +24,160 @@
     }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-storage.js",e);}
   }
 
-  function storage(){ return window.PETATOEStorage || null; }
+  var TABLE_APPOINTMENTS = 'operations_appointments';
+  var TABLE_MASTER = 'operations_master_data';
+  var appointmentsCache = [];
+  var masterDataCache = null;
+  var bootStarted = false;
+  var bootDone = false;
+  var writeQueue = Promise.resolve();
+
+  function client(){
+    return window.PETATOE_SUPABASE_CLIENT || window.supabase || null;
+  }
+
+  function isClientReady(){
+    var c = client();
+    return !!(c && typeof c.from === 'function');
+  }
+
+  function emitChange(type){
+    try{
+      window.dispatchEvent(new CustomEvent('petatoe:operations-storage-change', { detail:{ type:type || 'all' } }));
+    }catch(e){ warn(e); }
+  }
+
+  function safeText(v){ return String(v == null ? '' : v).trim(); }
+  function safeNumber(v){
+    v = Number(String(v == null ? '' : v).replace(/,/g,''));
+    return isFinite(v) ? v : 0;
+  }
+
+  function appointmentUid(row){
+    row = row && typeof row === 'object' ? row : {};
+    return safeText(row.appointment_uid || row.uid || row.id || row.appointmentId || row.appointment_id || row.no || row.code || row.createdAt || row.date || Date.now());
+  }
+
+  function appointmentDate(row){
+    row = row && typeof row === 'object' ? row : {};
+    var v = safeText(row.appointment_date || row.appointmentDate || row.date || row.day || row.sessionDate || row.startDate);
+    var m = v.match(/\d{4}-\d{2}-\d{2}/);
+    return m ? m[0] : null;
+  }
+
+  function appointmentPayload(row){
+    row = row && typeof row === 'object' ? row : {};
+    return {
+      appointment_uid: appointmentUid(row),
+      data: row,
+      status: safeText(row.status || row.state || row.appointmentStatus),
+      appointment_date: appointmentDate(row),
+      vehicle: safeText(row.vehicle || row.car || row.vehicleName),
+      customer_name: safeText(row.customerName || row.customer || row.clientName || row.client),
+      customer_phone: safeText(row.customerPhone || row.phone || row.mobile || row.jawal),
+      total_amount: safeNumber(row.totalAmount || row.total || row.amount || row.value),
+      paid_amount: safeNumber(row.paidAmount || row.paid || row.collected),
+      remaining_amount: safeNumber(row.remainingAmount || row.remaining || row.balance),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  function normalizeAppointmentRow(row){
+    if(row && row.data && typeof row.data === 'object') return row.data;
+    return row && typeof row === 'object' ? row : {};
+  }
+
+  async function replaceAppointmentsSupabase(rows){
+    if(!isClientReady()) return false;
+    rows = Array.isArray(rows) ? rows : [];
+    var c = client();
+    var del = await c.from(TABLE_APPOINTMENTS).delete().not('id', 'is', null);
+    if(del && del.error) throw del.error;
+    if(!rows.length) return true;
+    var payload = rows.map(appointmentPayload);
+    var ins = await c.from(TABLE_APPOINTMENTS).insert(payload);
+    if(ins && ins.error) throw ins.error;
+    return true;
+  }
+
+  async function replaceMasterSupabase(data){
+    if(!isClientReady()) return false;
+    var c = client();
+    var del = await c.from(TABLE_MASTER).delete().not('id', 'is', null);
+    if(del && del.error) throw del.error;
+    var ins = await c.from(TABLE_MASTER).insert([{ data: normalizeMasterData(data), updated_at: new Date().toISOString() }]);
+    if(ins && ins.error) throw ins.error;
+    return true;
+  }
+
+  async function loadAppointmentsSupabase(){
+    if(!isClientReady()) return [];
+    var res = await client().from(TABLE_APPOINTMENTS).select('data,appointment_date,created_at').order('appointment_date', { ascending:true }).order('created_at', { ascending:true });
+    if(res && res.error) throw res.error;
+    return (Array.isArray(res && res.data) ? res.data : []).map(normalizeAppointmentRow);
+  }
+
+  async function loadMasterSupabase(){
+    if(!isClientReady()) return null;
+    var res = await client().from(TABLE_MASTER).select('data,updated_at,created_at').order('updated_at', { ascending:false }).limit(1);
+    if(res && res.error) throw res.error;
+    var row = Array.isArray(res && res.data) && res.data.length ? res.data[0] : null;
+    return row && row.data ? row.data : null;
+  }
+
+  function queueWrite(task){
+    writeQueue = writeQueue.then(task).catch(function(e){ warn(e); });
+    return true;
+  }
+
+  function bootSupabase(){
+    if(bootStarted) return;
+    bootStarted = true;
+    (async function(){
+      try{
+        if(!isClientReady()){
+          var started = Date.now();
+          while(!isClientReady() && Date.now() - started < 8000){
+            await new Promise(function(resolve){ setTimeout(resolve, 150); });
+          }
+        }
+        if(!isClientReady()) return;
+        var loaded = await Promise.all([loadAppointmentsSupabase(), loadMasterSupabase()]);
+        appointmentsCache = Array.isArray(loaded[0]) ? loaded[0] : [];
+        masterDataCache = loaded[1] || cloneDefaultMaster();
+        bootDone = true;
+        emitChange('boot');
+      }catch(e){ warn(e); }
+    })();
+  }
 
   function readJSON(key, fallback){
-    try{
-      var st = storage();
-      if(st && typeof st.readJSON === 'function'){
-        return st.readJSON(key, fallback);
-      }
-    }catch(e){ warn(e); }
+    bootSupabase();
+    if(key === KEYS.appointments) return cloneJSON(appointmentsCache);
+    if(key === KEYS.masterData) return masterDataCache == null ? (fallback == null ? null : fallback) : cloneJSON(masterDataCache);
     return fallback;
   }
 
   function writeJSON(key, value){
-    try{
-      var st = storage();
-      if(st && typeof st.writeJSON === 'function'){
-        return !!st.writeJSON(key, value);
-      }
-    }catch(e){ warn(e); }
+    bootSupabase();
+    if(key === KEYS.appointments){
+      appointmentsCache = Array.isArray(value) ? cloneJSON(value) : [];
+      queueWrite(function(){ return replaceAppointmentsSupabase(appointmentsCache); });
+      emitChange('appointments');
+      return true;
+    }
+    if(key === KEYS.masterData){
+      masterDataCache = normalizeMasterData(value);
+      queueWrite(function(){ return replaceMasterSupabase(masterDataCache); });
+      emitChange('masterData');
+      return true;
+    }
     return false;
   }
 
   function readAppointments(){
-    var rows = readJSON(KEYS.appointments, []);
-    return Array.isArray(rows) ? rows : [];
+    bootSupabase();
+    return Array.isArray(appointmentsCache) ? cloneJSON(appointmentsCache) : [];
   }
 
   function writeAppointments(rows){
@@ -56,7 +185,8 @@
   }
 
   function readMasterData(fallback){
-    return readJSON(KEYS.masterData, fallback == null ? null : fallback);
+    bootSupabase();
+    return masterDataCache == null ? (fallback == null ? null : fallback) : cloneJSON(masterDataCache);
   }
 
   function writeMasterData(data){
