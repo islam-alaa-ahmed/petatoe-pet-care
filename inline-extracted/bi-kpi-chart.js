@@ -312,7 +312,18 @@
   function ensureTip(){var t=document.getElementById('biInsightTooltip');if(!t){t=document.createElement('div');t.id='biInsightTooltip';document.body.appendChild(t)}return t}
   /* v3.11.10: using global clamp */
   function positionTip(t,anchor){var rect=anchor.getBoundingClientRect(),vw=window.innerWidth||document.documentElement.clientWidth,vh=window.innerHeight||document.documentElement.clientHeight,margin=12,gap=12;t.classList.remove('arrow-right','arrow-bottom');var tw=Math.min(t.offsetWidth||380,vw-2*margin),th=Math.min(t.offsetHeight||220,vh-2*margin),left=rect.left-gap-tw,top=rect.top+rect.height/2-th/2,arrowTop=clamp(rect.top+rect.height/2-top-6,18,Math.max(18,th-30));if(left<margin){left=rect.right+gap;t.classList.add('arrow-right')}if(left+tw>vw-margin){left=clamp(rect.left+rect.width/2-tw/2,margin,vw-tw-margin);top=rect.top-gap-th;t.classList.add('arrow-bottom');var al=clamp(rect.left+rect.width/2-left-6,18,Math.max(18,tw-28));t.style.setProperty('--bi-tip-arrow-left',al+'px')}top=clamp(top,margin,vh-th-margin);t.style.setProperty('--bi-tip-arrow-top',arrowTop+'px');t.style.left=Math.round(left)+'px';t.style.top=Math.round(top)+'px'}
-  var biTipAnchor=null, biTipHideTimer=null;
+  var biTipAnchor=null, biTipHideTimer=null, biTipPositionTimer=null;
+  function scheduleBiTipPosition(){
+    clearTimeout(biTipPositionTimer);
+    biTipPositionTimer=setTimeout(function(){
+      try{
+        var t=document.getElementById('biInsightTooltip');
+        if(t && t.classList && t.classList.contains('show') && biTipAnchor){
+          positionTip(t, biTipAnchor);
+        }
+      }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('inline-extracted/bi-kpi-chart.js scheduleBiTipPosition',e);}
+    },60);
+  }
   function biBuildTip(a){
     var title=a.getAttribute('data-bi-title')||(a.querySelector&&a.querySelector('span')?a.querySelector('span').textContent:a.textContent||'معلومة');
     var txt=a.getAttribute('data-bi-tip')||(a.querySelector&&a.querySelector('p')?a.querySelector('p').textContent:'هذا العنصر جزء من طبقة ذكاء الأعمال وهدفه تحويل الأرقام إلى قرار واضح.');
