@@ -20,8 +20,100 @@
   function num(v){if(v==null||v==='')return 0;if(typeof v==='number')return isFinite(v)?v:0;var n=parseFloat(String(v).replace(/,/g,'').replace(/SAR|sar|ريال|ر\.س/gi,'').trim());return isNaN(n)?0:n}
   function money(v){try{if(window.PETATOENumber)return PETATOENumber.money(num(v),'SAR')}catch(e){console.warn('PETATOEPayroll money formatter fallback',e)}return num(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' SAR'}
   function toastMsg(m){try{if(typeof toast==='function')toast(m);else alert(m)}catch(e){alert(m)}}
-  function read(key,def){try{var S=window.PETATOEStorage;if(S&&typeof S.readJSON==='function')return S.readJSON(key,def);return def}catch(e){return def}}
-  function write(key,val){try{var S=window.PETATOEStorage;if(S&&typeof S.writeJSON==='function'){S.writeJSON(key,val||[]);return;}}catch(e){console.warn('PETATOEPayroll write failed',key,e)}}
+
+  /* Payroll Supabase storage boundary
+     No LocalStorage migration: payroll starts from Supabase data only.
+     UI remains synchronous through this runtime cache, while writes persist async to Supabase. */
+  var PAYROLL_MASTER_ROW_ID='payroll_master';
+  var payrollCache={};
+  payrollCache[EMP_KEY]=[];
+  payrollCache[SLIP_KEY]=[];
+  payrollCache[JOB_TYPES_KEY]=[];
+  payrollCache[EMP_CONFIG_KEY]={prefix:'EMP',next:1,digits:4};
+  payrollCache[COMM_SNAPSHOT_KEY]={};
+  var payrollLoadStarted=false;
+  var payrollLoaded=false;
+
+  function payrollRepo(){return window.PETATOESupabaseRepository||null}
+  function isPayrollKey(key){return key===EMP_KEY||key===SLIP_KEY||key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY||key===COMM_SNAPSHOT_KEY}
+  function cloneVal(v){try{return JSON.parse(JSON.stringify(v));}catch(_e){return v}}
+  function read(key,def){
+    if(isPayrollKey(key)){
+      var v=payrollCache[key];
+      if(v===undefined||v===null)return cloneVal(def);
+      return cloneVal(v);
+    }
+    try{var S=window.PETATOEStorage;if(S&&typeof S.readJSON==='function')return S.readJSON(key,def);return def}catch(e){return def}
+  }
+  function write(key,val){
+    if(isPayrollKey(key)){
+      var prev=cloneVal(payrollCache[key]);
+      payrollCache[key]=cloneVal(val==null?(Array.isArray(prev)?[]:{}):val);
+      persistPayrollKey(key,payrollCache[key],prev);
+      return;
+    }
+    try{var S=window.PETATOEStorage;if(S&&typeof S.writeJSON==='function'){S.writeJSON(key,val||[]);return;}}catch(e){console.warn('PETATOEPayroll write failed',key,e)}
+  }
+  function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4},commissionSnapshots:payrollCache[COMM_SNAPSHOT_KEY]||{}}}
+  function persistMaster(){
+    var R=payrollRepo();
+    if(!R||!R.hasClient||!R.hasClient())return;
+    R.saveSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,payrollMasterPayload()).then(function(res){
+      if(res&&!res.ok)toastMsg('تعذر حفظ تهيئة الرواتب في Supabase');
+    }).catch(function(e){console.warn('PETATOEPayroll master persist failed',e)});
+  }
+  function persistArrayTable(table,nextRows,prevRows,extraForRow){
+    var R=payrollRepo();
+    if(!R||!R.hasClient||!R.hasClient())return;
+    nextRows=Array.isArray(nextRows)?nextRows:[];
+    prevRows=Array.isArray(prevRows)?prevRows:[];
+    var nextIds={};
+    nextRows.forEach(function(row){if(row&&row.id!=null)nextIds[String(row.id)]=true});
+    prevRows.forEach(function(row){
+      if(row&&row.id!=null&&!nextIds[String(row.id)]){
+        R.deleteById(table,row.id).then(function(res){if(res&&!res.ok)toastMsg('تعذر حذف بيانات الرواتب من Supabase')}).catch(function(e){console.warn('PETATOEPayroll delete persist failed',table,e)});
+      }
+    });
+    nextRows.forEach(function(row){
+      if(!row||row.id==null)return;
+      R.upsertJsonRow(table,row.id,row,extraForRow?extraForRow(row):{}).then(function(res){if(res&&!res.ok)toastMsg('تعذر حفظ بيانات الرواتب في Supabase')}).catch(function(e){console.warn('PETATOEPayroll upsert persist failed',table,e)});
+    });
+  }
+  function persistPayrollKey(key,val,prev){
+    if(key===EMP_KEY){
+      persistArrayTable('payroll_employees',val,prev,function(e){return {code:String(e.code||''),name:String(e.name||''),job:String(e.job||''),status:String(e.status||'active')};});
+      return;
+    }
+    if(key===SLIP_KEY){
+      persistArrayTable('payroll_slips',val,prev,function(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip.employeeId||''),period:String(slip.period||''),status:String(slip.status||''),net_amount:num(c.net||0)};});
+      return;
+    }
+    if(key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY||key===COMM_SNAPSHOT_KEY){persistMaster();}
+  }
+  function refreshPayrollViews(){
+    try{if(byId('payrollArea'))render()}catch(e){console.warn('PETATOEPayroll render after load failed',e)}
+    try{if(byId('salarySlipArea'))renderSalarySlip()}catch(e){console.warn('PETATOEPayroll salary slip render after load failed',e)}
+    try{document.dispatchEvent(new CustomEvent('petatoe:payroll-supabase-ready',{detail:{loaded:payrollLoaded}}))}catch(_e){}
+  }
+  async function loadPayrollFromSupabase(){
+    if(payrollLoadStarted)return;
+    payrollLoadStarted=true;
+    var R=payrollRepo();
+    if(!R||!R.hasClient||!R.hasClient()){console.warn('PETATOEPayroll Supabase repository/client not ready');return;}
+    try{
+      var emps=await R.listJsonRows('payroll_employees',{order:'created_at'});
+      var slipsRows=await R.listJsonRows('payroll_slips',{order:'created_at'});
+      var master=await R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{});
+      payrollCache[EMP_KEY]=Array.isArray(emps)?emps:[];
+      payrollCache[SLIP_KEY]=Array.isArray(slipsRows)?slipsRows:[];
+      payrollCache[JOB_TYPES_KEY]=Array.isArray(master.jobTypes)?master.jobTypes:[];
+      payrollCache[EMP_CONFIG_KEY]=employeeConfigNormalize(master.employeeConfig||payrollCache[EMP_CONFIG_KEY]);
+      payrollCache[COMM_SNAPSHOT_KEY]=master.commissionSnapshots&&typeof master.commissionSnapshots==='object'?master.commissionSnapshots:{};
+      payrollLoaded=true;
+      console.log('✅ PETATOE Payroll Supabase storage loaded', {employees:payrollCache[EMP_KEY].length, slips:payrollCache[SLIP_KEY].length});
+      refreshPayrollViews();
+    }catch(e){console.warn('PETATOEPayroll Supabase load failed',e)}
+  }
   function uid(p){return (p||'id')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}
   function nowPeriod(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
   function currentArchiveYear(){return String(new Date().getFullYear())}
@@ -99,7 +191,7 @@
   function saveEmployees(arr){write(EMP_KEY,arr)}
 
   function employeeConfig(){var cfg=read(EMP_CONFIG_KEY,null);if(!cfg||typeof cfg!=='object')cfg={prefix:'EMP',next:1,digits:4};cfg.prefix=String(cfg.prefix||'EMP').trim()||'EMP';cfg.next=Math.max(1,parseInt(cfg.next||1,10)||1);cfg.digits=Math.max(2,parseInt(cfg.digits||4,10)||4);return cfg}
-  function saveEmployeeConfig(cfg){try{var S=window.PETATOEStorage;if(S&&typeof S.writeJSON==='function'){S.writeJSON(EMP_CONFIG_KEY,employeeConfigNormalize(cfg));return;}}catch(e){console.warn('PETATOEPayroll saveEmployeeConfig failed',e)}}
+  function saveEmployeeConfig(cfg){write(EMP_CONFIG_KEY,employeeConfigNormalize(cfg))}
   function employeeConfigNormalize(cfg){cfg=cfg||{};return {prefix:String(cfg.prefix||'EMP').trim()||'EMP',next:Math.max(1,parseInt(cfg.next||1,10)||1),digits:Math.max(2,parseInt(cfg.digits||4,10)||4)}}
   function formatEmployeeCode(n,cfg){cfg=employeeConfigNormalize(cfg||employeeConfig());return cfg.prefix+'-'+String(n).padStart(cfg.digits,'0')}
   function firstAvailableEmployeeCode(ignoreId){
@@ -542,7 +634,9 @@
     },
     accountsApprove:function(id){if(!isAccounts()){toastMsg('هذه الصلاحية للحسابات');return}var s=slips().find(function(x){return x.id===id});if(!s||s.status!=='employee_approved'){toastMsg('لا يمكن اعتماد الصرف قبل موافقة الموظف');return}setStatus(id,'accounts_approved',{accountsApprovedAt:new Date().toISOString(),accountsApprovedBy:(currentUser().fullName||currentUser().username)});toastMsg('تم اعتماد الصرف')},
     markPaid:function(id){if(!isAccounts()){toastMsg('هذه الصلاحية للحسابات');return}var s=slips().find(function(x){return x.id===id});if(!s||s.status!=='accounts_approved'){toastMsg('لا يمكن تسجيل الصرف قبل اعتماد الحسابات');return}setStatus(id,'paid',{paidAt:new Date().toISOString()});toastMsg('تم تسجيل الصرف')},
-    exportCsv:function(){var rows=[['period','employee','payment_method','base','housing','transport','commission_overtime','incentives','other_additions','deductions','net','status']].concat(slips().map(function(s){var e=getEmployee(s.employeeId)||{};var c=calcSlip(s);return [s.period,e.name||'',paymentLabel(s.paymentMethod),s.base,s.housing,s.transport,c.commission,s.incentives,c.additions,c.deductions,c.net,statusInfo(s.status)[0]]}));var csv=rows.map(function(r){return r.map(function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'}).join(',')}).join('\n');var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Payroll.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
+    exportCsv:function(){var rows=[['period','employee','payment_method','base','housing','transport','commission_overtime','incentives','other_additions','deductions','net','status']].concat(slips().map(function(s){var e=getEmployee(s.employeeId)||{};var c=calcSlip(s);return [s.period,e.name||'',paymentLabel(s.paymentMethod),s.base,s.housing,s.transport,c.commission,s.incentives,c.additions,c.deductions,c.net,statusInfo(s.status)[0]]}));var csv=rows.map(function(r){return r.map(function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'}).join(',')}).join('\n');var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Payroll.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)},
+    reloadFromSupabase:function(){payrollLoadStarted=false;return loadPayrollFromSupabase()},
+    isSupabaseLoaded:function(){return !!payrollLoaded}
   };
   if(!window.__PETATOE_PAYROLL_DELEGATES_BOUND__){
     window.__PETATOE_PAYROLL_DELEGATES_BOUND__=true;
@@ -552,4 +646,5 @@
     document.addEventListener('petatoe:tabchange',function(e){var t=(e.detail||{}).tabId;if(t==='payroll')setTimeout(render,0);if(t==='salarySlip')setTimeout(renderSalarySlip,0)});
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(byId('payrollArea'))render();},200)});else setTimeout(function(){if(byId('payrollArea'))render();},200);
   }
+  setTimeout(loadPayrollFromSupabase,0);
 })();
