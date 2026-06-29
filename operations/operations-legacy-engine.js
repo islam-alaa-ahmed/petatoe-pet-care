@@ -1181,7 +1181,8 @@
       r=calcFinancials(r);
       var animal=appointmentAnimalSummary(r);
       var dateCell=esc(r.date||'-')+'<small class="appointments-date-sub">'+esc([r.start,r.end].filter(Boolean).join(' - ')||'-')+'</small>';
-      return '<tr><td>'+(i+1)+'</td><td class="appointments-date-cell">'+dateCell+'</td><td>'+esc(r.client||'-')+'</td><td class="appointments-animal-cell">'+esc(animal||'-')+'</td><td>'+esc(r.service||'-')+'</td><td>'+esc(r.vehicle||'-')+'</td><td>'+money(r.totalAmount)+'</td><td>'+appointmentStatusBadge(r)+'</td><td><button class="btn btn-ghost appointment-details-btn appointment-details-hover-btn" type="button" data-appt-popover-id="'+esc(r.id)+'" aria-label="عرض تفاصيل الموعد كفقاعة">📄 التفاصيل</button></td></tr>';
+      var actions='<div class="appointments-log-actions"><button class="btn btn-ghost appointment-details-btn appointment-details-hover-btn" type="button" data-appt-popover-id="'+esc(r.id)+'" aria-label="عرض تفاصيل الموعد كفقاعة">📄 التفاصيل</button><button class="btn btn-ghost appointments-log-edit-btn" type="button" data-op-click="edit" data-op-arg1="'+esc(r.id)+'">✏️ تعديل</button><button class="btn btn-ghost appointments-log-delete-btn danger" type="button" data-op-click="remove" data-op-arg1="'+esc(r.id)+'">🗑️ حذف</button></div>';
+      return '<tr><td>'+(i+1)+'</td><td class="appointments-date-cell">'+dateCell+'</td><td>'+esc(r.client||'-')+'</td><td class="appointments-animal-cell">'+esc(animal||'-')+'</td><td>'+esc(r.service||'-')+'</td><td>'+esc(r.vehicle||'-')+'</td><td>'+money(r.totalAmount)+'</td><td>'+appointmentStatusBadge(r)+'</td><td>'+actions+'</td></tr>';
     }).join(''):'<tr><td colspan="9" class="appointments-empty">لا توجد مواعيد مطابقة للفلاتر الحالية</td></tr>', 'operations appointments table render');
     bindAppointmentDetailsPopover();
   }
