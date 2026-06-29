@@ -2159,25 +2159,15 @@ function petatoeCloneChartConfig(config){
   catch(e){return Object.assign({}, config||{});}
 }
 function petatoeUpdateExistingChart(id, canvas, normalizedConfig, isSmartTarget){
-  var existing=charts[id];
-  if(!existing || !normalizedConfig) return false;
-  try{
-    var nextType=normalizedConfig.type || (existing.config && existing.config.type);
-    var currentType=(existing.config && existing.config.type) || existing.type;
-    if(String(nextType||'') !== String(currentType||'')) return false;
-    existing.data=petatoeCloneChartConfig(normalizedConfig.data || {labels:[],datasets:[]});
-    existing.options=petatoeCloneChartConfig(normalizedConfig.options || {});
-    if(existing.config){
-      existing.config.data=existing.data;
-      existing.config.options=existing.options;
-    }
-    existing.update(isSmartTarget ? 'none' : undefined);
-    return true;
-  }catch(e){
-    try{console.warn('[PETATOE chart update]', e);}
-    catch(_e){}
-    return false;
-  }
+  /* PETATOE Phase 2: Chart.js mutates options into internal resolver objects.
+     Updating existing chart instances with cloned resolver-backed options caused
+     runtime warnings/errors such as:
+       - TypeError: t.startsWith is not a function
+       - Ignoring resolver passed as options for scale x/y
+     The stable path is to destroy and recreate the chart instance with a fresh
+     normalized config. This is safer for the current mixed legacy/smart reports
+     chart engine and does not change calculations or data. */
+  return false;
 }
 function chart(id,config){
   var canvas=$(id);
