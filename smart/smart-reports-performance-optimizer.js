@@ -126,18 +126,28 @@
         patchedTab = true;
         return;
       }catch(e){
-        try{ console.warn('[PETATOE Smart Optimizer] global setSmartTab wrapper skipped:', e && e.message ? e.message : e); }catch(_e){}
+        /* Protected global setSmartTab; skip silently. */
       }
     }
 
-    /* Fallback: if a SmartTabs API object exists, wrap that instead. If not, mark
-       patched to stop repeated attempts and avoid noisy console errors. */
+    /* Final polish: PETATOESmartTabs.setSmartTab can also be exposed as a
+       read-only compatibility bridge. Detect that case and skip silently; this
+       optimizer only defers chart rendering and must never create console noise
+       or override protected APIs. */
     try{
       if(window.PETATOESmartTabs && typeof window.PETATOESmartTabs.setSmartTab === 'function' && !window.PETATOESmartTabs.setSmartTab.__petatoeSmartPerfWrapped){
-        window.PETATOESmartTabs.setSmartTab = makeWrappedSetSmartTab(window.PETATOESmartTabs.setSmartTab);
+        var smartTabsDescriptor = null;
+        try{ smartTabsDescriptor = Object.getOwnPropertyDescriptor(window.PETATOESmartTabs, 'setSmartTab'); }catch(_d){ smartTabsDescriptor = null; }
+        if(!smartTabsDescriptor || smartTabsDescriptor.writable || smartTabsDescriptor.configurable){
+          try{
+            window.PETATOESmartTabs.setSmartTab = makeWrappedSetSmartTab(window.PETATOESmartTabs.setSmartTab);
+          }catch(_assignErr){
+            /* Protected by design; leave original function untouched. */
+          }
+        }
       }
-    }catch(e){
-      try{ console.warn('[PETATOE Smart Optimizer] PETATOESmartTabs wrapper skipped:', e && e.message ? e.message : e); }catch(_e){}
+    }catch(_e){
+      /* Non-critical optimizer fallback; do not log warnings for protected APIs. */
     }
     patchedTab = true;
   }
