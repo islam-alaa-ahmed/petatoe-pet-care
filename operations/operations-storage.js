@@ -30,6 +30,8 @@
   var masterDataCache = null;
   var bootStarted = false;
   var bootDone = false;
+  var appointmentsRevision = 0;
+  var masterDataRevision = 0;
   var writeQueue = Promise.resolve();
 
   function client(){
@@ -119,7 +121,7 @@
 
   async function loadMasterSupabase(){
     if(!isClientReady()) return null;
-    var res = await client().from(TABLE_MASTER).select('data,updated_at,created_at').order('updated_at', { ascending:false }).limit(1);
+    var res = await client().from(TABLE_MASTER).select('data,updated_at,created_at').order('updated_at', { ascending:false, nullsFirst:false }).order('created_at', { ascending:false, nullsFirst:false }).limit(1);
     if(res && res.error) throw res.error;
     var row = Array.isArray(res && res.data) && res.data.length ? res.data[0] : null;
     return row && row.data ? row.data : null;
@@ -142,9 +144,15 @@
           }
         }
         if(!isClientReady()) return;
+        var appointmentsBootRevision = appointmentsRevision;
+        var masterBootRevision = masterDataRevision;
         var loaded = await Promise.all([loadAppointmentsSupabase(), loadMasterSupabase()]);
-        appointmentsCache = Array.isArray(loaded[0]) ? loaded[0] : [];
-        masterDataCache = loaded[1] || cloneDefaultMaster();
+        if(appointmentsRevision === appointmentsBootRevision){
+          appointmentsCache = Array.isArray(loaded[0]) ? loaded[0] : [];
+        }
+        if(masterDataRevision === masterBootRevision){
+          masterDataCache = normalizeMasterData(loaded[1] || cloneDefaultMaster());
+        }
         bootDone = true;
         emitChange('boot');
       }catch(e){ warn(e); }
@@ -162,13 +170,17 @@
     bootSupabase();
     if(key === KEYS.appointments){
       appointmentsCache = Array.isArray(value) ? cloneJSON(value) : [];
-      queueWrite(function(){ return replaceAppointmentsSupabase(appointmentsCache); });
+      appointmentsRevision += 1;
+      var snapshot = cloneJSON(appointmentsCache);
+      queueWrite(function(){ return replaceAppointmentsSupabase(snapshot); });
       emitChange('appointments');
       return true;
     }
     if(key === KEYS.masterData){
       masterDataCache = normalizeMasterData(value);
-      queueWrite(function(){ return replaceMasterSupabase(masterDataCache); });
+      masterDataRevision += 1;
+      var snapshotMaster = cloneJSON(masterDataCache);
+      queueWrite(function(){ return replaceMasterSupabase(snapshotMaster); });
       emitChange('masterData');
       return true;
     }
