@@ -305,17 +305,18 @@
       return r.invoice_no || r.item_name || r.client_name || r.total_inc || r.total_ex;
     });
     if(!payload.length) return ok([], { table:'sales_records', inserted:0, source:'sales_import', warning:'NO_VALID_ROWS' });
+    var replaceResult = null;
     if(options.replace){
-      var deleteRes = await deleteAllSalesRecords();
-      if(!deleteRes || !deleteRes.ok){
+      replaceResult = await deleteAllSalesRecords();
+      if(!replaceResult || !replaceResult.ok){
         return {
           ok:false,
           data:null,
-          error: deleteRes && deleteRes.error ? deleteRes.error : { message:'Failed to clear sales_records before replace import' },
+          error: replaceResult && replaceResult.error ? replaceResult.error : 'Failed to clear existing sales_records before replace import',
           table:'sales_records',
           inserted:0,
           replaceRequested:true,
-          replaceCleared:false
+          replaceDeleteResult: replaceResult
         };
       }
     }
@@ -331,7 +332,7 @@
       }
       inserted += part.length;
     }
-    return ok({ rows:inserted }, { table:'sales_records', inserted:inserted, batches:batches.length, source:'sales_import', replaceRequested:!!options.replace, replaceCleared:!!options.replace });
+    return ok({ rows:inserted }, { table:'sales_records', inserted:inserted, batches:batches.length, source:'sales_import', replaceRequested:!!options.replace, replaceDeleteResult:replaceResult });
   }
   async function readSalesRecords(options){
     options = options || {};
