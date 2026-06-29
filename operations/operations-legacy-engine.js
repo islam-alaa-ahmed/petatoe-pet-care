@@ -245,7 +245,7 @@
     var groomer=String(v.groomer||'').trim();
     var driver=String(v.driver||'').trim();
     if(!vehicle&&!groomer&&!driver)return null;
-    return {vehicle:vehicle,groomer:groomer,driver:driver,updatedAt:v.updatedAt||''};
+    return {vehicle:vehicle,groomer:groomer,driver:driver,disabled:!!v.disabled,updatedAt:v.updatedAt||''};
   }
   function normalizeVehicleAssignments(list){
     var map={};
@@ -540,23 +540,54 @@
     };
     reader.readAsArrayBuffer(file);
   }
-  function vehicleAssignmentMap(){var m={};(readMasterData().vehicleAssignments||[]).forEach(function(v){if(v&&v.vehicle)m[v.vehicle]=v});return m}
+  function activeVehicleAssignments(){return (readMasterData().vehicleAssignments||[]).map(cleanVehicleAssignment).filter(function(v){return v&&v.vehicle&&!v.disabled&&v.groomer&&v.driver})}
+  function vehicleAssignmentMap(){var m={};activeVehicleAssignments().forEach(function(v){if(v&&v.vehicle)m[v.vehicle]=v});return m}
   function applyVehicleStaffAssignment(){
-    var v=val('appointmentVehicle'); if(!v)return;
-    var row=vehicleAssignmentMap()[v]; if(!row)return;
-    if(row.groomer)setVal('appointmentGroomer',row.groomer);
-    if(row.driver)setVal('appointmentDriver',row.driver);
+    var v=val('appointmentVehicle');
+    if(!v){setVal('appointmentGroomer','');setVal('appointmentDriver','');return;}
+    var row=vehicleAssignmentMap()[v];
+    if(!row){setVal('appointmentGroomer','');setVal('appointmentDriver','');return;}
+    setVal('appointmentGroomer',row.groomer||'');
+    setVal('appointmentDriver',row.driver||'');
   }
   function saveVehicleAssignment(){
     var vehicle=val('appointmentMasterVehicle'), groomer=val('appointmentMasterGroomer'), driver=val('appointmentMasterDriver');
     if(!vehicle){alert('اختر السيارة');return;}
-    var master=readMasterData(), done=false;
+    if(!groomer){alert('اختر الجرومر قبل حفظ الربط');return;}
+    if(!driver){alert('اختر السائق قبل حفظ الربط');return;}
+    var master=readMasterData(), done=false, previousDisabled=false;
     master.vehicles=normalizeNamedList((master.vehicles||[]).concat([vehicle]));
-    if(groomer)master.groomers=normalizeNamedList((master.groomers||[]).concat([groomer]));
-    if(driver)master.drivers=normalizeNamedList((master.drivers||[]).concat([driver]));
-    master.vehicleAssignments=(master.vehicleAssignments||[]).map(function(v){if(String(v.vehicle)===String(vehicle)){done=true;return {vehicle:vehicle,groomer:groomer,driver:driver,updatedAt:new Date().toISOString()};}return v;});
-    if(!done)master.vehicleAssignments.push({vehicle:vehicle,groomer:groomer,driver:driver,updatedAt:new Date().toISOString()});
+    master.groomers=normalizeNamedList((master.groomers||[]).concat([groomer]));
+    master.drivers=normalizeNamedList((master.drivers||[]).concat([driver]));
+    master.vehicleAssignments=(master.vehicleAssignments||[]).map(function(v){
+      if(String(v.vehicle)===String(vehicle)){
+        done=true; previousDisabled=!!v.disabled;
+        return {vehicle:vehicle,groomer:groomer,driver:driver,disabled:previousDisabled,updatedAt:new Date().toISOString()};
+      }
+      return v;
+    });
+    if(!done)master.vehicleAssignments.push({vehicle:vehicle,groomer:groomer,driver:driver,disabled:false,updatedAt:new Date().toISOString()});
     writeMasterData(master);renderMasterData();refreshLookupSelects();toast('تم حفظ ربط السيارة بالموظفين');
+  }
+  function editVehicleAssignment(vehicle){
+    vehicle=String(vehicle||'').trim(); if(!vehicle)return;
+    var row=(readMasterData().vehicleAssignments||[]).map(cleanVehicleAssignment).filter(function(v){return v&&String(v.vehicle)===vehicle})[0];
+    if(!row){toast('لم يتم العثور على الربط');return;}
+    setVal('appointmentMasterVehicle',row.vehicle||'');
+    setVal('appointmentMasterGroomer',row.groomer||'');
+    setVal('appointmentMasterDriver',row.driver||'');
+    toast('تم تحميل الربط للتعديل');
+  }
+  function toggleVehicleAssignment(vehicle){
+    vehicle=String(vehicle||'').trim(); if(!vehicle)return;
+    var master=readMasterData(), found=false, disabled=false;
+    master.vehicleAssignments=(master.vehicleAssignments||[]).map(function(v){
+      v=cleanVehicleAssignment(v);
+      if(v&&String(v.vehicle)===vehicle){found=true;v.disabled=!v.disabled;disabled=!!v.disabled;v.updatedAt=new Date().toISOString();}
+      return v;
+    }).filter(Boolean);
+    if(!found){toast('لم يتم العثور على الربط');return;}
+    writeMasterData(master);renderMasterData();refreshLookupSelects();toast(disabled?'تم تعطيل الربط':'تم إلغاء تعطيل الربط');
   }
   function removeVehicleAssignment(vehicle){
     if(!confirm('حذف ربط هذه السيارة؟'))return;
@@ -653,7 +684,11 @@
       safeHtml(lists,'<div><b>السيارات</b><div class="appointments-master-list">'+vehiclePills+'</div></div><div><b>الجرومرز</b><div class="appointments-master-list">'+groomerPills+'</div></div><div><b>السائقين</b><div class="appointments-master-list">'+driverPills+'</div></div>','operations resources lists');
     }
     var body=byId('appointmentMasterVehicleStaffList'); if(!body)return;
-    var html=(master.vehicleAssignments||[]).length?(master.vehicleAssignments||[]).map(function(r){return '<tr><td>'+esc(r.vehicle||'-')+'</td><td>'+esc(r.groomer||'-')+'</td><td>'+esc(r.driver||'-')+'</td><td><button type="button" class="appointments-master-action danger" data-op-click="removeVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">حذف الربط</button></td></tr>'}).join(''):'<tr><td colspan="4" class="appointments-empty appointments-master-empty">لا توجد ربط سيارات حتى الآن</td></tr>';
+    var assignmentRows=(master.vehicleAssignments||[]).map(cleanVehicleAssignment).filter(Boolean);
+    var html=assignmentRows.length?assignmentRows.map(function(r){
+      var disabled=!!r.disabled, status=disabled?'معطل':'نشط', toggleLabel=disabled?'إلغاء التعطيل':'تعطيل';
+      return '<tr class="'+(disabled?'appointments-master-disabled':'')+'"><td>'+esc(r.vehicle||'-')+'</td><td>'+esc(r.groomer||'-')+'</td><td>'+esc(r.driver||'-')+'</td><td>'+esc(status)+'</td><td><button type="button" class="appointments-master-action" data-op-click="editVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">تعديل</button><button type="button" class="appointments-master-action" data-op-click="toggleVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">'+toggleLabel+'</button><button type="button" class="appointments-master-action danger" data-op-click="removeVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">حذف الربط</button></td></tr>';
+    }).join(''):'<tr><td colspan="5" class="appointments-empty appointments-master-empty">لا توجد ربط سيارات حتى الآن</td></tr>';
     safeHtml(body,html,'operations master vehicle assignments table');
   }
   function renderMasterData(){
@@ -947,8 +982,7 @@
     return pad(h)+':00';
   }
   function assignedVehicleNames(){
-    var master=readMasterData();
-    var names=(master.vehicleAssignments||[]).map(function(v){return v&&v.vehicle||''}).concat(master.vehicles||[]).filter(Boolean);
+    var names=activeVehicleAssignments().map(function(v){return v&&v.vehicle||''}).filter(Boolean);
     return uniqueSorted(names);
   }
   function refreshTimeSelects(){
@@ -958,7 +992,7 @@
   }
   function refreshLookupSelects(){
     var g=byId('appointmentGroomer'), d=byId('appointmentDriver'), v=byId('appointmentVehicle');
-    var master=readMasterData(), groomers=normalizeNamedList((master.groomers||[]).concat((master.vehicleAssignments||[]).map(function(x){return x.groomer})).filter(Boolean)), drivers=normalizeNamedList((master.drivers||[]).concat((master.vehicleAssignments||[]).map(function(x){return x.driver})).filter(Boolean)), assignedCars=assignedVehicleNames();
+    var activeLinks=activeVehicleAssignments(), groomers=normalizeNamedList(activeLinks.map(function(x){return x.groomer}).filter(Boolean)), drivers=normalizeNamedList(activeLinks.map(function(x){return x.driver}).filter(Boolean)), assignedCars=assignedVehicleNames();
     if(g){var old=g.value;safeHtml(g,optionList(groomers,'اختر الجرومر',old),'operations groomer select')}
     if(d){var oldd=d.value;safeHtml(d,optionList(drivers,'اختر السائق',oldd),'operations driver select')}
     if(v){var oldv=v.value;safeHtml(v,optionList(assignedCars,'اختر السيارة',oldv),'operations vehicle select')}
@@ -2742,7 +2776,7 @@
     }
   }catch(e){}
 
-  var appointmentsPublicApi={setTab:setTab,clearForm:clearForm,saveAppointment:saveAppointment,render:render,edit:edit,remove:remove,changeStatus:changeStatus,resetFilters:resetFilters,setQuickRange:setQuickRange,setCalendarView:setCalendarView,setFinanceReportFilter:setFinanceReportFilter,resetFinanceReportFilters:resetFinanceReportFilters,showMoreFinanceReportRows:showMoreFinanceReportRows,setAppointmentLocalReportFilter:setAppointmentLocalReportFilter,resetAppointmentLocalReportFilters:resetAppointmentLocalReportFilters,showMoreAppointmentLocalReportRows:showMoreAppointmentLocalReportRows,applyCustomerSuggestion:applyCustomerSuggestion,refreshPetSuggestions:refreshPetSuggestions,applyPetSuggestion:applyPetSuggestion,newCustomer:newCustomer,refreshBreedOptions:refreshBreedOptions,addMasterItem:addMasterItem,addBreed:addBreed,removeMasterItem:removeMasterItem,editMasterItem:editMasterItem,resetMasterData:resetMasterData,setMasterSection:setMasterSection,selectCustomerProfile:selectCustomerProfile,setCustomerSearch:setCustomerSearch,clearCustomerSearch:clearCustomerSearch,refreshCustomersCrm:refreshCustomersCrm,exportCustomersDatabaseReportExcel:exportCustomersDatabaseReportExcel,setCustomerDatabaseReportSearch:setCustomerDatabaseReportSearch,addMasterCustomer:addMasterCustomer,editMasterCustomer:editMasterCustomer,removeMasterCustomer:removeMasterCustomer,triggerMasterCustomersExcelImport:triggerMasterCustomersExcelImport,handleMasterCustomersExcelImport:handleMasterCustomersExcelImport,exportMasterCustomersExcel:exportMasterCustomersExcel,addMasterService:addMasterService,triggerMasterServicesExcelImport:triggerMasterServicesExcelImport,handleMasterServicesExcelImport:handleMasterServicesExcelImport,exportMasterServicesExcel:exportMasterServicesExcel,addAppointmentServiceRow:addAppointmentServiceRow,removeAppointmentServiceRow:removeAppointmentServiceRow,onAppointmentServiceChange:onAppointmentServiceChange,recalculateAppointmentServices:recalculateAppointmentServices,addAppointmentAnimalRow:addAppointmentAnimalRow,removeAppointmentAnimalRow:removeAppointmentAnimalRow,onAppointmentAnimalTypeChange:onAppointmentAnimalTypeChange,addOperationsVehicle:addOperationsVehicle,addOperationsDriver:addOperationsDriver,addOperationsGroomer:addOperationsGroomer,removeOperationsVehicle:removeOperationsVehicle,removeOperationsDriver:removeOperationsDriver,removeOperationsGroomer:removeOperationsGroomer,saveVehicleAssignment:saveVehicleAssignment,removeVehicleAssignment:removeVehicleAssignment,applyVehicleStaffAssignment:applyVehicleStaffAssignment,setDispatchDateToday:setDispatchDateToday,setDailyOpsDateToday:setDailyOpsDateToday,printDailyOperations:printDailyOperations,setVehicleOpsDateToday:setVehicleOpsDateToday,renderVehicleOperations:renderVehicleOperations,renderVehicleExecutionReports:renderVehicleExecutionReports,renderOperationsKpiDashboard:renderOperationsKpiDashboard,setVehicleOpsViewTab:setVehicleOpsViewTab,selectVehicleAppointment:selectVehicleAppointment,setVehicleStatusById:setVehicleStatusById,setVehicleStatusByIndex:setVehicleStatusByIndex,nextVehicleStatusById:nextVehicleStatusById,nextVehicleStatusByIndex:nextVehicleStatusByIndex,saveVehicleSessionById:saveVehicleSessionById,saveVehicleSessionByIndex:saveVehicleSessionByIndex,closeVehicleSessionById:closeVehicleSessionById,reopenVehicleSessionById:reopenVehicleSessionById,confirmVehicleSessionById:confirmVehicleSessionById,canVehicleOpsAction:canVehicleOpsAction,handlePaymentAttachment:handlePaymentAttachment,openVehicleDirectionById:openVehicleDirectionById,showAppointmentDetails:showAppointmentDetails,closeAppointmentDetails:closeAppointmentDetails};
+  var appointmentsPublicApi={setTab:setTab,clearForm:clearForm,saveAppointment:saveAppointment,render:render,edit:edit,remove:remove,changeStatus:changeStatus,resetFilters:resetFilters,setQuickRange:setQuickRange,setCalendarView:setCalendarView,setFinanceReportFilter:setFinanceReportFilter,resetFinanceReportFilters:resetFinanceReportFilters,showMoreFinanceReportRows:showMoreFinanceReportRows,setAppointmentLocalReportFilter:setAppointmentLocalReportFilter,resetAppointmentLocalReportFilters:resetAppointmentLocalReportFilters,showMoreAppointmentLocalReportRows:showMoreAppointmentLocalReportRows,applyCustomerSuggestion:applyCustomerSuggestion,refreshPetSuggestions:refreshPetSuggestions,applyPetSuggestion:applyPetSuggestion,newCustomer:newCustomer,refreshBreedOptions:refreshBreedOptions,addMasterItem:addMasterItem,addBreed:addBreed,removeMasterItem:removeMasterItem,editMasterItem:editMasterItem,resetMasterData:resetMasterData,setMasterSection:setMasterSection,selectCustomerProfile:selectCustomerProfile,setCustomerSearch:setCustomerSearch,clearCustomerSearch:clearCustomerSearch,refreshCustomersCrm:refreshCustomersCrm,exportCustomersDatabaseReportExcel:exportCustomersDatabaseReportExcel,setCustomerDatabaseReportSearch:setCustomerDatabaseReportSearch,addMasterCustomer:addMasterCustomer,editMasterCustomer:editMasterCustomer,removeMasterCustomer:removeMasterCustomer,triggerMasterCustomersExcelImport:triggerMasterCustomersExcelImport,handleMasterCustomersExcelImport:handleMasterCustomersExcelImport,exportMasterCustomersExcel:exportMasterCustomersExcel,addMasterService:addMasterService,triggerMasterServicesExcelImport:triggerMasterServicesExcelImport,handleMasterServicesExcelImport:handleMasterServicesExcelImport,exportMasterServicesExcel:exportMasterServicesExcel,addAppointmentServiceRow:addAppointmentServiceRow,removeAppointmentServiceRow:removeAppointmentServiceRow,onAppointmentServiceChange:onAppointmentServiceChange,recalculateAppointmentServices:recalculateAppointmentServices,addAppointmentAnimalRow:addAppointmentAnimalRow,removeAppointmentAnimalRow:removeAppointmentAnimalRow,onAppointmentAnimalTypeChange:onAppointmentAnimalTypeChange,addOperationsVehicle:addOperationsVehicle,addOperationsDriver:addOperationsDriver,addOperationsGroomer:addOperationsGroomer,removeOperationsVehicle:removeOperationsVehicle,removeOperationsDriver:removeOperationsDriver,removeOperationsGroomer:removeOperationsGroomer,saveVehicleAssignment:saveVehicleAssignment,editVehicleAssignment:editVehicleAssignment,toggleVehicleAssignment:toggleVehicleAssignment,removeVehicleAssignment:removeVehicleAssignment,applyVehicleStaffAssignment:applyVehicleStaffAssignment,setDispatchDateToday:setDispatchDateToday,setDailyOpsDateToday:setDailyOpsDateToday,printDailyOperations:printDailyOperations,setVehicleOpsDateToday:setVehicleOpsDateToday,renderVehicleOperations:renderVehicleOperations,renderVehicleExecutionReports:renderVehicleExecutionReports,renderOperationsKpiDashboard:renderOperationsKpiDashboard,setVehicleOpsViewTab:setVehicleOpsViewTab,selectVehicleAppointment:selectVehicleAppointment,setVehicleStatusById:setVehicleStatusById,setVehicleStatusByIndex:setVehicleStatusByIndex,nextVehicleStatusById:nextVehicleStatusById,nextVehicleStatusByIndex:nextVehicleStatusByIndex,saveVehicleSessionById:saveVehicleSessionById,saveVehicleSessionByIndex:saveVehicleSessionByIndex,closeVehicleSessionById:closeVehicleSessionById,reopenVehicleSessionById:reopenVehicleSessionById,confirmVehicleSessionById:confirmVehicleSessionById,canVehicleOpsAction:canVehicleOpsAction,handlePaymentAttachment:handlePaymentAttachment,openVehicleDirectionById:openVehicleDirectionById,showAppointmentDetails:showAppointmentDetails,closeAppointmentDetails:closeAppointmentDetails};
   window.PETATOEOperationsAppointmentsInternal={
     version:'OPS-15-appointments-actions-adapter',
     actionsAdapter:{

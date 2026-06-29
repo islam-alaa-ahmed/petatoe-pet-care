@@ -296,6 +296,7 @@
         vehicle: String(v.vehicle || v.car || '').trim(),
         groomer: String(v.groomer || '').trim(),
         driver: String(v.driver || '').trim(),
+        disabled: !!v.disabled,
         updatedAt: v.updatedAt || ''
       };
       if(row.vehicle) map[row.vehicle] = row;
