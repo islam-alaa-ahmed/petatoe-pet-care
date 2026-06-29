@@ -897,7 +897,16 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 </div>
 <div class="appointments-master-box" data-master-panel="vehicleStaff">
 <h4>🚐 بيانات السيارات والموظفين</h4>
-<p class="appointments-master-note">اختر السيارة واربطها بجرومر وسائق. عند اختيار السيارة في الموعد سيتم تعبئة الجرومر والسائق تلقائيًا من هذا الربط.</p>
+<p class="appointments-master-note">أضف سيارات وسائقين وجرومرز خاصة بإدارة التشغيل، ثم اربط كل سيارة بسائق وجرومر. عند اختيار السيارة في شاشة إضافة موعد سيتم تعبئة السائق والجرومر تلقائيًا من هذا الربط.</p>
+<div class="appointments-master-add appointments-master-vehicle-add">
+<input id="appointmentNewOperationVehicle" placeholder="أضف سيارة جديدة"/>
+<button class="btn btn-primary" data-op-click="addOperationsVehicle" type="button">إضافة سيارة</button>
+<input id="appointmentNewOperationGroomer" placeholder="أضف جرومر جديد"/>
+<button class="btn btn-primary" data-op-click="addOperationsGroomer" type="button">إضافة جرومر</button>
+<input id="appointmentNewOperationDriver" placeholder="أضف سائق جديد"/>
+<button class="btn btn-primary" data-op-click="addOperationsDriver" type="button">إضافة سائق</button>
+</div>
+<div class="appointments-master-resource-lists" id="appointmentOperationResourcesList"></div>
 <div class="appointments-master-add appointments-master-vehicle-add">
 <select id="appointmentMasterVehicle"><option value="">اختر السيارة</option></select>
 <select id="appointmentMasterGroomer"><option value="">اختر الجرومر</option></select>
@@ -2795,42 +2804,18 @@ function renderServices(data){let y=defaultYear(data),yd=byYear(data,y),st=Objec
 
 /* === PETATOE v3.8.18 MANUAL MULTI-ITEM INVOICE ENTRY === */
 const MANUAL_INVOICE_START=20000001;
-const MANUAL_INVOICE_YEAR_SERIAL_WIDTH=5;
 let entryItemRowSeq=0;
-function getManualInvoiceSerialYear(){
-  const el=(typeof document!=='undefined')?document.getElementById('e_date'):null;
-  const raw=String((el&&el.value)||'').trim();
-  const m=raw.match(/^(\d{4})/);
-  const y=m?parseInt(m[1],10):(new Date()).getFullYear();
-  return Number.isFinite(y)&&y>1900?y:(new Date()).getFullYear();
-}
-function getManualInvoiceYearPrefix(year){
-  return String(year).slice(-2);
-}
-function getManualInvoiceYearStart(year){
-  return parseInt(getManualInvoiceYearPrefix(year)+'00001',10);
-}
-function getManualInvoiceYearEnd(year){
-  return parseInt(getManualInvoiceYearPrefix(year)+'99999',10);
-}
-function getNextManualInvoiceNo(year){
-  const targetYear=Number.isFinite(parseInt(year,10))?parseInt(year,10):getManualInvoiceSerialYear();
-  const start=getManualInvoiceYearStart(targetYear);
-  const end=getManualInvoiceYearEnd(targetYear);
-  const nums=(records||[]).map(function(r){
-    return parseInt(String(r&&r.invoice||'').replace(/[^0-9]/g,''),10);
-  }).filter(function(n){
-    return Number.isFinite(n)&&n>=start&&n<=end;
-  });
-  const maxExisting=nums.length?Math.max.apply(null,nums):(start-1);
-  return String(maxExisting+1);
+function getNextManualInvoiceNo(){
+  const nums=(records||[]).map(r=>parseInt(String(r.invoice||'').replace(/[^0-9]/g,''),10)).filter(n=>Number.isFinite(n)&&n>=MANUAL_INVOICE_START);
+  let maxExisting=nums.length?Math.max(...nums):(MANUAL_INVOICE_START-1);
+  let stored=parseInt(((window.PETATOEStorage&&window.PETATOEStorage.get)?window.PETATOEStorage.get('petatoe_manual_invoice_next',MANUAL_INVOICE_START):MANUAL_INVOICE_START),10);
+  let next=Math.max(maxExisting+1,Number.isFinite(stored)?stored:MANUAL_INVOICE_START,MANUAL_INVOICE_START);
+  while((records||[]).some(r=>String(r.invoice||'')===String(next)))next++;
+  return String(next);
 }
 function setNextManualInvoiceAfter(inv){
-  try{
-    if(window.PETATOEStorage&&window.PETATOEStorage.remove)window.PETATOEStorage.remove('petatoe_manual_invoice_next');
-  }catch(e){
-    window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('index.html',e);
-  }
+  const n=parseInt(String(inv||'').replace(/[^0-9]/g,''),10);
+  if(Number.isFinite(n))if(window.PETATOEStorage&&window.PETATOEStorage.set)window.PETATOEStorage.set('petatoe_manual_invoice_next',String(Math.max(n+1,MANUAL_INVOICE_START)));
 }
 function entryCommonHtml(){
   return `
@@ -2898,10 +2883,7 @@ function buildForm(){
     <div id="entryInvoiceTotals" class="entry-invoice-totals"></div>
   </div>`;
   $('e_invoice').value=getNextManualInvoiceNo();
-  $('e_date').addEventListener('change',()=>{
-    $('e_month').value=normalizeMonth('', $('e_date').value);
-    if(!editingId&&$('e_invoice'))$('e_invoice').value=getNextManualInvoiceNo();
-  });
+  $('e_date').addEventListener('change',()=>{$('e_month').value=normalizeMonth('', $('e_date').value)});
   document.querySelectorAll('.entry-item-row').forEach(wireEntryItemRow);
   updateEntryInvoiceTotal();
 }
