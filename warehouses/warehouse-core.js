@@ -74,7 +74,11 @@
   function petStorageReadJSON(key,fallback){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')return window.PETATOEStorage.readJSON(key,fallback);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return fallback}
   function petStorageWriteJSON(key,value){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.writeJSON==='function')return window.PETATOEStorage.writeJSON(key,value);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return false}
   function petStorageGet(key,fallback){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.get==='function')return window.PETATOEStorage.get(key,fallback);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return fallback}
-  function petStorageSet(key,value){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.set==='function')return window.PETATOEStorage.set(key,value);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return false}
+  function petStorageSet(key,value){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.set==='function')return window.PETATOEStorage.set(key,value);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return value}
+  function petStorageRemove(key){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.remove==='function')return window.PETATOEStorage.remove(key);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return null}
+  if(!window.petStorageGet) window.petStorageGet=petStorageGet;
+  if(!window.petStorageSet) window.petStorageSet=petStorageSet;
+  if(!window.petStorageRemove) window.petStorageRemove=petStorageRemove;
   /* PETATOE v3.11.13 - Single source for warehouse items */
   window.PETATOEWarehouseItems = window.PETATOEWarehouseItems || {
     key: ITEM_KEY,
@@ -759,43 +763,6 @@
   function low(v){return whInvoiceItemsNorm(v).toLowerCase()}
   function num(v){return window.PETATOENumber?PETATOENumber.num(v):(parseFloat(String(v==null?'':v).replace(/,/g,''))||0)}
   function fmt(v){return window.PETATOENumber?PETATOENumber.qty(v):(function(n){if(Math.abs(n)<0.000001)n=0; return n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2})})(num(v))}
-  /* PETATOE Phase 3 Legacy Storage Scope Fix
-     The low-stock alerts module is a separate IIFE and cannot see the storage
-     helper functions declared in the previous warehouse module scope. Keep this
-     module self-contained and prefer PETATOEStorage, with safe localStorage
-     fallback only for legacy warehouse settings. */
-  function petStorageReadJSON(key,fallback){
-    try{
-      if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')return window.PETATOEStorage.readJSON(key,fallback);
-      var raw=window.localStorage?localStorage.getItem(String(key||'')):null;
-      if(raw==null||raw==='')return fallback;
-      var parsed=JSON.parse(raw);
-      return parsed==null?fallback:parsed;
-    }catch(e){
-      try{window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('warehouses/warehouse-core.js',e);}catch(_e){}
-      return fallback;
-    }
-  }
-  function petStorageGet(key,fallback){
-    try{
-      if(window.PETATOEStorage&&typeof window.PETATOEStorage.get==='function')return window.PETATOEStorage.get(key,fallback);
-      var raw=window.localStorage?localStorage.getItem(String(key||'')):null;
-      return raw==null?fallback:raw;
-    }catch(e){
-      try{window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('warehouses/warehouse-core.js',e);}catch(_e){}
-      return fallback;
-    }
-  }
-  function petStorageSet(key,value){
-    try{
-      if(window.PETATOEStorage&&typeof window.PETATOEStorage.set==='function')return window.PETATOEStorage.set(key,value);
-      if(window.localStorage)localStorage.setItem(String(key||''),String(value==null?'':value));
-      return true;
-    }catch(e){
-      try{window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('warehouses/warehouse-core.js',e);}catch(_e){}
-      return false;
-    }
-  }
   function warehouseAlertsReadArray(key){try{var a=petStorageReadJSON(key,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
   function petatoe_v380_warehouse_alerts_clean_fina_getItems(){return window.PETATOEWarehouseItems.getAll()}
   function petBlock7434_getTx(){return warehouseAlertsReadArray(TX_KEY)}
