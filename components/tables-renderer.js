@@ -333,5 +333,6 @@
   Tables.attachShowMore = Tables.attachShowMore || attachShowMore;
   Tables.clearCache = Tables.clearCache || clearCache;
   Tables.rowsForExport = Tables.rowsForExport || rowsForExport;
+  window.PETATOETables = window.PETATOETables || {};
   Object.assign(window.PETATOETables, Tables);
 })(window, document);
