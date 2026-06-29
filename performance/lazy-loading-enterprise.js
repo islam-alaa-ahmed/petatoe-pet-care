@@ -114,7 +114,7 @@
   var ENTERPRISE_CANDIDATES = [
     { area: 'operations', src: 'operations/operations-legacy-engine.js', priority: 'high', mode: 'candidate-only', reason: 'largest legacy operational surface' },
     { area: 'smart-reports', src: 'smart/smart-reports-core.js', priority: 'high', mode: 'candidate-only', reason: 'heavy reports core; requires route-level guard before extraction' },
-    { area: 'sales-invoice', src: 'reports/sales-invoice-report.js', priority: 'medium', mode: 'candidate-only', reason: 'large report renderer; export/report actions only' },
+    { area: 'sales-invoice', src: 'sales/sales-invoice-report.js', priority: 'medium', mode: 'candidate-only', reason: 'large report renderer; export/report actions only' },
     { area: 'warehouse', src: 'warehouses/warehouse-core.js', priority: 'medium', mode: 'candidate-only', reason: 'warehouse module surface' },
     { area: 'payroll', src: 'payroll/payroll-core.js', priority: 'medium', mode: 'candidate-only', reason: 'payroll module surface' },
     { area: 'chart', src: 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js', priority: 'medium', mode: 'library-candidate', reason: 'large library used only where charts render' },
