@@ -6,7 +6,7 @@
   'use strict';
   if(window.PETATOEPayrollReadFacade && window.PETATOEPayrollReadFacade.__supabaseOnly) return;
 
-  var MASTER_ROW_ID = 'payroll_core';
+  var MASTER_ROW_ID = 'payroll_master';
   var DEFAULT_JOB_TYPES = ['مدير','محاسب','مندوب مبيعات','جروومر','سائق','إداري'];
   var cache = {
     employees: [],
