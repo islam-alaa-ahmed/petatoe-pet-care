@@ -375,7 +375,11 @@
   function warehouseUiFillSelect(el,arr,allLabel){if(!el)return;var cur=el.value;el.textContent='';if(allLabel)warehouseUiAppendOption(el,'all',allLabel);(arr||[]).forEach(function(v){warehouseUiAppendOption(el,v,v)});if(cur&&(cur==='all'||(arr||[]).indexOf(cur)>-1))el.value=cur}
   function downloadCsv(name,rows){var lines=rows.map(function(row){return row.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}).join(',')});var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name.replace(/[\\/:*?"<>|]/g,'_');a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
   function openWarehouseTab(name){qsa('#warehouses .wh-tabs button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-wh-tab')===name)});qsa('#warehouses .wh-tab-panel').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-wh-tab-panel')===name)});renderWarehouseUIAll();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:tabchange',{detail:{tab:name}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}try{document.querySelector('#warehouses .wh-tabs').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
-  function ensureItemDefaults(){try{if(WarehouseSupabaseStore&&typeof WarehouseSupabaseStore.isReady==='function'&&!WarehouseSupabaseStore.isReady())return;}catch(_e){}var a=warehouseUiGetItems(), existing={};a.forEach(function(x){if(String(x.name||'').trim())existing[String(x.name).trim()]=1});var m={};petBlock6857_getTx().forEach(function(t){if(t.item)m[String(t.item).trim()]=1});invoiceRows().forEach(function(r){var it=invoiceItemName(r);if(it)m[it]=1});var names=Object.keys(m).filter(function(n){return n&&!existing[n]});if(!names.length)return;var start=0;a.forEach(function(x){var mm=String(x.code||x.id||'').match(/(\d+)/);if(mm)start=Math.max(start,parseInt(mm[1],10)||0)});names.sort().forEach(function(n,i){var code='ITM-'+String(start+i+1).padStart(4,'0');a.push({id:'ITM-AUTO-'+Date.now()+'-'+i,code:code,name:n,type:'service',category:'من الفواتير',unit:'خدمة',min:0,notes:'تم إنشاؤه تلقائياً من الفواتير المرفوعة مسبقاً - افتراضي خدمي ويمكن تحويله إلى مخزني من دليل الأصناف',status:'active',createdAt:new Date().toISOString()})});warehouseUiSetItems(a)}
+  function ensureItemDefaults(){
+    /* PETATOE Warehouse Supabase Lock: invoice-derived item auto-creation is disabled.
+       Warehouse items are now created only by manual save or Excel import template. */
+    return;
+  }
   function nextCode(){var max=0;warehouseUiGetItems().forEach(function(x){var m=String(x.code||x.id||'').match(/(\d+)/);if(m)max=Math.max(max,parseInt(m[1],10)||0)});return 'ITM-'+String(max+1).padStart(4,'0')}
   function clearItemForm(){editItemId='';try{window.PETATOEWarehouseUI&&(window.PETATOEWarehouseUI.__editingItemId=false)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}['whItemCode','whItemName','whItemCategory','whItemUnit','whItemMin','whItemNotes'].forEach(function(id){var e=byId(id);if(e)e.value=''});var t=byId('whItemType');if(t)t.value='service';var c=byId('whItemCode');if(c)c.value=nextCode();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-form-cleared'))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
   async function saveItem(){
@@ -449,6 +453,12 @@
   'use strict';
   if(window.__PETATOE_WH_V369_ITEMS_VISIBLE_EDIT_FIXED__) return;
   window.__PETATOE_WH_V369_ITEMS_VISIBLE_EDIT_FIXED__ = true;
+
+  window.PETATOESyncInvoiceItemsAsServices = function(){
+    try{console.info('PETATOE Warehouse: invoice item auto-sync is disabled. Use Excel template: الكود / اسم الصنف / النوع.');}catch(_e){}
+    return 0;
+  };
+  return;
 
   var ITEM_KEY='warehouseItems';
   var ITEM_KEYS=['item','service','description','product','productName','itemName','name','اسم الصنف','الصنف','الخدمة','الخدمه','اسم الخدمة','الوصف','البيان'];
@@ -659,8 +669,9 @@
   var XLS_INPUT_ID = 'whExcelItemsImportInput';
   var XLS_BTN_ID = 'whExcelItemsImportBtn';
   var XLS_TEMPLATE_BTN_ID = 'whExcelItemsTemplateBtn';
-  var ITEM_KEYS = ['اسم الصنف','الصنف','الخدمة','الخدمه','اسم الخدمة','الوصف','البيان','item','Item','ITEM','service','Service','description','Description','product','Product','productName','itemName','name','Name'];
-  var TYPE_KEYS = ['نوع الصنف','النوع','type','Type','itemType','Item Type'];
+  var CODE_KEYS = ['الكود','كود الصنف','item_code','itemCode','code','Code','CODE'];
+  var ITEM_KEYS = ['اسم الصنف','الصنف','item','Item','ITEM','itemName','name','Name'];
+  var TYPE_KEYS = ['النوع','نوع الصنف','type','Type','itemType','Item Type'];
   var CAT_KEYS = ['التصنيف','الفئة','category','Category','group','Group'];
   var UNIT_KEYS = ['الوحدة','unit','Unit','uom','UOM'];
   var MIN_KEYS = ['الحد الأدنى','حد أدنى','min','Min','minimum','Minimum'];
@@ -739,9 +750,9 @@
 
   function downloadTemplate(){
     var rows=[
-      ['اسم الصنف','نوع الصنف','التصنيف','الوحدة','الحد الأدنى','ملاحظات'],
-      ['شامبو عناية','مخزني','عناية','عبوة','5','مثال صنف مخزني'],
-      ['قص شعر كلب','خدمي','خدمات','خدمة','0','الخدمي لا يدخل المخزون']
+      ['الكود','اسم الصنف','النوع'],
+      ['ITM-0001','شامبو عناية','مخزني'],
+      ['ITM-0002','قص شعر كلب','خدمي']
     ];
     if(window.XLSX){
       var wb=XLSX.utils.book_new();
@@ -767,45 +778,75 @@
     reader.onload=function(ev){
       try{
         var wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-        importRows(rowsFromWorkbook(wb));
+        Promise.resolve(importRows(rowsFromWorkbook(wb))).catch(function(err){console.error(err);alert('فشل حفظ أصناف Excel: '+(err&&err.message?err.message:String(err)));});
       }catch(err){console.error(err);alert('تعذر قراءة ملف Excel. تأكد من صيغة الملف.');}
     };
     reader.readAsArrayBuffer(file);
   }
-  function importRows(rows){
+  async function ensureWarehouseStoreReady(){
+    try{
+      if(window.PETATOEWarehouseDataStore && typeof window.PETATOEWarehouseDataStore.isReady==='function' && !window.PETATOEWarehouseDataStore.isReady() && typeof window.PETATOEWarehouseDataStore.load==='function'){
+        await window.PETATOEWarehouseDataStore.load();
+      }
+    }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}
+  }
+  function normalizeItemCode(v){
+    v=whInvoiceItemsNorm(v).toUpperCase();
+    return v.replace(/\s+/g,'');
+  }
+  function isValidItemType(v){
+    v=low(v);
+    return v==='خدمي'||v==='مخزني'||v==='service'||v==='stock'||v==='inventory'||v==='stored'||v==='warehouse';
+  }
+  async function importRows(rows){
     rows=Array.isArray(rows)?rows:[];
     if(!rows.length){alert('ملف Excel لا يحتوي على بيانات.');return}
+    await ensureWarehouseStoreReady();
     var items=petatoe_v372_warehouse_stock_search_exce_getItems();
-    var byName={};
-    items.forEach(function(x){var k=low(x&&x.name);if(k)byName[k]=x});
-    var added=0, updated=0, skipped=0;
-    rows.forEach(function(r){
+    var byCode={};
+    items.forEach(function(x){var k=normalizeItemCode((x&&x.code)||(x&&x.item_code));if(k)byCode[k]=x});
+    var added=0, updated=0, skipped=0, errors=[];
+    rows.forEach(function(r,idx){
+      var rowNo=idx+2;
+      var code=normalizeItemCode(getVal(r,CODE_KEYS));
       var name=whInvoiceItemsNorm(getVal(r,ITEM_KEYS));
-      if(!name){skipped++;return}
-      var key=low(name);
-      var type=classifyType(getVal(r,TYPE_KEYS));
-      var cat=whInvoiceItemsNorm(getVal(r,CAT_KEYS)) || (type==='stock'?'مخزني':'خدمي');
-      var unit=whInvoiceItemsNorm(getVal(r,UNIT_KEYS)) || (type==='stock'?'قطعة':'خدمة');
-      var min=num(getVal(r,MIN_KEYS));
-      var notes=whInvoiceItemsNorm(getVal(r,NOTES_KEYS));
-      if(byName[key]){
-        var x=byName[key];
+      var typeRaw=getVal(r,TYPE_KEYS);
+      if(!code || !name || !whInvoiceItemsNorm(typeRaw)){skipped++;errors.push('سطر '+rowNo+': الكود واسم الصنف والنوع مطلوبة');return}
+      if(!isValidItemType(typeRaw)){skipped++;errors.push('سطر '+rowNo+': النوع يجب أن يكون خدمي أو مخزني');return}
+      var type=classifyType(typeRaw);
+      var cat=type==='stock'?'مخزني':'خدمي';
+      var unit=type==='stock'?'قطعة':'خدمة';
+      if(byCode[code]){
+        var x=byCode[code];
+        x.code=code;
+        x.item_code=code;
+        x.legacy_id=x.legacy_id||code;
+        x.id=x.id||code;
+        x.name=name;
         x.type=type;
-        x.category=cat||x.category||'';
-        x.unit=unit||x.unit||'';
-        x.min=min;
-        x.notes=notes||x.notes||'';
+        x.category=cat;
+        x.unit=unit;
+        x.min=0;
+        x.notes='تم تعريفه من قالب Excel للأصناف';
         x.status=x.status||'active';
+        x.source='excel';
         x.userClassified=true;
+        x.updatedAt=new Date().toISOString();
         updated++;
       }else{
-        var obj={id:'ITM-EXCEL-'+Date.now()+'-'+Math.random().toString(36).slice(2,8),code:nextCode(items),name:name,type:type,category:cat,unit:unit,min:min,notes:notes,status:'active',source:'excel',userClassified:true,createdAt:new Date().toISOString()};
-        items.push(obj);byName[key]=obj;added++;
+        var obj={id:code,legacy_id:code,code:code,item_code:code,name:name,type:type,category:cat,unit:unit,min:0,notes:'تم تعريفه من قالب Excel للأصناف',status:'active',source:'excel',userClassified:true,createdAt:new Date().toISOString()};
+        items.push(obj);byCode[code]=obj;added++;
       }
     });
-    warehouseStockSearchSetItems(items);
+    if(errors.length && !added && !updated){alert('لم يتم استيراد أي صنف.\n'+errors.slice(0,8).join('\n'));return}
+    var saveResult=warehouseStockSearchSetItems(items);
+    if(saveResult && typeof saveResult.then==='function'){
+      saveResult=await saveResult;
+    }
+    if(saveResult && saveResult.ok===false){throw new Error(saveResult.error||'فشل حفظ الأصناف في Supabase')}
+    try{if(window.PETATOEWarehouseDataStore&&typeof window.PETATOEWarehouseDataStore.load==='function') await window.PETATOEWarehouseDataStore.load();}catch(_e){}
     refreshAllSafe();
-    toast('تم استيراد الأصناف: جديد '+added+' / تحديث '+updated+' / متروك '+skipped);
+    toast('تم استيراد الأصناف من Excel: جديد '+added+' / تحديث '+updated+' / متروك '+skipped+(errors.length?'\nملاحظات: '+errors.slice(0,5).join(' | '):''));
   }
 
   function bindWarehouseEvents(){
