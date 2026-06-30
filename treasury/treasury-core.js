@@ -27,14 +27,20 @@
     try{document.dispatchEvent(new CustomEvent('petatoe:treasury-data-ready',{detail:{transactions:txCache.length,categories:catCache.length,audit:auditCache.length}}));}catch(_e){}
   }
   function normalizeTxRow(row){
+    row=row||{};
     var data=row&&row.data&&typeof row.data==='object'?clone(row.data):{};
+    if((!data||Object.keys(data).length===0) && row.legacy_payload&&typeof row.legacy_payload==='object') data=clone(row.legacy_payload);
     data=data&&typeof data==='object'?data:{};
-    data.id=data.id||String((row&&row.id)||'');
-    data.type=data.type||String((row&&row.tx_type)||'');
-    if(row&&row.amount!=null)data.amount=num(row.amount);
-    if(row&&row.category&&!data.category)data.category=row.category;
-    if(row&&row.description&&!data.notes)data.notes=row.description;
-    if(row&&row.tx_date&&!data.date)data.date=row.tx_date;
+    data.supabase_id=row.id||data.supabase_id||'';
+    data.id=data.id||row.legacy_id||'';
+    data.type=data.type||String(row.tx_type||row.transaction_type||'');
+    if(row.amount!=null)data.amount=num(row.amount);
+    if(row.category&&!data.category)data.category=row.category;
+    if(row.payment_method&&!data.method)data.method=row.payment_method;
+    if(row.description&&!data.notes)data.notes=row.description;
+    if(row.tx_date&&!data.date)data.date=row.tx_date;
+    if(row.transaction_date&&!data.date)data.date=row.transaction_date;
+    if(row.created_at&&!data.time)data.time=row.created_at;
     return data;
   }
   async function loadTreasuryFromSupabase(force){
@@ -45,8 +51,16 @@
       var r=repo();
       if(!r||!r.hasClient||!r.hasClient()){treasuryLoading=false;publishTreasuryStore();return false;}
       try{
-        var rows=await r.listJsonRows(TX_TABLE,{order:'created_at',ascending:true});
-        txCache=asArray(rows).map(function(x){return x&&x.data?normalizeTxRow(x):normalizeTxRow({id:x&&x.id,data:x});}).filter(function(x){return x&&x.id});
+        var c=window.supabase||window.PETATOE_SUPABASE_CLIENT||null;
+        var rows=[];
+        if(c&&typeof c.from==='function'){
+          var txRes=await c.from(TX_TABLE).select('*').order('created_at',{ascending:true});
+          if(txRes.error) throw new Error(txRes.error.message||JSON.stringify(txRes.error));
+          rows=Array.isArray(txRes.data)?txRes.data:[];
+        }else{
+          rows=await r.listJsonRows(TX_TABLE,{order:'created_at',ascending:true});
+        }
+        txCache=asArray(rows).map(normalizeTxRow).filter(function(x){return x&&x.id});
         var cats=await r.getSingleton(MASTER_TABLE,CAT_ROW_ID,{items:[]});
         catCache=Array.from(new Set(asArray(cats.items||cats.categories||cats).map(clean).filter(Boolean)));
         var audit=await r.getSingleton(MASTER_TABLE,AUDIT_ROW_ID,{items:[]});
@@ -63,21 +77,39 @@
     return treasuryLoadPromise;
   }
   async function saveTxToSupabase(tx){
-    var r=repo();
-    if(!r||!r.upsertJsonRow)return {ok:false,error:'Supabase repository not ready'};
+    var c=window.supabase||window.PETATOE_SUPABASE_CLIENT||null;
+    if(!c||typeof c.from!=='function')return {ok:false,error:'Supabase client not ready'};
     var d=clone(tx||{});
-    var extra={
+    var legacyId=clean(d.id||d.legacy_id);
+    if(!legacyId)return {ok:false,error:'Missing treasury transaction id'};
+    d.id=legacyId;
+    var payload={
+      legacy_id:legacyId,
+      data:d,
+      legacy_payload:d,
       tx_date:clean(d.time||d.date).slice(0,10)||null,
+      transaction_date:clean(d.time||d.date).slice(0,10)||null,
       tx_type:clean(d.type),
+      transaction_type:clean(d.type),
       category:clean(d.category||''),
       amount:num(d.amount),
+      payment_method:clean(d.method||''),
       description:clean(d.notes||d.ref||''),
       status:'active',
       updated_at:new Date().toISOString()
     };
-    return r.upsertJsonRow(TX_TABLE,d.id,d,extra);
+    var res=await c.from(TX_TABLE).upsert(payload,{onConflict:'legacy_id'});
+    if(res.error){console.warn('PETATOE Treasury upsert failed',res.error.message||res.error);return {ok:false,error:res.error.message||JSON.stringify(res.error)}}
+    return {ok:true,data:res.data};
   }
-  async function deleteTxFromSupabase(id){var r=repo();return (r&&r.deleteById)?r.deleteById(TX_TABLE,id):{ok:false,error:'Supabase repository not ready'}}
+  async function deleteTxFromSupabase(id){
+    var c=window.supabase||window.PETATOE_SUPABASE_CLIENT||null;
+    if(!id)return {ok:false,error:'Missing id'};
+    if(!c||typeof c.from!=='function')return {ok:false,error:'Supabase client not ready'};
+    var res=await c.from(TX_TABLE).delete().eq('legacy_id',String(id));
+    if(res.error){console.warn('PETATOE Treasury delete failed',res.error.message||res.error);return {ok:false,error:res.error.message||JSON.stringify(res.error)}}
+    return {ok:true,data:res.data};
+  }
   async function saveCatsToSupabase(){var r=repo();return (r&&r.saveSingleton)?r.saveSingleton(MASTER_TABLE,CAT_ROW_ID,{items:catCache,updatedAt:new Date().toISOString()}):{ok:false,error:'Supabase repository not ready'}}
   async function saveAuditToSupabase(){var r=repo();return (r&&r.saveSingleton)?r.saveSingleton(MASTER_TABLE,AUDIT_ROW_ID,{items:auditCache.slice(-2000),updatedAt:new Date().toISOString()}):{ok:false,error:'Supabase repository not ready'}}
   var OWNER='الخزنة الرئيسية للمالك';
