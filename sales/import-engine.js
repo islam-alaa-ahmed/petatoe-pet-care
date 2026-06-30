@@ -33,11 +33,6 @@
   }
   function makeError(row,col,msg,value){return {row,col,cell:cellRef(row,col),msg,value};}
 
-
-  function storageReadJSON(key, fallback){
-    try{ if(window.PETATOEStorage && typeof window.PETATOEStorage.readJSON==='function') return window.PETATOEStorage.readJSON(key, fallback); }catch(_e){}
-    return fallback;
-  }
   function appendImportAudit(kind, entry){
     try{
       const R=window.PETATOESupabaseRepository;
@@ -49,20 +44,11 @@
     }catch(e){ console.warn('[PETATOE Import] audit failed', e); }
   }
   function findCurrentFullUser(){
+    // Supabase-only cleanup: import override relies on the active authenticated user exposed by the app runtime.
     let cu=null;
     try{ cu=(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function')?window.PETATOEAuth.currentUser():null; }catch(_e){}
+    if(!cu){ try{ cu=window.petCurrentUser&&typeof window.petCurrentUser==='function'?window.petCurrentUser():null; }catch(_e){} }
     if(!cu){ try{ cu=window.__PETATOE_ACTIVE_USER__||window.currentUser||null; }catch(_e){} }
-    const id=String((cu&&(cu.id||cu.username||cu.email||cu.fullName))||'').trim().toLowerCase();
-    const keys=['petatoe_users_v108','petatoe_users_v139','petatoe_users_v2','petatoe_users','PETATOE_USERS'];
-    for(const k of keys){
-      const arr=storageReadJSON(k,[]);
-      if(!Array.isArray(arr)) continue;
-      const u=arr.find(x=>{
-        if(!x||typeof x!=='object') return false;
-        return [x.id,x.username,x.email,x.fullName,x.name,x.login].some(v=>String(v||'').trim().toLowerCase()===id);
-      });
-      if(u) return u;
-    }
     return cu;
   }
   function isSuperAdminUser(u){
