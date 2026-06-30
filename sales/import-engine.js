@@ -323,10 +323,13 @@
         return false;
       }
     }else{
-      // Legacy fallback only if Data Layer is not loaded.
-      ok=dsSetRecords(nextRows);
-      try{ if(typeof persistRecords==='function') persistRecords(); }catch(e){console.warn('PETATOEImport persistRecords failed',e)}
-      try{ if(typeof save==='function') save(); }catch(e){console.warn('PETATOEImport save failed',e)}
+      // Supabase-only sales import: Data Layer is mandatory in production.
+      const msg='PETATOEDataLayer غير محمل — تم إلغاء الرفع لمنع الحفظ المحلي أو فقدان البيانات';
+      console.error('[PETATOE Import] Data Layer missing; Supabase-only commit aborted');
+      renderErrors([makeError(1,1,'تعذر الرفع إلى Supabase',msg)]);
+      if(typeof toast==='function') toast('تعذر الرفع إلى Supabase — راجع Console');
+      window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase-required',rows:uploadRows.length,error:msg};
+      return false;
     }
 
     try{if(window.PETATOESmartTabs&&typeof window.PETATOESmartTabs.notifyDataChanged==='function')window.PETATOESmartTabs.notifyDataChanged(eventName||'import-confirmed');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/import-engine.js",e);}
@@ -337,8 +340,8 @@
     lastImportErrors=[];
     const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
     const box=document.getElementById('importErrors'); if(box){box.style.display='none'; clearNode(box);}
-    window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:ok,target:hasOfficialDataLayer()?'supabase':'legacy-local',rows:uploadRows.length,result:supabaseResult};
-    appendImportAudit('import',{time:new Date().toISOString(),ok:!!ok,target:hasOfficialDataLayer()?'supabase':'legacy-local',rows:uploadRows.length,mode:importMode,replace:!!options.replace,source:eventName||'sales-import'});
+    window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:ok,target:'supabase',rows:uploadRows.length,result:supabaseResult};
+    appendImportAudit('import',{time:new Date().toISOString(),ok:!!ok,target:'supabase',rows:uploadRows.length,mode:importMode,replace:!!options.replace,source:eventName||'sales-import'});
     if(typeof toast==='function')toast(message || (ok?'تم رفع البيانات الرسمية إلى Supabase بنجاح':'تمت محاولة حفظ البيانات'));
     return ok;
   }
