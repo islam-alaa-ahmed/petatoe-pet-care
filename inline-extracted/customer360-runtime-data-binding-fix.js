@@ -50,9 +50,6 @@
   function p(txt){ var el=document.createElement('p'); el.textContent=text(txt); return el; }
   function smartEmpty(txt){ return div('smart-empty', txt); }
 
-  function readStorageJSON(key){
-    try{ var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
-  }
   function candidateRows(value){
     if(!value) return [];
     if(Array.isArray(value)) return value;
@@ -62,42 +59,12 @@
     return [];
   }
   function getRuntimeRows(){
-    var sources = [];
-    try{ if(window.PETATOEDataSource && typeof window.PETATOEDataSource.getRecordsSync === 'function') sources.push(window.PETATOEDataSource.getRecordsSync()); }catch(e){ warn('customer360 datasource read failed', e); }
-    try{ if(window.PETATOEStorage && typeof window.PETATOEStorage.getRecords === 'function') sources.push(window.PETATOEStorage.getRecords()); }catch(e){ warn('customer360 storage getRecords failed', e); }
-    try{ if(Array.isArray(window.records)) sources.push(window.records); }catch(e){ warn('customer360 window.records read failed', e); }
-    try{ sources.push(candidateRows(readStorageJSON('PETATOE_FALLBACK'))); }catch(e){}
-    try{ sources.push(candidateRows(readStorageJSON('records'))); }catch(e){}
-    try{ if(window.PETATOEStorage && typeof window.PETATOEStorage.readJSON === 'function') sources.push(window.PETATOEStorage.readJSON('records', [])); }catch(e){}
-
-    for(var i=0;i<sources.length;i++){
-      var rows = candidateRows(sources[i]).filter(function(r){ return r && typeof r === 'object'; });
-      if(rows.length) return rows;
-    }
+    var rows=[];
+    try{ if(window.PETATOEDataSource && typeof window.PETATOEDataSource.getRecordsSync === 'function') rows=window.PETATOEDataSource.getRecordsSync(); }catch(e){ warn('customer360 datasource read failed', e); }
+    rows=candidateRows(rows).filter(function(r){ return r && typeof r === 'object'; });
+    if(rows.length) return rows;
+    try{ if(Array.isArray(window.records)) return window.records.filter(function(r){ return r && typeof r === 'object'; }); }catch(e){ warn('customer360 window.records read failed', e); }
     return [];
-  }
-  function syncIndexedDBThenRender(query, attempt){
-    if(attempt > 2) return;
-    try{
-      if(!window.indexedDB) return;
-      var req = indexedDB.open('PETATOE_DB', 1);
-      req.onsuccess = function(e){
-        try{
-          var db = e.target.result;
-          if(!db.objectStoreNames.contains('petatoe')) return;
-          var tx = db.transaction('petatoe','readonly');
-          var st = tx.objectStore('petatoe');
-          var rq = st.get('records');
-          rq.onsuccess = function(){
-            var out = rq.result && Array.isArray(rq.result.value) ? rq.result.value : [];
-            if(out.length && window.PETATOEDataSource && typeof window.PETATOEDataSource.syncRecordsCache === 'function'){
-              window.PETATOEDataSource.syncRecordsCache(out);
-            }
-            setTimeout(function(){ renderPanel(query, (attempt||0)+1); }, 60);
-          };
-        }catch(err){ warn('customer360 indexedDB sync failed', err); }
-      };
-    }catch(e){ warn('customer360 indexedDB open failed', e); }
   }
   function groupCustomers(rows){
     var map = Object.create(null);
@@ -173,7 +140,7 @@
     var rows = getRuntimeRows();
     if(!rows.length){
       clear(list); list.appendChild(smartEmpty('جارٍ تحميل بيانات العملاء...'));
-      if((attempt||0) < 3){ setTimeout(function(){ renderPanel(q, (attempt||0)+1); }, 350); syncIndexedDBThenRender(q, attempt||0); }
+      if((attempt||0) < 3){ setTimeout(function(){ renderPanel(q, (attempt||0)+1); }, 350); }
       return false;
     }
     var customers = groupCustomers(rows).filter(function(c){ return !q || lower(c.name).indexOf(q) >= 0; });
