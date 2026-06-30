@@ -1,11 +1,6 @@
-/* PETATOE v6.2.23 Phase 7B-SAFE
- * Warehouse Read-Only Facade
- * Scope:
- * - Read-only access only.
- * - No writes.
- * - No boot hooks.
- * - No event listeners.
- * - No mutation of warehouse-core.js contracts.
+/* PETATOE v8.0.2 — Warehouse Supabase Read Facade
+ * Read-only facade for warehouse data loaded from Supabase.
+ * No LocalStorage fallback, no migration, no writes.
  */
 (function(){
   'use strict';
@@ -14,9 +9,9 @@
 
   var STORES = Object.freeze(['المخزن الرئيسي','VAN A - AXB 2558','VAN B - SXB 6066']);
   var KEYS = Object.freeze({
-    items: 'warehouseItems',
-    transactions: 'warehouseTransactions',
-    lowLimit: 'warehouseLowLimit'
+    items: 'warehouse_items',
+    transactions: 'warehouse_transactions',
+    lowLimit: 'warehouse_settings.lowLimit'
   });
 
   function warn(e){
@@ -35,49 +30,34 @@
     try{
       if (!Array.isArray(value)) return [];
       return value.map(function(row){
-        if (row && typeof row === 'object') return Object.assign({}, row);
+        if (row && typeof row === 'object') return JSON.parse(JSON.stringify(row));
         return row;
       });
     }catch(e){warn(e); return [];}
   }
 
-  function readJSON(logicalKey, fallback){
-    try{
-      if (window.PETATOEStorage && typeof window.PETATOEStorage.readJSON === 'function') {
-        var value = window.PETATOEStorage.readJSON(logicalKey, fallback);
-        return value == null ? fallback : value;
-      }
-    }catch(e){warn(e);}
-    return fallback;
-  }
-
-  function readValue(logicalKey, fallback){
-    try{
-      if (window.PETATOEStorage && typeof window.PETATOEStorage.get === 'function') {
-        var value = window.PETATOEStorage.get(logicalKey, fallback);
-        return value == null ? fallback : value;
-      }
-    }catch(e){warn(e);}
-    return fallback;
-  }
+  function store(){ return window.PETATOEWarehouseDataStore || null; }
 
   function getItems(){
-    return cloneArray(readJSON(KEYS.items, []));
+    try{ var s=store(); return cloneArray(s && typeof s.getItems === 'function' ? s.getItems() : []); }
+    catch(e){ warn(e); return []; }
   }
 
   function getTransactions(){
-    return cloneArray(readJSON(KEYS.transactions, []));
+    try{ var s=store(); return cloneArray(s && typeof s.getTransactions === 'function' ? s.getTransactions() : []); }
+    catch(e){ warn(e); return []; }
   }
 
   function getLowLimit(){
-    var value = readValue(KEYS.lowLimit, 5);
-    var n = parseFloat(String(value == null ? '' : value).replace(/,/g, ''));
-    return isFinite(n) ? n : 5;
+    try{
+      var s=store();
+      var value=s && typeof s.getSetting === 'function' ? s.getSetting('lowLimit', 5) : 5;
+      var n = parseFloat(String(value == null ? '' : value).replace(/,/g, ''));
+      return isFinite(n) ? n : 5;
+    }catch(e){ warn(e); return 5; }
   }
 
-  function getStores(){
-    return STORES.slice();
-  }
+  function getStores(){ return STORES.slice(); }
 
   function getSnapshot(){
     return Object.freeze({
@@ -89,12 +69,13 @@
   }
 
   function isReady(){
-    return !!(window.PETATOEStorage && typeof window.PETATOEStorage.readJSON === 'function');
+    try{ var s=store(); return !!(s && typeof s.isReady === 'function' && s.isReady()); }
+    catch(e){ warn(e); return false; }
   }
 
   var facade = {
-    version: 'v6.2.23-phase7b-safe-read-only',
-    mode: 'read-only',
+    version: 'v8.0.2-supabase-read-only',
+    mode: 'supabase-read-only',
     keys: KEYS,
     isReady: isReady,
     getStores: getStores,

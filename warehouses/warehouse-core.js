@@ -71,19 +71,131 @@
   function cleanStoreName(v,fallback){v=String(v||'').trim();return STORE_ALLOWED_MAP[v]?v:(fallback||MAIN)}
   var TX_KEY='warehouseTransactions';
   var ITEM_KEY='warehouseItems';
-  function petStorageReadJSON(key,fallback){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')return window.PETATOEStorage.readJSON(key,fallback);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return fallback}
-  function petStorageWriteJSON(key,value){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.writeJSON==='function')return window.PETATOEStorage.writeJSON(key,value);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return false}
-  function petStorageGet(key,fallback){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.get==='function')return window.PETATOEStorage.get(key,fallback);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return fallback}
-  function petStorageSet(key,value){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.set==='function')return window.PETATOEStorage.set(key,value);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return value}
-  function petStorageRemove(key){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.remove==='function')return window.PETATOEStorage.remove(key);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}return null}
-  if(!window.petStorageGet) window.petStorageGet=petStorageGet;
-  if(!window.petStorageSet) window.petStorageSet=petStorageSet;
-  if(!window.petStorageRemove) window.petStorageRemove=petStorageRemove;
+  var LOW_KEY_GLOBAL='warehouseLowLimit';
+  var WAREHOUSE_SETTINGS_ID='warehouse_settings';
+
+  function whClone(v){try{return JSON.parse(JSON.stringify(v));}catch(_e){return v;}}
+  function whArray(v){return Array.isArray(v)?v:[];}
+  function whNow(){return new Date().toISOString();}
+  function whLegacyId(prefix, obj){
+    obj=obj||{};
+    return String(obj.legacy_id||obj.legacyId||obj.id||obj.code||obj.name||'').trim() || (prefix+'-'+Date.now()+'-'+Math.random().toString(16).slice(2,6));
+  }
+  function whClient(){return window.supabase || window.PETATOE_SUPABASE_CLIENT || null;}
+  function whHasClient(){var c=whClient(); return !!(c && typeof c.from==='function');}
+  function whWarn(ctx,e){try{console.warn('PETATOE Warehouse Supabase '+ctx, e && (e.message||e));}catch(_e){}}
+
+  var WarehouseSupabaseStore = window.PETATOEWarehouseDataStore || (function(){
+    var state={items:[], transactions:[], settings:{lowLimit:5}, ready:false, loading:false};
+    function rowData(row){
+      var data=(row&&row.data&&typeof row.data==='object')?whClone(row.data):{};
+      if((!data||!Object.keys(data).length) && row&&row.legacy_payload&&typeof row.legacy_payload==='object') data=whClone(row.legacy_payload);
+      return data&&typeof data==='object'?data:{};
+    }
+    function normalizeItemRow(row){
+      row=row||{}; var data=rowData(row);
+      data.id=String(data.id||row.legacy_id||row.item_code||row.name||row.id||'');
+      data.legacy_id=String(row.legacy_id||data.legacy_id||data.id||'');
+      data.code=String(data.code||row.item_code||data.id||'');
+      data.name=String(data.name||row.name||'');
+      data.type=String(data.type||data.item_type||row.item_type||'stock');
+      data.category=String(data.category||row.category||'');
+      data.unit=String(data.unit||row.unit||'');
+      data.min=data.min!=null?data.min:(row.min_qty!=null?row.min_qty:0);
+      data.current_qty=data.current_qty!=null?data.current_qty:(row.current_qty!=null?row.current_qty:0);
+      data.notes=String(data.notes||row.notes||'');
+      data.status=String(data.status||row.status||'active');
+      return data;
+    }
+    function normalizeTxRow(row){
+      row=row||{}; var data=rowData(row);
+      data.id=String(data.id||row.legacy_id||row.id||'');
+      data.legacy_id=String(row.legacy_id||data.legacy_id||data.id||'');
+      data.type=String(data.type||data.movement_type||row.movement_type||'');
+      data.from=String(data.from||data.from_store||row.from_store||'');
+      data.to=String(data.to||data.to_store||row.to_store||'');
+      data.item=String(data.item||data.item_name||row.item_name||'');
+      data.qty=data.qty!=null?data.qty:(row.qty!=null?row.qty:0);
+      data.person=String(data.person||row.person||'');
+      data.ref=String(data.ref||row.ref_no||data.id||'');
+      data.notes=String(data.notes||row.notes||'');
+      data.time=String(data.time||row.movement_time||row.created_at||whNow());
+      return data;
+    }
+    async function load(){
+      if(state.loading) return; state.loading=true;
+      try{
+        if(!whHasClient()){state.ready=true; return;}
+        var c=whClient();
+        var itemsRes=await c.from('warehouse_items').select('*').order('created_at',{ascending:true});
+        if(itemsRes.error) whWarn('items load failed', itemsRes.error); else state.items=whArray(itemsRes.data).map(normalizeItemRow);
+        var txRes=await c.from('warehouse_transactions').select('*').order('created_at',{ascending:true});
+        if(txRes.error) whWarn('transactions load failed', txRes.error); else state.transactions=whArray(txRes.data).map(normalizeTxRow);
+        var stRes=await c.from('warehouse_settings').select('*').eq('id',WAREHOUSE_SETTINGS_ID).limit(1);
+        if(stRes.error) whWarn('settings load failed', stRes.error); else {
+          var row=whArray(stRes.data)[0]; if(row&&row.data&&typeof row.data==='object') state.settings=Object.assign({lowLimit:5},whClone(row.data));
+        }
+        state.ready=true;
+        try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:supabase-loaded',{detail:{items:state.items.length,transactions:state.transactions.length}}));}catch(_e){}
+        try{if(window.PETATOERefreshWarehouses) window.PETATOERefreshWarehouses();}catch(_e){}
+      }catch(e){whWarn('load crashed',e); state.ready=true;}
+      finally{state.loading=false;}
+    }
+    async function upsertItem(item){
+      if(!whHasClient()) return {ok:false,error:'Supabase client not ready'};
+      item=item&&typeof item==='object'?whClone(item):{}; var legacy=whLegacyId('WI',item); item.id=String(item.id||legacy); item.legacy_id=legacy;
+      var payload={legacy_id:legacy,data:item,item_code:String(item.code||item.item_code||legacy),name:String(item.name||''),item_type:String(item.type||item.item_type||'stock'),category:String(item.category||''),unit:String(item.unit||''),min_qty:Number(item.min||item.min_qty||0)||0,current_qty:Number(item.current_qty||0)||0,status:String(item.status||'active'),notes:String(item.notes||''),legacy_payload:item,updated_at:whNow()};
+      var res=await whClient().from('warehouse_items').upsert(payload,{onConflict:'legacy_id'});
+      if(res.error){whWarn('item upsert failed',res.error);return {ok:false,error:res.error.message||String(res.error)}}
+      return {ok:true};
+    }
+    async function upsertTx(tx){
+      if(!whHasClient()) return {ok:false,error:'Supabase client not ready'};
+      tx=tx&&typeof tx==='object'?whClone(tx):{}; var legacy=whLegacyId('WT',tx); tx.id=String(tx.id||legacy); tx.legacy_id=legacy;
+      var payload={legacy_id:legacy,data:tx,movement_type:String(tx.type||tx.movement_type||''),from_store:String(tx.from||tx.from_store||''),to_store:String(tx.to||tx.to_store||''),item_name:String(tx.item||tx.item_name||''),qty:Number(tx.qty||0)||0,person:String(tx.person||''),ref_no:String(tx.ref||tx.ref_no||legacy),notes:String(tx.notes||''),movement_time:tx.time||whNow(),legacy_payload:tx,updated_at:whNow()};
+      var res=await whClient().from('warehouse_transactions').upsert(payload,{onConflict:'legacy_id'});
+      if(res.error){whWarn('transaction upsert failed',res.error);return {ok:false,error:res.error.message||String(res.error)}}
+      return {ok:true};
+    }
+    async function deleteMissing(table, before, after){
+      if(!whHasClient()) return;
+      var keep={}; whArray(after).forEach(function(x){keep[whLegacyId(table==='warehouse_items'?'WI':'WT',x)]=1;});
+      var removed=whArray(before).filter(function(x){return !keep[whLegacyId(table==='warehouse_items'?'WI':'WT',x)];});
+      for(var i=0;i<removed.length;i++){
+        var legacy=whLegacyId(table==='warehouse_items'?'WI':'WT',removed[i]);
+        var res=await whClient().from(table).delete().eq('legacy_id',legacy);
+        if(res.error) whWarn(table+' delete failed',res.error);
+      }
+    }
+    async function saveItems(list){var before=state.items.slice(); state.items=whArray(list).map(function(x){x=whClone(x)||{}; x.id=String(x.id||x.legacy_id||x.code||x.name||('WI-'+Date.now())); x.legacy_id=String(x.legacy_id||x.id); return x;}); for(var i=0;i<state.items.length;i++) await upsertItem(state.items[i]); await deleteMissing('warehouse_items',before,state.items); try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:items-saved',{detail:{count:state.items.length}}));}catch(_e){} }
+    async function saveTransactions(list){var before=state.transactions.slice(); state.transactions=whArray(list).map(function(x){x=whClone(x)||{}; x.id=String(x.id||x.legacy_id||('WT-'+Date.now())); x.legacy_id=String(x.legacy_id||x.id); return x;}); for(var i=0;i<state.transactions.length;i++) await upsertTx(state.transactions[i]); await deleteMissing('warehouse_transactions',before,state.transactions); try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:transactions-saved',{detail:{count:state.transactions.length}}));}catch(_e){} }
+    async function saveSettings(){ if(!whHasClient()) return; var res=await whClient().from('warehouse_settings').upsert({id:WAREHOUSE_SETTINGS_ID,data:state.settings,updated_at:whNow()},{onConflict:'id'}); if(res.error) whWarn('settings save failed',res.error); }
+    setTimeout(load,0);
+    return {load:load,isReady:function(){return !!state.ready;},getItems:function(){return whClone(state.items)||[];},setItems:function(a){saveItems(a);return true;},getTransactions:function(){return whClone(state.transactions)||[];},setTransactions:function(a){saveTransactions(a);return true;},getSetting:function(k,fb){return state.settings&&state.settings[k]!=null?state.settings[k]:fb;},setSetting:function(k,v){state.settings=state.settings||{};state.settings[k]=v;saveSettings();return v;},removeSetting:function(k){if(state.settings)delete state.settings[k];saveSettings();return null;}};
+  })();
+  window.PETATOEWarehouseDataStore=WarehouseSupabaseStore;
+
+  function warehouseDataReadArray(key,fallback){
+    if(key===ITEM_KEY) return WarehouseSupabaseStore.getItems();
+    if(key===TX_KEY) return WarehouseSupabaseStore.getTransactions();
+    return Array.isArray(fallback)?fallback:[];
+  }
+  function warehouseDataWriteArray(key,value){
+    if(key===ITEM_KEY) return WarehouseSupabaseStore.setItems(Array.isArray(value)?value:[]);
+    if(key===TX_KEY) return WarehouseSupabaseStore.setTransactions(Array.isArray(value)?value:[]);
+    return false;
+  }
+  function warehouseDataGetSetting(key,fallback){ if(key===LOW_KEY_GLOBAL) return WarehouseSupabaseStore.getSetting('lowLimit',fallback); return fallback; }
+  function warehouseDataSetSetting(key,value){ if(key===LOW_KEY_GLOBAL) return WarehouseSupabaseStore.setSetting('lowLimit',value); return value; }
+  function warehouseDataRemoveSetting(key){ if(key===LOW_KEY_GLOBAL) return WarehouseSupabaseStore.removeSetting('lowLimit'); return null; }
+  if(!window.warehouseDataGetSetting) window.warehouseDataGetSetting=warehouseDataGetSetting;
+  if(!window.warehouseDataSetSetting) window.warehouseDataSetSetting=warehouseDataSetSetting;
+  if(!window.warehouseDataRemoveSetting) window.warehouseDataRemoveSetting=warehouseDataRemoveSetting;
   /* PETATOE v3.11.13 - Single source for warehouse items */
   window.PETATOEWarehouseItems = window.PETATOEWarehouseItems || {
     key: ITEM_KEY,
-    read: function(){try{var a=petStorageReadJSON(ITEM_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}},
-    write: function(a){try{petStorageWriteJSON(ITEM_KEY,Array.isArray(a)?a:[])}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}},
+    read: function(){try{var a=warehouseDataReadArray(ITEM_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}},
+    write: function(a){try{warehouseDataWriteArray(ITEM_KEY,Array.isArray(a)?a:[])}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}},
     getAll: function(){return this.read()},
     setAll: function(a){return this.write(a)}
   };
@@ -99,8 +211,8 @@
   function num(v){return window.PETATOENumber?PETATOENumber.num(v):(parseFloat(String(v==null?'':v).replace(/,/g,''))||0)}
   function fmtQty(n){return window.PETATOENumber?PETATOENumber.qty(n):(function(x){x=num(x); if(Math.abs(x)<0.000001)x=0; return x.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2})})(n)}
   function toastSafe(m){try{if(typeof window.toast==='function')window.toast(m);else alert(m)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
-  function petBlock6693_getTx(){try{var a=petStorageReadJSON(TX_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
-  function setTx(a){petStorageWriteJSON(TX_KEY,a||[])}
+  function petBlock6693_getTx(){try{var a=warehouseDataReadArray(TX_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function setTx(a){warehouseDataWriteArray(TX_KEY,a||[])}
   function readFallback(){try{return (window.PETATOEDataSource.getRecordsSync())||[]}catch(e){return[]}}
   function loadRows(cb){
     try{if(typeof window.loadRecords==='function'){var p=window.loadRecords(); if(p&&typeof p.then==='function'){p.then(function(r){cb(Array.isArray(r)?r:readFallback())}).catch(function(){cb(readFallback())}); return;}}
@@ -219,7 +331,7 @@
   function num(v){return window.PETATOENumber?PETATOENumber.num(v):(parseFloat(String(v==null?'':v).replace(/,/g,''))||0)}
   function fmtQty(n){return window.PETATOENumber?PETATOENumber.qty(n):(function(x){x=num(x); if(Math.abs(x)<0.000001)x=0; return x.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2})})(n)}
   function toast(m){try{if(typeof window.toast==='function')window.toast(m);else alert(m)}catch(e){alert(m)}}
-  function petBlock6857_getTx(){try{var a=petStorageReadJSON(TX_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function petBlock6857_getTx(){try{var a=warehouseDataReadArray(TX_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
   function warehouseUiGetItems(){return window.PETATOEWarehouseItems.getAll()}
   function warehouseUiSetItems(a){return window.PETATOEWarehouseItems.setAll(a)}
   function itemByName(name){var n=String(name||'').trim();return warehouseUiGetItems().find(function(x){return String(x.name||'').trim()===n})}
@@ -290,8 +402,8 @@
   var ITEM_KEY='warehouseItems';
   var ITEM_KEYS=['item','service','description','product','productName','itemName','name','اسم الصنف','الصنف','الخدمة','الخدمه','اسم الخدمة','الوصف','البيان'];
 
-  function readJson(k,fb){try{var v=petStorageReadJSON(k,fb); return Array.isArray(v)?v:fb;}catch(e){return fb}}
-  function writeJson(k,v){try{petStorageWriteJSON(k,v||[]);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
+  function readJson(k,fb){try{var v=warehouseDataReadArray(k,fb); return Array.isArray(v)?v:fb;}catch(e){return fb}}
+  function writeJson(k,v){try{warehouseDataWriteArray(k,v||[]);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
   function whInvoiceItemsNorm(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
   function low(v){return whInvoiceItemsNorm(v).toLowerCase()}
   /* v3.11.10: using global byId */
@@ -470,7 +582,7 @@
   window.__PETATOE_WH_V370_SERIAL_SAFE__=true;
   var ITEM_KEY='warehouseItems';
   /* v3.11.10: using global byId */
-  function petatoe_v370_warehouse_item_serial_safe_getItems(){try{var a=petStorageReadJSON(ITEM_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function petatoe_v370_warehouse_item_serial_safe_getItems(){try{var a=warehouseDataReadArray(ITEM_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
   function maxItemNo(){var max=0;petatoe_v370_warehouse_item_serial_safe_getItems().forEach(function(x){var m=String((x&&x.code)||(x&&x.id)||'').match(/ITM-(\d+)/i)||String((x&&x.code)||(x&&x.id)||'').match(/(\d+)/);if(m)max=Math.max(max,parseInt(m[1],10)||0)});return max}
   function nextCode(){return 'ITM-'+String(maxItemNo()+1).padStart(4,'0')}
   function updateDisplayedCode(force){
@@ -510,7 +622,7 @@
   function num(v){return window.PETATOENumber?PETATOENumber.num(v):(parseFloat(String(v==null?'':v).replace(/,/g,''))||0)}
   function petatoe_v372_warehouse_stock_search_exce_esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function toast(m){try{(window.toast||alert)(m)}catch(e){alert(m)}}
-  function petatoe_v372_warehouse_stock_search_exce_getItems(){try{var a=petStorageReadJSON(ITEM_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function petatoe_v372_warehouse_stock_search_exce_getItems(){try{var a=warehouseDataReadArray(ITEM_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
   function warehouseStockSearchSetItems(a){return window.PETATOEWarehouseItems.setAll(a)}
   function getVal(row,keys){for(var i=0;i<keys.length;i++){var k=keys[i];if(row&&row[k]!=null&&whInvoiceItemsNorm(row[k])!=='')return row[k]}return ''}
   function maxItemNo(items){var max=0;(items||petatoe_v372_warehouse_stock_search_exce_getItems()).forEach(function(x){var raw=String((x&&x.code)||(x&&x.id)||'');var m=raw.match(/ITM-(\d+)/i)||raw.match(/(\d+)/);if(m)max=Math.max(max,parseInt(m[1],10)||0)});return max}
@@ -690,7 +802,7 @@
   function whInvoiceItemsNorm(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
   function low(v){return whInvoiceItemsNorm(v).toLowerCase()}
   function petatoe_v377_warehouse_search_final_js_esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-  function petatoe_v377_warehouse_search_final_js_getItems(){try{var a=petStorageReadJSON(ITEM_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return []}}
+  function petatoe_v377_warehouse_search_final_js_getItems(){try{var a=warehouseDataReadArray(ITEM_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return []}}
   function stockItems(){return petatoe_v377_warehouse_search_final_js_getItems().filter(function(x){return x&&whInvoiceItemsNorm(x.name)&&String(x.status||'active')!=='inactive'&&String(x.type||'service')==='stock'})}
   function matchItems(q){q=low(q);var a=stockItems();if(!q)return a.slice(0,12);return a.filter(function(x){return low((x.name||'')+' '+(x.code||x.id||'')+' '+(x.category||'')+' '+(x.unit||'')).indexOf(q)>-1}).slice(0,18)}
   function removeNative(){var inp=byId('whItem');if(inp){inp.removeAttribute('list');inp.setAttribute('autocomplete','off');inp.placeholder='اكتب أو اختر من الأصناف المخزنية فقط'}var dl=byId('whItemsList');if(dl&&dl.parentNode)dl.parentNode.removeChild(dl)}
@@ -763,11 +875,11 @@
   function low(v){return whInvoiceItemsNorm(v).toLowerCase()}
   function num(v){return window.PETATOENumber?PETATOENumber.num(v):(parseFloat(String(v==null?'':v).replace(/,/g,''))||0)}
   function fmt(v){return window.PETATOENumber?PETATOENumber.qty(v):(function(n){if(Math.abs(n)<0.000001)n=0; return n.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2})})(num(v))}
-  function warehouseAlertsReadArray(key){try{var a=petStorageReadJSON(key,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
+  function warehouseAlertsReadArray(key){try{var a=warehouseDataReadArray(key,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
   function petatoe_v380_warehouse_alerts_clean_fina_getItems(){return window.PETATOEWarehouseItems.getAll()}
   function petBlock7434_getTx(){return warehouseAlertsReadArray(TX_KEY)}
-  function limit(){var n=num(petStorageGet(LOW_KEY,'')); if(n<=0)n=DEFAULT_LIMIT; return Math.max(0,Math.round(n))}
-  function setLimit(v){var n=Math.max(0,Math.round(num(v))); if(n<=0)n=DEFAULT_LIMIT; petStorageSet(LOW_KEY,String(n)); var inp=byId('whLowAlertLimit'); if(inp)inp.value=n; render(); return n}
+  function limit(){var n=num(warehouseDataGetSetting(LOW_KEY,'')); if(n<=0)n=DEFAULT_LIMIT; return Math.max(0,Math.round(n))}
+  function setLimit(v){var n=Math.max(0,Math.round(num(v))); if(n<=0)n=DEFAULT_LIMIT; warehouseDataSetSetting(LOW_KEY,String(n)); var inp=byId('whLowAlertLimit'); if(inp)inp.value=n; render(); return n}
   function isStockItem(x){return x&&whInvoiceItemsNorm(x.name)&&String(x.status||'active')!=='inactive'&&String(x.type||'service')==='stock'}
   function stockItems(){
     var seen={};

@@ -31,16 +31,6 @@
   function num(v){ var n = parseFloat(String(v == null ? '' : v).replace(/,/g, '')); return isFinite(n) ? n : 0; }
   function text(v){ return String(v == null ? '' : v).trim(); }
 
-  function readStorageJSON(key, fallback){
-    try{
-      if(window.PETATOEStorage && typeof window.PETATOEStorage.readJSON === 'function'){
-        var value = window.PETATOEStorage.readJSON(key, fallback);
-        return value == null ? fallback : value;
-      }
-    }catch(e){ warn(e); }
-    return fallback;
-  }
-
   function getLegacyItems(){
     try{
       if(window.PETATOEWarehouseItems && typeof window.PETATOEWarehouseItems.getAll === 'function'){
@@ -50,10 +40,10 @@
         return safeArray(window.PETATOEWarehouseItems.read());
       }
     }catch(e){ warn(e); }
-    return safeArray(readStorageJSON('warehouseItems', []));
+    return safeArray((window.PETATOEWarehouseReadFacade && window.PETATOEWarehouseReadFacade.getItems && window.PETATOEWarehouseReadFacade.getItems()) || []);
   }
 
-  function getStorageTransactions(){ return safeArray(readStorageJSON('warehouseTransactions', [])); }
+  function getStorageTransactions(){ return safeArray((window.PETATOEWarehouseReadFacade && window.PETATOEWarehouseReadFacade.getTransactions && window.PETATOEWarehouseReadFacade.getTransactions()) || []); }
 
   function getReadSnapshot(){
     try{
@@ -130,8 +120,8 @@
   }
 
   function run(){
-    var storageItems = safeArray(readStorageJSON('warehouseItems', []));
-    var storageTransactions = getStorageTransactions();
+    var supabaseItems = getLegacyItems();
+    var supabaseTransactions = getStorageTransactions();
     var legacyItems = getLegacyItems();
     var readSnapshot = getReadSnapshot();
     var facadeItems = safeArray(readSnapshot.items);
@@ -145,12 +135,12 @@
 
     var checks = {
       readFacadeReady: !!(window.PETATOEWarehouseReadFacade && typeof window.PETATOEWarehouseReadFacade.isReady === 'function' && window.PETATOEWarehouseReadFacade.isReady()),
-      storageVsLegacyItemsCount: count(storageItems) === count(legacyItems),
-      storageVsFacadeItemsCount: count(storageItems) === count(facadeItems),
-      storageVsFacadeTransactionsCount: count(storageTransactions) === count(facadeTransactions),
-      computedTransactionsCount: num(computedSummary.transactions) === count(storageTransactions),
+      supabaseVsLegacyItemsCount: count(supabaseItems) === count(legacyItems),
+      supabaseVsFacadeItemsCount: count(supabaseItems) === count(facadeItems),
+      supabaseVsFacadeTransactionsCount: count(supabaseTransactions) === count(facadeTransactions),
+      computedTransactionsCount: num(computedSummary.transactions) === count(supabaseTransactions),
       computedStockRowsCount: num(computedSummary.stockRows) === count(stockRows),
-      signedRowsNotLessThanTransactions: count(signedRows) >= count(storageTransactions),
+      signedRowsNotLessThanTransactions: count(signedRows) >= count(supabaseTransactions),
       viewModelHasSummaryCards: count(viewModel && viewModel.summaryCards) > 0,
       renderSnapshotReady: !!(renderSnapshot && (renderSnapshot.summaryCardsHTML || renderSnapshot.stockRowsHTML || renderSnapshot.transactionRowsHTML)),
       renderBridgeShadowOnly: !!(bridgeResult && bridgeResult.writesApplied === 0)
@@ -159,13 +149,13 @@
     var failures = Object.keys(checks).filter(function(key){ return !checks[key]; });
     var result = {
       version: VERSION,
-      mode: 'manual-read-only-parallel-validation',
+      mode: 'manual-read-only-supabase-parallel-validation',
       timestamp: new Date().toISOString(),
       counts: {
-        storageItems: count(storageItems),
+        supabaseItems: count(supabaseItems),
         legacyItems: count(legacyItems),
         facadeItems: count(facadeItems),
-        storageTransactions: count(storageTransactions),
+        supabaseTransactions: count(supabaseTransactions),
         facadeTransactions: count(facadeTransactions),
         computedSignedRows: count(signedRows),
         computedStockRows: count(stockRows),
@@ -181,7 +171,7 @@
       failures: failures,
       pass: failures.length === 0,
       writesApplied: 0,
-      storageWrites: 0,
+      supabaseWrites: 0,
       domWrites: 0
     };
 
@@ -197,7 +187,7 @@
 
   var api = {
     version: VERSION,
-    mode: 'manual-read-only-parallel-validation',
+    mode: 'manual-read-only-supabase-parallel-validation',
     run: run,
     getLastResult: getLastResult,
     getLastError: getLastError
