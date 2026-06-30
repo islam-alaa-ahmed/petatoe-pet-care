@@ -1415,8 +1415,10 @@ document.addEventListener('click',function(e){
 
 // === Monthly Target Report: default 92,000 + future-effective target history ===
 const PETATOE_MONTHLY_TARGET_KEY='petatoe_monthly_sales_targets_v2';
-const PETATOE_LEGACY_TARGET_KEY='petatoe_monthly_sales_targets_v1';
+const PETATOE_LEGACY_TARGET_KEY='petatoe_monthly_sales_targets_v1'; // Legacy key name only; no LocalStorage access.
 const PETATOE_DEFAULT_MONTHLY_TARGET=92000;
+const PETATOE_SMART_TARGET_SETTING_ID='sales_monthly_targets';
+let __PETATOE_SMART_TARGET_STATE__={loaded:false,loading:false,store:{rules:[],explicit:{}}};
 function normalizeTargetPeriod(period){
   const m=String(period||'').match(/^(\d{4})-(\d{1,2})$/);
   if(!m)return '';
@@ -1427,30 +1429,37 @@ function compareTargetPeriods(a,b){
   if(!a||!b)return 0;
   return a===b?0:(a<b?-1:1);
 }
-function readSmartTargetStore(){
-  let store={rules:[],explicit:{}};
-  try{
-    const raw=((window.PETATOEStorage&&window.PETATOEStorage.readJSON)?window.PETATOEStorage.readJSON(PETATOE_MONTHLY_TARGET_KEY,{}):{})||{};
-    store.rules=Array.isArray(raw.rules)?raw.rules.filter(r=>normalizeTargetPeriod(r.from)&&parseNum(r.value)>0).map(r=>({from:normalizeTargetPeriod(r.from),value:parseNum(r.value),ts:r.ts||0})):[];
-    store.explicit=(raw.explicit&&typeof raw.explicit==='object')?raw.explicit:{};
-  }catch(e){store={rules:[],explicit:{}};}
-  // Read old per-month saved targets so existing user entries remain valid.
-  try{
-    const legacy=((window.PETATOEStorage&&window.PETATOEStorage.readJSON)?window.PETATOEStorage.readJSON(PETATOE_LEGACY_TARGET_KEY,{}):{})||{};
-    Object.keys(legacy).forEach(k=>{
-      const nk=normalizeTargetPeriod(k), v=parseNum(legacy[k]);
-      if(nk && v>0 && store.explicit[nk]==null) store.explicit[nk]=v;
-    });
-  }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
-  return store;
-}
-function writeSmartTargetStore(store){
-  const clean={rules:[],explicit:{}};
-  (store.rules||[]).forEach(r=>{const from=normalizeTargetPeriod(r.from), value=parseNum(r.value); if(from&&value>0) clean.rules.push({from,value,ts:r.ts||Date.now()});});
-  Object.keys(store.explicit||{}).forEach(k=>{const nk=normalizeTargetPeriod(k), value=parseNum(store.explicit[k]); if(nk&&value>0) clean.explicit[nk]=value;});
+function normalizeSmartTargetStore(raw){
+  const clean={rules:[],explicit:{}}; raw=raw&&typeof raw==='object'?raw:{};
+  (Array.isArray(raw.rules)?raw.rules:[]).forEach(r=>{const from=normalizeTargetPeriod(r&&r.from), value=parseNum(r&&r.value); if(from&&value>0) clean.rules.push({from,value,ts:(r&&r.ts)||Date.now()});});
+  const explicit=(raw.explicit&&typeof raw.explicit==='object')?raw.explicit:{};
+  Object.keys(explicit).forEach(k=>{const nk=normalizeTargetPeriod(k), value=parseNum(explicit[k]); if(nk&&value>0) clean.explicit[nk]=value;});
   clean.rules.sort((a,b)=>compareTargetPeriods(a.from,b.from)||((a.ts||0)-(b.ts||0)));
-  if(window.PETATOEStorage&&window.PETATOEStorage.writeJSON)window.PETATOEStorage.writeJSON(PETATOE_MONTHLY_TARGET_KEY,clean);
+  return clean;
 }
+function cloneSmartTargetStore(store){try{return JSON.parse(JSON.stringify(store||{rules:[],explicit:{}}));}catch(e){return {rules:[],explicit:{}};}}
+function bootSmartTargetStore(){
+  const R=window.PETATOESupabaseRepository;
+  if(!R||typeof R.getSystemSetting!=='function'||__PETATOE_SMART_TARGET_STATE__.loaded||__PETATOE_SMART_TARGET_STATE__.loading)return;
+  __PETATOE_SMART_TARGET_STATE__.loading=true;
+  R.getSystemSetting(PETATOE_SMART_TARGET_SETTING_ID,{rules:[],explicit:{}}).then(data=>{
+    __PETATOE_SMART_TARGET_STATE__.store=normalizeSmartTargetStore(data);
+    __PETATOE_SMART_TARGET_STATE__.loaded=true;
+    __PETATOE_SMART_TARGET_STATE__.loading=false;
+    try{if(typeof renderSmartReports==='function')renderSmartReports();}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('index.html smart target rerender',e);}
+  }).catch(e=>{__PETATOE_SMART_TARGET_STATE__.loading=false;window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('index.html smart target load',e);});
+}
+function readSmartTargetStore(){bootSmartTargetStore();return cloneSmartTargetStore(__PETATOE_SMART_TARGET_STATE__.store);}
+function writeSmartTargetStore(store){
+  const clean=normalizeSmartTargetStore(store);
+  __PETATOE_SMART_TARGET_STATE__.store=clean;
+  __PETATOE_SMART_TARGET_STATE__.loaded=true;
+  const R=window.PETATOESupabaseRepository;
+  if(R&&typeof R.saveSystemSetting==='function'){
+    R.saveSystemSetting(PETATOE_SMART_TARGET_SETTING_ID,clean).then(res=>{if(res&&!res.ok)toast('تعذر حفظ هدف المبيعات في Supabase');}).catch(e=>{console.warn('PETATOE smart target Supabase save failed',e);toast('تعذر حفظ هدف المبيعات في Supabase');});
+  }else{toast('Supabase Repository غير جاهز لحفظ الهدف');}
+}
+bootSmartTargetStore();
 function getSmartMonthlyTarget(period){
   period=normalizeTargetPeriod(period);
   if(!period)return PETATOE_DEFAULT_MONTHLY_TARGET;
@@ -1477,12 +1486,6 @@ function saveSmartMonthlyTarget(clear){
     // Remove old explicit future values so the new rule controls current/future months.
     Object.keys(store.explicit||{}).forEach(k=>{if(compareTargetPeriods(k,key)>=0) delete store.explicit[k];});
     writeSmartTargetStore(store);
-    // Keep a legacy exact value for compatibility with older copies of the file.
-    try{
-      const legacy=((window.PETATOEStorage&&window.PETATOEStorage.readJSON)?window.PETATOEStorage.readJSON(PETATOE_LEGACY_TARGET_KEY,{}):{})||{};
-      legacy[key]=val;
-      if(window.PETATOEStorage&&window.PETATOEStorage.writeJSON)window.PETATOEStorage.writeJSON(PETATOE_LEGACY_TARGET_KEY,legacy);
-    }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
     toast(clear?'تم إرجاع الهدف الافتراضي 92,000 من هذا الشهر وما بعده':'تم حفظ الهدف وتطبيقه على هذا الشهر وكل الشهور القادمة');
     renderSmartReports();
     setSmartTab('overview');
@@ -1522,9 +1525,9 @@ function parseDate(v){
 }
 function normalizeMonth(v,date){let s=String(v||'').trim().toLowerCase();const ar={'يناير':'january','فبراير':'february','مارس':'march','أبريل':'april','ابريل':'april','مايو':'may','يونيو':'june','يوليو':'july','أغسطس':'august','اغسطس':'august','سبتمبر':'september','أكتوبر':'october','اكتوبر':'october','نوفمبر':'november','ديسمبر':'december'};if(date){let pd=parseDate(date);let m=String(pd).match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m){let d=makeLocalDate(m[1],m[2],m[3]);if(!isNaN(d))return MONTHS[d.getMonth()]}}if(ar[s])return ar[s];if(MONTHS.includes(s))return s;return s||''}
 function getYear(r){let pd=r&&r.date?parseDate(r.date):'';let m=String(pd).match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);return m?Number(m[1]):''}function quarterOf(m){let i=MONTHS.indexOf(String(m||'').toLowerCase());return i<0?'Q?':'Q'+(Math.floor(i/3)+1)}function quarterRange(q){return {Q1:'يناير - مارس',Q2:'أبريل - يونيو',Q3:'يوليو - سبتمبر',Q4:'أكتوبر - ديسمبر'}[q]||''}function monthLabel(m,y){return (MAR[m]||m)+'\n'+y}function monthLabelEn(m,y){return (MSHORT[m]||m)+'\n'+y}
-function openDB(){if(dbReady)return dbReady;dbReady=new Promise((res,rej)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=e=>{const db=e.target.result;if(!db.objectStoreNames.contains(DB_STORE))db.createObjectStore(DB_STORE,{keyPath:'key'})};req.onsuccess=e=>res(e.target.result);req.onerror=e=>rej(e.target.error)});return dbReady}
-async function loadRecords(){try{const db=await openDB();const out=await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readonly');const st=tx.objectStore(DB_STORE);const rq=st.get('records');rq.onsuccess=()=>res((rq.result&&Array.isArray(rq.result.value))?rq.result.value:[]);rq.onerror=()=>rej(rq.error)});return (window.PETATOEDataSource?window.PETATOEDataSource.syncRecordsCache(out):out)}catch(e){try{return window.PETATOEDataSource.getRecordsSync()}catch(_){return[]}}}
-async function persistRecords(){try{window.PETATOEDataSource.syncRecordsCache(records);}catch(_e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",_e);}try{const db=await openDB();await new Promise((res,rej)=>{const tx=db.transaction(DB_STORE,'readwrite');tx.objectStore(DB_STORE).put({key:'records',value:records,updatedAt:new Date().toISOString()});tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}catch(e){try{window.PETATOEDataSource.syncRecordsCache(records)}catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",_);}}}
+function openDB(){return Promise.reject(new Error('Legacy IndexedDB sales records storage is disabled; Supabase is the source of truth.'))}
+async function loadRecords(){try{return window.PETATOEDataSource?window.PETATOEDataSource.getRecordsSync():[]}catch(_){return[]}}
+async function persistRecords(){try{if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.syncRecordsCache==='function')window.PETATOEDataSource.syncRecordsCache(records,{reason:'index-runtime-records-sync'});}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('index.html persistRecords runtime only',e);}}
 function petatoeDiscountAbs(v){return Math.abs(parseNum(v));}
 function petatoeCanonicalNumber(row, names){
   row=row||{};
@@ -2804,20 +2807,28 @@ function renderServices(data){let y=defaultYear(data),yd=byYear(data,y),st=Objec
 /* PETATOE v6.4.172: Smart Vehicles module moved to smart/smart-vehicles.js */
 
 /* === PETATOE v3.8.18 MANUAL MULTI-ITEM INVOICE ENTRY === */
-const MANUAL_INVOICE_START=20000001;
+const MANUAL_INVOICE_SUFFIX_DIGITS=5;
 let entryItemRowSeq=0;
+function manualInvoiceYearFromForm(){
+  const el=document.getElementById('e_date');
+  const raw=el&&el.value?String(el.value):'';
+  const m=raw.match(/^(\d{4})-/);
+  const y=m?Number(m[1]):new Date().getFullYear();
+  return Number.isFinite(y)&&y>2000?y:new Date().getFullYear();
+}
 function getNextManualInvoiceNo(){
-  const nums=(records||[]).map(r=>parseInt(String(r.invoice||'').replace(/[^0-9]/g,''),10)).filter(n=>Number.isFinite(n)&&n>=MANUAL_INVOICE_START);
-  let maxExisting=nums.length?Math.max(...nums):(MANUAL_INVOICE_START-1);
-  let stored=parseInt(((window.PETATOEStorage&&window.PETATOEStorage.get)?window.PETATOEStorage.get('petatoe_manual_invoice_next',MANUAL_INVOICE_START):MANUAL_INVOICE_START),10);
-  let next=Math.max(maxExisting+1,Number.isFinite(stored)?stored:MANUAL_INVOICE_START,MANUAL_INVOICE_START);
-  while((records||[]).some(r=>String(r.invoice||'')===String(next)))next++;
-  return String(next);
+  const yy=String(manualInvoiceYearFromForm()).slice(-2);
+  let maxSuffix=0;
+  (records||[]).forEach(r=>{
+    const inv=String((r&&r.invoice)||'').replace(/\D/g,'');
+    if(inv.length===7 && inv.slice(0,2)===yy){
+      const suffix=parseInt(inv.slice(2),10);
+      if(Number.isFinite(suffix)&&suffix>maxSuffix)maxSuffix=suffix;
+    }
+  });
+  return yy+String(maxSuffix+1).padStart(MANUAL_INVOICE_SUFFIX_DIGITS,'0');
 }
-function setNextManualInvoiceAfter(inv){
-  const n=parseInt(String(inv||'').replace(/[^0-9]/g,''),10);
-  if(Number.isFinite(n))if(window.PETATOEStorage&&window.PETATOEStorage.set)window.PETATOEStorage.set('petatoe_manual_invoice_next',String(Math.max(n+1,MANUAL_INVOICE_START)));
-}
+function setNextManualInvoiceAfter(inv){return true;}
 function entryCommonHtml(){
   return `
     <div><label>السيارة</label><select id="e_van"><option>VAN A - AXB 2558</option><option>VAN B - SXB 6066</option></select></div>
@@ -2923,7 +2934,7 @@ function fillForm(r){
     $('entryModeText').textContent='تعديل سجل موجود';
   },50)
 }
-function delRecord(id){try{if(typeof canDelete==='function'&&!canDelete()){toastSafe('الصلاحية الحالية لا تسمح بالحذف');return}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}var deleted=records.find(r=>String(r.id)===String(id));if(!confirm('حذف السجل؟'))return;records=records.filter(r=>r.id!==id);try{document.dispatchEvent(new CustomEvent('petatoe:record-deleted',{detail:{id:id,record:deleted}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}_invalidateSearchIndex();save();renderRecords()}function clearAll(){try{if(typeof canDelete==='function'&&!canDelete()){toastSafe('الصلاحية الحالية لا تسمح بحذف كل البيانات');return}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}if(!confirm('حذف كل البيانات؟'))return;records=[];if(window.PETATOEStorage&&window.PETATOEStorage.remove)window.PETATOEStorage.remove('petatoe_manual_invoice_next');try{document.dispatchEvent(new CustomEvent('petatoe:records-cleared'))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}_invalidateSearchIndex();save();renderRecords()}function renderRecords(){if(window.__PETATOE_RECORDS_SAFE_READY__&&typeof window.renderRecordsSafe==='function')return window.renderRecordsSafe();let q=($('recordSearch').value||'').toLowerCase(),ps=+$('pageSize').value||100,arr=records.filter(r=>!q||fields.some(f=>String(r[f]||'').toLowerCase().includes(q)));let pages=Math.max(1,Math.ceil(arr.length/ps));currentPage=Math.min(currentPage,pages);let slice=arr.slice((currentPage-1)*ps,currentPage*ps);$('recordsTable').innerHTML='<thead><tr><th>#</th>'+HEADERS.map(h=>`<th>${h}</th>`).join('')+'<th>إجراء</th></tr></thead><tbody>'+slice.map((r,i)=>`<tr><td>${(currentPage-1)*ps+i+1}</td>`+fields.map(f=>`<td>${f==='van'?`<span class="badge ${String(r[f]).includes('VAN A')||String(r[f]).includes('AXB')?'vana':'vanb'}">${htmlSafe(r[f]||'')}</span>`:f==='pay'?`<span class="badge ${r[f]==='نقدي'?'cash':'net'}">${htmlSafe(r[f]||'')}</span>`:htmlSafe(r[f]??'')}</td>`).join('')+`<td><button class="btn btn-ghost" onclick='fillForm(${JSON.stringify(r).replace(/'/g,"&#39;")})'>✏️</button> <button class="btn btn-danger" onclick="delRecord(${r.id})">🗑️</button></td></tr>`).join('')+'</tbody>';$('pagerInfo').textContent=`صفحة ${currentPage} من ${pages} | عرض ${slice.length} من ${arr.length} سجل`}function prevPage(){currentPage=Math.max(1,currentPage-1);renderRecords()}function nextPage(){currentPage++;renderRecords()}
+function delRecord(id){try{if(typeof canDelete==='function'&&!canDelete()){toastSafe('الصلاحية الحالية لا تسمح بالحذف');return}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}var deleted=records.find(r=>String(r.id)===String(id));if(!confirm('حذف السجل؟'))return;records=records.filter(r=>r.id!==id);try{document.dispatchEvent(new CustomEvent('petatoe:record-deleted',{detail:{id:id,record:deleted}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}_invalidateSearchIndex();save();renderRecords()}function clearAll(){try{if(typeof canDelete==='function'&&!canDelete()){toastSafe('الصلاحية الحالية لا تسمح بحذف كل البيانات');return}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}if(!confirm('حذف كل البيانات؟'))return;records=[];try{document.dispatchEvent(new CustomEvent('petatoe:records-cleared'))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}_invalidateSearchIndex();save();renderRecords()}function renderRecords(){if(window.__PETATOE_RECORDS_SAFE_READY__&&typeof window.renderRecordsSafe==='function')return window.renderRecordsSafe();let q=($('recordSearch').value||'').toLowerCase(),ps=+$('pageSize').value||100,arr=records.filter(r=>!q||fields.some(f=>String(r[f]||'').toLowerCase().includes(q)));let pages=Math.max(1,Math.ceil(arr.length/ps));currentPage=Math.min(currentPage,pages);let slice=arr.slice((currentPage-1)*ps,currentPage*ps);$('recordsTable').innerHTML='<thead><tr><th>#</th>'+HEADERS.map(h=>`<th>${h}</th>`).join('')+'<th>إجراء</th></tr></thead><tbody>'+slice.map((r,i)=>`<tr><td>${(currentPage-1)*ps+i+1}</td>`+fields.map(f=>`<td>${f==='van'?`<span class="badge ${String(r[f]).includes('VAN A')||String(r[f]).includes('AXB')?'vana':'vanb'}">${htmlSafe(r[f]||'')}</span>`:f==='pay'?`<span class="badge ${r[f]==='نقدي'?'cash':'net'}">${htmlSafe(r[f]||'')}</span>`:htmlSafe(r[f]??'')}</td>`).join('')+`<td><button class="btn btn-ghost" onclick='fillForm(${JSON.stringify(r).replace(/'/g,"&#39;")})'>✏️</button> <button class="btn btn-danger" onclick="delRecord(${r.id})">🗑️</button></td></tr>`).join('')+'</tbody>';$('pagerInfo').textContent=`صفحة ${currentPage} من ${pages} | عرض ${slice.length} من ${arr.length} سجل`}function prevPage(){currentPage=Math.max(1,currentPage-1);renderRecords()}function nextPage(){currentPage++;renderRecords()}
 function dragOver(e){e.preventDefault();$('drop').classList.add('drag')}function dragLeave(e){$('drop').classList.remove('drag')}function dropFile(e){e.preventDefault();$('drop').classList.remove('drag');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0])}function handleFile(e){if(e.target.files[0])processFile(e.target.files[0])}function processFile(file){let reader=new FileReader();reader.onload=e=>{let wb=XLSX.read(e.target.result,{type:'array',cellDates:true});let ws=wb.Sheets[wb.SheetNames[0]],data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});let start=0;if(String(data[0]?.[0]||'').includes('الصنف')||String(data[0]?.[0]||'').toLowerCase().includes('item'))start=1;importData=[];for(let i=start;i<data.length;i++){let row=data[i];if(!row||row.every(x=>x===''))continue;let r={id:Date.now()+i+Math.random()};fields.forEach((f,idx)=>r[f]=row[idx]);r.date=parseDate(r.date);r.month=normalizeMonth(r.month,r.date);['price','qty','disc','tax','totalInc','totalEx'].forEach(f=>r[f]=parseNum(r[f]));if(!r.totalEx&&r.totalInc&&r.tax)r.totalEx=r.totalInc-r.tax;if(!r.totalInc&&r.totalEx)r.totalInc=r.totalEx+r.tax;importData.push(r)};showPreview()};reader.readAsArrayBuffer(file)}function showPreview(){$('importStats').innerHTML=`<div class="mini"><span>عدد السجلات</span><b>${fmt0(importData.length)}</b></div><div class="mini"><span>إجمالي المبيعات</span><b>${money(importData.reduce((s,r)=>s+parseNum(r.totalInc),0))}</b></div><div class="mini"><span>السيارات</span><b>${new Set(importData.map(r=>r.van)).size}</b></div><div class="mini"><span>السنوات</span><b>${years(importData).join(', ')}</b></div>`;$('previewCard').style.display='block';$('previewTable').innerHTML='<thead><tr>'+HEADERS.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+importData.slice(0,30).map(r=>'<tr>'+fields.map(f=>`<td>${htmlSafe(r[f]??'')}</td>`).join('')+'</tr>').join('')+'</tbody>'}function petatoeLegacyConfirmImport(replace){if(replace)records=[...importData];else records.push(...importData);importData=[];_invalidateSearchIndex();$('previewCard').style.display='none';save();toast('تم استيراد البيانات بنجاح')}function exportExcel(){let ws=XLSX.utils.aoa_to_sheet([HEADERS,...records.map(r=>fields.map(f=>r[f]))]);let wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'PETATOE Sales');XLSX.writeFile(wb,'PETATOE_Sales_Data.xlsx');try{document.dispatchEvent(new CustomEvent('petatoe:records-exported',{detail:{type:'excel'}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}}function downloadTemplate(){let ws=XLSX.utils.aoa_to_sheet([HEADERS]);let wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Template');XLSX.writeFile(wb,'PETATOE_Template.xlsx')}
 
 
@@ -3297,15 +3308,30 @@ function petatoeExportCustomerActivityFollowup(kind){
 }
 window.petatoeExportCustomerActivityFollowup=petatoeExportCustomerActivityFollowup;
 var CUSTOMER_COMPARE_RECOVERY_NOTES_KEY='petatoe_customer_compare_recovery_notes_v1';
+var __PETATOE_CUSTOMER_COMPARE_NOTES__={loaded:false,loading:false,data:{}};
 function customerCompareRecoveryNoteId(name){
   try{return encodeURIComponent(String(name||'').trim());}catch(e){return String(name||'').trim();}
 }
+function customerCompareBootRecoveryNotes(){
+  var R=window.PETATOESupabaseRepository;
+  if(!R||typeof R.getSystemSetting!=='function'||__PETATOE_CUSTOMER_COMPARE_NOTES__.loaded||__PETATOE_CUSTOMER_COMPARE_NOTES__.loading)return;
+  __PETATOE_CUSTOMER_COMPARE_NOTES__.loading=true;
+  R.getSystemSetting(CUSTOMER_COMPARE_RECOVERY_NOTES_KEY,{}).then(function(x){
+    __PETATOE_CUSTOMER_COMPARE_NOTES__.data=(x&&typeof x==='object'&&!Array.isArray(x))?x:{};
+    __PETATOE_CUSTOMER_COMPARE_NOTES__.loaded=true;__PETATOE_CUSTOMER_COMPARE_NOTES__.loading=false;
+  }).catch(function(e){__PETATOE_CUSTOMER_COMPARE_NOTES__.loading=false;window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('index.html customer recovery notes load',e);});
+}
 function customerCompareReadRecoveryNotes(){
-  try{var x=((window.PETATOEStorage&&window.PETATOEStorage.readJSON)?window.PETATOEStorage.readJSON(CUSTOMER_COMPARE_RECOVERY_NOTES_KEY,{}):{});return x&&typeof x==='object'?x:{}}catch(e){return {}}
+  customerCompareBootRecoveryNotes();
+  try{return JSON.parse(JSON.stringify(__PETATOE_CUSTOMER_COMPARE_NOTES__.data||{}));}catch(e){return {}}
 }
 function customerCompareWriteRecoveryNotes(notes){
-  try{if(window.PETATOEStorage&&window.PETATOEStorage.writeJSON)window.PETATOEStorage.writeJSON(CUSTOMER_COMPARE_RECOVERY_NOTES_KEY,notes||{});}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
+  __PETATOE_CUSTOMER_COMPARE_NOTES__.data=(notes&&typeof notes==='object')?notes:{};
+  __PETATOE_CUSTOMER_COMPARE_NOTES__.loaded=true;
+  var R=window.PETATOESupabaseRepository;
+  if(R&&typeof R.saveSystemSetting==='function')R.saveSystemSetting(CUSTOMER_COMPARE_RECOVERY_NOTES_KEY,__PETATOE_CUSTOMER_COMPARE_NOTES__.data).catch(function(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('index.html customer recovery notes save',e);});
 }
+customerCompareBootRecoveryNotes();
 function customerCompareGetRecoveryNote(name){
   var notes=customerCompareReadRecoveryNotes();
   return String(notes[customerCompareRecoveryNoteId(name)]||'');
