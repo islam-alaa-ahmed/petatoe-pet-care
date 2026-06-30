@@ -152,7 +152,9 @@
     if(!hasClient()) return clone(def||{});
     var c=client();
     try{
-      var res=await c.from('system_settings').select('*').eq('id', String(id)).limit(1);
+      // System settings are stored as a key/data JSONB row.
+      // Do not query legacy id-based columns because older Supabase schemas may have uuid id columns or no id column at all.
+      var res=await c.from('system_settings').select('key,data,value,updated_at').eq('key', String(id)).limit(1);
       if(res && !res.error){
         var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
         if(row){
@@ -160,20 +162,10 @@
           if(row.value && typeof row.value==='object') return clone(row.value);
           if(typeof row.value==='string'){try{return JSON.parse(row.value)}catch(_e){}}
         }
-        return clone(def||{});
+      }else if(res && res.error){
+        console.warn('PETATOESupabaseRepository getSystemSetting failed', resultError(res));
       }
-    }catch(_e){}
-    try{
-      var res2=await c.from('system_settings').select('*').eq('key', String(id)).limit(1);
-      if(res2 && !res2.error){
-        var row2=Array.isArray(res2.data)&&res2.data.length?res2.data[0]:null;
-        if(row2){
-          if(row2.data && typeof row2.data==='object') return clone(row2.data);
-          if(row2.value && typeof row2.value==='object') return clone(row2.value);
-          if(typeof row2.value==='string'){try{return JSON.parse(row2.value)}catch(_e){}}
-        }
-      }
-    }catch(_e){}
+    }catch(e){console.warn('PETATOESupabaseRepository getSystemSetting crashed', e)}
     return clone(def||{});
   }
 
@@ -183,18 +175,14 @@
     var c=client();
     var payloadData=data&&typeof data==='object'?clone(data):{};
     try{
-      var res=await c.from('system_settings').upsert({id:String(id),data:payloadData,updated_at:new Date().toISOString()},{onConflict:'id'});
+      var payload={key:String(id),data:payloadData,value:payloadData,updated_at:new Date().toISOString()};
+      var res=await c.from('system_settings').upsert(payload,{onConflict:'key'});
       if(!res.error) return {ok:true,data:res.data};
-      console.warn('PETATOESupabaseRepository saveSystemSetting id/data failed', resultError(res));
-    }catch(e){console.warn('PETATOESupabaseRepository saveSystemSetting id/data crashed', e)}
-    try{
-      var res2=await c.from('system_settings').upsert({key:String(id),value:payloadData,updated_at:new Date().toISOString()},{onConflict:'key'});
-      if(!res2.error) return {ok:true,data:res2.data};
-      console.warn('PETATOESupabaseRepository saveSystemSetting key/value failed', resultError(res2));
-      return {ok:false,error:resultError(res2)};
-    }catch(e2){
-      console.warn('PETATOESupabaseRepository saveSystemSetting key/value crashed', e2);
-      return {ok:false,error:String(e2&&e2.message?e2.message:e2)};
+      console.warn('PETATOESupabaseRepository saveSystemSetting failed', resultError(res));
+      return {ok:false,error:resultError(res)};
+    }catch(e){
+      console.warn('PETATOESupabaseRepository saveSystemSetting crashed', e);
+      return {ok:false,error:String(e&&e.message?e.message:e)};
     }
   }
 
