@@ -146,6 +146,68 @@
     return {ok:true,data:res.data};
   }
 
+
+  async function getSystemSetting(id, def){
+    if(!id) return clone(def||{});
+    if(!hasClient()) return clone(def||{});
+    var c=client();
+    try{
+      var res=await c.from('system_settings').select('*').eq('id', String(id)).limit(1);
+      if(res && !res.error){
+        var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
+        if(row){
+          if(row.data && typeof row.data==='object') return clone(row.data);
+          if(row.value && typeof row.value==='object') return clone(row.value);
+          if(typeof row.value==='string'){try{return JSON.parse(row.value)}catch(_e){}}
+        }
+        return clone(def||{});
+      }
+    }catch(_e){}
+    try{
+      var res2=await c.from('system_settings').select('*').eq('key', String(id)).limit(1);
+      if(res2 && !res2.error){
+        var row2=Array.isArray(res2.data)&&res2.data.length?res2.data[0]:null;
+        if(row2){
+          if(row2.data && typeof row2.data==='object') return clone(row2.data);
+          if(row2.value && typeof row2.value==='object') return clone(row2.value);
+          if(typeof row2.value==='string'){try{return JSON.parse(row2.value)}catch(_e){}}
+        }
+      }
+    }catch(_e){}
+    return clone(def||{});
+  }
+
+  async function saveSystemSetting(id, data){
+    if(!id) return {ok:false,error:'Missing system setting id'};
+    if(!hasClient()) return {ok:false,error:'Supabase client not ready'};
+    var c=client();
+    var payloadData=data&&typeof data==='object'?clone(data):{};
+    try{
+      var res=await c.from('system_settings').upsert({id:String(id),data:payloadData,updated_at:new Date().toISOString()},{onConflict:'id'});
+      if(!res.error) return {ok:true,data:res.data};
+      console.warn('PETATOESupabaseRepository saveSystemSetting id/data failed', resultError(res));
+    }catch(e){console.warn('PETATOESupabaseRepository saveSystemSetting id/data crashed', e)}
+    try{
+      var res2=await c.from('system_settings').upsert({key:String(id),value:payloadData,updated_at:new Date().toISOString()},{onConflict:'key'});
+      if(!res2.error) return {ok:true,data:res2.data};
+      console.warn('PETATOESupabaseRepository saveSystemSetting key/value failed', resultError(res2));
+      return {ok:false,error:resultError(res2)};
+    }catch(e2){
+      console.warn('PETATOESupabaseRepository saveSystemSetting key/value crashed', e2);
+      return {ok:false,error:String(e2&&e2.message?e2.message:e2)};
+    }
+  }
+
+  async function appendSystemList(id, entry, limit){
+    limit=Number(limit)||300;
+    var cur=await getSystemSetting(id,{items:[]});
+    var items=Array.isArray(cur)?cur:(Array.isArray(cur.items)?cur.items:[]);
+    items.push(entry&&typeof entry==='object'?clone(entry):{value:entry});
+    items=items.slice(-limit);
+    return saveSystemSetting(id,{items:items,updatedAt:new Date().toISOString()});
+  }
+
+
   window.PETATOESupabaseRepository={
     version:'8.0.2',
     hasClient:hasClient,
@@ -154,6 +216,9 @@
     deleteById:deleteById,
     getSingleton:getSingleton,
     saveSingleton:saveSingleton,
+    getSystemSetting:getSystemSetting,
+    saveSystemSetting:saveSystemSetting,
+    appendSystemList:appendSystemList,
     makeJsonTable:makeJsonTable,
     listPayrollEmployees:listPayrollEmployees,
     upsertPayrollEmployee:upsertPayrollEmployee,
