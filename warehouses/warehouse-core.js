@@ -179,11 +179,24 @@
         if(res.error) whWarn(table+' delete failed',res.error);
       }
     }
-    async function saveItems(list){var before=state.items.slice(); state.items=whArray(list).map(function(x){x=whClone(x)||{}; var code=whItemCode(x); x.code=code; x.id=String(x.id||x.legacy_id||code); x.legacy_id=String(x.legacy_id||x.id||code); return x;}); for(var i=0;i<state.items.length;i++) await upsertItem(state.items[i]); await deleteMissing('warehouse_items',before,state.items); try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:items-saved',{detail:{count:state.items.length}}));}catch(_e){} }
+    async function saveItems(list){
+      var before=state.items.slice();
+      var next=whArray(list).map(function(x){x=whClone(x)||{}; var code=whItemCode(x); x.code=code; x.id=String(x.id||x.legacy_id||code); x.legacy_id=String(x.legacy_id||x.id||code); return x;});
+      var errors=[];
+      state.items=next;
+      for(var i=0;i<state.items.length;i++){
+        var r=await upsertItem(state.items[i]);
+        if(r&&r.ok===false) errors.push(r.error||'unknown item save error');
+      }
+      if(errors.length){state.items=before; return {ok:false,error:errors.join(' | ')};}
+      await deleteMissing('warehouse_items',before,state.items);
+      try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:items-saved',{detail:{count:state.items.length}}));}catch(_e){}
+      return {ok:true,count:state.items.length};
+    }
     async function saveTransactions(list){var before=state.transactions.slice(); state.transactions=whArray(list).map(function(x){x=whClone(x)||{}; x.id=String(x.id||x.legacy_id||('WT-'+Date.now())); x.legacy_id=String(x.legacy_id||x.id); return x;}); for(var i=0;i<state.transactions.length;i++) await upsertTx(state.transactions[i]); await deleteMissing('warehouse_transactions',before,state.transactions); try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:transactions-saved',{detail:{count:state.transactions.length}}));}catch(_e){} }
     async function saveSettings(){ if(!whHasClient()) return; var res=await whClient().from('warehouse_settings').upsert({id:WAREHOUSE_SETTINGS_ID,data:state.settings,updated_at:whNow()},{onConflict:'id'}); if(res.error) whWarn('settings save failed',res.error); }
     setTimeout(load,0);
-    return {load:load,isReady:function(){return !!state.ready;},getItems:function(){return whClone(state.items)||[];},setItems:function(a){saveItems(a);return true;},getTransactions:function(){return whClone(state.transactions)||[];},setTransactions:function(a){saveTransactions(a);return true;},getSetting:function(k,fb){return state.settings&&state.settings[k]!=null?state.settings[k]:fb;},setSetting:function(k,v){state.settings=state.settings||{};state.settings[k]=v;saveSettings();return v;},removeSetting:function(k){if(state.settings)delete state.settings[k];saveSettings();return null;}};
+    return {load:load,isReady:function(){return !!state.ready;},getItems:function(){return whClone(state.items)||[];},setItems:function(a){return saveItems(a);},getTransactions:function(){return whClone(state.transactions)||[];},setTransactions:function(a){return saveTransactions(a);},getSetting:function(k,fb){return state.settings&&state.settings[k]!=null?state.settings[k]:fb;},setSetting:function(k,v){state.settings=state.settings||{};state.settings[k]=v;return saveSettings();},removeSetting:function(k){if(state.settings)delete state.settings[k];return saveSettings();}};
   })();
   window.PETATOEWarehouseDataStore=WarehouseSupabaseStore;
 
@@ -207,7 +220,7 @@
   window.PETATOEWarehouseItems = window.PETATOEWarehouseItems || {
     key: ITEM_KEY,
     read: function(){try{var a=warehouseDataReadArray(ITEM_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}},
-    write: function(a){try{warehouseDataWriteArray(ITEM_KEY,Array.isArray(a)?a:[])}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}},
+    write: function(a){try{return warehouseDataWriteArray(ITEM_KEY,Array.isArray(a)?a:[])}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);return Promise.resolve({ok:false,error:e&&e.message?e.message:String(e)});}},
     getAll: function(){return this.read()},
     setAll: function(a){return this.write(a)}
   };
@@ -365,7 +378,33 @@
   function ensureItemDefaults(){try{if(WarehouseSupabaseStore&&typeof WarehouseSupabaseStore.isReady==='function'&&!WarehouseSupabaseStore.isReady())return;}catch(_e){}var a=warehouseUiGetItems(), existing={};a.forEach(function(x){if(String(x.name||'').trim())existing[String(x.name).trim()]=1});var m={};petBlock6857_getTx().forEach(function(t){if(t.item)m[String(t.item).trim()]=1});invoiceRows().forEach(function(r){var it=invoiceItemName(r);if(it)m[it]=1});var names=Object.keys(m).filter(function(n){return n&&!existing[n]});if(!names.length)return;var start=0;a.forEach(function(x){var mm=String(x.code||x.id||'').match(/(\d+)/);if(mm)start=Math.max(start,parseInt(mm[1],10)||0)});names.sort().forEach(function(n,i){var code='ITM-'+String(start+i+1).padStart(4,'0');a.push({id:'ITM-AUTO-'+Date.now()+'-'+i,code:code,name:n,type:'service',category:'من الفواتير',unit:'خدمة',min:0,notes:'تم إنشاؤه تلقائياً من الفواتير المرفوعة مسبقاً - افتراضي خدمي ويمكن تحويله إلى مخزني من دليل الأصناف',status:'active',createdAt:new Date().toISOString()})});warehouseUiSetItems(a)}
   function nextCode(){var max=0;warehouseUiGetItems().forEach(function(x){var m=String(x.code||x.id||'').match(/(\d+)/);if(m)max=Math.max(max,parseInt(m[1],10)||0)});return 'ITM-'+String(max+1).padStart(4,'0')}
   function clearItemForm(){editItemId='';try{window.PETATOEWarehouseUI&&(window.PETATOEWarehouseUI.__editingItemId=false)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}['whItemCode','whItemName','whItemCategory','whItemUnit','whItemMin','whItemNotes'].forEach(function(id){var e=byId(id);if(e)e.value=''});var t=byId('whItemType');if(t)t.value='service';var c=byId('whItemCode');if(c)c.value=nextCode();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-form-cleared'))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
-  function saveItem(){var code=String((byId('whItemCode')||{}).value||'').trim()||nextCode(),name=String((byId('whItemName')||{}).value||'').trim(),type=(byId('whItemType')||{}).value||'service',cat=String((byId('whItemCategory')||{}).value||'').trim(),unit=String((byId('whItemUnit')||{}).value||'').trim(),min=num((byId('whItemMin')||{}).value),notes=String((byId('whItemNotes')||{}).value||'').trim();if(!name){alert('اكتب اسم الصنف');return}var a=warehouseUiGetItems();var dup=a.find(function(x){return String(x.name||'').trim()===name&&x.id!==editItemId});if(dup){alert('اسم الصنف موجود بالفعل');return}if(editItemId){a=a.map(function(x){return x.id===editItemId?Object.assign({},x,{code:code,name:name,type:type,category:cat,unit:unit,min:min,notes:notes,updatedAt:new Date().toISOString()}):x})}else{code=nextCode();a.push({id:'ITM-'+Date.now(),code:code,name:name,type:type,category:cat,unit:unit,min:min,notes:notes,status:'active',createdAt:new Date().toISOString()})}warehouseUiSetItems(a);clearItemForm();renderWarehouseUIAll();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-saved',{detail:{name:name,code:code,type:type}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}try{window.PETATOEWarehouses&&window.PETATOEWarehouses.render&&window.PETATOEWarehouses.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}toast('تم حفظ الصنف')}
+  async function saveItem(){
+    try{
+      if(window.PETATOEWarehouseDataStore&&typeof window.PETATOEWarehouseDataStore.isReady==='function'&&!window.PETATOEWarehouseDataStore.isReady()&&typeof window.PETATOEWarehouseDataStore.load==='function'){
+        await window.PETATOEWarehouseDataStore.load();
+      }
+      var code=String((byId('whItemCode')||{}).value||'').trim()||nextCode(),name=String((byId('whItemName')||{}).value||'').trim(),type=(byId('whItemType')||{}).value||'service',cat=String((byId('whItemCategory')||{}).value||'').trim(),unit=String((byId('whItemUnit')||{}).value||'').trim(),min=num((byId('whItemMin')||{}).value),notes=String((byId('whItemNotes')||{}).value||'').trim();
+      if(!name){alert('اكتب اسم الصنف');return}
+      var a=warehouseUiGetItems();
+      var dup=a.find(function(x){return String(x.name||'').trim()===name&&String(x.id||x.legacy_id||x.code)!==String(editItemId||'')});
+      if(dup){alert('اسم الصنف موجود بالفعل');return}
+      if(editItemId){
+        a=a.map(function(x){return String(x.id||x.legacy_id||x.code)===String(editItemId)?Object.assign({},x,{code:code,name:name,type:type,category:cat,unit:unit,min:min,notes:notes,updatedAt:new Date().toISOString()}):x})
+      }else{
+        code=nextCode();
+        a.push({id:code,legacy_id:code,code:code,name:name,type:type,category:cat,unit:unit,min:min,notes:notes,status:'active',createdAt:new Date().toISOString()})
+      }
+      var result=await warehouseUiSetItems(a);
+      if(result&&result.ok===false){alert('فشل حفظ الصنف في Supabase: '+(result.error||'خطأ غير معروف'));return}
+      clearItemForm();renderWarehouseUIAll();
+      try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-saved',{detail:{name:name,code:code,type:type}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}
+      try{window.PETATOEWarehouses&&window.PETATOEWarehouses.render&&window.PETATOEWarehouses.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}
+      toast('تم حفظ الصنف')
+    }catch(e){
+      alert('فشل حفظ الصنف: '+(e&&e.message?e.message:String(e)));
+      try{window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}catch(_e){}
+    }
+  }
   function editItem(id){var x=warehouseUiGetItems().find(function(i){return i.id===id});if(!x)return;editItemId=id;try{window.PETATOEWarehouseUI&&(window.PETATOEWarehouseUI.__editingItemId=true)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}var set=function(id,v){var e=byId(id);if(e)e.value=v==null?'':v};set('whItemCode',x.code||x.id);set('whItemName',x.name);set('whItemType',x.type||'service');set('whItemCategory',x.category);set('whItemUnit',x.unit);set('whItemMin',x.min||0);set('whItemNotes',x.notes);try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-edit',{detail:{id:id}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}openWarehouseTab('items');}
   function toggleItem(id){var a=warehouseUiGetItems().map(function(x){return x.id===id?Object.assign({},x,{status:(x.status||'active')==='active'?'inactive':'active'}):x});warehouseUiSetItems(a);renderWarehouseUIAll();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-changed',{detail:{id:id,action:'toggle'}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}try{window.PETATOEWarehouses&&window.PETATOEWarehouses.render&&window.PETATOEWarehouses.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
   function deleteItem(id){var x=warehouseUiGetItems().find(function(i){return i.id===id});if(!x)return;if(petBlock6857_getTx().some(function(t){return t.item===x.name})){alert('لا يمكن حذف صنف عليه حركات مخزنية. يمكن إيقافه بدل الحذف.');return}if(!confirm('حذف الصنف؟'))return;warehouseUiSetItems(warehouseUiGetItems().filter(function(i){return i.id!==id}));renderWarehouseUIAll();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-changed',{detail:{id:id,action:'delete'}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
