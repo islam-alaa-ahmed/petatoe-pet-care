@@ -73,7 +73,6 @@
     var res = await window.PETATOEDataLayer.deleteAllSalesRecords();
     if(!res || !res.ok){ console.error('[PETATOE Sales CRUD] delete all failed',res); toastMsg('فشل حذف كل السجلات من Supabase'); return false; }
     setRuntimeRows([],'sales-delete-all-local-cache-after-supabase');
-    try{ if(window.PETATOEStorage&&window.PETATOEStorage.remove) window.PETATOEStorage.remove('petatoe_manual_invoice_next'); }catch(e){ warnSilent('sales crud remove manual next',e); }
     try{ document.dispatchEvent(new CustomEvent('petatoe:records-cleared',{detail:{source:'supabase'}})); }catch(e){ warnSilent('sales crud cleared event',e); }
     await refreshRows('sales-delete-all-refresh');
     renderAll();
