@@ -244,7 +244,7 @@ function renderSmartReports(){
   const repeatClientRows=newReturningClientRows.filter(x=>x.operations>1);
   const salesNewReturning={new:oneTimeClientRows.length,returning:repeatClientRows.length};
   window.PETATOENewReturningDetails={oneTime:oneTimeClientRows,returning:repeatClientRows,updatedAt:new Date().toISOString()};
-  // Monthly target report - editable and saved per month/year through PETATOEStorage.
+  // Monthly target report - editable and saved per month/year through Supabase system_settings.
   const salesTargetYears=getYearButtonList(records);
   const salesTargetDatedRows=records.filter(r=>smartDateValue(r)).slice().sort((a,b)=>+smartDateValue(b)-+smartDateValue(a));
   const salesTargetLatestDate=salesTargetDatedRows.length?smartDateValue(salesTargetDatedRows[0]):null;
@@ -281,8 +281,7 @@ function renderSmartReports(){
   const salesTargetTransactions=salesTargetRows.length;
   const salesTargetClients=new Set(salesTargetRows.map(r=>r.client).filter(Boolean)).size;
   const salesTargetAvg=safeDiv(salesTargetActual,salesTargetTransactions);
-  let salesTargetStore={};
-  try{salesTargetStore=((window.PETATOEStorage&&window.PETATOEStorage.readJSON)?window.PETATOEStorage.readJSON('petatoe_monthly_sales_targets_v1',{}):{})||{};}catch(e){salesTargetStore={};}
+  let salesTargetStore=(typeof readSmartTargetStore==='function'?readSmartTargetStore():{rules:[],explicit:{}});
   const salesTarget=getSmartMonthlyTarget(salesTargetPeriod);
   const salesTargetPct=salesTarget?safeDiv(salesTargetActual,salesTarget)*100:0;
   const salesTargetGaugePct=Math.max(0,Math.min(100,salesTargetPct||0));

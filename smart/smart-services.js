@@ -77,16 +77,7 @@ function smartServiceRows(source){
   return out;
 }
 function smartServiceReadJSONSafe(key, fallback){
-  try{
-    if(window.PETATOEStorage && typeof window.PETATOEStorage.readJSON==='function'){
-      var v=window.PETATOEStorage.readJSON(key, fallback);
-      return v==null?fallback:v;
-    }
-  }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-services.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-  try{
-    var raw=(window.PETATOEStorage&&window.PETATOEStorage.get)?window.PETATOEStorage.get(key,null):(window['localStorage']?window['localStorage'].getItem(key):null);
-    return raw?JSON.parse(raw):fallback;
-  }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-services.js', e, {phase:'v6.5.8-security-gate'}); }catch(_){try{if(window.PETATOECaptureSilentCatch)window.PETATOECaptureSilentCatch('smart/smart-services.js',_,{phase:'v6.5.9-risk-cleanup'});}catch(_petatoeSilentCatch){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('smart/smart-services.js',_petatoeSilentCatch);}} return fallback;}
+  return fallback;
 }
 function smartAppointmentRowsForServices(){return [];}
 function smartServiceGroupSum(source){
