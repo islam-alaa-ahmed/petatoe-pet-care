@@ -8,6 +8,36 @@
     item: 'petatoe_manual_items_v37',
     client: 'petatoe_manual_customers_v37'
   };
+  var SALES_REFS_ROW_ID = 'sales_entry_references';
+  var supabaseRefsCache = { item: [], client: [] };
+  var supabaseRefsLoaded = false;
+
+  function repo(){ return window.PETATOESupabaseRepository || null; }
+  function uniqClean(arr){ return Array.from(new Set((Array.isArray(arr)?arr:[]).map(clean).filter(Boolean))); }
+  async function loadSupabaseRefs(){
+    var R = repo();
+    if(!R || !R.hasClient || !R.hasClient() || typeof R.getSystemSetting !== 'function') return;
+    try{
+      var data = await R.getSystemSetting(SALES_REFS_ROW_ID, {items:[], clients:[], item:[], client:[]});
+      supabaseRefsCache.item = uniqClean(data.item || data.items || data.manualItems || []);
+      supabaseRefsCache.client = uniqClean(data.client || data.clients || data.manualClients || []);
+      supabaseRefsLoaded = true;
+      try{ if(window.petatoeRefreshEntryReferences) window.petatoeRefreshEntryReferences(); }catch(_e){}
+      console.log('✅ PETATOE Sales entry references loaded from Supabase', {items:supabaseRefsCache.item.length, clients:supabaseRefsCache.client.length});
+    }catch(e){ console.warn('PETATOE Sales entry references Supabase load failed', e); }
+  }
+  function saveSupabaseRefs(){
+    var R = repo();
+    if(!R || !R.hasClient || !R.hasClient() || typeof R.saveSystemSetting !== 'function') return;
+    var payload = {
+      item: uniqClean(supabaseRefsCache.item),
+      client: uniqClean(supabaseRefsCache.client),
+      updatedAt: new Date().toISOString()
+    };
+    R.saveSystemSetting(SALES_REFS_ROW_ID, payload).then(function(res){
+      if(res && !res.ok) console.warn('PETATOE Sales entry references Supabase save failed', res.error);
+    }).catch(function(e){ console.warn('PETATOE Sales entry references Supabase save crashed', e); });
+  }
 
   function gid(id){ return document.getElementById(id); }
   function toastMsg(msg){
@@ -38,14 +68,15 @@
     return tokens.every(function(t){ return n.indexOf(t) !== -1; });
   }
 
+  function typeFromKey(key){ return key === REF_KEYS.client ? 'client' : 'item'; }
   function safeParse(key){
-    try{
-      var S=window.PETATOEStorage;var arr = S&&S.readJSON?S.readJSON(key,[]):[];
-      return Array.isArray(arr) ? arr.map(clean).filter(Boolean) : [];
-    }catch(e){ return []; }
+    var type = typeFromKey(key);
+    return uniqClean(supabaseRefsCache[type] || []);
   }
   function safeSave(key, arr){
-    try{ var S=window.PETATOEStorage;if(S&&S.writeJSON)S.writeJSON(key, Array.from(new Set(arr.map(clean).filter(Boolean)))); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/entry-references.js",e);}
+    var type = typeFromKey(key);
+    supabaseRefsCache[type] = uniqClean(arr);
+    saveSupabaseRefs();
   }
 
   function recordsArray(){
@@ -304,6 +335,7 @@
   }
 
   function init(){
+    loadSupabaseRefs();
     observeEntryForm();
     enhanceEntryReferences();
 

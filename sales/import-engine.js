@@ -36,7 +36,17 @@
 
   function storageReadJSON(key, fallback){
     try{ if(window.PETATOEStorage && typeof window.PETATOEStorage.readJSON==='function') return window.PETATOEStorage.readJSON(key, fallback); }catch(_e){}
-    try{ const raw=localStorage.getItem(key); return raw?JSON.parse(raw):fallback; }catch(_e){ return fallback; }
+    return fallback;
+  }
+  function appendImportAudit(kind, entry){
+    try{
+      const R=window.PETATOESupabaseRepository;
+      if(R&&R.hasClient&&R.hasClient()&&typeof R.appendSystemList==='function'){
+        R.appendSystemList(kind==='override'?'sales_import_override_audit':'sales_import_audit', entry, 300).then(function(res){
+          if(res&&!res.ok) console.warn('[PETATOE Import] Supabase audit save failed', res.error);
+        }).catch(function(e){ console.warn('[PETATOE Import] Supabase audit save crashed', e); });
+      }
+    }catch(e){ console.warn('[PETATOE Import] audit failed', e); }
   }
   function findCurrentFullUser(){
     let cu=null;
@@ -74,8 +84,7 @@
       const u=findCurrentFullUser()||{};
       const detail='Override import by '+String(u.username||u.fullName||u.id||'Super Admin')+' | rows='+String((importData||[]).length)+' | errors='+String((lastImportErrors||[]).length)+' | mode='+String(importMode)+' | replace='+String(!!replace)+' | reason='+(reason||'-');
       if(window.__PETATOE_SETTINGS_API__ && typeof window.__PETATOE_SETTINGS_API__.audit==='function') window.__PETATOE_SETTINGS_API__.audit('Import Validation Override', detail, 'warn');
-      const key='petatoe_import_override_audit';
-      const list=storageReadJSON(key,[]); if(Array.isArray(list)){ list.push({time:new Date().toISOString(),user:u.username||u.fullName||u.id||'Super Admin',rows:(importData||[]).length,errors:(lastImportErrors||[]).length,mode:importMode,replace:!!replace,reason:reason||''}); localStorage.setItem(key,JSON.stringify(list.slice(-300))); }
+      appendImportAudit('override',{time:new Date().toISOString(),user:u.username||u.fullName||u.id||'Super Admin',rows:(importData||[]).length,errors:(lastImportErrors||[]).length,mode:importMode,replace:!!replace,reason:reason||''});
     }catch(e){ try{ console.warn('[PETATOE Import Override] audit failed', e); }catch(_e){} }
   }
   async function forceImportAfterOverride(reason){
@@ -343,6 +352,7 @@
     const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
     const box=document.getElementById('importErrors'); if(box){box.style.display='none'; clearNode(box);}
     window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:ok,target:hasOfficialDataLayer()?'supabase':'legacy-local',rows:uploadRows.length,result:supabaseResult};
+    appendImportAudit('import',{time:new Date().toISOString(),ok:!!ok,target:hasOfficialDataLayer()?'supabase':'legacy-local',rows:uploadRows.length,mode:importMode,replace:!!options.replace,source:eventName||'sales-import'});
     if(typeof toast==='function')toast(message || (ok?'تم رفع البيانات الرسمية إلى Supabase بنجاح':'تمت محاولة حفظ البيانات'));
     return ok;
   }
