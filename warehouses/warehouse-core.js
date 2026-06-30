@@ -81,6 +81,11 @@
     obj=obj||{};
     return String(obj.legacy_id||obj.legacyId||obj.id||obj.code||obj.name||'').trim() || (prefix+'-'+Date.now()+'-'+Math.random().toString(16).slice(2,6));
   }
+  function whItemCode(obj){
+    obj=obj||{};
+    var code=String(obj.code||obj.item_code||'').trim();
+    return code || String(obj.legacy_id||obj.legacyId||obj.id||obj.name||'').trim() || ('ITM-'+Date.now()+'-'+Math.random().toString(16).slice(2,6));
+  }
   function whClient(){return window.supabase || window.PETATOE_SUPABASE_CLIENT || null;}
   function whHasClient(){var c=whClient(); return !!(c && typeof c.from==='function');}
   function whWarn(ctx,e){try{console.warn('PETATOE Warehouse Supabase '+ctx, e && (e.message||e));}catch(_e){}}
@@ -143,9 +148,14 @@
     }
     async function upsertItem(item){
       if(!whHasClient()) return {ok:false,error:'Supabase client not ready'};
-      item=item&&typeof item==='object'?whClone(item):{}; var legacy=whLegacyId('WI',item); item.id=String(item.id||legacy); item.legacy_id=legacy;
-      var payload={legacy_id:legacy,data:item,item_code:String(item.code||item.item_code||legacy),name:String(item.name||''),item_type:String(item.type||item.item_type||'stock'),category:String(item.category||''),unit:String(item.unit||''),min_qty:Number(item.min||item.min_qty||0)||0,current_qty:Number(item.current_qty||0)||0,status:String(item.status||'active'),notes:String(item.notes||''),legacy_payload:item,updated_at:whNow()};
-      var res=await whClient().from('warehouse_items').upsert(payload,{onConflict:'legacy_id'});
+      item=item&&typeof item==='object'?whClone(item):{};
+      var code=whItemCode(item);
+      var legacy=String(item.legacy_id||item.legacyId||item.id||code).trim();
+      item.code=code;
+      item.id=String(item.id||legacy||code);
+      item.legacy_id=legacy;
+      var payload={legacy_id:legacy,data:item,item_code:code,name:String(item.name||code),item_type:String(item.type||item.item_type||'stock'),category:String(item.category||''),unit:String(item.unit||''),min_qty:Number(item.min||item.min_qty||0)||0,current_qty:Number(item.current_qty||0)||0,status:String(item.status||'active'),notes:String(item.notes||''),legacy_payload:item,updated_at:whNow()};
+      var res=await whClient().from('warehouse_items').upsert(payload,{onConflict:'item_code'});
       if(res.error){whWarn('item upsert failed',res.error);return {ok:false,error:res.error.message||String(res.error)}}
       return {ok:true};
     }
@@ -159,15 +169,17 @@
     }
     async function deleteMissing(table, before, after){
       if(!whHasClient()) return;
-      var keep={}; whArray(after).forEach(function(x){keep[whLegacyId(table==='warehouse_items'?'WI':'WT',x)]=1;});
-      var removed=whArray(before).filter(function(x){return !keep[whLegacyId(table==='warehouse_items'?'WI':'WT',x)];});
+      var isItems=table==='warehouse_items';
+      var keyFn=isItems?whItemCode:function(x){return whLegacyId('WT',x);};
+      var keep={}; whArray(after).forEach(function(x){keep[keyFn(x)]=1;});
+      var removed=whArray(before).filter(function(x){return !keep[keyFn(x)];});
       for(var i=0;i<removed.length;i++){
-        var legacy=whLegacyId(table==='warehouse_items'?'WI':'WT',removed[i]);
-        var res=await whClient().from(table).delete().eq('legacy_id',legacy);
+        var key=keyFn(removed[i]);
+        var res=isItems?await whClient().from(table).delete().eq('item_code',key):await whClient().from(table).delete().eq('legacy_id',key);
         if(res.error) whWarn(table+' delete failed',res.error);
       }
     }
-    async function saveItems(list){var before=state.items.slice(); state.items=whArray(list).map(function(x){x=whClone(x)||{}; x.id=String(x.id||x.legacy_id||x.code||x.name||('WI-'+Date.now())); x.legacy_id=String(x.legacy_id||x.id); return x;}); for(var i=0;i<state.items.length;i++) await upsertItem(state.items[i]); await deleteMissing('warehouse_items',before,state.items); try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:items-saved',{detail:{count:state.items.length}}));}catch(_e){} }
+    async function saveItems(list){var before=state.items.slice(); state.items=whArray(list).map(function(x){x=whClone(x)||{}; var code=whItemCode(x); x.code=code; x.id=String(x.id||x.legacy_id||code); x.legacy_id=String(x.legacy_id||x.id||code); return x;}); for(var i=0;i<state.items.length;i++) await upsertItem(state.items[i]); await deleteMissing('warehouse_items',before,state.items); try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:items-saved',{detail:{count:state.items.length}}));}catch(_e){} }
     async function saveTransactions(list){var before=state.transactions.slice(); state.transactions=whArray(list).map(function(x){x=whClone(x)||{}; x.id=String(x.id||x.legacy_id||('WT-'+Date.now())); x.legacy_id=String(x.legacy_id||x.id); return x;}); for(var i=0;i<state.transactions.length;i++) await upsertTx(state.transactions[i]); await deleteMissing('warehouse_transactions',before,state.transactions); try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:transactions-saved',{detail:{count:state.transactions.length}}));}catch(_e){} }
     async function saveSettings(){ if(!whHasClient()) return; var res=await whClient().from('warehouse_settings').upsert({id:WAREHOUSE_SETTINGS_ID,data:state.settings,updated_at:whNow()},{onConflict:'id'}); if(res.error) whWarn('settings save failed',res.error); }
     setTimeout(load,0);
@@ -350,7 +362,7 @@
   function warehouseUiFillSelect(el,arr,allLabel){if(!el)return;var cur=el.value;el.textContent='';if(allLabel)warehouseUiAppendOption(el,'all',allLabel);(arr||[]).forEach(function(v){warehouseUiAppendOption(el,v,v)});if(cur&&(cur==='all'||(arr||[]).indexOf(cur)>-1))el.value=cur}
   function downloadCsv(name,rows){var lines=rows.map(function(row){return row.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}).join(',')});var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name.replace(/[\\/:*?"<>|]/g,'_');a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
   function openWarehouseTab(name){qsa('#warehouses .wh-tabs button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-wh-tab')===name)});qsa('#warehouses .wh-tab-panel').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-wh-tab-panel')===name)});renderWarehouseUIAll();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:tabchange',{detail:{tab:name}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}try{document.querySelector('#warehouses .wh-tabs').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
-  function ensureItemDefaults(){var a=warehouseUiGetItems(), existing={};a.forEach(function(x){if(String(x.name||'').trim())existing[String(x.name).trim()]=1});var m={};petBlock6857_getTx().forEach(function(t){if(t.item)m[String(t.item).trim()]=1});invoiceRows().forEach(function(r){var it=invoiceItemName(r);if(it)m[it]=1});var names=Object.keys(m).filter(function(n){return n&&!existing[n]});if(!names.length)return;var start=0;a.forEach(function(x){var mm=String(x.code||x.id||'').match(/(\d+)/);if(mm)start=Math.max(start,parseInt(mm[1],10)||0)});names.sort().forEach(function(n,i){var code='ITM-'+String(start+i+1).padStart(4,'0');a.push({id:'ITM-AUTO-'+Date.now()+'-'+i,code:code,name:n,type:'service',category:'من الفواتير',unit:'خدمة',min:0,notes:'تم إنشاؤه تلقائياً من الفواتير المرفوعة مسبقاً - افتراضي خدمي ويمكن تحويله إلى مخزني من دليل الأصناف',status:'active',createdAt:new Date().toISOString()})});warehouseUiSetItems(a)}
+  function ensureItemDefaults(){try{if(WarehouseSupabaseStore&&typeof WarehouseSupabaseStore.isReady==='function'&&!WarehouseSupabaseStore.isReady())return;}catch(_e){}var a=warehouseUiGetItems(), existing={};a.forEach(function(x){if(String(x.name||'').trim())existing[String(x.name).trim()]=1});var m={};petBlock6857_getTx().forEach(function(t){if(t.item)m[String(t.item).trim()]=1});invoiceRows().forEach(function(r){var it=invoiceItemName(r);if(it)m[it]=1});var names=Object.keys(m).filter(function(n){return n&&!existing[n]});if(!names.length)return;var start=0;a.forEach(function(x){var mm=String(x.code||x.id||'').match(/(\d+)/);if(mm)start=Math.max(start,parseInt(mm[1],10)||0)});names.sort().forEach(function(n,i){var code='ITM-'+String(start+i+1).padStart(4,'0');a.push({id:'ITM-AUTO-'+Date.now()+'-'+i,code:code,name:n,type:'service',category:'من الفواتير',unit:'خدمة',min:0,notes:'تم إنشاؤه تلقائياً من الفواتير المرفوعة مسبقاً - افتراضي خدمي ويمكن تحويله إلى مخزني من دليل الأصناف',status:'active',createdAt:new Date().toISOString()})});warehouseUiSetItems(a)}
   function nextCode(){var max=0;warehouseUiGetItems().forEach(function(x){var m=String(x.code||x.id||'').match(/(\d+)/);if(m)max=Math.max(max,parseInt(m[1],10)||0)});return 'ITM-'+String(max+1).padStart(4,'0')}
   function clearItemForm(){editItemId='';try{window.PETATOEWarehouseUI&&(window.PETATOEWarehouseUI.__editingItemId=false)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}['whItemCode','whItemName','whItemCategory','whItemUnit','whItemMin','whItemNotes'].forEach(function(id){var e=byId(id);if(e)e.value=''});var t=byId('whItemType');if(t)t.value='service';var c=byId('whItemCode');if(c)c.value=nextCode();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-form-cleared'))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
   function saveItem(){var code=String((byId('whItemCode')||{}).value||'').trim()||nextCode(),name=String((byId('whItemName')||{}).value||'').trim(),type=(byId('whItemType')||{}).value||'service',cat=String((byId('whItemCategory')||{}).value||'').trim(),unit=String((byId('whItemUnit')||{}).value||'').trim(),min=num((byId('whItemMin')||{}).value),notes=String((byId('whItemNotes')||{}).value||'').trim();if(!name){alert('اكتب اسم الصنف');return}var a=warehouseUiGetItems();var dup=a.find(function(x){return String(x.name||'').trim()===name&&x.id!==editItemId});if(dup){alert('اسم الصنف موجود بالفعل');return}if(editItemId){a=a.map(function(x){return x.id===editItemId?Object.assign({},x,{code:code,name:name,type:type,category:cat,unit:unit,min:min,notes:notes,updatedAt:new Date().toISOString()}):x})}else{code=nextCode();a.push({id:'ITM-'+Date.now(),code:code,name:name,type:type,category:cat,unit:unit,min:min,notes:notes,status:'active',createdAt:new Date().toISOString()})}warehouseUiSetItems(a);clearItemForm();renderWarehouseUIAll();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-saved',{detail:{name:name,code:code,type:type}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}try{window.PETATOEWarehouses&&window.PETATOEWarehouses.render&&window.PETATOEWarehouses.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}toast('تم حفظ الصنف')}
