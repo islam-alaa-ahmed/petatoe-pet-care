@@ -2,7 +2,7 @@
    Single synchronous facade for sales records and current user.
    Rules:
    - PETATOEDataSource is the only public read/write facade for sales records.
-   - v6.1.32: Storage closure: DataSource reads/writes via PETATOEStorage to avoid direct browser storage access outside storage.js.
+   - v8.0.2: Sales records are Supabase/runtime only; no LocalStorage/PETATOEStorage fallback.
    - IndexedDB loaders keep this facade synchronized through syncRecordsCache().
    - Legacy globals may be updated for compatibility, but are never read as source. */
 (function(w){
@@ -93,9 +93,8 @@
     });
     return {rows:rows.length,anomalies:anomalies,ok:!anomalies.length};
   }
-  function S(){return w.PETATOEStorage||null}
-  function readStoredRecords(){try{var st=S();return normalizeRecords(st&&st.readJSON?st.readJSON('records',[]):[])}catch(e){return []}}
-  function writeStoredRecords(arr){try{var st=S();if(st&&st.writeJSON)return st.writeJSON('records',normalizeRecords(arr));}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);} return false;}
+  function readStoredRecords(){return []}
+  function writeStoredRecords(arr){return false}
   function notifyRecordsChanged(reason){
     try{
       if(w.PETATOE && w.PETATOE.SmartReports && typeof w.PETATOE.SmartReports.notifyDataChanged === 'function'){
@@ -128,8 +127,7 @@
   function setRecordsSync(arr){
     recordsCache=normalizeRecords(arr);
     publishLegacy(recordsCache);
-    writeStoredRecords(recordsCache);
-    notifyRecordsChanged('set-records');
+    notifyRecordsChanged('set-records-runtime-only');
     return recordsCache;
   }
   function syncRecordsCache(arr, options){
@@ -170,19 +168,16 @@
     setTimeout(tick, 250);
   }
   function getCurrentUserRaw(){
-    var st=S();
-    try{var canonical=st&&st.get?st.get('currentUser',''):''; if(canonical)return canonical;}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);}
-    for(var i=0;i<USER_ALIASES.length;i++){try{var v=st&&st.get?st.get(USER_ALIASES[i],''):''; if(v)return v;}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);}}
     try{if(w.currentUser){return typeof w.currentUser==='string'?w.currentUser:JSON.stringify(w.currentUser)}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);}
+    try{if(w.__PETATOE_CURRENT_USER_RAW__)return String(w.__PETATOE_CURRENT_USER_RAW__)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);}
     return '';
   }
   function setCurrentUser(value){
     var raw=value;
     if(value&&typeof value==='object'){try{raw=JSON.stringify(value)}catch(e){raw=String(value)}}
     raw=raw==null?'':String(raw);
-    var st=S();
-    try{if(st&&st.set)st.set('currentUser',raw)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);}
-    USER_ALIASES.forEach(function(k){try{if(st&&st.set)st.set(k,raw)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);}});
+    try{w.__PETATOE_CURRENT_USER_RAW__=raw;}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);}
+    try{var obj=parse(raw,null); if(obj)w.currentUser=obj;}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);}
     return raw;
   }
   function getCurrentUserName(fallback){
