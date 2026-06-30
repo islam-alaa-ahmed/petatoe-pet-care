@@ -1,8 +1,5 @@
-/* PETATOE v6.1.24 — Payroll Storage Key Map Fix
-   - read/write now delegates to PETATOEStorage (KEY_MAP aware) when available, keeps PETATOEStorage-only access for API migration readiness.
-   - saveEmployeeConfig now uses PETATOEStorage.writeJSON.
-   - All 5 payroll keys registered in storage.js KEY_MAP (payrollEmployees, payrollSlips, payrollJobTypes, payrollEmployeeConfig, payrollCommissionSnapshots).
-   Scope: independent payroll workflow only. No treasury integration. */
+/* PETATOE v8.0.2 — Payroll Supabase Storage Cleanup
+   Payroll operational data reads/writes through Supabase runtime cache only. */
 (function(){
   'use strict';
   if(window.__PETATOE_PAYROLL_CORE_BOOTED__ && window.PETATOEPayroll) return;
@@ -43,7 +40,7 @@
       if(v===undefined||v===null)return cloneVal(def);
       return cloneVal(v);
     }
-    try{var S=window.PETATOEStorage;if(S&&typeof S.readJSON==='function')return S.readJSON(key,def);return def}catch(e){return def}
+    return cloneVal(def);
   }
   function write(key,val){
     if(isPayrollKey(key)){
@@ -52,7 +49,7 @@
       persistPayrollKey(key,payrollCache[key],prev);
       return;
     }
-    try{var S=window.PETATOEStorage;if(S&&typeof S.writeJSON==='function'){S.writeJSON(key,val||[]);return;}}catch(e){console.warn('PETATOEPayroll write failed',key,e)}
+    console.warn('PETATOEPayroll ignored non-payroll storage write', key);
   }
   function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4},commissionSnapshots:payrollCache[COMM_SNAPSHOT_KEY]||{}}}
   function persistMaster(){
@@ -150,8 +147,7 @@
   function payrollYears(){return uniqueSorted(slips().map(function(s){return periodYear(s.period)}),true)}
   function payrollMonths(year){return uniqueSorted(slips().filter(function(s){return !year||periodYear(s.period)===String(year)}).map(function(s){return periodMonth(s.period)}),false)}
   function norm(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,' ')}
-  var PET_USERS_KEYS=['petatoe_users_v2','petatoe_users_v108','petatoe_users_v110','petatoe_users_v139','users'];
-  var PET_CURRENT_KEYS=['petatoe_current_user_v2','petatoe_current_user_v108','petatoe_current_user'];
+  var PET_USERS_KEYS=[];
   function mergeUser(oldU,newU){
     oldU=oldU||{};newU=newU||{};
     return Object.assign({},oldU,newU,{
@@ -179,10 +175,10 @@
   function getUserById(id){id=String(id||'');return appUsers().find(function(u){return String(u.id)===id})||null}
   function currentUser(){
     try{if(typeof window.petCurrentUser==='function')return window.petCurrentUser()}catch(e){console.warn('PETATOEPayroll currentUser fallback',e)}
-    var id='';
-    PET_CURRENT_KEYS.some(function(k){var S=window.PETATOEStorage;id=(S&&S.get?S.get(k,''):'')||'';return !!id});
-    if(!id)return {id:'',username:'',fullName:'',role:'guest',status:'inactive'};
-    return getUserById(id)||{id:id,username:'',fullName:'',role:'guest',status:'inactive'}
+    try{if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function')return window.PETATOEAuth.currentUser()}catch(e2){console.warn('PETATOEPayroll auth currentUser fallback',e2)}
+    try{if(window.__PETATOE_ACTIVE_USER__)return window.__PETATOE_ACTIVE_USER__}catch(_e){}
+    try{if(window.currentUser)return window.currentUser}catch(_e2){}
+    return {id:'',username:'',fullName:'',role:'guest',status:'inactive'};
   }
   function userLabel(u){
     if(!u)return '';
