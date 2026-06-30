@@ -241,10 +241,8 @@
   function statusBadge(st){var x=statusInfo(st);return '<span class="payroll-badge '+x[1]+'">'+esc(x[0])+'</span>'}
   function readCommissionSnapshots(){var s=read(COMM_SNAPSHOT_KEY,{});return s&&typeof s==='object'?s:{}}
   function readCommissionStore(){
-    var s=read('commissions',null);
-    if(s&&typeof s==='object')return s;
-    try{if(window.PETATOERepositories&&window.PETATOERepositories.Commissions&&typeof window.PETATOERepositories.Commissions.get==='function'){s=window.PETATOERepositories.Commissions.get();if(s&&typeof s==='object')return s;}}catch(e){console.warn('PETATOEPayroll commission repository fallback',e)}
-    return {};
+    var s=read(COMM_SNAPSHOT_KEY,{});
+    return s&&typeof s==='object'?s:{};
   }
   function addUniqueCommissionName(out,name){
     name=String(name||'').trim();
