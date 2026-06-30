@@ -79,9 +79,28 @@
       R.upsertJsonRow(table,row.id,row,extraForRow?extraForRow(row):{}).then(function(res){if(res&&!res.ok)toastMsg('تعذر حفظ بيانات الرواتب في Supabase')}).catch(function(e){console.warn('PETATOEPayroll upsert persist failed',table,e)});
     });
   }
+  function persistPayrollEmployees(nextRows,prevRows){
+    var R=payrollRepo();
+    if(!R||!R.hasClient||!R.hasClient())return;
+    nextRows=Array.isArray(nextRows)?nextRows:[];
+    prevRows=Array.isArray(prevRows)?prevRows:[];
+    var nextIds={};
+    nextRows.forEach(function(row){if(row&&row.id!=null)nextIds[String(row.id)]=true});
+    prevRows.forEach(function(row){
+      if(row&&row.id!=null&&!nextIds[String(row.id)]&&typeof R.deletePayrollEmployee==='function'){
+        R.deletePayrollEmployee(row).then(function(res){if(res&&!res.ok)toastMsg('تعذر حذف الموظف من Supabase')}).catch(function(e){console.warn('PETATOEPayroll employee delete persist failed',e)});
+      }
+    });
+    nextRows.forEach(function(row){
+      if(!row||row.id==null)return;
+      if(typeof R.upsertPayrollEmployee==='function'){
+        R.upsertPayrollEmployee(row).then(function(res){if(res&&!res.ok)toastMsg('تعذر حفظ الموظف في Supabase')}).catch(function(e){console.warn('PETATOEPayroll employee upsert persist failed',e)});
+      }
+    });
+  }
   function persistPayrollKey(key,val,prev){
     if(key===EMP_KEY){
-      persistArrayTable('payroll_employees',val,prev,function(e){return {code:String(e.code||''),name:String(e.name||''),job:String(e.job||''),status:String(e.status||'active')};});
+      persistPayrollEmployees(val,prev);
       return;
     }
     if(key===SLIP_KEY){
@@ -101,7 +120,7 @@
     var R=payrollRepo();
     if(!R||!R.hasClient||!R.hasClient()){console.warn('PETATOEPayroll Supabase repository/client not ready');return;}
     try{
-      var emps=await R.listJsonRows('payroll_employees',{order:'created_at'});
+      var emps=typeof R.listPayrollEmployees==='function'?await R.listPayrollEmployees():await R.listJsonRows('payroll_employees',{order:'created_at'});
       var slipsRows=await R.listJsonRows('payroll_slips',{order:'created_at'});
       var master=await R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{});
       payrollCache[EMP_KEY]=Array.isArray(emps)?emps:[];
