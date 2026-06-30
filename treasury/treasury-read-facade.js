@@ -12,9 +12,9 @@
   'use strict';
   if (window.PETATOETreasuryReadFacade && window.PETATOETreasuryReadFacade.__phase8bSafe) return;
 
-  var TX_KEY = 'treasuryTransactions';
-  var AUDIT_KEY = 'treasuryAudit';
-  var CAT_KEY = 'treasuryCategories';
+  var TX_KEY = 'treasury_transactions';
+  var AUDIT_KEY = 'treasury_audit';
+  var CAT_KEY = 'treasury_categories';
   var OWNER = 'الخزنة الرئيسية للمالك';
 
   function warn(e){
@@ -39,13 +39,12 @@
     try{ return JSON.parse(JSON.stringify(Array.isArray(arr) ? arr : [])); }
     catch(e){ warn(e); return Array.isArray(arr) ? arr.slice() : []; }
   }
+  function treasuryStore(){ return window.PETATOETreasuryDataStore || { transactions:[], audit:[], categories:[] }; }
   function readArray(key){
-    try{
-      if(window.PETATOEStorage && typeof window.PETATOEStorage.readJSON === 'function'){
-        var a = window.PETATOEStorage.readJSON(key, []);
-        return Array.isArray(a) ? cloneArray(a) : [];
-      }
-    }catch(e){ warn(e); }
+    var store = treasuryStore();
+    if(key === TX_KEY) return cloneArray(store.transactions);
+    if(key === AUDIT_KEY) return cloneArray(store.audit);
+    if(key === CAT_KEY) return cloneArray(store.categories);
     return [];
   }
   function records(){
@@ -68,9 +67,9 @@
   function rowAmount(r){ return num(val(r,['totalInc','totalWithVat','gross','total','amount','الإجمالي','الاجمالي'])); }
   function isCash(p){ p = clean(p).toLowerCase(); return !!p && (/نقد|كاش|cash/.test(p)); }
 
-  function getTransactions(){ return readArray(TX_KEY); }
-  function getAudit(){ return readArray(AUDIT_KEY); }
-  function getCategories(){ return readArray(CAT_KEY); }
+  function getTransactions(){ return cloneArray(treasuryStore().transactions); }
+  function getAudit(){ return cloneArray(treasuryStore().audit); }
+  function getCategories(){ return cloneArray(treasuryStore().categories); }
 
   function getCashRows(){
     return records().filter(function(r){ return rowVehicle(r) && isCash(rowPay(r)); });

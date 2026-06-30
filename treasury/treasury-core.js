@@ -3,11 +3,83 @@
   if(window.__PETATOE_V38101_TREASURY_SINGLE_SOURCE__) return;
   window.__PETATOE_V38101_TREASURY_SINGLE_SOURCE__ = true;
 
-  var TX_KEY='treasuryTransactions';
-  var AUDIT_KEY='treasuryAudit';
-  var CAT_KEY='treasuryCategories';
-  function petStorageReadJSON(key,fallback){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')return window.PETATOEStorage.readJSON(key,fallback);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("treasury/treasury-core.js",e);}return fallback}
-  function petStorageWriteJSON(key,value){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.writeJSON==='function')return window.PETATOEStorage.writeJSON(key,value);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("treasury/treasury-core.js",e);}return false}
+  var TX_TABLE='treasury_transactions';
+  var MASTER_TABLE='treasury_master_data';
+  var CAT_ROW_ID='treasury_categories';
+  var AUDIT_ROW_ID='treasury_audit';
+  var txCache=[];
+  var catCache=[];
+  var auditCache=[];
+  var treasuryLoaded=false;
+  var treasuryLoading=false;
+  var treasuryLoadPromise=null;
+  function repo(){return window.PETATOESupabaseRepository||null}
+  function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(_e){return v}}
+  function asArray(v){return Array.isArray(v)?v:[]}
+  function publishTreasuryStore(){
+    window.PETATOETreasuryDataStore={
+      transactions:txCache,
+      categories:catCache,
+      audit:auditCache,
+      loaded:treasuryLoaded,
+      updatedAt:new Date().toISOString()
+    };
+    try{document.dispatchEvent(new CustomEvent('petatoe:treasury-data-ready',{detail:{transactions:txCache.length,categories:catCache.length,audit:auditCache.length}}));}catch(_e){}
+  }
+  function normalizeTxRow(row){
+    var data=row&&row.data&&typeof row.data==='object'?clone(row.data):{};
+    data=data&&typeof data==='object'?data:{};
+    data.id=data.id||String((row&&row.id)||'');
+    data.type=data.type||String((row&&row.tx_type)||'');
+    if(row&&row.amount!=null)data.amount=num(row.amount);
+    if(row&&row.category&&!data.category)data.category=row.category;
+    if(row&&row.description&&!data.notes)data.notes=row.description;
+    if(row&&row.tx_date&&!data.date)data.date=row.tx_date;
+    return data;
+  }
+  async function loadTreasuryFromSupabase(force){
+    if(treasuryLoaded&&!force)return true;
+    if(treasuryLoading&&treasuryLoadPromise)return treasuryLoadPromise;
+    treasuryLoading=true;
+    treasuryLoadPromise=(async function(){
+      var r=repo();
+      if(!r||!r.hasClient||!r.hasClient()){treasuryLoading=false;publishTreasuryStore();return false;}
+      try{
+        var rows=await r.listJsonRows(TX_TABLE,{order:'created_at',ascending:true});
+        txCache=asArray(rows).map(function(x){return x&&x.data?normalizeTxRow(x):normalizeTxRow({id:x&&x.id,data:x});}).filter(function(x){return x&&x.id});
+        var cats=await r.getSingleton(MASTER_TABLE,CAT_ROW_ID,{items:[]});
+        catCache=Array.from(new Set(asArray(cats.items||cats.categories||cats).map(clean).filter(Boolean)));
+        var audit=await r.getSingleton(MASTER_TABLE,AUDIT_ROW_ID,{items:[]});
+        auditCache=asArray(audit.items||audit.audit||audit).filter(function(x){return x&&typeof x==='object'});
+        treasuryLoaded=true;
+        publishTreasuryStore();
+        return true;
+      }catch(e){
+        window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('treasury/treasury-core.js',e);
+        publishTreasuryStore();
+        return false;
+      }finally{treasuryLoading=false;}
+    })();
+    return treasuryLoadPromise;
+  }
+  async function saveTxToSupabase(tx){
+    var r=repo();
+    if(!r||!r.upsertJsonRow)return {ok:false,error:'Supabase repository not ready'};
+    var d=clone(tx||{});
+    var extra={
+      tx_date:clean(d.time||d.date).slice(0,10)||null,
+      tx_type:clean(d.type),
+      category:clean(d.category||''),
+      amount:num(d.amount),
+      description:clean(d.notes||d.ref||''),
+      status:'active',
+      updated_at:new Date().toISOString()
+    };
+    return r.upsertJsonRow(TX_TABLE,d.id,d,extra);
+  }
+  async function deleteTxFromSupabase(id){var r=repo();return (r&&r.deleteById)?r.deleteById(TX_TABLE,id):{ok:false,error:'Supabase repository not ready'}}
+  async function saveCatsToSupabase(){var r=repo();return (r&&r.saveSingleton)?r.saveSingleton(MASTER_TABLE,CAT_ROW_ID,{items:catCache,updatedAt:new Date().toISOString()}):{ok:false,error:'Supabase repository not ready'}}
+  async function saveAuditToSupabase(){var r=repo();return (r&&r.saveSingleton)?r.saveSingleton(MASTER_TABLE,AUDIT_ROW_ID,{items:auditCache.slice(-2000),updatedAt:new Date().toISOString()}):{ok:false,error:'Supabase repository not ready'}}
   var OWNER='الخزنة الرئيسية للمالك';
   var METHODS=['نقداً','تحويل بنكي','إيداع بنكي','شيك','بطاقة بنكية','أخرى'];
   var activeStatementVault='';
@@ -36,15 +108,15 @@
   function toastMsg(msg){try{if(typeof toast==='function')toast(msg);else alert(msg)}catch(e){alert(msg)}}
   function now(){return new Date().toISOString()}
   function todayId(prefix){return prefix+'-'+Date.now()+'-'+Math.random().toString(16).slice(2,7)}
-  function localJson(key,def){try{var a=petStorageReadJSON(key,def);return Array.isArray(a)?a:def}catch(e){return def}}
-  function getTx(){return localJson(TX_KEY,[])}
-  function setTx(a){petStorageWriteJSON(TX_KEY,a||[])}
-  function getCats(){return localJson(CAT_KEY,[])}
-  function setCats(a){petStorageWriteJSON(CAT_KEY,Array.from(new Set((a||[]).map(clean).filter(Boolean))))}
+  function getTx(){return txCache}
+  function setTx(a){txCache=asArray(a);publishTreasuryStore()}
+  function getCats(){return catCache}
+  function setCats(a){catCache=Array.from(new Set((a||[]).map(clean).filter(Boolean)));publishTreasuryStore();saveCatsToSupabase()}
   function addAudit(action,before,after,reason){
-    var a=localJson(AUDIT_KEY,[]);
-    a.push({id:todayId('AUD'),time:now(),user:(function(){try{return window.PETATOEDataSource.getCurrentUserName('مستخدم النظام')}catch(e){return 'مستخدم النظام'}})(),action:action,before:before||null,after:after||null,reason:reason||''});
-    petStorageWriteJSON(AUDIT_KEY,a.slice(-2000));
+    auditCache.push({id:todayId('AUD'),time:now(),user:(function(){try{return window.PETATOEDataSource.getCurrentUserName('مستخدم النظام')}catch(e){return 'مستخدم النظام'}})(),action:action,before:before||null,after:after||null,reason:reason||''});
+    auditCache=auditCache.slice(-2000);
+    publishTreasuryStore();
+    saveAuditToSupabase();
   }
 
   function dataRows(){
@@ -196,18 +268,18 @@
   function clearForm(){['trAmount','trReceiver','trNotes'].forEach(function(id){var e=byId(id);if(e)e.value=''});fillSelects();updateBalanceBoxes()}
   function clearExpenseForm(){['trExpenseCategory','trExpenseAmount','trExpenseReceiver','trExpenseRef','trExpenseNotes'].forEach(function(id){var e=byId(id);if(e)e.value=''});fillSelects();updateBalanceBoxes()}
   function resetFilters(){['trSearch','trFilterVehicle'].forEach(function(id){var e=byId(id);if(e)e.value=''});var t=byId('trFilterType');if(t)t.value='all';renderAll()}
-  function handover(){
+  async function handover(){
     fillSelects(); var v=clean((byId('trVehicle')||{}).value), amt=num((byId('trAmount')||{}).value), rec=clean((byId('trReceiver')||{}).value), method=clean((byId('trMethod')||{}).value)||METHODS[0], notes=clean((byId('trNotes')||{}).value);
     if(!v)return alert('اختر السيارة أولاً'); if(amt<=0)return alert('اكتب مبلغ صحيح أكبر من صفر'); if(!rec)return alert('اكتب اسم المسؤول المستلم'); if(amt>vehicleBalance(v)+0.0001)return alert('المبلغ أكبر من رصيد خزنة السيارة المتاح');
-    var tx={id:todayId('TR'),type:'handover',vehicle:v,amount:amt,receiver:rec,method:method,notes:notes,time:now()}; var a=getTx();a.push(tx);setTx(a);addAudit('تسليم كاش',null,tx,'إنشاء حركة تسليم');clearForm();renderAll();toastMsg('تم تسليم الكاش وتحويله للخزنة الرئيسية');
+    var tx={id:todayId('TR'),type:'handover',vehicle:v,amount:amt,receiver:rec,method:method,notes:notes,time:now()}; var saved=await saveTxToSupabase(tx); if(!saved.ok)return alert('فشل حفظ حركة الخزينة في Supabase: '+(saved.error||'')); var a=getTx();a.push(tx);setTx(a);addAudit('تسليم كاش',null,tx,'إنشاء حركة تسليم');clearForm();renderAll();toastMsg('تم تسليم الكاش وتحويله للخزنة الرئيسية');
   }
-  function expense(){
+  async function expense(){
     fillSelects(); var src=clean((byId('trExpenseSource')||{}).value)||OWNER, cat=clean((byId('trExpenseCategory')||{}).value), amt=num((byId('trExpenseAmount')||{}).value), rec=clean((byId('trExpenseReceiver')||{}).value), ref=clean((byId('trExpenseRef')||{}).value), notes=clean((byId('trExpenseNotes')||{}).value);
     if(!cat)return alert('اكتب أو اختر جهة / بند الصرف'); if(!rec)return alert('اكتب المسؤول أو المستلم'); if(!ref)return alert('اكتب مرجع حركة الصرف'); if(amt<=0)return alert('اكتب مبلغ صحيح أكبر من صفر'); if(amt>vaultBalance(src)+0.0001)return alert('المبلغ أكبر من رصيد الخزنة المحددة');
-    var tx={id:todayId('EX'),type:'expense',source:src,vehicle:src===OWNER?'':src,category:cat,amount:amt,receiver:rec,ref:ref,notes:notes,time:now()}; var a=getTx();a.push(tx);setTx(a);var cc=getCats();cc.push(cat);setCats(cc);addAudit('صرف خزينة',null,tx,'إنشاء حركة صرف');clearExpenseForm();renderAll();toastMsg('تم تسجيل حركة الصرف');
+    var tx={id:todayId('EX'),type:'expense',source:src,vehicle:src===OWNER?'':src,category:cat,amount:amt,receiver:rec,ref:ref,notes:notes,time:now()}; var saved=await saveTxToSupabase(tx); if(!saved.ok)return alert('فشل حفظ حركة الخزينة في Supabase: '+(saved.error||'')); var a=getTx();a.push(tx);setTx(a);var cc=getCats();cc.push(cat);setCats(cc);addAudit('صرف خزينة',null,tx,'إنشاء حركة صرف');clearExpenseForm();renderAll();toastMsg('تم تسجيل حركة الصرف');
   }
   function findTx(id){var a=getTx();for(var i=0;i<a.length;i++){if(clean(a[i]&&a[i].id)===clean(id))return {arr:a,index:i,tx:a[i]}}return null}
-  function editTx(id){
+  async function editTx(id){
     var h=findTx(id); if(!h)return alert('لم يتم العثور على الحركة'); var t=Object.assign({},h.tx); if(t.type!=='handover'&&t.type!=='expense')return alert('هذه حركة فاتورة ولا يتم تعديلها من الخزينة');
     var reason=prompt('سبب التعديل'); if(reason===null)return; reason=clean(reason); if(!reason)return alert('سبب التعديل مطلوب');
     var amt=prompt('المبلغ الجديد',String(num(t.amount).toFixed(2))); if(amt===null)return; amt=num(amt); if(amt<=0)return alert('اكتب مبلغ صحيح');
@@ -215,9 +287,9 @@
     var notes=prompt('ملاحظات',clean(t.notes)); if(notes===null)return; notes=clean(notes);
     if(t.type==='handover'){var method=prompt('طريقة التسليم',clean(t.method)||METHODS[0]); if(method===null)return; if(amt>vehicleBalance(clean(t.vehicle),id)+0.0001)return alert('المبلغ أكبر من الرصيد المتاح بعد استبعاد الحركة الحالية'); t.method=clean(method)||METHODS[0]; t.receiver=rec; t.notes=notes;}
     if(t.type==='expense'){var cat=prompt('جهة / بند الصرف',clean(t.category)); if(cat===null)return; cat=clean(cat); if(!cat)return alert('البند مطلوب'); var ref=prompt('المرجع',clean(t.ref)); if(ref===null)return; ref=clean(ref); if(!ref)return alert('المرجع مطلوب'); var src=clean(t.source||t.vehicle||OWNER); if(amt>vaultBalance(src,id)+0.0001)return alert('المبلغ أكبر من الرصيد المتاح بعد استبعاد الحركة الحالية'); t.category=cat;t.ref=ref;t.receiver=rec;t.notes=notes;}
-    var before=Object.assign({},h.tx); t.amount=amt;t.updatedAt=now(); h.arr[h.index]=t; setTx(h.arr); addAudit('تعديل حركة خزينة',before,t,reason); renderAll(); toastMsg('تم تعديل الحركة');
+    var before=Object.assign({},h.tx); t.amount=amt;t.updatedAt=now(); var saved=await saveTxToSupabase(t); if(!saved.ok)return alert('فشل تحديث حركة الخزينة في Supabase: '+(saved.error||'')); h.arr[h.index]=t; setTx(h.arr); addAudit('تعديل حركة خزينة',before,t,reason); renderAll(); toastMsg('تم تعديل الحركة');
   }
-  function deleteTx(id){var h=findTx(id); if(!h)return alert('لم يتم العثور على الحركة'); if(h.tx.type!=='handover'&&h.tx.type!=='expense')return alert('هذه حركة فاتورة ولا يتم حذفها من الخزينة'); var reason=prompt('سبب الحذف'); if(reason===null)return; reason=clean(reason); if(!reason)return alert('سبب الحذف مطلوب'); if(!confirm('تأكيد حذف الحركة؟'))return; var before=Object.assign({},h.tx); h.arr.splice(h.index,1); setTx(h.arr); addAudit('حذف حركة خزينة',before,null,reason); renderAll(); toastMsg('تم حذف الحركة');}
+  async function deleteTx(id){var h=findTx(id); if(!h)return alert('لم يتم العثور على الحركة'); if(h.tx.type!=='handover'&&h.tx.type!=='expense')return alert('هذه حركة فاتورة ولا يتم حذفها من الخزينة'); var reason=prompt('سبب الحذف'); if(reason===null)return; reason=clean(reason); if(!reason)return alert('سبب الحذف مطلوب'); if(!confirm('تأكيد حذف الحركة؟'))return; var removed=await deleteTxFromSupabase(id); if(!removed.ok)return alert('فشل حذف حركة الخزينة من Supabase: '+(removed.error||'')); var before=Object.assign({},h.tx); h.arr.splice(h.index,1); setTx(h.arr); addAudit('حذف حركة خزينة',before,null,reason); renderAll(); toastMsg('تم حذف الحركة');}
   function exportCsv(){var rows=allMovements(),header=['التاريخ','النوع','السيارة/الخزنة','من','إلى','المبلغ','المسؤول','المرجع','ملاحظات'];var lines=[header.join(',')].concat(rows.map(function(x){return [x.time||x.date,typeLabel(x.type),x.vehicle,x.from,x.to,x.amount,x.person,x.ref,x.notes].map(function(v){return '"'+clean(v).replace(/"/g,'""')+'"'}).join(',')}));var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Treasury_Movements.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
   function exportStatementCsv(){var src=activeStatementVault||clean((byId('trStatementVaultSelectV82')||{}).value); if(!src)return alert('افتح كشف حساب أولاً'); var rows=statementRows(src),header=['الخزنة','التاريخ','نوع الحركة','من','إلى','وارد','منصرف','الرصيد','المسؤول','المرجع','ملاحظات'];var lines=[header.join(',')].concat(rows.map(function(r){return [src,r.time,r.kind,r.from,r.to,r.inAmt,r.outAmt,r.balance,r.person,r.ref,r.notes].map(function(v){return '"'+clean(v).replace(/"/g,'""')+'"'}).join(',')}));var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Treasury_Statement_'+src.replace(/[\\/:*?"<>|]/g,'_')+'.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
   function printStatement(){window.print()}
@@ -274,7 +346,7 @@
     treasurySafeHtml(box,'<div class="tr-report-card-v82"><b>📊 تقرير الرصيد اليومي</b><span>افتح كشف الحساب واختر الخزنة والفترة المطلوبة.</span><button class="btn btn-ghost" type="button" data-tr-open-tab="statement">فتح كشف الحساب</button></div><div class="tr-report-card-v82"><b>🚐 مقارنة الخزن</b><span>مراجعة أرصدة الخزنة الرئيسية وخزائن السيارات.</span><button class="btn btn-ghost" type="button" data-tr-open-tab="balances">فتح الأرصدة</button></div><div class="tr-report-card-v82"><b>⬇️ تصدير الحركات</b><span>تصدير سجل الحركات الحالي Excel.</span><button class="btn btn-green" type="button" data-tr-export-csv="movements">Excel</button></div>','treasury reports cards');
     reports.appendChild(box);
   }
-  function getAudit(){return localJson(AUDIT_KEY,[])}
+  function getAudit(){return auditCache}
   function ensureAuditCard(auditSec){
     if(byId('treasuryAuditTrailCard'))return;
     var card=document.createElement('div');card.id='treasuryAuditTrailCard';card.className='tr-card tr-audit-card';card.setAttribute('data-tr-section-inner','audit-table');
@@ -311,11 +383,13 @@
   function boot(){
     bind();
     patchApi();
-    if(!byId('treasury'))return;
-    var t=Date.now();
-    if(boot.lastRenderAt && (t-boot.lastRenderAt)<180)return;
-    boot.lastRenderAt=t;
-    renderAll();
+    loadTreasuryFromSupabase(false).then(function(){
+      if(!byId('treasury'))return;
+      var t=Date.now();
+      if(boot.lastRenderAt && (t-boot.lastRenderAt)<180)return;
+      boot.lastRenderAt=t;
+      renderAll();
+    });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
   [80,300].forEach(function(ms){setTimeout(boot,ms)});
