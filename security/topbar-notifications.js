@@ -64,17 +64,6 @@
         return Array.isArray(a) ? a : [];
       }
     }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/topbar-notifications.js',_);}
-    try{
-      if(window.PETATOEStorage && typeof window.PETATOEStorage.readJSON === 'function'){
-        var b = window.PETATOEStorage.readJSON('appointments', []);
-        return Array.isArray(b) ? b : [];
-      }
-    }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/topbar-notifications.js',_);}
-    try{
-      var raw = localStorage.getItem('petatoe_appointments_v1') || localStorage.getItem('appointments');
-      var c = raw ? JSON.parse(raw) : [];
-      return Array.isArray(c) ? c : [];
-    }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/topbar-notifications.js',_);}
     return [];
   }
   function findConflicts(row, rows){
