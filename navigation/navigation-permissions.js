@@ -1,6 +1,6 @@
 /* PETATOE v8.0.2 — Navigation Permissions Supabase Stage 3
    Delegates screen access to PETATOEPermissions, which is backed by app_users/app_user_permissions.
-   No LocalStorage/PETATOEStorage fallback is used here. */
+   No legacy storage fallback is used here. */
 (function(){
   'use strict';
   if(window.__PETATOE_NAVIGATION_PERMISSIONS_SUPABASE_STAGE3__) return;

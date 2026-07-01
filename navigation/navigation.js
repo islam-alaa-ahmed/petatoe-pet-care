@@ -48,7 +48,7 @@
   }
   function openSettings(main,sub,action){
     main=main||'system'; sub=sub||'';
-    try{var S=window.PETATOEStorage;if(S&&S.set){S.set('pet_settings_v110_main',main); if(sub)S.set('pet_settings_v110_sub',sub);}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
+    try{window.__PETATOE_SETTINGS_MAIN__=main; if(sub)window.__PETATOE_SETTINGS_SUB__=sub;}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
     // PETATOE v6.1.205 Phase 2: navigation only opens the section and broadcasts intent.
     // It must not call settings render functions directly; settings.js/settings-render-fix own rendering.
     petatoeSidebarOpenTab('settings');
@@ -149,7 +149,7 @@
   function markActive(){
     var nav=petBlock7937_q('#nav'); if(!nav||!nav.classList.contains('pet-v142-nav')) return;
     var active=(petBlock7937_q('.panel.active')||{}).id||'dashboard';
-    var sm=''; try{var S=window.PETATOEStorage;sm=(S&&S.get?S.get('pet_settings_v110_main','system'):'system')||'system'}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
+    var sm=''; try{sm=window.__PETATOE_SETTINGS_MAIN__||'system'}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
     qa('button',nav).forEach(function(b){b.classList.remove('active')});
     var activeBtn=null, groupId='';
     if(active==='settings'){

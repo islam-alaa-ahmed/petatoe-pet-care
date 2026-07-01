@@ -1,5 +1,5 @@
 /* PETATOE v8.0.2 — SuperAdmin Settings Direct Access Supabase Stage 3
-   Uses active Supabase-backed session only. No LocalStorage/PETATOEStorage fallback. */
+   Uses active Supabase-backed session only. No legacy storage fallback. */
 (function(){
   'use strict';
   if(window.__PETATOE_SUPERADMIN_SETTINGS_DIRECT_ACCESS_STAGE3__) return;
