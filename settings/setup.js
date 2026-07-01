@@ -9,9 +9,30 @@
   function api(){return currentApi||window.__PETATOE_SETTINGS_API__||{}}
   function byId(id){return (api().byId?api().byId(id):document.getElementById(id))}
   function esc(s){return api().esc?api().esc(s):String(s==null?'':s).replace(/[&<>\'\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','\"':'&quot;'}[c]})}
-  function store(){return window.PETATOEStorage||null}
-  function read(k,d){if(api().read)return api().read(k,d);var S=store();return S&&S.readJSON?S.readJSON(k,d):d}
-  function write(k,v){if(api().write)return api().write(k,v);var S=store();if(S&&S.writeJSON)S.writeJSON(k,v)}
+  var __supabaseSetupCache={}, __supabaseSetupLoading={}, __uiState={};
+  function clone(v,d){try{return v==null?d:JSON.parse(JSON.stringify(v));}catch(_){return v==null?d:v;}}
+  function repo(){return window.PETATOESupabaseRepository||null}
+  function setupKey(k){return 'settings_setup_'+String(k||'default');}
+  function scheduleSetupRender(){setTimeout(function(){try{if(api().render)api().render('setup');}catch(_){}} ,80)}
+  function read(k,d){
+    if(api().read&&k!=='petatoe_master_setup_v120'&&k!=='petatoe_master_setup_deleted_v121')return api().read(k,d);
+    if(Object.prototype.hasOwnProperty.call(__uiState,k))return clone(__uiState[k],d);
+    if(Object.prototype.hasOwnProperty.call(__supabaseSetupCache,k))return clone(__supabaseSetupCache[k],d);
+    var r=repo();
+    if(r&&typeof r.getSystemSetting==='function'&&!__supabaseSetupLoading[k]){
+      __supabaseSetupLoading[k]=true;
+      r.getSystemSetting(setupKey(k),d).then(function(v){__supabaseSetupCache[k]=clone(v,d);__supabaseSetupLoading[k]=false;scheduleSetupRender();}).catch(function(e){__supabaseSetupLoading[k]=false;console.warn('PETATOESetup Supabase read failed',k,e);});
+    }
+    return clone(d,d);
+  }
+  function write(k,v){
+    if(k&&String(k).indexOf('pet_v121_')===0 || k==='pet_settings_v120_setup_tab'){__uiState[k]=v;return;}
+    __supabaseSetupCache[k]=clone(v,v);
+    var r=repo();
+    if(r&&typeof r.saveSystemSetting==='function')r.saveSystemSetting(setupKey(k),v).catch(function(e){console.warn('PETATOESetup Supabase write failed',k,e);});
+    else if(api().write)api().write(k,v);
+  }
+  function store(){return {get:function(k,d){var v=read(k,d);return v==null?d:v;},set:function(k,v){write(k,v);},remove:function(k){delete __uiState[k];delete __supabaseSetupCache[k];}}}
   function toast(msg){if(api().toast)return api().toast(msg);try{if(typeof window.toast==='function')window.toast(msg);else alert(msg)}catch(e){alert(msg)}}
   function records(){try{var fb=(window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[];return Array.isArray(fb)?fb:[]}catch(e){return []}}
   function audit(action,details,level){if(api().audit)return api().audit(action,details,level)}
@@ -41,8 +62,8 @@
   function markMasterDeleted(type,name){name=String(name||'').trim();if(!name)return;var del=readMasterDeleted();del[type+'|'+normMasterName(name)]=true;writeMasterDeleted(del)}
   function masterHas(d,type,name){var n=normMasterName(name);return (d[type]||[]).some(function(x){return normMasterName(x.name)===n})}
   function addMasterAuto(d,type,name,extra){name=String(name||'').trim();if(!name||isMasterDeleted(type,name)||masterHas(d,type,name))return false;d[type]=d[type]||[];d[type].push(Object.assign({id:'auto_'+type+'_'+Date.now()+'_'+Math.random().toString(16).slice(2),code:'',name:name,source:'imported',status:'active',createdAt:new Date().toISOString()},extra||{}));return true}
-  function safeLocalObj(k,def){var S=store();var v=S&&S.readJSON?S.readJSON(k,def):def;return v&&typeof v==='object'?v:def}
-  function safeLocalArr(k){var v=safeLocalObj(k,[]);return Array.isArray(v)?v:[]}
+  function safeLocalObj(k,def){return def&&typeof def==='object'?clone(def,def):def}
+  function safeLocalArr(k){return []}
   function rVal(r,keys){for(var i=0;i<keys.length;i++){var k=keys[i];if(r&&r[k]!=null&&String(r[k]).trim()!=='')return r[k]}return ''}
   function syncExistingMasterData(d){
     var changed=false, rs=records();
@@ -94,7 +115,7 @@
   function setupTableRows(type,d){d=d||masterData();var m=setupTypeMeta(type), pack=setupVisibleMasterData(type,d), data=pack.rows, cols=m.fields.filter(function(f){return f[0]!=='description'});return data.map(function(x,i){var status=x.status||'active',source=x.source||'manual',created=x.createdAt?String(x.createdAt).slice(0,10):'-';return '<tr><td>'+(i+1)+'</td>'+cols.map(function(c){var v=x[c[0]];if(c[0]==='status')return '<td><span class="pet-v110-badge '+(status==='inactive'?'pet-v121-status-inactive':'pet-v121-status-active')+'">'+(status==='inactive'?'متوقف':'نشط')+'</span></td>';return '<td>'+esc(v==null||v===''?'-':v)+'</td>'}).join('')+'<td><span class="pet-v110-badge '+(source==='imported'?'pet-v121-source-imported':'pet-v121-source-manual')+'">'+(source==='imported'?'مستورد':'يدوي')+'</span></td><td>'+esc(created)+'</td><td><button class="pet-v121-action-btn view" title="عرض" data-v121-action="view" data-v121-type="'+type+'" data-v121-id="'+esc(x.id)+'">👁</button><button class="pet-v121-action-btn edit" title="تعديل" data-v121-action="edit" data-v121-type="'+type+'" data-v121-id="'+esc(x.id)+'">✏️</button><button class="pet-v121-action-btn delete" title="حذف" data-v121-action="delete" data-v121-type="'+type+'" data-v121-id="'+esc(x.id)+'">🗑</button></td></tr>'}).join('')||'<tr><td colspan="'+(cols.length+4)+'">لا توجد بيانات مسجلة</td></tr>'}
   function setupTableFooter(type,d){var pack=setupVisibleMasterData(type,d);if(!pack.limited)return '';return '<div class="pet-v110-note" style="margin-top:10px">تم عرض أول '+pack.limit+' سجل فقط من أصل '+pack.total+' للحفاظ على سرعة الشاشة. <button type="button" class="pet-v110-btn blue" data-v121-action="showAll" data-v121-type="'+type+'">عرض الكل</button></div>'}
   function setupTable(type,d){d=d||masterData();var m=setupTypeMeta(type), cols=m.fields.filter(function(f){return f[0]!=='description'}), shown=setupVisibleMasterData(type,d);return '<div class="pet-v121-master-list"><div class="pet-v121-list-head"><div><h3>'+m.ico+' '+m.listTitle+'</h3><p style="margin:4px 0 0;color:var(--muted);font:850 12px Cairo">يعرض البيانات المستوردة من الفواتير والبيانات المضافة يدويًا.</p></div><div class="pet-v121-list-tools"><input id="pet_v121_search_input_'+type+'" class="pet-v121-search" value="'+esc((store()&&store().get)?store().get('pet_v121_search_'+type,''):'')+'" placeholder="بحث داخل '+esc(m.listTitle)+'..." data-v121-search="'+type+'"><span id="pet_v121_total_'+type+'" class="pet-v110-badge info">المعروض: '+shown.rows.length+' / '+shown.total+'</span></div></div><div class="pet-v110-table pet-v120-setup-table"><table><thead><tr><th>#</th>'+cols.map(function(c){return '<th>'+esc(c[1])+'</th>'}).join('')+'<th>المصدر</th><th>تاريخ الإضافة</th><th>إجراءات</th></tr></thead><tbody id="pet_v121_tbody_'+type+'">'+setupTableRows(type,d)+'</tbody></table></div><div id="pet_v121_footer_'+type+'">'+setupTableFooter(type,d)+'</div></div>'}
-  function setupBody(){var d=masterData(), st=setupStats(d), active=setupActiveType(), meta=setupTypeMeta(active);var tabs=['services','cars','customers','vaults'].map(function(t){var m=setupTypeMeta(t), count=(d[t]||[]).length;return '<button type="button" class="pet-v121-setup-tab '+(active===t?'active':'')+'" data-v120-setup-tab="'+t+'"><span>'+m.ico+'</span><span>'+m.title+'</span><small style="opacity:.8">'+count+'</small></button>'}).join('');return '<div class="pet-v121-setup-page"><div class="pet-v121-setup-hero"><div><h3>🛠️ بيانات التهيئة</h3><p>إدارة البيانات الأساسية للنظام: الخدمات، السيارات، العملاء، والخزن. كل قسم له نموذج إضافة/تعديل بالأعلى وسجل البيانات بالأسفل.</p></div><div class="pet-v110-actions"><span class="pet-v110-badge info">الخدمات: '+st.services+'</span><span class="pet-v110-badge info">السيارات: '+st.cars+'</span><span class="pet-v110-badge info">العملاء: '+st.customers+'</span><span class="pet-v110-badge info">الخزن: '+st.vaults+'</span></div></div><div class="pet-v121-setup-tabs">'+tabs+'</div><div class="pet-v121-master-layout">'+setupForm(active)+setupTable(active,d)+'</div><div class="pet-v110-note">ملاحظة: شاشة التهيئة لا تغير الفواتير أو التقارير القديمة. البيانات هنا Master Data مستقلة ومحفوظة في LocalStorage وجاهزة لاحقًا للتحويل إلى جداول قاعدة بيانات.</div></div>'}
+  function setupBody(){var d=masterData(), st=setupStats(d), active=setupActiveType(), meta=setupTypeMeta(active);var tabs=['services','cars','customers','vaults'].map(function(t){var m=setupTypeMeta(t), count=(d[t]||[]).length;return '<button type="button" class="pet-v121-setup-tab '+(active===t?'active':'')+'" data-v120-setup-tab="'+t+'"><span>'+m.ico+'</span><span>'+m.title+'</span><small style="opacity:.8">'+count+'</small></button>'}).join('');return '<div class="pet-v121-setup-page"><div class="pet-v121-setup-hero"><div><h3>🛠️ بيانات التهيئة</h3><p>إدارة البيانات الأساسية للنظام: الخدمات، السيارات، العملاء، والخزن. كل قسم له نموذج إضافة/تعديل بالأعلى وسجل البيانات بالأسفل.</p></div><div class="pet-v110-actions"><span class="pet-v110-badge info">الخدمات: '+st.services+'</span><span class="pet-v110-badge info">السيارات: '+st.cars+'</span><span class="pet-v110-badge info">العملاء: '+st.customers+'</span><span class="pet-v110-badge info">الخزن: '+st.vaults+'</span></div></div><div class="pet-v121-setup-tabs">'+tabs+'</div><div class="pet-v121-master-layout">'+setupForm(active)+setupTable(active,d)+'</div><div class="pet-v110-note">ملاحظة: شاشة التهيئة لا تغير الفواتير أو التقارير القديمة. البيانات هنا Master Data مستقلة ومحفوظة في Supabase ضمن إعدادات النظام.</div></div>'}
 
   function getV121Field(type,key){var e=byId('v121_'+type+'_'+key);return e?e.value:''}
   window.petV121SaveMasterItem=function(type){
