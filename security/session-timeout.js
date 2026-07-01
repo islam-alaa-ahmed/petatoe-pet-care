@@ -9,44 +9,17 @@
   var IDLE_LIMIT_MS = 30 * 60 * 1000;
   var WARNING_MS = 60 * 1000;
   var CHECK_MS = 1000;
-  var CURRENT_USER_KEYS = [
-    'petatoe_current_user_v108',
-    'petatoe_current_user_v2',
-    'petatoe_current_user_v139',
-    'petatoe_current_user',
-    'PETATOE_CURRENT_USER',
-    'currentUser'
-  ];
-
   var lastActivity = Date.now();
   var warningVisible = false;
   var loggedOut = false;
   var timer = null;
 
-  function storageGet(key, scope){
-    try{
-      var st = scope === 'session' ? window.sessionStorage : window.localStorage;
-      return st ? st.getItem(key) : '';
-    }catch(e){ return ''; }
-  }
-
-  function storageRemove(key, scope){
-    try{
-      var st = scope === 'session' ? window.sessionStorage : window.localStorage;
-      if(st) st.removeItem(key);
-    }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('security/session-timeout.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-  }
-
   function hasActiveUser(){
-    for(var i = 0; i < CURRENT_USER_KEYS.length; i++){
-      if(storageGet(CURRENT_USER_KEYS[i], 'local') || storageGet(CURRENT_USER_KEYS[i], 'session')) return true;
-    }
     try{
-      if(window.PETATOEStorage && typeof window.PETATOEStorage.get === 'function'){
-        if(window.PETATOEStorage.get('currentUser', '')) return true;
-      }
-    }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('security/session-timeout.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-    return false;
+      if(window.PETATOEAuth && typeof window.PETATOEAuth.currentUser === 'function' && window.PETATOEAuth.currentUser()) return true;
+      if(window.__PETATOE_ACTIVE_USER__ || window.currentUser) return true;
+      return !!(window.sessionStorage && window.sessionStorage.getItem('petatoe_auth_session_v668'));
+    }catch(e){ return false; }
   }
 
   function resetActivity(){
@@ -106,13 +79,9 @@
     if(loggedOut) return;
     loggedOut = true;
     hideWarning();
-    CURRENT_USER_KEYS.forEach(function(key){ storageRemove(key, 'local'); storageRemove(key, 'session'); });
-    try{ window.currentUser = null; }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('security/session-timeout.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-    try{
-      if(window.PETATOEStorage && typeof window.PETATOEStorage.remove === 'function'){
-        window.PETATOEStorage.remove('currentUser');
-      }
-    }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('security/session-timeout.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
+    try{ if(window.PETATOEAuth && typeof window.PETATOEAuth.logout === 'function'){ window.PETATOEAuth.logout(reason||'idle'); return; } }catch(e){}
+    try{ if(window.sessionStorage){ window.sessionStorage.removeItem('petatoe_auth_session_v668'); window.sessionStorage.removeItem('currentUser'); } }catch(e){}
+    try{ window.currentUser = null; window.__PETATOE_ACTIVE_USER__ = null; }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('security/session-timeout.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
     try{
       if(window.__PETATOE_SETTINGS_API__ && typeof window.__PETATOE_SETTINGS_API__.audit === 'function'){
         window.__PETATOE_SETTINGS_API__.audit('Session Timeout', reason === 'manual' ? 'Manual logout from timeout warning' : 'Idle timeout auto logout', 'warn');

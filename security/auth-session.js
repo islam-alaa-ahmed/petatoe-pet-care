@@ -7,14 +7,8 @@
 
   var VERSION = '7.0.18';
   var AUTH_KEY = 'petatoe_auth_session_v668';
-  var USERS_KEYS = ['petatoe_users_v108','petatoe_users_v139','petatoe_users_v2','petatoe_users','PETATOE_USERS'];
-  var CURRENT_USER_KEYS = ['currentUser','petatoe_current_user','petatoe_current_user_v108','petatoe_current_user_v139','petatoe_current_user_v2','PETATOE_CURRENT_USER'];
   var DEFAULT_ADMIN_PASSWORD = 'admin';
   var DEFAULT_ADMIN_USERNAME = 'Admin';
-  var REMEMBER_KEY = 'petatoe_auth_remember_v711';
-  var BIOMETRIC_KEY = 'petatoe_auth_biometric_v711';
-
-  function st(){ return window.PETATOEStorage || null; }
   function esc(v){ return String(v == null ? '' : v).replace(/[&<>\'\"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]; }); }
   function toast(msg){ try{ if(typeof window.toast === 'function') window.toast(msg); else console.log('[PETATOE]', msg); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
   function now(){ return new Date().toISOString(); }
@@ -37,47 +31,31 @@
       '<span dir="ltr">0508638573</span></a>' +
       '</div>';
   }
-  function readJSON(key, fallback){
-    try{ var s = st(); if(s && typeof s.readJSON === 'function') return s.readJSON(key, fallback); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
-    try{ var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }catch(_){ return fallback; }
-  }
-  function writeJSON(key, value){
-    try{ var s = st(); if(s && typeof s.writeJSON === 'function'){ s.writeJSON(key, value); return; } }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
-    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
-  }
-  function rawSet(key, value, scope){ try{ (scope === 'session' ? sessionStorage : localStorage).setItem(key, String(value == null ? '' : value)); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
-  function rawGet(key, scope){ try{ return (scope === 'session' ? sessionStorage : localStorage).getItem(key) || ''; }catch(_){ return ''; } }
-  function rawRemove(key, scope){ try{ (scope === 'session' ? sessionStorage : localStorage).removeItem(key); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
+  function identityStore(){ return window.PETATOEIdentityStore || null; }
+  function rawSet(key, value){ try{ sessionStorage.setItem(key, String(value == null ? '' : value)); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
+  function rawGet(key){ try{ return sessionStorage.getItem(key) || ''; }catch(_){ return ''; } }
+  function rawRemove(key){ try{ sessionStorage.removeItem(key); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
 
   function normalizeUsername(v){ return String(v || '').trim().toLowerCase(); }
   function isActive(u){ var s = String((u && u.status) || 'active').trim().toLowerCase(); return s === 'active' || s === 'نشط'; }
   function userKey(u){ return String((u && (u.id || u.username || u.name || u.fullName)) || '').trim(); }
+  function defaultAdminUser(){
+    return {id:'u_admin',username:DEFAULT_ADMIN_USERNAME,fullName:'Admin',job:'Super Admin',phone:'',email:'',role:'superadmin',status:'active',createdAt:now(),lastLogin:'',mustChangePassword:true,bootstrapCredential:true,passwordPolicy:'change_on_first_login'};
+  }
   function getUsers(){
-    var merged = [], seen = {};
-    USERS_KEYS.forEach(function(key){
-      var list = readJSON(key, []);
-      if(!Array.isArray(list)) return;
-      list.forEach(function(u){
-        if(!u || typeof u !== 'object') return;
-        var k = userKey(u) || JSON.stringify(u);
-        if(!seen[k]){ seen[k] = true; merged.push(u); }
-      });
-    });
-    if(!merged.length){
-      merged = [{id:'u_admin',username:DEFAULT_ADMIN_USERNAME,fullName:'Admin',job:'Super Admin',phone:'',email:'',role:'superadmin',status:'active',createdAt:now(),lastLogin:'',mustChangePassword:true,bootstrapCredential:true,passwordPolicy:'change_on_first_login'}];
-      ensureCredential(merged[0], DEFAULT_ADMIN_PASSWORD);
-      saveUsers(merged);
-    }else{
-      var changed = false;
-      merged.forEach(function(u){ if(ensureFallbackAdminCredential(u)) changed = true; });
-      if(changed) saveUsers(merged);
-    }
+    var ids = identityStore();
+    try{ if(ids && typeof ids.load === 'function') ids.load(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
+    var merged = [];
+    try{ if(ids && typeof ids.usersSync === 'function') merged = ids.usersSync() || []; }catch(_){ merged = []; }
+    if(!Array.isArray(merged) || !merged.length) merged = [defaultAdminUser()];
+    var changed = false;
+    merged.forEach(function(u){ if(ensureFallbackAdminCredential(u)) changed = true; });
+    if(changed) saveUsers(merged);
     return merged;
   }
   function saveUsers(users){
-    var sec = window.PETATOEPasswordSecurity;
-    try{ if(sec && typeof sec.saveUsers === 'function'){ sec.saveUsers(users || []); return; } }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
-    writeJSON('petatoe_users_v108', users || []);
+    var ids = identityStore();
+    try{ if(ids && typeof ids.saveUsers === 'function'){ ids.saveUsers(users || []); return; } }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
   }
   function ensureCredential(u, password){
     var sec = window.PETATOEPasswordSecurity;
@@ -133,18 +111,14 @@
     return false;
   }
   function sessionUser(){
-    try{ var raw = rawGet(AUTH_KEY, 'session'); if(!raw) return null; var s = JSON.parse(raw); return s && s.user ? s.user : null; }catch(_){ return null; }
+    try{ var raw = rawGet(AUTH_KEY); if(!raw) return null; var s = JSON.parse(raw); return s && s.user ? s.user : null; }catch(_){ return null; }
   }
   function writeCurrentUser(user){
-    var id = user && (user.id || user.username || user.name);
-    if(!id) return;
-    CURRENT_USER_KEYS.forEach(function(key){ rawSet(key, id, 'session'); rawSet(key, id, 'local'); });
-    try{ var s = st(); if(s && typeof s.set === 'function') s.set('currentUser', id); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
-    try{ window.currentUser = user; window.__PETATOE_ACTIVE_USER__ = user; }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
+    if(!user) return;
+    try{ window.currentUser = user; window.__PETATOE_ACTIVE_USER__ = user; rawSet('currentUser', user.id || user.username || ''); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
   }
   function clearCurrentUser(){
-    CURRENT_USER_KEYS.forEach(function(key){ rawRemove(key, 'session'); rawRemove(key, 'local'); });
-    try{ var s = st(); if(s && typeof s.remove === 'function') s.remove('currentUser'); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
+    rawRemove('currentUser');
     try{ window.currentUser = null; window.__PETATOE_ACTIVE_USER__ = null; }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
   }
   function setLoggedInClass(on){
@@ -205,20 +179,8 @@
     ].join('\n');
     document.head.appendChild(style);
   }
-  function safeLocalRead(key, fallback){
-    try{ var raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; }catch(_){ return fallback; }
-  }
-  function safeLocalWrite(key, value){
-    try{ localStorage.setItem(key, JSON.stringify(value)); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
-  }
-  function readRemember(){
-    var r = safeLocalRead(REMEMBER_KEY, null) || {};
-    return r && typeof r === 'object' ? r : {};
-  }
-  function writeRemember(username, enabled){
-    if(enabled){ safeLocalWrite(REMEMBER_KEY, {username:String(username || '').trim(), enabled:true, updatedAt:now()}); }
-    else{ try{ localStorage.removeItem(REMEMBER_KEY); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
-  }
+  function readRemember(){ return {}; }
+  function writeRemember(username, enabled){ return false; }
   function saveBrowserPasswordCredential(form, username, enabled){
     writeRemember(username, !!enabled);
     if(!enabled || !form) return;
@@ -253,10 +215,7 @@
   function biometricUsable(){
     return biometricSupported() && window.isSecureContext !== false;
   }
-  function readBiometric(){
-    var r = safeLocalRead(BIOMETRIC_KEY, null);
-    return r && r.credentialId && r.username ? r : null;
-  }
+  function readBiometric(){ return null; }
   function biometricButtonHtml(){
     var r = readBiometric();
     if(!r) return '';
@@ -267,40 +226,8 @@
     return '<label class="pet-auth-check"><input type="checkbox" id="petAuthEnableBiometric"> <span>تفعيل Face ID / بصمة الوجه بعد الدخول</span></label>';
   }
   function registerBiometric(user){
-    if(!user || !biometricUsable()){
-      toast('Face ID يحتاج تشغيل النسخة من HTTPS أو متصفح يدعم WebAuthn.');
-      return Promise.resolve(false);
-    }
-    var uname = String(user.username || user.id || user.fullName || '').trim();
-    if(!uname) return Promise.resolve(false);
-    var uid = bytes(16);
-    var opts = {
-      publicKey: {
-        challenge: bytes(32),
-        rp: {name: 'PETATOE'},
-        user: {id: uid, name: uname, displayName: String(user.fullName || uname)},
-        pubKeyCredParams: [{type:'public-key', alg:-7}, {type:'public-key', alg:-257}],
-        timeout: 60000,
-        authenticatorSelection: {authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred'},
-        attestation: 'none'
-      }
-    };
-    return navigator.credentials.create(opts).then(function(cred){
-      if(!cred) return false;
-      safeLocalWrite(BIOMETRIC_KEY, {
-        credentialId: b64url(cred.rawId),
-        username: uname,
-        userId: user.id || '',
-        displayName: user.fullName || uname,
-        createdAt: now(),
-        version: VERSION
-      });
-      toast('تم تفعيل Face ID / بصمة الوجه لهذا الجهاز.');
-      return true;
-    }).catch(function(){
-      toast('لم يتم تفعيل Face ID. تأكد من استخدام HTTPS ودعم الجهاز.');
-      return false;
-    });
+    toast('تم تعطيل التخزين المحلي للبصمة في نسخة Supabase.');
+    return Promise.resolve(false);
   }
   function loginWithBiometric(){
     var r = readBiometric();
@@ -509,7 +436,7 @@
     var safeUser = {id:user.id, username:user.username, fullName:user.fullName, job:user.job, email:user.email, phone:user.phone, role:user.role, status:user.status || 'active', loginAt:now()};
     if(options.remember) saveBrowserPasswordCredential(options.form, user.username || user.id || user.fullName, true);
     else if(options.remember === false) writeRemember('', false);
-    rawSet(AUTH_KEY, JSON.stringify({user:safeUser, createdAt:now(), version:VERSION, source:source || 'auth-login'}), 'session');
+    rawSet(AUTH_KEY, JSON.stringify({user:safeUser, createdAt:now(), version:VERSION, source:source || 'auth-login'}));
     writeCurrentUser(safeUser);
     setLoggedInClass(true);
     var overlay = document.getElementById('pet-auth-overlay'); if(overlay) overlay.remove();
@@ -535,7 +462,7 @@
   }
   function logout(reason){
     var user = sessionUser();
-    try{ sessionStorage.removeItem(AUTH_KEY); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
+    rawRemove(AUTH_KEY);
     clearCurrentUser();
     audit('User Logout', (user && (user.username || user.id)) || reason || 'manual', 'info');
     try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged', {detail:{user:null, source:'auth-logout'}})); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}

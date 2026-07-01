@@ -4,10 +4,6 @@
 (function(){
   'use strict';
   if(window.PETATOEPasswordSecurity&&window.PETATOEPasswordSecurity.__v==='6.4.71') return;
-  var USERS_KEY='petatoe_users_v108', SEC_KEY='petatoe_security_v110';
-  function S(){return window.PETATOEStorage||null}
-  function readJSON(k,d){var st=S();try{return st&&st.readJSON?st.readJSON(k,d):d}catch(e){return d}}
-  function writeJSON(k,v){var st=S();try{if(st&&st.writeJSON)st.writeJSON(k,v)}catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('security/password-security.js', e, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }}
   function now(){return new Date().toISOString()}
   function salt(){return 'pet_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,14)}
   function rrot(n,x){return (x>>>n)|(x<<(32-n))}
@@ -28,10 +24,9 @@
   function setPassword(u,password){if(!u)return u;var p=normalizePlain(password);if(!p)return u;u.passwordHash=hashPassword(p);u.passwordUpdatedAt=now();delete u.password;delete u.passwordPlain;return u}
   function migrateUser(u){if(!u||typeof u!=='object')return false;var changed=false;if(isPlainPasswordValue(u.password)&&!hasCredential(u)){setPassword(u,u.password);u.passwordMigratedAt=now();changed=true}else if(Object.prototype.hasOwnProperty.call(u,'password')&&u.password!==''){delete u.password;changed=true}else if(u.password===''){delete u.password;changed=true}return changed}
   function sanitizeUsers(list){var changed=false;if(Array.isArray(list)){list.forEach(function(u){if(migrateUser(u))changed=true})}return changed}
-  function saveUsers(list){sanitizeUsers(list);writeJSON(USERS_KEY,list||[]);return list}
-  function migrateStoredUsers(){var users=readJSON(USERS_KEY,[]);if(Array.isArray(users)&&sanitizeUsers(users)){writeJSON(USERS_KEY,users);return true}return false}
-  function migrateSecurity(){var sec=readJSON(SEC_KEY,null);if(!sec||typeof sec!=='object')return false;var changed=false;if(isPlainPasswordValue(sec.managerPassword)&&!sec.managerPasswordHash){sec.managerPasswordHash=hashPassword(sec.managerPassword);sec.managerPasswordMigratedAt=now();delete sec.managerPassword;changed=true}else if(Object.prototype.hasOwnProperty.call(sec,'managerPassword')){delete sec.managerPassword;changed=true}if(changed)writeJSON(SEC_KEY,sec);return changed}
+  function saveUsers(list){sanitizeUsers(list);return list}
+  function migrateStoredUsers(){return false}
+  function migrateSecurity(){return false}
   function verifyPassword(password,u){if(!u||!u.passwordHash)return false;var meta=u.passwordHash;var h=hashPassword(password,meta.salt);return !!(h.hash&&h.hash===meta.hash)}
   window.PETATOEPasswordSecurity={__v:'6.4.71',hashPassword:hashPassword,setPassword:setPassword,hasCredential:hasCredential,migrateUser:migrateUser,sanitizeUsers:sanitizeUsers,saveUsers:saveUsers,migrateStoredUsers:migrateStoredUsers,migrateSecurity:migrateSecurity,verifyPassword:verifyPassword};
-  setTimeout(function(){try{migrateStoredUsers();migrateSecurity()}catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('security/password-security.js', e, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }},0);
 })();
