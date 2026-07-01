@@ -14,10 +14,10 @@
     });
   }
 
-  function S(){return window.PETATOEStorage||null}
-  function read(k,d){var st=S();return st&&st.readJSON?st.readJSON(k,d):d;}
+  function ID(){return window.PETATOEIdentityStore||null}
+  function read(k,d){var ids=ID(); if(k===USERS_KEY&&ids&&ids.usersSync)return ids.usersSync(); return d;}
 
-  function write(k,v){var st=S();if(st&&st.writeJSON)st.writeJSON(k,v);}
+  function write(k,v){var ids=ID(); if(k===AUDIT_KEY&&Array.isArray(v)&&ids&&ids.appendAudit){if(v[0])ids.appendAudit(v[0]);}}
 
   function users(){
     var u=read(USERS_KEY,[]);
@@ -26,7 +26,7 @@
 
   function currentUser(){
     var list=users();
-    var st=S();var id=(st&&st.get?st.get(CURRENT_KEY,''):'')||'';
+    var id=String(window.PETATOE_CURRENT_USER_REF||'');
     if(!id)return {id:'',username:'Guest',fullName:'Guest',role:'guest'};
     return list.find(function(u){return u.id===id;})||{id:id,username:id,fullName:id,role:'unknown'};
   }
@@ -39,7 +39,7 @@
   }
 
   function getLogs(){
-    var logs=read(AUDIT_KEY,[]);
+    var ids=ID(); var logs=ids&&ids._cache&&Array.isArray(ids._cache.audit)?ids._cache.audit:[];
     return Array.isArray(logs)?logs:[];
   }
 
@@ -59,7 +59,7 @@
   }
 
   function clearLogs(){
-    var st=S();if(st&&st.remove)st.remove(AUDIT_KEY);
+    var ids=ID(); if(ids&&ids._cache)ids._cache.audit=[];
     log('Audit Trail Reset','Audit log cleared','warn');
   }
 

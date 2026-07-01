@@ -10,7 +10,7 @@
   function val(id,d){var a=api();return a.val?a.val(id,d):((byId(id)||{}).value||d)}
   function toast(msg){var a=api();return a.toast?a.toast(msg):(window.toast?window.toast(msg):alert(msg))}
   function users(){var a=api();return a.users?a.users():[]}
-  function saveUsers(v){var sec=window.PETATOEPasswordSecurity;if(sec&&sec.saveUsers)return sec.saveUsers(v||[]);var a=api();if(a.saveUsers)return a.saveUsers(v);var S=window.PETATOEStorage;if(S&&S.writeJSON)return S.writeJSON('petatoe_users_v108',v||[])}
+  function saveUsers(v){var a=api();if(a.saveUsers)return a.saveUsers(v||[]);var ids=window.PETATOEIdentityStore;if(ids&&ids.saveUsers)return ids.saveUsers(v||[]);}
   function audit(action,details,level){var a=api();if(a.audit)return a.audit(action,details,level)}
   function renderUsers(){var a=api();if(a.render)return a.render('users')}
   function roleNames(){return api().roleNames||{superadmin:'Super Admin',admin:'Admin',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',viewer:'Viewer'}}
