@@ -28,17 +28,23 @@
     return '<div class="pet-v110-grid one"><div class="pet-v110-card"><h3>👥 إضافة / تعديل مستخدم</h3><div class="pet-v110-actions"><input id="v110UserId" type="hidden"><input id="v110Username" class="pet-v110-input" placeholder="اسم الدخول"><input id="v110FullName" class="pet-v110-input" placeholder="الاسم الكامل"><input id="v110Job" class="pet-v110-input" placeholder="الوظيفة"><input id="v110Phone" class="pet-v110-input" placeholder="الهاتف"><input id="v110Email" class="pet-v110-input" placeholder="البريد"><input id="v110Password" class="pet-v110-input" type="password" placeholder="كلمة المرور"><select id="v110Role" class="pet-v110-select">'+roleOpts+'</select><select id="v110Status" class="pet-v110-select"><option value="active">نشط</option><option value="disabled">موقوف</option><option value="blocked">محظور</option></select><button class="pet-v110-btn primary" data-v110-action="save-user">حفظ المستخدم</button><button class="pet-v110-btn" data-v110-action="clear-user">تفريغ</button></div></div><div class="pet-v110-card"><h3>📋 قائمة المستخدمين</h3><div class="pet-v110-table"><table><thead><tr><th>اسم الدخول</th><th>الاسم</th><th>الوظيفة</th><th>الدور</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody>'+rows+'</tbody></table></div></div><div class="pet-v110-card"><h3>👤 بياناتي</h3><p>المستخدم الحالي: <b>'+esc(cu.fullName||cu.username)+'</b> — '+esc(roles[cu.role]||cu.role)+'</p></div></div>';
   }
 
-  window.petV110SaveUser=function(){
+  window.petV110SaveUser=async function(){
     var u=users(), id=val('v110UserId',''), username=String(val('v110Username','')).trim();
     if(!username){toast('اسم الدخول مطلوب');return}
-    if(u.some(function(x){return x.username===username&&x.id!==id})){toast('اسم الدخول موجود بالفعل');return}
-    var x=id?u.find(function(y){return y.id===id}):null;
+    if(u.some(function(x){return String(x.username||'').toLowerCase()===username.toLowerCase()&&String(x.id)!==String(id)})){toast('اسم الدخول موجود بالفعل');return}
+    var x=id?u.find(function(y){return String(y.id)===String(id)}):null;
     if(!x){x={id:'u_'+Date.now(),createdAt:new Date().toISOString(),lastLogin:''};u.push(x)}
-    x.username=username; x.fullName=String(val('v110FullName',username)).trim()||username;
+    x.username=username; x.fullName=String(val('v110FullName',username)).trim()||username; x.full_name=x.fullName;
     x.job=String(val('v110Job','')).trim(); x.phone=String(val('v110Phone','')).trim(); x.email=String(val('v110Email','')).trim();
-    x.role=val('v110Role','viewer'); x.status=val('v110Status','active');
-    var p=val('v110Password',''); var sec=window.PETATOEPasswordSecurity; if(p){if(sec&&sec.setPassword)sec.setPassword(x,p);} else if(!id&&!(sec&&sec.hasCredential&&sec.hasCredential(x))&&!x.password){toast('كلمة المرور مطلوبة للمستخدم الجديد');return;}
-    saveUsers(u); audit(id?'User Updated':'User Created',username,'warn'); toast('تم حفظ المستخدم'); renderUsers();
+    x.role=val('v110Role','viewer'); x.role_code=x.role; x.status=val('v110Status','active');
+    var p=val('v110Password',''); var sec=window.PETATOEPasswordSecurity;
+    if(p){if(sec&&sec.setPassword)sec.setPassword(x,p); else x.password=p;}
+    else if(!id&&!(sec&&sec.hasCredential&&sec.hasCredential(x))&&!x.passwordHash&&!x.password){toast('كلمة المرور مطلوبة للمستخدم الجديد');return;}
+    var res=await saveUsers(u);
+    if(res&&res.ok===false){toast('فشل حفظ المستخدم: '+(res.error||'خطأ غير معروف'));return;}
+    audit(id?'User Updated':'User Created',username,'warn'); toast('تم حفظ المستخدم');
+    if(window.PETATOEIdentityStore&&window.PETATOEIdentityStore.load){try{await window.PETATOEIdentityStore.load({force:true});}catch(_e){}}
+    renderUsers();
   };
   window.petV110EditUser=function(id){
     var x=users().find(function(y){return y.id===id}); if(!x)return;
@@ -49,7 +55,10 @@
     var u=users(), target=u.find(function(x){return x.id===id}); if(!target)return;
     if(id==='u_admin'||isSuperUser(target)){toast('لا يمكن حذف Super Admin');return}
     if(!confirm('حذف المستخدم؟'))return;
-    saveUsers(u.filter(function(x){return x.id!==id})); audit('User Deleted',target.username||id,'warn'); toast('تم حذف المستخدم'); renderUsers();
+    Promise.resolve(saveUsers(u.filter(function(x){return String(x.id)!==String(id)}))).then(function(res){
+      if(res&&res.ok===false){toast('فشل حذف المستخدم: '+(res.error||'خطأ غير معروف'));return;}
+      audit('User Deleted',target.username||id,'warn'); toast('تم حذف المستخدم'); renderUsers();
+    });
   };
   window.petV110ClearUserForm=function(){
     ['v110UserId','v110Username','v110FullName','v110Job','v110Phone','v110Email','v110Password'].forEach(function(id){var e=byId(id);if(e)e.value=''});
