@@ -196,6 +196,181 @@
   }
 
 
+
+  /* PETATOE Identity Store — Supabase-backed app users, permissions, roles and audit logs. */
+  function defaultAppUser(){return {id:'u_admin',username:'Admin',fullName:'Admin',full_name:'Admin',job:'Super Admin',phone:'',email:'',role:'superadmin',role_code:'superadmin',status:'active',createdAt:new Date().toISOString()};}
+  var identityCache={users:[defaultAppUser()], permissions:{}, roles:null, audit:[], loaded:false, loading:null};
+  function normalizeAppUserRow(row){
+    row=row||{};
+    var d=(row.data&&typeof row.data==='object')?clone(row.data):{};
+    if((!d||!Object.keys(d).length) && row.legacy_payload&&typeof row.legacy_payload==='object') d=clone(row.legacy_payload);
+    d=d&&typeof d==='object'?d:{};
+    var appId=String(d.id||d.app_id||d.legacy_id||row.username||row.id||'').trim();
+    if(isUuid(appId) && d.username) appId=String(d.username);
+    return {
+      id:appId||('user_'+String(row.id||Date.now())),
+      supabase_id:String(row.id||''),
+      auth_user_id:String(row.auth_user_id||d.auth_user_id||''),
+      username:String(row.username||d.username||appId||''),
+      fullName:String(row.full_name||d.fullName||d.full_name||row.username||''),
+      full_name:String(row.full_name||d.full_name||d.fullName||row.username||''),
+      job:String(d.job||d.title||''),
+      phone:String(row.phone||d.phone||''),
+      email:String(row.email||d.email||''),
+      role:String(row.role_code||d.role||d.role_code||'viewer'),
+      role_code:String(row.role_code||d.role_code||d.role||'viewer'),
+      status:String(row.status||d.status||'active'),
+      createdAt:String(row.created_at||d.createdAt||''),
+      lastLogin:String(d.lastLogin||'')
+    };
+  }
+  async function loadIdentityStore(){
+    if(identityCache.loading) return identityCache.loading;
+    identityCache.loading=(async function(){
+      if(!hasClient()){identityCache.loaded=true;return identityCache;}
+      var c=client();
+      try{
+        var ur=await c.from('app_users').select('*').order('created_at',{ascending:true});
+        if(!ur.error){
+          var list=(Array.isArray(ur.data)?ur.data:[]).map(normalizeAppUserRow).filter(function(u){return u&&u.username;});
+          if(!list.length) list=[defaultAppUser()];
+          identityCache.users=list;
+        }else console.warn('PETATOE Identity users load failed', resultError(ur));
+      }catch(e){console.warn('PETATOE Identity users load crashed', e)}
+      try{
+        var pr=await c.from('app_user_permissions').select('*');
+        if(!pr.error){
+          var map={};
+          (Array.isArray(pr.data)?pr.data:[]).forEach(function(r){
+            if(!r) return;
+            var uid=String(r.user_id||'');
+            if(!uid) return;
+            var key=String(r.permission_key||'full');
+            var data=(r.data&&typeof r.data==='object')?clone(r.data):{};
+            if(key==='full'||data.screens||data.special||data.vehicleScope) map[uid]=data;
+          });
+          identityCache.permissions=map;
+        }else console.warn('PETATOE Identity permissions load failed', resultError(pr));
+      }catch(e){console.warn('PETATOE Identity permissions load crashed', e)}
+      try{
+        var rr=await c.from('roles').select('*').order('level',{ascending:true});
+        if(!rr.error){
+          var roles={};
+          (Array.isArray(rr.data)?rr.data:[]).forEach(function(r){ if(r&&r.code) roles[String(r.code)]=String(r.name_en||r.name_ar||r.code); });
+          identityCache.roles=Object.keys(roles).length?roles:null;
+        }
+      }catch(e){console.warn('PETATOE Identity roles load crashed', e)}
+      identityCache.loaded=true;
+      try{window.dispatchEvent(new CustomEvent('petatoe:identity-ready',{detail:{users:identityCache.users.length}}));}catch(_e){}
+      return identityCache;
+    })();
+    return identityCache.loading;
+  }
+  function appUsersSync(){ if(!identityCache.loaded) loadIdentityStore(); return clone(identityCache.users||[defaultAppUser()]); }
+  async function findAppUserRowId(u){
+    if(!hasClient()) return '';
+    u=u||{};
+    if(isUuid(u.supabase_id)) return u.supabase_id;
+    var appId=String(u.id||'').trim(), username=String(u.username||'').trim();
+    var res=await client().from('app_users').select('id,username,legacy_payload').limit(1000);
+    if(res.error) return '';
+    var rows=Array.isArray(res.data)?res.data:[];
+    for(var i=0;i<rows.length;i++){
+      var r=rows[i]||{}, d=(r.legacy_payload&&typeof r.legacy_payload==='object')?r.legacy_payload:{};
+      if(appId && String(d.id||d.app_id||'')===appId) return String(r.id||'');
+      if(username && String(r.username||'').toLowerCase()===username.toLowerCase()) return String(r.id||'');
+    }
+    return '';
+  }
+  async function upsertAppUser(u){
+    if(!u||typeof u!=='object') return {ok:false,error:'Invalid app user'};
+    if(!hasClient()) return {ok:false,error:'Supabase client not ready'};
+    var data=clone(u); data.id=String(data.id||data.username||('u_'+Date.now())).trim();
+    data.role=data.role||data.role_code||'viewer'; data.role_code=data.role_code||data.role;
+    data.fullName=data.fullName||data.full_name||data.username||''; data.full_name=data.full_name||data.fullName;
+    var rowId=await findAppUserRowId(data);
+    var payload={
+      username:String(data.username||''),
+      full_name:String(data.fullName||data.full_name||data.username||''),
+      email:String(data.email||''),
+      phone:String(data.phone||''),
+      role_code:String(data.role||data.role_code||'viewer'),
+      status:String(data.status||'active'),
+      legacy_payload:data,
+      updated_at:new Date().toISOString()
+    };
+    var res=rowId?await client().from('app_users').update(payload).eq('id',rowId).select().limit(1):await client().from('app_users').insert(payload).select().limit(1);
+    if(res.error){console.warn('PETATOE Identity app user upsert failed', resultError(res)); return {ok:false,error:resultError(res)};}
+    await loadIdentityStore(); identityCache.loading=null; await loadIdentityStore();
+    return {ok:true,data:res.data};
+  }
+  async function saveAppUsers(list){
+    list=Array.isArray(list)?list:[];
+    identityCache.users=clone(list.length?list:[defaultAppUser()]);
+    for(var i=0;i<identityCache.users.length;i++) await upsertAppUser(identityCache.users[i]);
+    return {ok:true};
+  }
+  async function deleteAppUser(u){
+    if(!hasClient()) return {ok:false,error:'Supabase client not ready'};
+    var rowId=await findAppUserRowId(typeof u==='object'?u:{id:u});
+    if(!rowId) return {ok:true,skipped:true};
+    var res=await client().from('app_users').delete().eq('id',rowId);
+    if(res.error){console.warn('PETATOE Identity app user delete failed', resultError(res)); return {ok:false,error:resultError(res)};}
+    identityCache.users=(identityCache.users||[]).filter(function(x){return String(x.id)!==String(typeof u==='object'?u.id:u)});
+    return {ok:true};
+  }
+  function appPermissionsSync(){ if(!identityCache.loaded) loadIdentityStore(); return clone(identityCache.permissions||{}); }
+  async function saveAppUserPermission(uid, perm){
+    if(!uid) return {ok:false,error:'Missing user id'};
+    identityCache.permissions[String(uid)]=clone(perm||{});
+    if(!hasClient()) return {ok:false,error:'Supabase client not ready'};
+    var id='perm_'+String(uid).replace(/[^a-zA-Z0-9_-]/g,'_')+'_full';
+    var payload={id:id,user_id:String(uid),permission_key:'full',allowed:true,data:clone(perm||{}),updated_at:new Date().toISOString()};
+    var res=await client().from('app_user_permissions').upsert(payload,{onConflict:'id'});
+    if(res.error){console.warn('PETATOE Identity permission upsert failed', resultError(res)); return {ok:false,error:resultError(res)};}
+    return {ok:true};
+  }
+  async function saveAppPermissions(map){
+    map=map&&typeof map==='object'?map:{};
+    identityCache.permissions=clone(map);
+    var keys=Object.keys(map);
+    for(var i=0;i<keys.length;i++) await saveAppUserPermission(keys[i], map[keys[i]]);
+    return {ok:true};
+  }
+  async function deleteAppUserPermission(uid){
+    if(!uid) return {ok:false,error:'Missing user id'};
+    delete identityCache.permissions[String(uid)];
+    if(!hasClient()) return {ok:false,error:'Supabase client not ready'};
+    var res=await client().from('app_user_permissions').delete().eq('user_id',String(uid));
+    if(res.error){console.warn('PETATOE Identity permission delete failed', resultError(res)); return {ok:false,error:resultError(res)};}
+    return {ok:true};
+  }
+  async function appendAuditLog(entry){
+    entry=entry&&typeof entry==='object'?clone(entry):{details:String(entry||'')};
+    identityCache.audit.unshift(entry);
+    if(!hasClient()) return {ok:false,error:'Supabase client not ready'};
+    var payload={action:String(entry.action||'Audit'),details:String(entry.details||''),level:String(entry.level||'info'),payload:entry,created_at:entry.time||new Date().toISOString()};
+    var res=await client().from('audit_logs').insert(payload);
+    if(res.error){console.warn('PETATOE Identity audit insert failed', resultError(res)); return {ok:false,error:resultError(res)};}
+    return {ok:true};
+  }
+  window.PETATOEIdentityStore={
+    load:loadIdentityStore,
+    usersSync:appUsersSync,
+    saveUsers:saveAppUsers,
+    upsertUser:upsertAppUser,
+    deleteUser:deleteAppUser,
+    permissionsSync:appPermissionsSync,
+    savePermission:saveAppUserPermission,
+    savePermissions:saveAppPermissions,
+    deletePermission:deleteAppUserPermission,
+    appendAudit:appendAuditLog,
+    _cache:identityCache,
+    __ready:true
+  };
+  setTimeout(loadIdentityStore,0);
+
+
   window.PETATOESupabaseRepository={
     version:'8.0.2',
     hasClient:hasClient,
