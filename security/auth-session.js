@@ -48,9 +48,8 @@
     var merged = [];
     try{ if(ids && typeof ids.usersSync === 'function') merged = ids.usersSync() || []; }catch(_){ merged = []; }
     if(!Array.isArray(merged) || !merged.length) merged = [defaultAdminUser()];
-    var changed = false;
-    merged.forEach(function(u){ if(ensureFallbackAdminCredential(u)) changed = true; });
-    if(changed) saveUsers(merged);
+    /* Supabase Identity Lock: credentials/default-user normalization must not auto-write app_users during page load. */
+    merged.forEach(function(u){ ensureFallbackAdminCredential(u); });
     return merged;
   }
   function saveUsers(users){
@@ -103,7 +102,7 @@
       if(user.password && String(user.password) === String(password)){
         if(sec && typeof sec.setPassword === 'function'){
           sec.setPassword(user, password);
-          saveUsers(getUsers().map(function(u){ return userKey(u) === userKey(user) ? user : u; }));
+          /* No automatic app_users write during login verification. Explicit user edits are saved from Settings > Users. */
         }
         return true;
       }
@@ -328,7 +327,7 @@
       delete user.bootstrapCredential;
       user.passwordPolicy = 'custom';
       user.passwordUpdatedAt = now();
-      saveUsers(getUsers().map(function(u){ return userKey(u) === userKey(user) ? user : u; }));
+      /* Keep password-change state in the active session only; avoid background POST to app_users. */
       audit('Bootstrap Password Changed', user.username || user.id, 'warn');
       login(user.username || user.name || user.id, a);
     }); }
@@ -432,7 +431,7 @@
   function openSession(user, source, options){
     options = options || {};
     user.lastLogin = now();
-    saveUsers(getUsers().map(function(u){ return userKey(u) === userKey(user) ? user : u; }));
+    /* Session open must not auto-create/update app_users. The persistent users table is modified only by explicit Settings > Users actions. */
     var safeUser = {id:user.id, username:user.username, fullName:user.fullName, job:user.job, email:user.email, phone:user.phone, role:user.role, status:user.status || 'active', loginAt:now()};
     if(options.remember) saveBrowserPasswordCredential(options.form, user.username || user.id || user.fullName, true);
     else if(options.remember === false) writeRemember('', false);
