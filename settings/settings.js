@@ -42,7 +42,7 @@
   function toast(msg){try{if(typeof window.toast==='function')window.toast(msg);else alert(msg)}catch(e){alert(msg)}}
   function records(){try{var fb=(window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[];return Array.isArray(fb)?fb:[]}catch(e){return []}}
   function seed(){var sec=window.PETATOEPasswordSecurity;var u=read(USERS_KEY,null);if(!Array.isArray(u)||!u.length){u=[{id:'u_admin',username:'Admin',fullName:'Admin',job:'Super Admin',phone:'',email:'',role:'superadmin',status:'active',createdAt:new Date().toISOString(),lastLogin:''}];write(USERS_KEY,u);setText(CURRENT_KEY,'u_admin')}else if(sec&&sec.sanitizeUsers&&sec.sanitizeUsers(u)){write(USERS_KEY,u)}var r=read(ROLES_KEY,null);if(!r)write(ROLES_KEY,defaults)}
-  function users(){seed();var u=read(USERS_KEY,[]);var sec=window.PETATOEPasswordSecurity;if(sec&&sec.sanitizeUsers&&sec.sanitizeUsers(u))write(USERS_KEY,u);return u} function saveUsers(v){var list=Array.isArray(v)?v:[];var sec=window.PETATOEPasswordSecurity;if(sec&&sec.saveUsers)list=sec.saveUsers(list)||list;return write(USERS_KEY,list)}
+  function users(){seed();var u=read(USERS_KEY,[]);var sec=window.PETATOEPasswordSecurity;if(sec&&sec.sanitizeUsers&&sec.sanitizeUsers(u)){}return u} function saveUsers(v){var list=Array.isArray(v)?v:[];var ids=ID(); if(ids&&typeof ids.saveUsers==='function'){ids.saveUsers(list).catch(function(e){console.warn('PETATOE settings saveUsers Supabase failed',e);});} return write(USERS_KEY,list)}
   function roles(){seed();return read(ROLES_KEY,defaults)} function saveRoles(v){write(ROLES_KEY,v)}
   var Permissions=window.PETATOEPermissions||{};
   var Audit=window.PETATOEAudit||{};

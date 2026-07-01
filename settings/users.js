@@ -72,15 +72,25 @@
   async function persistUserToSupabase(user){
     if(!user||!String(user.username||'').trim())return {ok:false,error:'اسم الدخول مطلوب'};
     if(!hasClient())return {ok:false,error:'Supabase client not ready'};
-    var existing=await findUserRow(user);
+
+    /*
+      PETATOE Enterprise Fix:
+      Previous logic searched a row then used update(...).eq('id', rowId).
+      In PostgREST/RLS, an UPDATE can legally return 0 affected rows without a JS error,
+      so the UI showed "تم حفظ المستخدم" while nothing changed.
+      The stable business key for app_users is username, so we persist with a real
+      UPSERT on username and verify the row by reading it back.
+    */
     var data=clone(user);
-    data.id=String(data.id||data.legacy_id||'').trim()||('u_'+Date.now());
+    data.id=String(data.id||data.legacy_id||data.username||'').trim()||('u_'+Date.now());
     data.username=String(data.username||'').trim();
     data.fullName=String(data.fullName||data.full_name||data.username).trim()||data.username;
+    data.full_name=data.fullName;
     data.role=normalizeRole(data.role||data.role_code||'viewer');
     data.role_code=dbRole(data.role);
     data.status=String(data.status||'active');
     data.updatedAt=new Date().toISOString();
+
     var payload={
       username:data.username,
       full_name:data.fullName,
@@ -91,16 +101,35 @@
       legacy_payload:data,
       updated_at:new Date().toISOString()
     };
-    var c=supabaseClient(), res;
-    if(existing&&existing.id){
-      res=await c.from('app_users').update(payload).eq('id',existing.id).select().limit(1);
-    }else{
-      res=await c.from('app_users').insert(payload).select().limit(1);
-    }
+
+    var c=supabaseClient();
+    var res=await c.from('app_users').upsert(payload,{onConflict:'username'}).select().limit(1);
     if(res.error)return {ok:false,error:res.error.message||JSON.stringify(res.error)};
-    var saved=(Array.isArray(res.data)&&res.data[0])?normalizeAppUserRow(res.data[0]):data;
-    return {ok:true,user:saved,data:res.data};
+
+    var row=(Array.isArray(res.data)&&res.data[0])?res.data[0]:null;
+
+    // Verification readback: do not claim success unless Supabase returns the saved row.
+    if(!row){
+      var verify=await c.from('app_users').select('*').ilike('username',data.username).limit(1);
+      if(verify.error)return {ok:false,error:verify.error.message||JSON.stringify(verify.error)};
+      row=(Array.isArray(verify.data)&&verify.data[0])?verify.data[0]:null;
+    }
+    if(!row)return {ok:false,error:'لم يتم تأكيد حفظ المستخدم في Supabase'};
+
+    var saved=normalizeAppUserRow(row);
+    if(window.PETATOEIdentityStore){
+      try{
+        if(typeof window.PETATOEIdentityStore.load==='function') await window.PETATOEIdentityStore.load();
+        if(window.PETATOEIdentityStore._cache){
+          window.PETATOEIdentityStore._cache.loaded=false;
+          window.PETATOEIdentityStore._cache.loading=null;
+        }
+        if(typeof window.PETATOEIdentityStore.load==='function') await window.PETATOEIdentityStore.load();
+      }catch(_){}
+    }
+    return {ok:true,user:saved,data:[row]};
   }
+
   async function deleteUserFromSupabase(user){
     if(!hasClient())return {ok:false,error:'Supabase client not ready'};
     var existing=await findUserRow(user);
