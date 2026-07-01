@@ -4,14 +4,9 @@
 (function(){
   'use strict';
   if(window.PETATOEChildrenExpenses && window.PETATOEChildrenExpenses.__ready) return;
-  var KEY = 'childrenExpenses';
-  var LEGACY_KEY = 'PETATOE_CHILDREN_EXPENSES_V1';
-  var BUDGET_KEY = 'childrenExpenseBudgets';
-  var BUDGET_LEGACY_KEY = 'PETATOE_CHILDREN_EXPENSE_BUDGETS_V1';
   var currency = 'SAR';
 
   function warn(e){ try{ if(window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch) window.PETATOEUtils.warnSilentCatch('children-expenses-core.js', e); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("children-expenses/children-legacy-engine.js",e);} }
-  function S(){ return window.PETATOEStorage || null; }
   function storageApi(){
     try{
       var mod = childrenModule('storage');
@@ -22,35 +17,29 @@
     try{
       var api = storageApi();
       if(api && typeof api.read === 'function') return api.read();
-      var st=S(), arr=st&&st.readJSON?st.readJSON(KEY, null):null;
-      if(!Array.isArray(arr) && st&&st.readJSON) arr=st.readJSON(LEGACY_KEY, []);
-      return Array.isArray(arr)?arr:[];
-    }catch(e){ warn(e); return []; }
+    }catch(e){ warn(e); }
+    return [];
   }
   function write(arr){
     try{
       var api = storageApi();
       if(api && typeof api.write === 'function') return api.write(arr);
-      var st=S(); if(st&&st.writeJSON) return st.writeJSON(KEY, Array.isArray(arr)?arr:[]);
     }catch(e){ warn(e); }
-    return false;
+    return Promise.resolve({ok:false,error:'Children Expenses Supabase storage is not ready'});
   }
   function readBudgets(){
     try{
       var api = storageApi();
       if(api && typeof api.readBudgets === 'function') return api.readBudgets();
-      var st=S(), arr=st&&st.readJSON?st.readJSON(BUDGET_KEY, null):null;
-      if(!Array.isArray(arr) && st&&st.readJSON) arr=st.readJSON(BUDGET_LEGACY_KEY, []);
-      return Array.isArray(arr)?arr:[];
-    }catch(e){ warn(e); return []; }
+    }catch(e){ warn(e); }
+    return [];
   }
   function writeBudgets(arr){
     try{
       var api = storageApi();
       if(api && typeof api.writeBudgets === 'function') return api.writeBudgets(arr);
-      var st=S(); if(st&&st.writeJSON) return st.writeJSON(BUDGET_KEY, Array.isArray(arr)?arr:[]);
     }catch(e){ warn(e); }
-    return false;
+    return Promise.resolve({ok:false,error:'Children Expenses Supabase storage is not ready'});
   }
   function byId(id){ return document.getElementById(id); }
   function val(id){ var el=byId(id); return el ? String(el.value||'').trim() : ''; }
@@ -99,8 +88,9 @@
     try{
       var api = storageApi();
       if(api && typeof api.currentUserId === 'function') return api.currentUserId();
-      var st=S();
-      if(st&&st.get) return st.get('petatoe_current_user_v108','') || st.get('petatoe_current_user_v139','') || st.get('petatoe_current_user_v2','') || st.get('petatoe_current_user','') || '';
+      var u = window.__PETATOE_ACTIVE_USER__ || window.currentUser || null;
+      if(u && typeof u === 'object') return String(u.id || u.username || u.email || '').trim();
+      if(typeof u === 'string') return u;
     }catch(e){ warn(e); }
     return '';
   }
