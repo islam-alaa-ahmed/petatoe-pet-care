@@ -3,7 +3,7 @@
    Settings core renders this module without keeping permission logic inside settings.js. */
 (function(){
   'use strict';
-  var USERS_KEY='petatoe_users_v108', USER_PERMS_KEY='petatoe_user_crud_permissions_v139', CURRENT_KEY='petatoe_current_user_v108';
+  var USERS_KEY='app_users', USER_PERMS_KEY='app_user_permissions', CURRENT_KEY='app_current_user_ref';
   var roleNames={superadmin:'Super Admin',admin:'Admin',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',viewer:'Viewer'};
   var screenPerms=[
     ['sales','فواتير المبيعات','إضافة وتعديل وحذف فواتير البيع اليدوية والمستوردة'],
@@ -97,11 +97,11 @@
   }
   function getVehicleList(){
     var out=[],seen={};
-    var master=read('petatoe_master_setup_v120',{})||{};
+    var master=(window.PETATOESetup&&window.PETATOESetup.getMasterData?window.PETATOESetup.getMasterData():{})||{};
     (master.cars||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.code||v.name,v.name||v.plate||v.code,'setup')});
-    var fleet=read('PETATOE_FLEET_MANAGEMENT_V1',{})||{};
+    var fleet=(window.PETATOEFleet&&window.PETATOEFleet.getData?window.PETATOEFleet.getData():{})||{};
     (fleet.vehicles||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.name||v.plate,v.name||v.plate||v.id,'fleet')});
-    var ops=read('appointmentsMasterData',{})||{};
+    var ops=(window.PETATOEOperationsStorage&&window.PETATOEOperationsStorage.readMasterDataSync?window.PETATOEOperationsStorage.readMasterDataSync():{})||{};
     (ops.vehicleAssignments||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.vehicle||v.name||v.car,v.vehicle||v.name||v.car||v.id,'operations')});
     if(!out.length){['VAN A','VAN B'].forEach(function(v){addVehicleUnique(out,seen,v,v,'default')})}
     return out.sort(function(a,b){return String(a.name).localeCompare(String(b.name),'ar')});

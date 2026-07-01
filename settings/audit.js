@@ -4,9 +4,9 @@
 (function(){
   'use strict';
 
-  var AUDIT_KEY = 'petatoe_logs_v2';
-  var CURRENT_KEY = 'petatoe_current_user_v108';
-  var USERS_KEY = 'petatoe_users_v108';
+  var AUDIT_KEY = 'audit_logs';
+  var CURRENT_KEY = 'app_current_user_ref';
+  var USERS_KEY = 'app_users';
 
   function esc(s){
     return String(s==null?'':s).replace(/[&<>'\"]/g,function(c){

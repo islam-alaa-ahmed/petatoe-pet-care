@@ -1,6 +1,6 @@
 /* PETATOE v8.0.2 - Supabase Backup Split
    Stage 4: backup/export reads from Supabase-bound APIs only.
-   No LocalStorage/PETATOEStorage restore or raw snapshot fallback. */
+   No legacy restore or raw snapshot fallback. */
 (function(){
   'use strict';
   var VERSION='8.0.2-stage4-supabase-backup';
