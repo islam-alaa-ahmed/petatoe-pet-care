@@ -112,6 +112,41 @@
   function sessionUser(){
     try{ var raw = rawGet(AUTH_KEY); if(!raw) return null; var s = JSON.parse(raw); return s && s.user ? s.user : null; }catch(_){ return null; }
   }
+
+  function sameUserRef(a,b){
+    a=a||{}; b=b||{};
+    var aa=[a.supabase_id,a.id,a.username,a.fullName].map(function(x){return String(x||'').trim().toLowerCase();}).filter(Boolean);
+    var bb=[b.supabase_id,b.id,b.username,b.fullName].map(function(x){return String(x||'').trim().toLowerCase();}).filter(Boolean);
+    return aa.some(function(x){return bb.indexOf(x)>-1;});
+  }
+  async function loadFreshUsers(){
+    var ids=identityStore();
+    try{ if(ids && ids._cache) ids._cache.loading=null; }catch(_e){}
+    try{ if(ids && typeof ids.load==='function') await ids.load(); }catch(_e){}
+    try{ if(ids && typeof ids.usersSync==='function') return ids.usersSync()||[]; }catch(_e){}
+    return getUsers();
+  }
+  async function validateSessionUser(reason){
+    var su=sessionUser();
+    if(!su||!su.id)return {ok:false,reason:'no-session'};
+    var list=await loadFreshUsers();
+    var fresh=(list||[]).find(function(u){return sameUserRef(u,su);});
+    if(!fresh||!isActive(fresh)){
+      rawRemove(AUTH_KEY);
+      clearCurrentUser();
+      setLoggedInClass(false);
+      try{document.dispatchEvent(new CustomEvent('petatoe:userchanged',{detail:{user:null,source:reason||'session-invalid'}}));}catch(_e){}
+      renderLogin('تم إنهاء الجلسة لأن المستخدم غير موجود أو غير نشط');
+      return {ok:false,reason:'invalid'};
+    }
+    var merged=Object.assign({},su,fresh,{loginAt:su.loginAt||now()});
+    rawSet(AUTH_KEY, JSON.stringify({user:merged, createdAt:now(), version:VERSION, source:reason||'session-validated'}));
+    writeCurrentUser(merged);
+    updateHeader(merged);
+    try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_e){}
+    return {ok:true,user:merged};
+  }
+
   function writeCurrentUser(user){
     if(!user) return;
     try{ window.currentUser = user; window.__PETATOE_ACTIVE_USER__ = user; rawSet('currentUser', user.id || user.username || ''); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
@@ -474,25 +509,29 @@
     try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged', {detail:{user:null, source:'auth-logout'}})); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
     renderLogin('تم تسجيل الخروج بنجاح');
   }
-  function restore(){
+  async function restore(){
     ensureStyles();
     getUsers();
     var user = sessionUser();
     if(user && user.id){
-      writeCurrentUser(user);
-      setLoggedInClass(true);
-      updateHeader(user);
-      var old = document.getElementById('pet-auth-overlay'); if(old) old.remove();
-      try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
-      return true;
+      var valid=await validateSessionUser('auth-restore');
+      if(valid && valid.ok){
+        setLoggedInClass(true);
+        var old = document.getElementById('pet-auth-overlay'); if(old) old.remove();
+        return true;
+      }
+      return false;
     }
     clearCurrentUser();
     renderLogin('');
     return false;
   }
 
-  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric};
+  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric};
   window.petLogout = function(){ logout('manual'); };
+
+  document.addEventListener('petatoe:users-changed', function(){ validateSessionUser('users-changed'); });
+  setInterval(function(){ if(sessionUser()) validateSessionUser('session-watch'); }, 60000);
 
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', restore);
   else restore();
