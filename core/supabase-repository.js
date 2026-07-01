@@ -221,7 +221,17 @@
       role_code:String(row.role_code||d.role_code||d.role||'viewer'),
       status:String(row.status||d.status||'active'),
       createdAt:String(row.created_at||d.createdAt||''),
-      lastLogin:String(d.lastLogin||'')
+      lastLogin:String(d.lastLogin||''),
+      passwordHash:d.passwordHash||d.password_hash||null,
+      passwordUpdatedAt:String(d.passwordUpdatedAt||d.password_updated_at||''),
+      passwordMigratedAt:String(d.passwordMigratedAt||''),
+      passwordPolicy:String(d.passwordPolicy||''),
+      mustChangePassword:!!d.mustChangePassword,
+      bootstrapCredential:!!d.bootstrapCredential,
+      bootstrapCredentialClearedAt:String(d.bootstrapCredentialClearedAt||''),
+      passwordHashMeta:d.passwordHashMeta||null,
+      passwordDigest:d.passwordDigest||'',
+      passwordEncrypted:d.passwordEncrypted||''
     };
   }
   async function loadIdentityStore(){
@@ -345,14 +355,48 @@
     if(res.error){console.warn('PETATOE Identity permission delete failed', resultError(res)); return {ok:false,error:resultError(res)};}
     return {ok:true};
   }
+  async function updateAppUserCredential(u){
+    if(!u||typeof u!=='object') return {ok:false,error:'Invalid app user'};
+    if(!hasClient()) return {ok:false,error:'Supabase client not ready'};
+    var rowId=await findAppUserRowId(u);
+    if(!rowId) return {ok:false,error:'App user row not found'};
+    var existing=(identityCache.users||[]).find(function(x){return String(x.id)===String(u.id)||String(x.username||'').toLowerCase()===String(u.username||'').toLowerCase();})||{};
+    var data=clone(existing);
+    Object.keys(u).forEach(function(k){data[k]=clone(u[k]);});
+    data.id=String(data.id||data.username||'').trim();
+    data.username=String(data.username||'').trim();
+    data.role=data.role||data.role_code||'viewer';
+    data.role_code=data.role_code||data.role;
+    data.fullName=data.fullName||data.full_name||data.username||'';
+    data.full_name=data.full_name||data.fullName;
+    data.passwordUpdatedAt=data.passwordUpdatedAt||new Date().toISOString();
+    var payload={
+      username:String(data.username||''),
+      full_name:String(data.fullName||data.full_name||data.username||''),
+      email:String(data.email||''),
+      phone:String(data.phone||''),
+      role_code:String(data.role||data.role_code||'viewer'),
+      status:String(data.status||'active'),
+      legacy_payload:data,
+      updated_at:new Date().toISOString()
+    };
+    var res=await client().from('app_users').update(payload).eq('id',rowId).select().limit(1);
+    if(res.error){console.warn('PETATOE Identity credential update failed', resultError(res)); return {ok:false,error:resultError(res)};}
+    identityCache.users=(identityCache.users||[]).map(function(x){return (String(x.id)===String(data.id)||String(x.username||'').toLowerCase()===String(data.username||'').toLowerCase())?clone(data):x;});
+    identityCache.loading=null;
+    await loadIdentityStore();
+    return {ok:true,data:res.data};
+  }
   async function appendAuditLog(entry){
     entry=entry&&typeof entry==='object'?clone(entry):{details:String(entry||'')};
     identityCache.audit.unshift(entry);
-    if(!hasClient()) return {ok:false,error:'Supabase client not ready'};
+    if(!hasClient()) return {ok:true,localOnly:true};
     var payload={action:String(entry.action||'Audit'),details:String(entry.details||''),level:String(entry.level||'info'),payload:entry,created_at:entry.time||new Date().toISOString()};
-    var res=await client().from('audit_logs').insert(payload);
-    if(res.error){console.warn('PETATOE Identity audit insert failed', resultError(res)); return {ok:false,error:resultError(res)};}
-    return {ok:true};
+    try{
+      var res=await client().from('audit_logs').insert(payload);
+      if(res.error){console.warn('PETATOE Identity audit insert skipped', resultError(res)); return {ok:true,skipped:true,error:resultError(res)};}
+      return {ok:true};
+    }catch(e){ console.warn('PETATOE Identity audit insert crashed/skipped', e); return {ok:true,skipped:true,error:String(e&&e.message||e||'')}; }
   }
   window.PETATOEIdentityStore={
     load:loadIdentityStore,
@@ -365,6 +409,7 @@
     savePermissions:saveAppPermissions,
     deletePermission:deleteAppUserPermission,
     appendAudit:appendAuditLog,
+    updateUserCredential:updateAppUserCredential,
     _cache:identityCache,
     __ready:true
   };
