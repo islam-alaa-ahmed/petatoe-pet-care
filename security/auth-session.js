@@ -316,7 +316,7 @@
     var p1 = document.getElementById('petNewPassword');
     var p2 = document.getElementById('petNewPassword2');
     if(p1) setTimeout(function(){ try{ p1.focus(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }, 40);
-    if(form){ form.addEventListener('submit', function(e){
+    if(form){ form.addEventListener('submit', async function(e){
       e.preventDefault();
       var a = p1 && p1.value || '', b = p2 && p2.value || '';
       if(a !== b){ renderPasswordChange(user, 'كلمتا المرور غير متطابقتين'); return; }
@@ -325,9 +325,16 @@
       try{ if(sec && typeof sec.setPassword === 'function') sec.setPassword(user, a); else user.password = a; }catch(_){ user.password = a; }
       delete user.mustChangePassword;
       delete user.bootstrapCredential;
+      user.bootstrapCredentialClearedAt = now();
       user.passwordPolicy = 'custom';
       user.passwordUpdatedAt = now();
-      /* Keep password-change state in the active session only; avoid background POST to app_users. */
+      var ids = identityStore();
+      if(ids && typeof ids.updateUserCredential === 'function'){
+        var saved = await ids.updateUserCredential(user);
+        if(!saved || saved.ok === false){ renderPasswordChange(user, 'تعذر حفظ كلمة المرور في Supabase: ' + ((saved && saved.error) || 'غير معروف')); return; }
+      }else{
+        renderPasswordChange(user, 'تعذر الوصول إلى مخزن مستخدمي Supabase'); return;
+      }
       audit('Bootstrap Password Changed', user.username || user.id, 'warn');
       login(user.username || user.name || user.id, a);
     }); }
