@@ -145,6 +145,7 @@
     el.setAttribute('data-v110-main',main);
     el.setAttribute('data-v110-sub',sub||'');
     (window.PETATOESecurity||{setInnerHTML:function(el,h){el.replaceChildren(document.createRange().createContextualFragment(String(h==null?'':h)));}}).setInnerHTML(el, '<div class="pet-v110-wrap"><div class="pet-v110-hero"><div><h3>⚙️ مركز الإعدادات والصلاحيات</h3><p>القائمة الرئيسية: النظام، الإعدادات، الصلاحيات، المستخدمين — بدون التأثير على التقارير القديمة.</p></div></div>'+mainTabs(main)+(main==='permissions'?'':kpis(q))+body+'</div>');
+    try{ if(window.PETATOENavigationPermissions&&typeof window.PETATOENavigationPermissions.applyAll==='function') setTimeout(window.PETATOENavigationPermissions.applyAll,0); }catch(_e){}
   }
   window.petSettingsV110Open=function(main,sub){setText(MAIN_KEY,main||'system');if(sub)setText(SUB_KEY,sub);render(main,sub)};
   window.petV110ExportQuality=function(){download({type:'PETATOE_DATA_QUALITY',createdAt:new Date().toISOString(),quality:quality(true)},'PETATOE_data_quality.json')};
@@ -197,7 +198,7 @@
   document.addEventListener('click',function(e){
     var btn=e.target&&e.target.closest&&e.target.closest('[data-v110-action],[data-v121-action]'); if(!btn) return;
     var a=btn.getAttribute('data-v110-action');
-    if(a){e.preventDefault(); if(a==='edit-user'&&typeof window.petV110EditUser==='function') return window.petV110EditUser(btn.getAttribute('data-v110-id'), btn.getAttribute('data-v110-row-id')); if(a==='delete-user'&&typeof window.petV110DeleteUser==='function') return window.petV110DeleteUser(btn.getAttribute('data-v110-id')); var fn=actions[a]; if(fn&&typeof window[fn]==='function') return window[fn]();}
+    if(a){e.preventDefault(); if(a==='edit-user'&&typeof window.petV110EditUser==='function') return window.petV110EditUser(btn.getAttribute('data-v110-id')); if(a==='delete-user'&&typeof window.petV110DeleteUser==='function') return window.petV110DeleteUser(btn.getAttribute('data-v110-id')); var fn=actions[a]; if(fn&&typeof window[fn]==='function') return window[fn]();}
     var su=btn.getAttribute('data-v664-select-assignment-user'); if(su&&typeof window.petV664SelectAssignmentUser==='function'){e.preventDefault(); return window.petV664SelectAssignmentUser(su);}
     a=btn.getAttribute('data-v121-action');
     if(a){e.preventDefault(); var type=btn.getAttribute('data-v121-type'), id=btn.getAttribute('data-v121-id'); if(a==='save'&&typeof window.petV121SaveMasterItem==='function') return window.petV121SaveMasterItem(type); if(a==='clear'&&typeof window.petV121ClearMasterForm==='function') return window.petV121ClearMasterForm(type); if(a==='seed'&&typeof window.petV120SeedFromRecords==='function') return window.petV120SeedFromRecords(); if(a==='showAll'&&typeof window.petV121ShowAllMaster==='function') return window.petV121ShowAllMaster(type); if(a==='view'&&typeof window.petV121ViewMasterItem==='function') return window.petV121ViewMasterItem(type,id); if(a==='edit'&&typeof window.petV121EditMasterItem==='function') return window.petV121EditMasterItem(type,id); if(a==='delete'&&typeof window.petV120DeleteMasterItem==='function') return window.petV120DeleteMasterItem(type,id);}
