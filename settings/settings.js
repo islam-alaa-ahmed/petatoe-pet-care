@@ -14,9 +14,31 @@
   function ID(){return window.PETATOEIdentityStore||null}
   function read(k,d){var ids=ID(); if(k===USERS_KEY&&ids&&ids.usersSync)return ids.usersSync(); if(k===ROLES_KEY)return defaults; return d}
   function write(k,v){var ids=ID(); if(k===USERS_KEY&&ids&&ids.saveUsers){ids.saveUsers(v||[]);return} if(k===AUDIT_KEY&&Array.isArray(v)&&ids&&ids.appendAudit){if(v[0])ids.appendAudit(v[0]);return}}
-  function getText(k,d){return d}
-  function setText(k,v){try{ if(k===CURRENT_KEY) window.PETATOE_CURRENT_USER_REF=String(v||''); }catch(_){}}
-  function removeKey(k){}
+  // PETATOE Supabase cleanup: keep Settings navigation state in memory only.
+  // This replaces the old LocalStorage-backed settings_main/settings_sub state
+  // without reintroducing persistent browser storage.
+  var __settingsMemoryState={};
+  __settingsMemoryState[MAIN_KEY]='system';
+  __settingsMemoryState[SUB_KEY]='backup';
+  function getText(k,d){
+    try{
+      if(Object.prototype.hasOwnProperty.call(__settingsMemoryState,k)){
+        var v=__settingsMemoryState[k];
+        return v==null||v===''?d:v;
+      }
+      if(k===CURRENT_KEY && window.PETATOE_CURRENT_USER_REF){ return String(window.PETATOE_CURRENT_USER_REF||'')||d; }
+    }catch(_){}
+    return d;
+  }
+  function setText(k,v){
+    try{
+      if(k===CURRENT_KEY){ window.PETATOE_CURRENT_USER_REF=String(v||''); return; }
+      __settingsMemoryState[k]=String(v==null?'':v);
+    }catch(_){}
+  }
+  function removeKey(k){
+    try{ if(Object.prototype.hasOwnProperty.call(__settingsMemoryState,k)) delete __settingsMemoryState[k]; }catch(_){}
+  }
   function toast(msg){try{if(typeof window.toast==='function')window.toast(msg);else alert(msg)}catch(e){alert(msg)}}
   function records(){try{var fb=(window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[];return Array.isArray(fb)?fb:[]}catch(e){return []}}
   function seed(){var sec=window.PETATOEPasswordSecurity;var u=read(USERS_KEY,null);if(!Array.isArray(u)||!u.length){u=[{id:'u_admin',username:'Admin',fullName:'Admin',job:'Super Admin',phone:'',email:'',role:'superadmin',status:'active',createdAt:new Date().toISOString(),lastLogin:''}];write(USERS_KEY,u);setText(CURRENT_KEY,'u_admin')}else if(sec&&sec.sanitizeUsers&&sec.sanitizeUsers(u)){write(USERS_KEY,u)}var r=read(ROLES_KEY,null);if(!r)write(ROLES_KEY,defaults)}
