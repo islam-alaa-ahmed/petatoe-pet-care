@@ -9,17 +9,17 @@
   function petatoe_v38142_sidebar_final_js_esc(s){return String(s==null?'':s).replace(/[&<>\'\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
   var groups=[
     {id:'operations',label:'⭐ العمليات',items:[
-      {tab:'entry',title:'إدخال البيانات',sub:'تسجيل الفواتير والعمليات'},
-      {tab:'import',title:'رفع Excel',sub:'استيراد البيانات'},
-      {tab:'records',title:'السجلات',sub:'عرض السجلات'},
+      {tab:'entry',screen:'sales',title:'إدخال البيانات',sub:'تسجيل الفواتير والعمليات'},
+      {tab:'import',screen:'sales',title:'رفع Excel',sub:'استيراد البيانات'},
+      {tab:'records',screen:'reports',title:'السجلات',sub:'عرض السجلات'},
       {tab:'treasury',title:'الخزينة',sub:'الحركات المالية'},
       {tab:'warehouses',title:'المخازن',sub:'إدارة المخزون'}
     ]},
     {id:'analytics',label:'📈 التحليلات',items:[
-      {tab:'smart',smartOpen:'advanced',title:'التقارير',sub:'التقارير الأساسية'},
-      {tab:'smart',title:'التقارير الذكية',sub:'تحليل وذكاء الأعمال'},
-      {tab:'customer360',title:'Customer 360',sub:'ملف العميل الشامل'},
-      {tab:'executive',title:'الإدارة العليا',sub:'Executive Dashboard'}
+      {tab:'smart',screen:'reports',smartOpen:'advanced',title:'التقارير',sub:'التقارير الأساسية'},
+      {tab:'smart',screen:'reports',title:'التقارير الذكية',sub:'تحليل وذكاء الأعمال'},
+      {tab:'customer360',screen:'customers',title:'Customer 360',sub:'ملف العميل الشامل'},
+      {tab:'executive',screen:'executive',title:'الإدارة العليا',sub:'Executive Dashboard'}
     ]},
     {id:'management',label:'🏢 الإدارة',items:[
       {tab:'commissions',title:'نظام العمولات',sub:'حساب ومتابعة العمولات'},
@@ -48,7 +48,7 @@
   }
   function openSettings(main,sub,action){
     main=main||'system'; sub=sub||'';
-    try{window.__PETATOE_SETTINGS_MAIN__=main; if(sub)window.__PETATOE_SETTINGS_SUB__=sub;}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
+    try{var S=window.PETATOEStorage;if(S&&S.set){S.set('pet_settings_v110_main',main); if(sub)S.set('pet_settings_v110_sub',sub);}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
     // PETATOE v6.1.205 Phase 2: navigation only opens the section and broadcasts intent.
     // It must not call settings render functions directly; settings.js/settings-render-fix own rendering.
     petatoeSidebarOpenTab('settings');
@@ -82,15 +82,15 @@
     var opsHead=document.createElement('button'); opsHead.type='button'; opsHead.className='pet-v142-toggle'; opsHead.setAttribute('data-v142-toggle','operationManagement');
     setToggleLabel(opsHead, '⚙️ إدارة التشغيل');
     var opsBody=document.createElement('div'); opsBody.className='pet-v142-items';
-    opsBody.appendChild(itemButton({tab:'appointments',title:'إدارة المواعيد',sub:'تخطيط وجدولة مواعيد الجلسات'}));
-    opsBody.appendChild(itemButton({tab:'vehicleOperations',title:'تشغيل السيارات',sub:'تنفيذ جلسات اليوم والتحصيل'}));
-    opsBody.appendChild(itemButton({tab:'vehicleOperationsReports',title:'تقارير تشغيل السيارات',sub:'تحليل التنفيذ والتحصيل والأداء'}));
-    opsBody.appendChild(itemButton({tab:'operationKpis',title:'مؤشرات الأداء التشغيلية',sub:'KPI Dashboard للتشغيل والجودة'}));
+    opsBody.appendChild(itemButton({tab:'appointments',screen:'appointments',title:'إدارة المواعيد',sub:'تخطيط وجدولة مواعيد الجلسات'}));
+    opsBody.appendChild(itemButton({tab:'vehicleOperations',screen:'vehicleOperations',title:'تشغيل السيارات',sub:'تنفيذ جلسات اليوم والتحصيل'}));
+    opsBody.appendChild(itemButton({tab:'vehicleOperationsReports',screen:'vehicleOperationsReports',title:'تقارير تشغيل السيارات',sub:'تحليل التنفيذ والتحصيل والأداء'}));
+    opsBody.appendChild(itemButton({tab:'operationKpis',screen:'operationKpis',title:'مؤشرات الأداء التشغيلية',sub:'KPI Dashboard للتشغيل والجودة'}));
     // PETATOE v6.4.89: expose appointments master data directly in Operation Management sidebar.
     // Safe route: still opens the existing appointments panel, then switches only its internal tab to master.
     opsBody.appendChild(itemButton({tab:'appointments',appointmentsSubTab:'master',screen:'appointments-master',title:'البيانات المرجعية ⚙️',sub:'إدارة البيانات الأساسية للمواعيد'}));
     opsWrap.appendChild(opsHead); opsWrap.appendChild(opsBody); nav.appendChild(opsWrap);
-    var home=document.createElement('button'); home.type='button'; home.className='pet-v142-direct active'; home.setAttribute('data-tab','dashboard'); setDirectLabel(home, '🏠 الرئيسية');
+    var home=document.createElement('button'); home.type='button'; home.className='pet-v142-direct active'; home.setAttribute('data-tab','dashboard'); home.setAttribute('data-pet-nav-screen','dashboardManagement'); setDirectLabel(home, '🏠 الرئيسية');
     nav.appendChild(home);
     // PETATOE v6.1.124: sidebar-final.js rebuilds #nav at runtime, so static index.html additions are overwritten.
     // Add the Children Expenses entry to the generated v142 sidebar directly under Home.
@@ -149,7 +149,7 @@
   function markActive(){
     var nav=petBlock7937_q('#nav'); if(!nav||!nav.classList.contains('pet-v142-nav')) return;
     var active=(petBlock7937_q('.panel.active')||{}).id||'dashboard';
-    var sm=''; try{sm=window.__PETATOE_SETTINGS_MAIN__||'system'}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
+    var sm=''; try{var S=window.PETATOEStorage;sm=(S&&S.get?S.get('pet_settings_v110_main','system'):'system')||'system'}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
     qa('button',nav).forEach(function(b){b.classList.remove('active')});
     var activeBtn=null, groupId='';
     if(active==='settings'){
