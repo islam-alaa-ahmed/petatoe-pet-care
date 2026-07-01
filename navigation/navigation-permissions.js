@@ -13,7 +13,7 @@
     commissions:'commissions', commissionStatement:'commissionStatement', fleet:'vehicles',
     payroll:'payroll', salarySlip:'salarySlip', childrenExpenses:'childrenExpenses',
     appointments:'appointments', vehicleOperations:'vehicleOperations', vehicleOperationsReports:'vehicleOperations', operationKpis:'vehicleOperations',
-    settings:'settings', setup:'setup', permissions:'permissions', users:'users', audit:'audit'
+    system:'settings', settings:'settings', setup:'setup', permissions:'permissions', users:'users', audit:'audit'
   };
 
   function notify(msg){ try{ if(typeof window.toast==='function') window.toast(msg); else console.warn(msg); }catch(_e){} }
@@ -54,20 +54,47 @@
   }
   function screenFromButton(btn){
     if(!btn) return '';
-    var sm=btn.getAttribute('data-settings-main');
+    var sm=btn.getAttribute('data-settings-main')||btn.getAttribute('data-pet-v110-main');
     if(sm) return normalizeScreen(sm);
-    return normalizeScreen(btn.getAttribute('data-pet-nav-screen')||btn.getAttribute('data-tab')||'');
+    return normalizeScreen(btn.getAttribute('data-pet-permission-screen')||btn.getAttribute('data-pet-nav-screen')||btn.getAttribute('data-tab')||'');
+  }
+  function setPermissionVisibility(el, allowed){
+    if(!el) return;
+    if(allowed){
+      if(el.getAttribute('data-pet-hidden-by-permission')==='1') el.style.display=el.getAttribute('data-pet-prev-display')||'';
+      el.removeAttribute('data-pet-hidden-by-permission');
+      el.removeAttribute('data-pet-prev-display');
+      el.classList.remove('pet-nav-disabled');
+      el.removeAttribute('aria-disabled');
+      el.removeAttribute('title');
+    }else{
+      if(el.getAttribute('data-pet-hidden-by-permission')!=='1') el.setAttribute('data-pet-prev-display', el.style.display||'');
+      el.setAttribute('data-pet-hidden-by-permission','1');
+      el.style.display='none';
+      el.classList.add('pet-nav-disabled');
+      el.setAttribute('aria-disabled','true');
+      el.setAttribute('title','غير متاح للصلاحية الحالية');
+    }
   }
   function apply(root){
-    root=root||document.getElementById('nav');
-    if(!root) return;
-    Array.prototype.forEach.call(root.querySelectorAll('button[data-tab],button[data-settings-main]'),function(btn){
+    root=root||document.getElementById('nav')||document;
+    var selector='button[data-tab],button[data-settings-main],button[data-pet-v110-main],button[data-pet-permission-screen],a[data-tab],a[data-settings-main],a[data-pet-v110-main],a[data-pet-permission-screen]';
+    Array.prototype.forEach.call(root.querySelectorAll(selector),function(btn){
       var screen=screenFromButton(btn);
+      if(!screen) return;
       var allowed=canOpen(screen);
-      btn.classList.toggle('pet-nav-disabled',!allowed);
-      btn.toggleAttribute('aria-disabled',!allowed);
-      if(!allowed) btn.setAttribute('title','غير متاح للصلاحية الحالية'); else btn.removeAttribute('title');
+      setPermissionVisibility(btn, allowed);
     });
+    Array.prototype.forEach.call(root.querySelectorAll('.pet-v142-group,.pet-nav-group'),function(group){
+      var items=group.querySelector('.pet-v142-items,.pet-nav-group-items')||group;
+      var visible=Array.prototype.some.call(items.querySelectorAll('button[data-tab],button[data-settings-main],button[data-pet-v110-main],button[data-pet-permission-screen]'),function(b){return b.getAttribute('data-pet-hidden-by-permission')!=='1';});
+      setPermissionVisibility(group, visible);
+    });
+  }
+  function applyAll(){
+    apply(document.getElementById('nav')||document);
+    var settings=document.getElementById('settings');
+    if(settings) apply(settings);
   }
   function guardClick(btn){
     var screen=screenFromButton(btn);
@@ -80,8 +107,16 @@
     return false;
   }
 
-  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,apply:apply,guardClick:guardClick,__v:'8.0.2-stage3-supabase'};
+  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,apply:apply,applyAll:applyAll,guardClick:guardClick,__v:'8.0.2-visibility-enforcement'};
+  document.addEventListener('click',function(e){
+    var btn=e.target&&e.target.closest&&e.target.closest('button[data-tab],button[data-settings-main],button[data-pet-v110-main],button[data-pet-permission-screen],a[data-tab],a[data-settings-main],a[data-pet-v110-main],a[data-pet-permission-screen]');
+    if(!btn) return;
+    if(!guardClick(btn)){ e.preventDefault(); e.stopPropagation(); return false; }
+  },true);
   document.addEventListener('petatoe:navbuilt',function(e){apply(e.detail&&e.detail.nav);});
-  document.addEventListener('petatoe:permissionschanged',function(){apply();});
-  document.addEventListener('petatoe:userchanged',function(){apply();});
+  document.addEventListener('petatoe:permissionschanged',function(){applyAll();});
+  document.addEventListener('petatoe:userchanged',function(){applyAll();});
+  document.addEventListener('petatoe:settingsnavigate',function(){setTimeout(applyAll,80);});
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(applyAll,80);setTimeout(applyAll,600);});
+  window.addEventListener('load',function(){setTimeout(applyAll,120);setTimeout(applyAll,900);});
 })();
