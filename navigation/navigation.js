@@ -48,7 +48,7 @@
   }
   function openSettings(main,sub,action){
     main=main||'system'; sub=sub||'';
-    try{var S=window.PETATOEStorage;if(S&&S.set){S.set('pet_settings_v110_main',main); if(sub)S.set('pet_settings_v110_sub',sub);}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
+    try{window.__PETATOE_SETTINGS_MAIN__=main;window.__PETATOE_SETTINGS_SUB__=sub||'';}catch(e){}
     // PETATOE v6.1.205 Phase 2: navigation only opens the section and broadcasts intent.
     // It must not call settings render functions directly; settings.js/settings-render-fix own rendering.
     petatoeSidebarOpenTab('settings');
@@ -64,6 +64,26 @@
   function setButtonTitleSub(btn, title, sub){ clearNode(btn); btn.appendChild(navSpan('pet-v142-title', title||'')); btn.appendChild(navSpan('pet-v142-sub', sub||'')); }
   function setToggleLabel(btn, label){ clearNode(btn); btn.appendChild(navSpan('', label||'')); btn.appendChild(navArrow()); }
   function setDirectLabel(btn, label){ clearNode(btn); btn.appendChild(navSpan('', label||'')); }
+
+  function navCan(screen){
+    try{
+      var G=window.PETATOENavigationPermissions;
+      if(G&&typeof G.hasAnyAction==='function') return !!G.hasAnyAction(G.currentUser&&G.currentUser(),screen);
+      if(G&&typeof G.canOpen==='function') return !!G.canOpen(screen);
+      var P=window.PETATOEPermissions, A=window.PETATOEAuth&&window.PETATOEAuth.currentUser?window.PETATOEAuth.currentUser():window.currentUser;
+      var uid=A&&(A.id||A.username);
+      if(P&&P.can&&uid) return ['view','add','edit','delete'].some(function(a){return P.can(uid,screen,a)});
+    }catch(e){}
+    return screen==='dashboardManagement';
+  }
+  function homeConfig(){
+    var management=navCan('dashboardManagement');
+    var operations=navCan('dashboardOperations')||navCan('vehicleOperations');
+    if(management) return {tab:'dashboard',screen:'dashboardManagement',label:'🏠 الرئيسية'};
+    if(operations) return {tab:'vehicleOperations',screen:'dashboardOperations',label:'🏠 الرئيسية التشغيلية'};
+    return {tab:'dashboard',screen:'dashboardManagement',label:'🏠 الرئيسية'};
+  }
+
   function itemButton(it){
     var b=document.createElement('button'); b.type='button';
     if(it.tab){b.setAttribute('data-tab',it.tab);b.setAttribute('data-pet-nav-screen',it.screen||it.tab);}
@@ -90,7 +110,7 @@
     // Safe route: still opens the existing appointments panel, then switches only its internal tab to master.
     opsBody.appendChild(itemButton({tab:'appointments',appointmentsSubTab:'master',screen:'appointments-master',title:'البيانات المرجعية ⚙️',sub:'إدارة البيانات الأساسية للمواعيد'}));
     opsWrap.appendChild(opsHead); opsWrap.appendChild(opsBody); nav.appendChild(opsWrap);
-    var home=document.createElement('button'); home.type='button'; home.className='pet-v142-direct active'; home.setAttribute('data-tab','dashboard'); home.setAttribute('data-pet-nav-screen','dashboardManagement'); setDirectLabel(home, '🏠 الرئيسية');
+    var hc=homeConfig(); var home=document.createElement('button'); home.type='button'; home.className='pet-v142-direct active'; home.setAttribute('data-tab',hc.tab); home.setAttribute('data-pet-nav-screen',hc.screen); setDirectLabel(home, hc.label);
     nav.appendChild(home);
     // PETATOE v6.1.124: sidebar-final.js rebuilds #nav at runtime, so static index.html additions are overwritten.
     // Add the Children Expenses entry to the generated v142 sidebar directly under Home.
@@ -149,7 +169,7 @@
   function markActive(){
     var nav=petBlock7937_q('#nav'); if(!nav||!nav.classList.contains('pet-v142-nav')) return;
     var active=(petBlock7937_q('.panel.active')||{}).id||'dashboard';
-    var sm=''; try{var S=window.PETATOEStorage;sm=(S&&S.get?S.get('pet_settings_v110_main','system'):'system')||'system'}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
+    var sm=''; try{sm=window.__PETATOE_SETTINGS_MAIN__||'system'}catch(e){sm='system';}
     qa('button',nav).forEach(function(b){b.classList.remove('active')});
     var activeBtn=null, groupId='';
     if(active==='settings'){
