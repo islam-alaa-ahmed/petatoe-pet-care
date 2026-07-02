@@ -4982,3 +4982,46 @@ html[data-theme="light"] #treasury .treasury-tabs-v82::before{
     break-inside:avoid!important;
   }
 }
+
+/* PETATOE ERP Permissions Matrix UI - approved dark ERP layout */
+#settings .pet-v139-erp-ui{display:grid!important;gap:18px!important;width:100%!important;max-width:100%!important}
+#settings .pet-v139-hero{display:flex;justify-content:space-between;align-items:center;gap:16px;border:1px solid rgba(56,189,248,.20);background:linear-gradient(135deg,rgba(15,23,42,.86),rgba(30,41,59,.78));box-shadow:0 18px 45px rgba(2,6,23,.28),inset 0 1px 0 rgba(255,255,255,.06);border-radius:24px;padding:22px 24px}
+#settings .pet-v139-hero h3{margin:0;color:var(--text);font:1000 24px Cairo}
+#settings .pet-v139-hero p{margin:8px 0 0;color:var(--muted);font:900 13px Cairo;line-height:1.8}
+#settings .pet-v139-info-pill{border:1px solid rgba(139,92,246,.35);background:rgba(139,92,246,.18);color:#ddd6fe;border-radius:999px;padding:10px 16px;font:1000 12px Cairo;white-space:nowrap}
+#settings .pet-v139-control-card{border:1px solid rgba(148,163,184,.16);background:rgba(15,23,42,.55);border-radius:22px;padding:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+#settings .pet-v139-control-card .pet-v139-user-select-row{display:grid!important;grid-template-columns:minmax(240px,360px) 1fr auto!important;gap:14px!important;align-items:end!important}
+#settings .pet-v139-template-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+#settings .pet-v139-module-tabs{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;border:1px solid rgba(148,163,184,.14);background:rgba(15,23,42,.48);border-radius:22px;padding:12px}
+#settings .pet-v139-module-tab{border:1px solid rgba(148,163,184,.18);background:linear-gradient(180deg,rgba(51,65,85,.72),rgba(15,23,42,.78));color:var(--text);border-radius:17px;padding:14px 10px;display:flex;align-items:center;justify-content:center;gap:8px;font:1000 13px Cairo;cursor:pointer;transition:.18s ease;min-height:60px}
+#settings .pet-v139-module-tab:hover{transform:translateY(-1px);border-color:rgba(139,92,246,.60);box-shadow:0 10px 22px rgba(139,92,246,.16)}
+#settings .pet-v139-module-tab:first-child,#settings .pet-v139-module-tab:nth-child(2){background:linear-gradient(135deg,rgba(124,58,237,.80),rgba(37,99,235,.72));border-color:rgba(167,139,250,.75)}
+#settings .pet-v139-module-icon{font-size:18px;line-height:1}
+#settings .pet-v139-layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:16px;align-items:start}
+#settings .pet-v139-modules{display:grid;gap:16px}
+#settings .pet-v139-module-section{border:1px solid rgba(148,163,184,.16);background:linear-gradient(180deg,rgba(15,23,42,.65),rgba(15,23,42,.48));border-radius:24px;padding:16px;box-shadow:0 18px 38px rgba(2,6,23,.20),inset 0 1px 0 rgba(255,255,255,.04);scroll-margin-top:120px}
+#settings .pet-v139-module-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;padding:2px 4px 12px;border-bottom:1px solid rgba(148,163,184,.13)}
+#settings .pet-v139-module-head h3{margin:0;color:var(--text);font:1000 19px Cairo}
+#settings .pet-v139-module-head p{margin:6px 0 0;color:var(--muted);font:850 12px Cairo;line-height:1.7}
+#settings .pet-v139-module-badge{border:1px solid rgba(56,189,248,.30);background:rgba(56,189,248,.10);color:#a5f3fc;border-radius:999px;padding:8px 12px;font:1000 11px Cairo;white-space:nowrap}
+#settings .pet-v139-perm-table.erp{border-radius:18px;overflow:auto;border:1px solid rgba(148,163,184,.13);background:rgba(2,6,23,.24)}
+#settings .pet-v139-perm-table.erp table{width:100%!important;min-width:780px!important;border-collapse:separate!important;border-spacing:0!important}
+#settings .pet-v139-perm-table.erp th{background:rgba(71,85,105,.50);color:#e5e7eb;font:1000 12px Cairo;padding:13px 10px;border-bottom:1px solid rgba(148,163,184,.16)}
+#settings .pet-v139-perm-table.erp td{padding:14px 10px;border-bottom:1px solid rgba(148,163,184,.10);background:rgba(15,23,42,.35)}
+#settings .pet-v139-perm-table.erp tr:hover td{background:rgba(30,41,59,.58)}
+#settings .pet-v139-screen-name{text-align:right!important;min-width:270px!important}
+#settings .pet-v139-screen-name b{font:1000 13px Cairo;color:var(--text)}
+#settings .pet-v139-screen-name small{font:800 11px Cairo;color:var(--muted);line-height:1.6}
+#settings .pet-v139-check{width:20px;height:20px;accent-color:#8b5cf6;cursor:pointer}
+#settings .pet-v139-special-box{margin-top:14px;border-top:1px solid rgba(148,163,184,.13);padding-top:12px}
+#settings .pet-v139-special-box h4{margin:0 0 10px;color:#ddd6fe;font:1000 13px Cairo}
+#settings .pet-v139-special-grid.erp{display:grid!important;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;gap:10px!important;margin-top:10px!important}
+#settings .pet-v139-special-erp{border:1px solid rgba(148,163,184,.14);background:rgba(30,41,59,.46);border-radius:14px;padding:12px;display:flex;align-items:center;gap:10px;min-height:48px;font:900 12px Cairo;color:var(--text)}
+#settings .pet-v139-help{display:grid;gap:14px;position:sticky;top:100px}
+#settings .pet-v139-help-card{border:1px solid rgba(148,163,184,.16);background:linear-gradient(180deg,rgba(15,23,42,.66),rgba(30,41,59,.48));border-radius:22px;padding:16px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+#settings .pet-v139-help-card h3{margin:0 0 10px;color:var(--text);font:1000 16px Cairo}
+#settings .pet-v139-help-card p,#settings .pet-v139-help-card li{color:var(--muted);font:850 12px Cairo;line-height:1.9}
+#settings .pet-v139-help-card ul{margin:0;padding:0 18px 0 0}
+html[data-theme="light"] #settings .pet-v139-hero,html[data-theme="light"] #settings .pet-v139-control-card,html[data-theme="light"] #settings .pet-v139-module-section,html[data-theme="light"] #settings .pet-v139-help-card{background:#fff!important;color:#0f172a!important}
+html[data-theme="light"] #settings .pet-v139-module-tab,html[data-theme="light"] #settings .pet-v139-special-erp{background:#f8fafc!important;color:#0f172a!important}
+@media(max-width:1100px){#settings .pet-v139-layout{grid-template-columns:1fr}#settings .pet-v139-help{position:static}#settings .pet-v139-control-card .pet-v139-user-select-row{grid-template-columns:1fr!important}}
