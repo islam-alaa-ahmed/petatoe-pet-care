@@ -77,20 +77,31 @@
   register('permissions', { moduleId:'settings', title:'Permissions', owner:'settings', eager:true, lazyCandidate:false, sensitive:true, protected:true, scriptHints:['settings/permissions.js'] });
 
   // Business routes prepared by SAFE tracks
-  register('smart', { moduleId:'smart-reports', title:'Smart Reports', owner:'smart-reports', eager:true, lazyCandidate:true, scriptHints:['smart/smart-reports-core.js'] });
-  register('operations', { moduleId:'operations', title:'Operations', owner:'operations', eager:true, lazyCandidate:true, scriptHints:['operations/*.js'] });
-  register('appointments', { moduleId:'operations', title:'Appointments', owner:'operations', eager:true, lazyCandidate:true, scriptHints:['inline-extracted/appointments-core.js','operations/*.js'] });
-  register('vehicles', { moduleId:'operations', title:'Vehicle Operations', owner:'operations', eager:true, lazyCandidate:true, scriptHints:['operations/*.js'] });
-  register('vehicleOperationsReports', { moduleId:'operations', title:'Vehicle Operations Reports', owner:'operations', eager:true, lazyCandidate:true, scriptHints:['operations/*.js'] });
-  register('childrenExpenses', { moduleId:'children-expenses', title:'Children Expenses', owner:'children-expenses', eager:true, lazyCandidate:true, scriptHints:['children-expenses/*.js','inline-extracted/children-expenses-core.js'] });
-  register('warehouse', { moduleId:'warehouse', title:'Warehouse', owner:'warehouses', eager:true, lazyCandidate:true, aliases:['warehouses'], scriptHints:['warehouses/*.js'] });
-  register('treasury', { moduleId:'treasury', title:'Treasury', owner:'treasury', eager:true, lazyCandidate:true, sensitive:true, scriptHints:['treasury/*.js'] });
-  register('payroll', { moduleId:'payroll', title:'Payroll', owner:'payroll', eager:true, lazyCandidate:true, sensitive:true, protected:true, aliases:['salarySlip'], scriptHints:['payroll/*.js'] });
+  register('smart', { moduleId:'smart-reports', title:'Smart Reports', owner:'smart-reports', panelId:'smart', eager:true, lazyCandidate:true, requiresPermission:'reports', scriptHints:['smart/smart-reports-core.js'] });
+  register('operations', { moduleId:'operations', title:'Operations', owner:'operations', panelId:'appointments', eager:true, lazyCandidate:true, requiresPermission:'appointments', scriptHints:['operations/*.js'] });
+  register('appointments', { moduleId:'operations', title:'Appointments', owner:'operations', panelId:'appointments', eager:true, lazyCandidate:true, requiresPermission:'appointments', aliases:['appointmentsMaster','appointments-master'], scriptHints:['inline-extracted/appointments-core.js','operations/*.js'] });
+  register('vehicleOperations', { moduleId:'operations', title:'Vehicle Operations', owner:'operations', panelId:'vehicleOperations', eager:true, lazyCandidate:true, requiresPermission:'vehicleOperations', aliases:['vehicles','fleet'], scriptHints:['operations/*.js'] });
+  register('vehicleOperationsReports', { moduleId:'operations', title:'Vehicle Operations Reports', owner:'operations', panelId:'vehicleOperationsReports', eager:true, lazyCandidate:true, requiresPermission:'vehicleOperationsReports', scriptHints:['operations/*.js'] });
+  register('operationKpis', { moduleId:'operations', title:'Operation KPIs', owner:'operations', panelId:'operationKpis', eager:true, lazyCandidate:true, requiresPermission:'operationKpis', scriptHints:['operations/*.js'] });
+  register('vans', { moduleId:'analytics', title:'Vans Performance', owner:'analytics', panelId:'vans', eager:true, lazyCandidate:true, requiresPermission:'vehicles', aliases:['vehicleReports'], scriptHints:['components/*.js','core/*.js'] });
+  register('childrenExpenses', { moduleId:'children-expenses', title:'Children Expenses', owner:'children-expenses', panelId:'childrenExpenses', eager:true, lazyCandidate:true, requiresPermission:'childrenExpenses', scriptHints:['children-expenses/*.js','inline-extracted/children-expenses-core.js'] });
+  register('warehouses', { moduleId:'warehouse', title:'Warehouses', owner:'warehouses', panelId:'warehouses', eager:true, lazyCandidate:true, requiresPermission:'vehicles', aliases:['warehouse'], scriptHints:['warehouses/*.js'] });
+  register('treasury', { moduleId:'treasury', title:'Treasury', owner:'treasury', panelId:'treasury', eager:true, lazyCandidate:true, sensitive:true, requiresPermission:'treasury', scriptHints:['treasury/*.js'] });
+  register('payroll', { moduleId:'payroll', title:'Payroll', owner:'payroll', panelId:'payroll', eager:true, lazyCandidate:true, sensitive:true, protected:true, requiresPermission:'payroll', scriptHints:['payroll/*.js'] });
+  register('salarySlip', { moduleId:'payroll', title:'Salary Slip', owner:'payroll', panelId:'salarySlip', eager:true, lazyCandidate:true, sensitive:true, protected:true, requiresPermission:'salarySlip', scriptHints:['payroll/*.js'] });
+  register('commissionStatement', { moduleId:'commissions', title:'Commission Statement', owner:'commissions', panelId:'commissionStatement', eager:true, lazyCandidate:true, requiresPermission:'commissionStatement', aliases:['commissions'], scriptHints:['commissions/*.js'] });
 
   // Sales and supporting routes
-  register('sales', { moduleId:'sales', title:'Sales', owner:'sales', eager:true, lazyCandidate:true, scriptHints:['sales/*.js'] });
-  register('salesInvoices', { moduleId:'sales', title:'Sales Invoices', owner:'sales', eager:true, lazyCandidate:true, scriptHints:['sales/*.js'] });
-  register('obligations', { moduleId:'obligations', title:'Obligations', owner:'obligations', eager:true, lazyCandidate:true, scriptHints:['obligations/obligations-core.js'] });
+  register('sales', { moduleId:'sales', title:'Sales', owner:'sales', panelId:'sales', eager:true, lazyCandidate:true, requiresPermission:'sales', scriptHints:['sales/*.js'] });
+  register('salesInvoices', { moduleId:'sales', title:'Sales Invoices', owner:'sales', panelId:'sales', eager:true, lazyCandidate:true, requiresPermission:'sales', scriptHints:['sales/*.js'] });
+  register('entry', { moduleId:'sales', title:'Data Entry', owner:'sales', panelId:'entry', eager:true, lazyCandidate:true, requiresPermission:'sales', scriptHints:['sales/*.js'] });
+  register('import', { moduleId:'sales', title:'Excel Import', owner:'sales', panelId:'import', eager:true, lazyCandidate:true, requiresPermission:'sales', scriptHints:['sales/*.js'] });
+  register('records', { moduleId:'reports', title:'Records', owner:'reports', panelId:'records', eager:true, lazyCandidate:true, requiresPermission:'reports', scriptHints:['reports/*.js'] });
+  register('services', { moduleId:'settings', title:'Services', owner:'settings', panelId:'services', eager:true, lazyCandidate:true, requiresPermission:'services', scriptHints:['settings/*.js'] });
+  register('executive', { moduleId:'executive', title:'Executive Dashboard', owner:'executive', panelId:'executive', eager:true, lazyCandidate:true, requiresPermission:'reports', scriptHints:['reports/*.js'] });
+  register('customer360', { moduleId:'customers', title:'Customer 360', owner:'customers', panelId:'customer360', eager:true, lazyCandidate:true, requiresPermission:'customers', aliases:['customers'], scriptHints:['customers/*.js'] });
+  register('logs', { moduleId:'settings', title:'Audit Logs', owner:'settings', panelId:'logs', eager:true, lazyCandidate:true, sensitive:true, protected:true, requiresPermission:'audit', aliases:['audit'], scriptHints:['settings/*.js'] });
+  register('obligations', { moduleId:'obligations', title:'Obligations', owner:'obligations', panelId:'obligations', eager:true, lazyCandidate:true, requiresPermission:'obligations', scriptHints:['obligations/obligations-core.js'] });
 
   var api = Object.freeze({
     version: VERSION,
