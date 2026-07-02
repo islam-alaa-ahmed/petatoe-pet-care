@@ -77,6 +77,7 @@
   ];
   function S(){return null}
   var __petV139SelectedUser='';
+  var __petV139ActiveModule='home';
   function identity(){return window.PETATOEIdentityStore||window.PETATOESupabaseRepository||null}
   function read(k,d){return d}
   function write(k,v){}
@@ -181,40 +182,105 @@
   function canSpecial(uid,key){uid=uid||currentUserId();if(!uid)return false;var u=getUserById(uid);if(isSuperUser(u))return true;var p=getUserPerm(uid);return !!(p.special&&p.special[key])}
   function screenByKey(k){return screenPerms.find(function(s){return s[0]===k})||[k,k,'']}
   function specialByKey(k){return specialPerms.find(function(s){return s[0]===k})||[k,k]}
-  function moduleTabsHtml(){return '<div class="pet-v139-module-tabs">'+permissionModules.map(function(m){return '<button type="button" class="pet-v139-module-tab" data-v139-scroll-module="'+esc(m.id)+'"><span class="pet-v139-module-icon">'+esc(m.icon)+'</span><b>'+esc(m.title)+'</b></button>'}).join('')+'</div>'}
+  function getModuleById(id){return permissionModules.find(function(m){return m.id===id})||permissionModules[0]}
+  function normalizeActiveModule(){
+    if(!permissionModules.some(function(m){return m.id===__petV139ActiveModule}))__petV139ActiveModule=(permissionModules[0]||{}).id||'home';
+    return __petV139ActiveModule;
+  }
+  function moduleTabsHtml(){var active=normalizeActiveModule();return '<div class="pet-v139-module-tabs">'+permissionModules.map(function(m){var cls='pet-v139-module-tab'+(m.id===active?' active':'');return '<button type="button" class="'+cls+'" data-v139-set-module="'+esc(m.id)+'"><span class="pet-v139-module-icon">'+esc(m.icon)+'</span><b>'+esc(m.title)+'</b></button>'}).join('')+'</div>'}
   function actionCheckbox(screenKey,actionKey,checked,locked){return '<td><input class="pet-v139-check" type="checkbox" data-v139-screen="'+esc(screenKey)+'" data-v139-action="'+esc(actionKey)+'" '+(checked?'checked':'')+' '+(locked?'disabled':'')+'></td>'}
+  function moduleActionChecked(m,p,actionKey){
+    var keys=(m&&m.screens)||[];
+    if(!keys.length)return false;
+    return keys.every(function(k){return !!(p.screens&&p.screens[k]&&p.screens[k][actionKey])});
+  }
   function moduleSectionHtml(m,p,locked){
     var rows=(m.screens||[]).map(function(k){var scr=screenByKey(k), sp=p.screens[k]||{};return '<tr><td class="pet-v139-screen-name"><b>'+esc(scr[1])+'</b><small>'+esc(scr[2])+'</small></td>'+crudActions.map(function(a){return actionCheckbox(k,a[0],!!sp[a[0]],locked)}).join('')+'</tr>'}).join('');
+    var header=crudActions.map(function(a){var checked=moduleActionChecked(m,p,a[0]);return '<th><label class="pet-v139-bulk-head"><input class="pet-v139-check pet-v139-bulk-check" type="checkbox" data-v139-bulk-action="'+esc(a[0])+'" '+(checked?'checked':'')+' '+(locked?'disabled':'')+'> <span>'+esc(a[1])+'</span></label></th>'}).join('');
     var specials=(m.specials||[]).map(function(k){var x=specialByKey(k);return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-special="'+esc(k)+'" '+(p.special&&p.special[k]?'checked':'')+' '+(locked?'disabled':'')+'> <span>'+esc(x[1])+'</span></label>'}).join('');
-    return '<section class="pet-v139-module-section" id="petV139Module_'+esc(m.id)+'"><div class="pet-v139-module-head"><div><h3>'+esc(m.icon)+' '+esc(m.title)+'</h3><p>'+esc(m.hint||'')+'</p></div><span class="pet-v139-module-badge">'+((m.screens||[]).length)+' شاشات</span></div><div class="pet-v139-perm-table erp"><table><thead><tr><th>الشاشة / الوظيفة</th>'+crudActions.map(function(a){return '<th>'+esc(a[1])+'</th>'}).join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+(specials?'<div class="pet-v139-special-box"><h4>صلاحيات إضافية داخل '+esc(m.title)+'</h4><div class="pet-v139-special-grid erp">'+specials+'</div></div>':'')+'</section>';
+    return '<section class="pet-v139-module-section active" id="petV139Module_'+esc(m.id)+'" data-v139-current-module="'+esc(m.id)+'"><div class="pet-v139-module-head"><div><h3>'+esc(m.icon)+' '+esc(m.title)+'</h3><p>'+esc(m.hint||'')+'</p></div><span class="pet-v139-module-badge">'+((m.screens||[]).length)+' شاشات</span></div><div class="pet-v139-perm-table erp"><table><thead><tr><th>الشاشة / الوظيفة</th>'+header+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+(specials?'<div class="pet-v139-special-box"><h4>صلاحيات إضافية داخل '+esc(m.title)+'</h4><div class="pet-v139-special-grid erp">'+specials+'</div></div>':'')+'</section>';
   }
   function renderPermissionsBody(api){
     var us=users(api), selected=__petV139SelectedUser||currentUserId()||((us[0]||{}).id||'');
-    if(!us.some(function(u){return u.id===selected})&&us[0])selected=us[0].id;
-    var u=us.find(function(x){return x.id===selected})||us[0]||{}, p=getUserPerm(selected), locked=isSuperUser(u);
-    var opts=us.map(function(x){return '<option value="'+esc(x.id)+'" '+(x.id===selected?'selected':'')+'>'+esc((x.fullName||x.username||x.id)+' - '+(x.username||''))+'</option>'}).join('');
-    var modules=permissionModules.map(function(m){return moduleSectionHtml(m,p,locked)}).join('');
+    if(!us.some(function(u){return String(u.id)===String(selected)})&&us[0])selected=us[0].id;
+    __petV139SelectedUser=selected;
+    var u=us.find(function(x){return String(x.id)===String(selected)})||us[0]||{}, p=getUserPerm(selected), locked=isSuperUser(u);
+    var opts=us.map(function(x){return '<option value="'+esc(x.id)+'" '+(String(x.id)===String(selected)?'selected':'')+'>'+esc((x.fullName||x.username||x.id)+' - '+(x.username||''))+'</option>'}).join('');
+    var active=normalizeActiveModule(), activeModule=getModuleById(active);
+    var modules=moduleSectionHtml(activeModule,p,locked);
     var usedSpecials={}; permissionModules.forEach(function(m){(m.specials||[]).forEach(function(k){usedSpecials[k]=true})});
-    var orphanSpecials=specialPerms.filter(function(x){return !usedSpecials[x[0]]}).map(function(x){return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-special="'+esc(x[0])+'" '+(p.special&&p.special[x[0]]?'checked':'')+' '+(locked?'disabled':'')+'> <span>'+esc(x[1])+'</span></label>'}).join('');
-    var vehicleScope=normalizeVehicleScope(p.vehicleScope), vehicleList=getVehicleList();
-    var vehicleChecks=vehicleList.map(function(v){var key=String(v.id||v.name||'');var checked=vehicleScope.allVehicles||vehicleScope.vehicles.indexOf(key)>-1||vehicleScope.vehicles.indexOf(v.name)>-1;return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-vehicle="'+esc(key)+'" '+(checked?'checked':'')+' '+(locked||vehicleScope.allVehicles?'disabled':'')+'> <span>'+esc(v.name)+(v.meta?'<small style="opacity:.7"> — '+esc(v.meta)+'</small>':'')+'</span></label>'}).join('')||'<div class="pet-v110-note">لا توجد سيارات مسجلة حاليًا. يمكن إضافة السيارات من شاشة التهيئة أو إدارة السيارات.</div>';
-    var vehicleScopeHtml='<section class="pet-v139-module-section"><div class="pet-v139-module-head"><div><h3>🚐 ربط تشغيل السيارات بالسيارات</h3><p>تحديد السيارات المسموح للمستخدم بتشغيلها أو عرض تقاريرها.</p></div></div><label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" id="petV139AllVehicles" data-v139-all-vehicles="1" '+(vehicleScope.allVehicles?'checked':'')+' '+(locked?'disabled':'')+'> <span>كل السيارات الحالية والمستقبلية</span></label><div class="pet-v139-special-grid erp" id="petV139VehicleScopeGrid">'+vehicleChecks+'</div></section>';
+    var orphanSpecials='';
+    if(active==='admin'){
+      orphanSpecials=specialPerms.filter(function(x){return !usedSpecials[x[0]]}).map(function(x){return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-special="'+esc(x[0])+'" '+(p.special&&p.special[x[0]]?'checked':'')+' '+(locked?'disabled':'')+'> <span>'+esc(x[1])+'</span></label>'}).join('');
+    }
+    var vehicleScopeHtml='';
+    if(active==='operations'||active==='fleet'){
+      var vehicleScope=normalizeVehicleScope(p.vehicleScope), vehicleList=getVehicleList();
+      var vehicleChecks=vehicleList.map(function(v){var key=String(v.id||v.name||'');var checked=vehicleScope.allVehicles||vehicleScope.vehicles.indexOf(key)>-1||vehicleScope.vehicles.indexOf(v.name)>-1;return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-vehicle="'+esc(key)+'" '+(checked?'checked':'')+' '+(locked||vehicleScope.allVehicles?'disabled':'')+'> <span>'+esc(v.name)+(v.meta?'<small style="opacity:.7"> — '+esc(v.meta)+'</small>':'')+'</span></label>'}).join('')||'<div class="pet-v110-note">لا توجد سيارات مسجلة حاليًا. يمكن إضافة السيارات من شاشة التهيئة أو إدارة السيارات.</div>';
+      vehicleScopeHtml='<section class="pet-v139-module-section"><div class="pet-v139-module-head"><div><h3>🚐 ربط تشغيل السيارات بالسيارات</h3><p>تحديد السيارات المسموح للمستخدم بتشغيلها أو عرض تقاريرها.</p></div></div><label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" id="petV139AllVehicles" data-v139-all-vehicles="1" '+(vehicleScope.allVehicles?'checked':'')+' '+(locked?'disabled':'')+'> <span>كل السيارات الحالية والمستقبلية</span></label><div class="pet-v139-special-grid erp" id="petV139VehicleScopeGrid">'+vehicleChecks+'</div></section>';
+    }
     return '<div class="pet-v139-user-permissions pet-v139-erp-ui">'
-      +'<div class="pet-v139-hero"><div><h3>🔐 إدارة الصلاحيات</h3><p>تنظيم ERP واضح: القسم ← الشاشة ← عرض / إضافة / تعديل / حذف، مع صلاحيات إضافية مفصولة حسب الوظيفة.</p></div><div class="pet-v139-info-pill">'+(locked?'Super Admin كامل الصلاحيات':'صلاحيات مخصصة')+'</div></div>'
-      +'<div class="pet-v139-control-card"><div class="pet-v139-user-select-row"><div><label>المستخدم</label><select id="petV139UserSelect" data-v139-select-user="1">'+opts+'</select></div><div class="pet-v139-selected-user">المستخدم المحدد: <b>'+esc(u.fullName||u.username||'-')+'</b><br>اسم الدخول: <b>'+esc(u.username||'-')+'</b> — الدور الحالي: <b>'+esc(roleNames[normalizeRole(u)]||roleNames[u.role]||u.role||'-')+'</b></div><div class="pet-v139-template-actions"><button class="pet-v110-btn primary" data-v110-action="save-user-permissions" '+(locked?'disabled':'')+'>💾 حفظ التغييرات</button><button class="pet-v110-btn blue" data-v110-action="grant-read-only" '+(locked?'disabled':'')+'>عرض فقط</button><button class="pet-v110-btn green" data-v110-action="grant-operational" '+(locked?'disabled':'')+'>قالب تشغيلي</button><button class="pet-v110-btn danger" data-v110-action="reset-user-permissions" '+(locked?'disabled':'')+'>إرجاع الافتراضي</button></div></div>'+(locked?'<div class="pet-v139-warn">⚠️ هذا المستخدم Super Admin، صلاحياته كاملة ومحميّة ولا يمكن تعطيلها من هذه الشاشة.</div>':'')+'</div>'
+      +'<div class="pet-v139-hero"><div><h3>🔐 إدارة الصلاحيات</h3><p>تنظيم ERP واضح: القسم ← الشاشة ← عرض / إضافة / تعديل / حذف. يتم عرض القسم المحدد فقط لضمان عدم تداخل الصلاحيات.</p></div><div class="pet-v139-info-pill">'+(locked?'Super Admin كامل الصلاحيات':'القسم الحالي: '+esc(activeModule.title))+'</div></div>'
+      +'<div class="pet-v139-control-card"><div class="pet-v139-user-select-row"><div><label>المستخدم</label><select id="petV139UserSelect" data-v139-select-user="1">'+opts+'</select></div><div class="pet-v139-selected-user">المستخدم المحدد: <b>'+esc(u.fullName||u.username||'-')+'</b><br>اسم الدخول: <b>'+esc(u.username||'-')+'</b> — الدور الحالي: <b>'+esc(roleNames[normalizeRole(u)]||roleNames[u.role]||u.role||'-')+'</b></div><div class="pet-v139-template-actions"><button class="pet-v110-btn primary" data-v110-action="save-user-permissions" '+(locked?'disabled':'')+'>💾 حفظ التغييرات</button><button class="pet-v110-btn blue" data-v110-action="grant-read-only" '+(locked?'disabled':'')+'>عرض فقط</button><button class="pet-v110-btn green" data-v110-action="grant-driver-groomer" '+(locked?'disabled':'')+'>قالب سائق/جرومر</button><button class="pet-v110-btn green" data-v110-action="grant-operational" '+(locked?'disabled':'')+'>قالب تشغيلي</button><button class="pet-v110-btn danger" data-v110-action="reset-user-permissions" '+(locked?'disabled':'')+'>إرجاع الافتراضي</button></div></div>'+(locked?'<div class="pet-v139-warn">⚠️ هذا المستخدم Super Admin، صلاحياته كاملة ومحميّة ولا يمكن تعطيلها من هذه الشاشة.</div>':'')+'</div>'
       +moduleTabsHtml()
-      +'<div class="pet-v139-layout"><div class="pet-v139-modules">'+modules+(orphanSpecials?'<section class="pet-v139-module-section"><div class="pet-v139-module-head"><div><h3>🔐 صلاحيات عامة أخرى</h3><p>صلاحيات عامة غير مرتبطة بشاشة واحدة.</p></div></div><div class="pet-v139-special-grid erp">'+orphanSpecials+'</div></section>':'')+vehicleScopeHtml+'</div><aside class="pet-v139-help"><div class="pet-v139-help-card"><h3>ℹ️ معلومات</h3><p>الصلاحيات محفوظة على مستوى المستخدم. القائمة الجانبية يجب أن تُبنى من الشاشات التي يمتلك المستخدم عليها صلاحية واحدة على الأقل.</p></div><div class="pet-v139-help-card"><h3>💡 قوالب أساسية</h3><ul><li>Driver/Groomer: كشف الراتب + كشف العمولة + تشغيل السيارات فقط.</li><li>Accountant: المبيعات والخزنة والرواتب.</li><li>Operations: تشغيل السيارات وتقارير التشغيل.</li><li>Super Admin: كل الصلاحيات.</li></ul></div></aside></div>'
+      +'<div class="pet-v139-layout"><div class="pet-v139-modules">'+modules+(orphanSpecials?'<section class="pet-v139-module-section"><div class="pet-v139-module-head"><div><h3>🔐 صلاحيات عامة أخرى</h3><p>صلاحيات عامة غير مرتبطة بشاشة واحدة.</p></div></div><div class="pet-v139-special-grid erp">'+orphanSpecials+'</div></section>':'')+vehicleScopeHtml+'</div><aside class="pet-v139-help"><div class="pet-v139-help-card"><h3>ℹ️ معلومات</h3><p>اختر القسم من الأعلى. مربع الاختيار في رأس العمود يحدد أو يلغي كل صلاحيات هذا العمود داخل القسم الحالي فقط.</p></div><div class="pet-v139-help-card"><h3>💡 قوالب أساسية</h3><ul><li>Driver/Groomer: Dashboard التشغيل + كشف الراتب + كشف العمولة + تشغيل السيارات فقط.</li><li>Operations: تشغيل السيارات وتقارير التشغيل.</li><li>Accountant: المبيعات والخزنة والرواتب.</li><li>Super Admin: كل الصلاحيات.</li></ul></div></aside></div>'
       +'</div>';
   }
+  function clonePerm(p){try{return JSON.parse(JSON.stringify(p||{screens:{},special:{}}))}catch(e){return {screens:{},special:{}}}}
   window.petV139SelectUser=function(uid){__petV139SelectedUser=uid||'';if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions')};
-  window.petV139ReadFormPerm=function(){var uid=(document.getElementById('petV139UserSelect')||{}).value||__petV139SelectedUser, o={screens:{},special:{}};screenPerms.forEach(function(s){o.screens[s[0]]={view:false,add:false,edit:false,delete:false}});document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){var sc=c.getAttribute('data-v139-screen'),ac=c.getAttribute('data-v139-action');if(!o.screens[sc])o.screens[sc]={view:false,add:false,edit:false,delete:false};o.screens[sc][ac]=!!c.checked});specialPerms.forEach(function(s){o.special[s[0]]=false});document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){o.special[c.getAttribute('data-v139-special')]=!!c.checked});var allVeh=document.getElementById('petV139AllVehicles');o.vehicleScope={allVehicles:allVeh?!!allVeh.checked:true,vehicles:[]};document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){if(c.checked)o.vehicleScope.vehicles.push(c.getAttribute('data-v139-vehicle'))});return {uid:uid,perm:o}};
+  window.petV139ReadFormPerm=function(){
+    var uid=(document.getElementById('petV139UserSelect')||{}).value||__petV139SelectedUser;
+    var o=clonePerm(getUserPerm(uid));
+    screenPerms.forEach(function(s){if(!o.screens[s[0]])o.screens[s[0]]={view:false,add:false,edit:false,delete:false}});
+    specialPerms.forEach(function(s){if(!o.special)o.special={}; if(!Object.prototype.hasOwnProperty.call(o.special,s[0]))o.special[s[0]]=false});
+    document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){var sc=c.getAttribute('data-v139-screen'),ac=c.getAttribute('data-v139-action');if(!o.screens[sc])o.screens[sc]={view:false,add:false,edit:false,delete:false};o.screens[sc][ac]=!!c.checked});
+    document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){o.special[c.getAttribute('data-v139-special')]=!!c.checked});
+    var allVeh=document.getElementById('petV139AllVehicles');
+    if(allVeh){o.vehicleScope={allVehicles:!!allVeh.checked,vehicles:[]};document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){if(c.checked)o.vehicleScope.vehicles.push(c.getAttribute('data-v139-vehicle'))});}
+    else{o.vehicleScope=normalizeVehicleScope(o.vehicleScope)}
+    return {uid:uid,perm:o};
+  };
   window.petV139SaveUserPermissions=async function(){var api=window.__PETATOE_SETTINGS_API__||{}, f=window.petV139ReadFormPerm(), u=users(api).find(function(x){return String(x.id)===String(f.uid)});if(!u){toast('اختر مستخدم أولاً');return}if(isSuperUser(u)){toast('Super Admin كامل الصلاحيات ومحمي');return}var res=await saveUserPerm(f.uid,f.perm);if(res&&res.ok===false){toast('فشل حفظ الصلاحيات: '+(res.error||''));return}try{window.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));}catch(e){}if(api.audit)api.audit('User Permissions Updated','Permissions saved for '+(u.username||u.id),'warn');toast('تم حفظ صلاحيات المستخدم');if(api.render)api.render('permissions')};
-  window.petV139GrantReadOnly=function(){document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){c.checked=c.getAttribute('data-v139-action')==='view'});document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){c.checked=false});var av=document.getElementById('petV139AllVehicles');if(av){av.checked=true;window.petV139ToggleVehicleScope&&window.petV139ToggleVehicleScope(true)}toast('تم تجهيز صلاحية العرض فقط، اضغط حفظ للتأكيد')};
-  window.petV139GrantOperational=function(){document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){var sc=c.getAttribute('data-v139-screen'),ac=c.getAttribute('data-v139-action');c.checked=(ac==='view'||ac==='add'||ac==='edit')&&['sales','customers','services','vehicles','vehicleOperations','vaults','treasury','expenses','obligations','commissions','reports'].indexOf(sc)>-1});document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){var k=c.getAttribute('data-v139-special');c.checked=['export_excel','export_pdf','data_quality','vehicle_ops_create_trip','vehicle_ops_edit_trip','vehicle_ops_print','vehicle_ops_export','vehicle_ops_export_excel','vehicle_ops_export_pdf','vehicle_ops_view_reports','vehicle_ops_view_kpis'].indexOf(k)>-1});var av=document.getElementById('petV139AllVehicles');if(av){av.checked=true;window.petV139ToggleVehicleScope&&window.petV139ToggleVehicleScope(true)}toast('تم تجهيز الصلاحيات التشغيلية، اضغط حفظ للتأكيد')};
+  window.petV139GrantReadOnly=function(){
+    document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){c.checked=c.getAttribute('data-v139-action')==='view'});
+    document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){c.checked=false});
+    var av=document.getElementById('petV139AllVehicles');if(av){av.checked=true;window.petV139ToggleVehicleScope&&window.petV139ToggleVehicleScope(true)}
+    window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();
+    toast('تم تجهيز صلاحية العرض فقط للقسم الحالي، اضغط حفظ للتأكيد')
+  };
+  window.petV139GrantDriverGroomer=function(){
+    var f=window.petV139ReadFormPerm(), p=emptyUserPerm();
+    grantScreen(p,'dashboardOperations',['view']);
+    grantScreen(p,'vehicleOperations',['view','edit']);
+    grantScreen(p,'salarySlip',['view']);
+    grantScreen(p,'commissionStatement',['view']);
+    ['vehicle_ops_edit_trip','operations_confirm_session','operations_close_session'].forEach(function(k){p.special[k]=true});
+    p.vehicleScope={allVehicles:true,vehicles:[]};
+    saveUserPerm(f.uid,p).then(function(res){
+      if(res&&res.ok===false){toast('فشل تطبيق قالب السائق/الجرومر: '+(res.error||''));return}
+      try{document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));window.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));}catch(e){}
+      toast('تم تطبيق قالب السائق/الجرومر');
+      if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions');
+    });
+  };
+  window.petV139GrantOperational=function(){
+    var f=window.petV139ReadFormPerm(), p=emptyUserPerm();
+    ['dashboardOperations','appointments','vehicleOperations','vehicleOperationsReports','operationKpis','salarySlip','commissionStatement'].forEach(function(k){grantScreen(p,k,['view'])});
+    ['appointments','vehicleOperations'].forEach(function(k){grantScreen(p,k,['view','add','edit'])});
+    ['vehicle_ops_create_trip','vehicle_ops_edit_trip','vehicle_ops_cancel_trip','vehicle_ops_reopen_trip','vehicle_ops_approve_trip','operations_close_session','operations_reopen_session','operations_confirm_session','operations_edit_confirmed_session','vehicle_ops_view_reports','vehicle_ops_view_kpis','vehicle_ops_export','vehicle_ops_export_excel','vehicle_ops_export_pdf','vehicle_ops_print'].forEach(function(k){p.special[k]=true});
+    p.vehicleScope={allVehicles:true,vehicles:[]};
+    saveUserPerm(f.uid,p).then(function(res){
+      if(res&&res.ok===false){toast('فشل تطبيق القالب التشغيلي: '+(res.error||''));return}
+      try{document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));window.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));}catch(e){}
+      toast('تم تطبيق القالب التشغيلي');
+      if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions');
+    });
+  };
   window.petV139ResetUserPermissions=async function(){var api=window.__PETATOE_SETTINGS_API__||{}, uid=(document.getElementById('petV139UserSelect')||{}).value||__petV139SelectedUser, u=users(api).find(function(x){return x.id===uid});if(!u)return;if(!confirm('إرجاع صلاحيات هذا المستخدم للوضع الافتراضي؟'))return;var st=userPermStore();delete st[uid];try{var ids=identity(); if(ids&&typeof ids.deletePermission==='function') await ids.deletePermission(uid); else await saveUserPermStore(st);}catch(e){await saveUserPermStore(st);}if(api.audit)api.audit('User Permissions Reset','Default permissions for '+(u.username||uid),'warn');toast('تم إرجاع صلاحيات المستخدم');if(api.render)api.render('permissions')};
   window.petV139ToggleVehicleScope=function(force){var all=document.getElementById('petV139AllVehicles');var checked=typeof force==='boolean'?force:!!(all&&all.checked);document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){c.disabled=checked;c.checked=checked?true:c.checked});};
-  document.addEventListener('click',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-v139-scroll-module]');if(!t)return;var id=t.getAttribute('data-v139-scroll-module')||'';var target=document.getElementById('petV139Module_'+id);if(target&&target.scrollIntoView)target.scrollIntoView({behavior:'smooth',block:'start'});});
-  document.addEventListener('change',function(e){var t=e.target;if(t&&t.id==='petV139AllVehicles')window.petV139ToggleVehicleScope(!!t.checked)});
+  document.addEventListener('click',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-v139-set-module]');if(!t)return;__petV139ActiveModule=t.getAttribute('data-v139-set-module')||'home';if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions');});
+  window.petV139SyncBulkHeaders=function(){var section=document.querySelector('#settings [data-v139-current-module]');if(!section)return;crudActions.forEach(function(a){var inputs=[].slice.call(section.querySelectorAll('[data-v139-action="'+a[0]+'"]'));var head=section.querySelector('[data-v139-bulk-action="'+a[0]+'"]');if(head)head.checked=!!inputs.length&&inputs.every(function(x){return x.checked})})};
+  document.addEventListener('change',function(e){var t=e.target;if(!t)return;if(t.matches&&t.matches('[data-v139-bulk-action]')){var act=t.getAttribute('data-v139-bulk-action');var section=t.closest('[data-v139-current-module]')||document.querySelector('#settings [data-v139-current-module]');if(section){section.querySelectorAll('[data-v139-action="'+act+'"]').forEach(function(c){if(!c.disabled)c.checked=!!t.checked});window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();}}else if(t.matches&&t.matches('[data-v139-screen][data-v139-action]')){window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();}if(t&&t.id==='petV139AllVehicles')window.petV139ToggleVehicleScope(!!t.checked)});
   function getVehicleScope(uid){var p=getUserPerm(uid||currentUserId());return normalizeVehicleScope(p.vehicleScope)}
   function canAccessVehicle(uid,vehicle){var u=getUserById(uid||currentUserId());if(isSuperUser(u))return true;var scope=getVehicleScope(uid);if(scope.allVehicles)return true;var key=normalizeVehicleKey(vehicle&&typeof vehicle==='object'?(vehicle.id||vehicle.name||vehicle.plate):vehicle);return !!key&&scope.vehicles.some(function(x){return normalizeVehicleKey(x)===key})}
   window.PETATOEPermissions={screenPerms:screenPerms,crudActions:crudActions,specialPerms:specialPerms,userPermStore:userPermStore,saveUserPermStore:saveUserPermStore,isSuperUser:isSuperUser,fullUserPerm:fullUserPerm,defaultUserPerm:defaultUserPerm,getUserPerm:getUserPerm,saveUserPerm:saveUserPerm,can:can,canSpecial:canSpecial,getVehicleList:getVehicleList,getVehicleScope:getVehicleScope,canAccessVehicle:canAccessVehicle,applyVehicleOpsDefaultSpecials:applyVehicleOpsDefaultSpecials,renderPermissionsBody:renderPermissionsBody};
