@@ -65,7 +65,17 @@
   function setToggleLabel(btn, label){ clearNode(btn); btn.appendChild(navSpan('', label||'')); btn.appendChild(navArrow()); }
   function setDirectLabel(btn, label){ clearNode(btn); btn.appendChild(navSpan('', label||'')); }
 
+  function normalizeScreenKey(screen){
+    try{
+      var G=window.PETATOENavigationPermissions;
+      if(G&&typeof G.normalizeScreen==='function') return G.normalizeScreen(screen||'');
+    }catch(e){}
+    var m={dashboard:'dashboardManagement',system:'settings',logs:'audit','appointments-master':'appointmentsMaster',warehouse:'warehouses'};
+    return m[screen]||screen||'';
+  }
   function navCan(screen){
+    screen=normalizeScreenKey(screen);
+    if(!screen) return false;
     try{
       var G=window.PETATOENavigationPermissions;
       if(G&&typeof G.hasAnyAction==='function') return !!G.hasAnyAction(G.currentUser&&G.currentUser(),screen);
@@ -74,14 +84,21 @@
       var uid=A&&(A.id||A.username);
       if(P&&P.can&&uid) return ['view','add','edit','delete'].some(function(a){return P.can(uid,screen,a)});
     }catch(e){}
-    return screen==='dashboardManagement';
+    return false;
   }
+  function itemScreen(it){
+    it=it||{};
+    if(it.screen) return normalizeScreenKey(it.screen);
+    if(it.settingsMain) return normalizeScreenKey(it.settingsMain);
+    return normalizeScreenKey(it.tab||'');
+  }
+  function itemAllowed(it){return navCan(itemScreen(it));}
   function homeConfig(){
     var management=navCan('dashboardManagement');
     var operations=navCan('dashboardOperations')||navCan('vehicleOperations');
     if(management) return {tab:'dashboard',screen:'dashboardManagement',label:'🏠 الرئيسية'};
     if(operations) return {tab:'vehicleOperations',screen:'dashboardOperations',label:'🏠 الرئيسية التشغيلية'};
-    return {tab:'dashboard',screen:'dashboardManagement',label:'🏠 الرئيسية'};
+    return null;
   }
 
   function itemButton(it){
@@ -98,33 +115,43 @@
   function build(){
     var nav=petBlock7937_q('#nav')||petBlock7937_q('.nav'); if(!nav) return false;
     nav.id='nav'; nav.className='nav pet-v142-nav'; clearNode(nav);
-    var opsWrap=document.createElement('div'); opsWrap.className='pet-v142-group'; opsWrap.setAttribute('data-group','operationManagement');
-    var opsHead=document.createElement('button'); opsHead.type='button'; opsHead.className='pet-v142-toggle'; opsHead.setAttribute('data-v142-toggle','operationManagement');
-    setToggleLabel(opsHead, '⚙️ إدارة التشغيل');
-    var opsBody=document.createElement('div'); opsBody.className='pet-v142-items';
-    opsBody.appendChild(itemButton({tab:'appointments',screen:'appointments',title:'إدارة المواعيد',sub:'تخطيط وجدولة مواعيد الجلسات'}));
-    opsBody.appendChild(itemButton({tab:'vehicleOperations',screen:'vehicleOperations',title:'تشغيل السيارات',sub:'تنفيذ جلسات اليوم والتحصيل'}));
-    opsBody.appendChild(itemButton({tab:'vehicleOperationsReports',screen:'vehicleOperationsReports',title:'تقارير تشغيل السيارات',sub:'تحليل التنفيذ والتحصيل والأداء'}));
-    opsBody.appendChild(itemButton({tab:'operationKpis',screen:'operationKpis',title:'مؤشرات الأداء التشغيلية',sub:'KPI Dashboard للتشغيل والجودة'}));
-    // PETATOE v6.4.89: expose appointments master data directly in Operation Management sidebar.
-    // Safe route: still opens the existing appointments panel, then switches only its internal tab to master.
-    opsBody.appendChild(itemButton({tab:'appointments',appointmentsSubTab:'master',screen:'appointments-master',title:'البيانات المرجعية ⚙️',sub:'إدارة البيانات الأساسية للمواعيد'}));
-    opsWrap.appendChild(opsHead); opsWrap.appendChild(opsBody); nav.appendChild(opsWrap);
-    var hc=homeConfig(); var home=document.createElement('button'); home.type='button'; home.className='pet-v142-direct active'; home.setAttribute('data-tab',hc.tab); home.setAttribute('data-pet-nav-screen',hc.screen); setDirectLabel(home, hc.label);
-    nav.appendChild(home);
-    // PETATOE v6.1.124: sidebar-final.js rebuilds #nav at runtime, so static index.html additions are overwritten.
-    // Add the Children Expenses entry to the generated v142 sidebar directly under Home.
-    var childExpenses=document.createElement('button'); childExpenses.type='button'; childExpenses.className='pet-v142-direct'; childExpenses.setAttribute('data-tab','childrenExpenses'); childExpenses.setAttribute('data-pet-permission-screen','childrenExpenses'); setDirectLabel(childExpenses, '👨‍👧‍👦 مصروفات الأبناء');
-    nav.appendChild(childExpenses);
-    groups.forEach(function(g){
-      var wrap=document.createElement('div'); wrap.className='pet-v142-group'; wrap.setAttribute('data-group',g.id);
-      var head=document.createElement('button'); head.type='button'; head.className='pet-v142-toggle'; head.setAttribute('data-v142-toggle',g.id);
-      setToggleLabel(head, g.label);
+
+    function appendGroup(id,label,items){
+      var allowed=(items||[]).filter(itemAllowed);
+      if(!allowed.length) return false;
+      var wrap=document.createElement('div'); wrap.className='pet-v142-group'; wrap.setAttribute('data-group',id);
+      var head=document.createElement('button'); head.type='button'; head.className='pet-v142-toggle'; head.setAttribute('data-v142-toggle',id);
+      setToggleLabel(head,label);
       var body=document.createElement('div'); body.className='pet-v142-items';
-      (g.items||[]).forEach(function(it){ body.appendChild(itemButton(it)); });
+      allowed.forEach(function(it){ body.appendChild(itemButton(it)); });
       wrap.appendChild(head); wrap.appendChild(body); nav.appendChild(wrap);
-    });
-    bind(nav); markActive(); try{ if(window.PETATOENavigationPermissions&&window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(nav); document.dispatchEvent(new CustomEvent('petatoe:navbuilt',{detail:{nav:nav}})); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('navigation/navigation.js',e);} return true;
+      return true;
+    }
+
+    appendGroup('operationManagement','⚙️ إدارة التشغيل',[
+      {tab:'appointments',screen:'appointments',title:'إدارة المواعيد',sub:'تخطيط وجدولة مواعيد الجلسات'},
+      {tab:'vehicleOperations',screen:'vehicleOperations',title:'تشغيل السيارات',sub:'تنفيذ جلسات اليوم والتحصيل'},
+      {tab:'vehicleOperationsReports',screen:'vehicleOperationsReports',title:'تقارير تشغيل السيارات',sub:'تحليل التنفيذ والتحصيل والأداء'},
+      {tab:'operationKpis',screen:'operationKpis',title:'مؤشرات الأداء التشغيلية',sub:'KPI Dashboard للتشغيل والجودة'},
+      {tab:'appointments',appointmentsSubTab:'master',screen:'appointmentsMaster',title:'البيانات المرجعية ⚙️',sub:'إدارة البيانات الأساسية للمواعيد'}
+    ]);
+
+    var hc=homeConfig();
+    if(hc){
+      var home=document.createElement('button'); home.type='button'; home.className='pet-v142-direct active'; home.setAttribute('data-tab',hc.tab); home.setAttribute('data-pet-nav-screen',hc.screen); setDirectLabel(home,hc.label);
+      nav.appendChild(home);
+    }
+
+    var childItem={tab:'childrenExpenses',screen:'childrenExpenses',title:'👨‍👧‍👦 مصروفات الأبناء',sub:''};
+    if(itemAllowed(childItem)){
+      var childExpenses=document.createElement('button'); childExpenses.type='button'; childExpenses.className='pet-v142-direct'; childExpenses.setAttribute('data-tab','childrenExpenses'); childExpenses.setAttribute('data-pet-permission-screen','childrenExpenses'); setDirectLabel(childExpenses,'👨‍👧‍👦 مصروفات الأبناء');
+      nav.appendChild(childExpenses);
+    }
+
+    groups.forEach(function(g){ appendGroup(g.id,g.label,g.items||[]); });
+    bind(nav); markActive();
+    try{ if(window.PETATOENavigationPermissions&&window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(nav); document.dispatchEvent(new CustomEvent('petatoe:navbuilt',{detail:{nav:nav}})); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('navigation/navigation.js',e);}
+    return true;
   }
   function closeOpen(nav, id){
     qa('.pet-v142-group',nav).forEach(function(g){
