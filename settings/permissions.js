@@ -3,7 +3,7 @@
    Settings core renders this module without keeping permission logic inside settings.js. */
 (function(){
   'use strict';
-  var USERS_KEY='petatoe_users_v108', USER_PERMS_KEY='petatoe_user_crud_permissions_v139', CURRENT_KEY='petatoe_current_user_v108';
+  var USERS_KEY='app_users', USER_PERMS_KEY='app_user_permissions', CURRENT_KEY='app_current_user_ref';
   var roleNames={superadmin:'Super Admin',super_admin:'Super Admin',admin:'Admin',manager:'Manager',operations_manager:'Operations Manager',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',driver:'Driver',groomer:'Groomer',viewer:'Viewer'};
   var screenPerms=[
     ['dashboardManagement','Dashboard الإدارة','لوحة المؤشرات المالية والإدارية للإدارة فقط'],
@@ -75,15 +75,21 @@
     {id:'children',icon:'👶',title:'مصروفات الأبناء',hint:'مصروفات الأبناء وميزانيتها وتقاريرها',screens:['childrenExpenses'],specials:['children_expenses_budget','children_expenses_export']},
     {id:'admin',icon:'⚙️',title:'الإدارة والإعدادات',hint:'إدارة المستخدمين والصلاحيات والتهيئة والأمان',screens:['settings','setup','users','permissions','audit'],specials:['manage_users','manage_permissions','backup','restore','manage_security','data_quality']}
   ];
-  function S(){return window.PETATOEStorage||null}
-  function read(k,d){var st=S();return st&&st.readJSON?st.readJSON(k,d):d}
-  function write(k,v){var st=S();if(st&&st.writeJSON)st.writeJSON(k,v)}
+  function S(){return null}
+  var __petV139SelectedUser='';
+  function identity(){return window.PETATOEIdentityStore||window.PETATOESupabaseRepository||null}
+  function read(k,d){return d}
+  function write(k,v){}
   function esc(s){return String(s==null?'':s).replace(/[&<>'\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
   function toast(msg){try{if(typeof window.toast==='function')window.toast(msg);else alert(msg)}catch(e){alert(msg)}}
-  function seedUsers(){var sec=window.PETATOEPasswordSecurity;var u=read(USERS_KEY,null);if(!Array.isArray(u)||!u.length){u=[{id:'u_admin',username:'Admin',fullName:'Admin',job:'Super Admin',phone:'',email:'',role:'superadmin',status:'active',createdAt:new Date().toISOString(),lastLogin:''}];write(USERS_KEY,u);var st=S();if(st&&st.set)st.set(CURRENT_KEY,'u_admin')}else if(sec&&sec.sanitizeUsers&&sec.sanitizeUsers(u)){write(USERS_KEY,u)}return u}
-  function users(api){if(api&&typeof api.users==='function')return api.users();return seedUsers()}
-  function userPermStore(){var p=read(USER_PERMS_KEY,{});return p&&typeof p==='object'?p:{}}
-  function saveUserPermStore(p){write(USER_PERMS_KEY,p||{})}
+  function defaultAdmin(){return {id:'u_admin',username:'Admin',fullName:'Admin',role:'superadmin',role_code:'super_admin',status:'active'}}
+  function seedUsers(){
+    try{var ids=identity(); if(ids&&typeof ids.load==='function') ids.load(); if(ids&&typeof ids.usersSync==='function'){var u=ids.usersSync()||[]; if(u.length) return u;}}catch(e){try{console.warn('PETATOE permissions users load failed',e)}catch(_){}}
+    return [defaultAdmin()];
+  }
+  function users(api){if(api&&typeof api.users==='function'){var au=api.users(); if(Array.isArray(au)&&au.length)return au;}return seedUsers()}
+  function userPermStore(){try{var ids=identity(); if(ids&&typeof ids.permissionsSync==='function'){var p=ids.permissionsSync()||{}; return p&&typeof p==='object'?p:{}}}catch(e){try{console.warn('PETATOE permissions store load failed',e)}catch(_){}} return {}}
+  function saveUserPermStore(p){try{var ids=identity(); if(ids&&typeof ids.savePermissions==='function') return ids.savePermissions(p||{});}catch(e){try{console.warn('PETATOE permissions store save failed',e)}catch(_){}} return null}
   function isSuperUser(u){var role=String((u&&u.role)||'').trim().toLowerCase(), roleN=role.replace(/[\u200f\u200e]/g,'').replace(/\s+/g,'_').replace(/-/g,'_'), id=String((u&&(u.id||u.userId||u.uid))||'').trim().toLowerCase(), name=String((u&&(u.username||u.name||u.fullName||u.login))||'').trim().toLowerCase(), job=String((u&&(u.job||u.title||u.position))||'').trim().toLowerCase();return !!(u&&(roleN==='superadmin'||roleN==='super_admin'||role.indexOf('super')>-1||role.indexOf('سوبر')>-1||id==='u_admin'||id==='admin'||name==='admin'||name==='superadmin'||job.indexOf('super')>-1||job.indexOf('سوبر')>-1))}
   function fullUserPerm(){var o={screens:{},special:{},vehicleScope:defaultVehicleScope()};screenPerms.forEach(function(s){o.screens[s[0]]={view:true,add:true,edit:true,delete:true}});specialPerms.forEach(function(s){o.special[s[0]]=true});return o}
   function normalizeRole(u){return String((u&&(u.role||u.role_code||u.job||u.title))||'').trim().toLowerCase().replace(/[‏‎]/g,'').replace(/\s+/g,'_').replace(/-/g,'_')}
@@ -130,14 +136,13 @@
   function applyVehicleOpsDefaultSpecials(o){
     o=o||{screens:{},special:{}};o.special=o.special||{};
     var v=o.screens&&o.screens.vehicleOperations||{};
-    if(v.view){o.special.vehicle_ops_view_reports=true;o.special.vehicle_ops_view_kpis=true;o.special.vehicle_ops_print=true;o.special.vehicle_ops_export=true;o.special.vehicle_ops_export_excel=true;o.special.vehicle_ops_export_pdf=true;}
     if(v.add){o.special.vehicle_ops_create_trip=true;}
     if(v.edit){o.special.vehicle_ops_edit_trip=true;}
     return o;
   }
   function getUserById(uid){var us=seedUsers();return us.find(function(x){return x.id===uid})||us[0]}
   function getUserPerm(uid){var u=getUserById(uid);if(isSuperUser(u))return fullUserPerm();var store=userPermStore(), base=defaultUserPerm(u), saved=store[u.id]||{};screenPerms.forEach(function(s){var k=s[0], src=(saved.screens&&saved.screens[k])||{};base.screens[k]=Object.assign(base.screens[k]||{},src)});specialPerms.forEach(function(s){var k=s[0];if(saved.special&&Object.prototype.hasOwnProperty.call(saved.special,k))base.special[k]=!!saved.special[k]});base.vehicleScope=normalizeVehicleScope(saved.vehicleScope||base.vehicleScope);return base}
-  function saveUserPerm(uid,perm){var u=getUserById(uid);if(!u||isSuperUser(u))return;var store=userPermStore();store[uid]=perm;saveUserPermStore(store)}
+  function saveUserPerm(uid,perm){var u=getUserById(uid);if(!u||isSuperUser(u))return Promise.resolve({ok:false,skipped:true});var store=userPermStore();store[uid]=perm;try{var ids=identity(); if(ids&&typeof ids.savePermission==='function') return ids.savePermission(uid,perm);}catch(e){try{console.warn('PETATOE save permission failed',e)}catch(_){}}return saveUserPermStore(store)||Promise.resolve({ok:true})}
   function normalizeVehicleKey(v){return String(v==null?'':v).trim().toLowerCase().replace(/\s+/g,' ')}
   function addVehicleUnique(out,seen,id,name,meta){
     name=String(name||'').trim(); id=String(id||name||'').trim();
@@ -149,12 +154,13 @@
   }
   function getVehicleList(){
     var out=[],seen={};
-    var master=read('petatoe_master_setup_v120',{})||{};
-    (master.cars||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.code||v.name,v.name||v.plate||v.code,'setup')});
-    var fleet=read('PETATOE_FLEET_MANAGEMENT_V1',{})||{};
-    (fleet.vehicles||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.name||v.plate,v.name||v.plate||v.id,'fleet')});
-    var ops=read('appointmentsMasterData',{})||{};
-    (ops.vehicleAssignments||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.vehicle||v.name||v.car,v.vehicle||v.name||v.car||v.id,'operations')});
+    try{
+      var ops=window.PETATOEOperationsStorage;
+      if(ops&&typeof ops.readMasterDataSync==='function'){
+        var md=ops.readMasterDataSync()||{};
+        (md.vehicleStaffLinks||md.vehicleAssignments||md.vehicles||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.vehicle||v.name||v.car,v.vehicle||v.name||v.car||v.id,'operations')});
+      }
+    }catch(e){}
     if(!out.length){['VAN A','VAN B'].forEach(function(v){addVehicleUnique(out,seen,v,v,'default')})}
     return out.sort(function(a,b){return String(a.name).localeCompare(String(b.name),'ar')});
   }
@@ -166,10 +172,11 @@
   }
   function parseCurrentRef(raw){try{if(raw&&typeof raw==='object')return raw;var s=String(raw||'').trim();if(!s)return null;if((s.charAt(0)==='{'&&s.charAt(s.length-1)==='}')||(s.charAt(0)==='['&&s.charAt(s.length-1)===']'))return JSON.parse(s);return {id:s,username:s}}catch(_){return null}}
   function matchUserRef(us,ref){if(!ref)return null;var rid=String(ref.id||ref.userId||ref.uid||'').trim(), rn=String(ref.username||ref.name||ref.fullName||ref.login||'').trim().toLowerCase();return (us||[]).find(function(u){var uid=String(u.id||u.userId||u.uid||'').trim(), un=String(u.username||u.name||u.login||'').trim().toLowerCase(), fn=String(u.fullName||'').trim().toLowerCase();return (rid&&uid===rid)||(rid&&un===rid.toLowerCase())||(rid&&fn===rid.toLowerCase())||(rn&&un===rn)||(rn&&uid.toLowerCase()===rn)||(rn&&fn===rn)})||null}
-  function storageValues(k){var a=[],st=S();try{var sv=window.sessionStorage&&window.sessionStorage.getItem(k);if(sv!==null&&sv!==undefined&&sv!=='')a.push(sv)}catch(_){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('settings/permissions.js', _, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }try{var lv=window['localStorage']&&window['localStorage'].getItem(k);if(lv!==null&&lv!==undefined&&lv!==''&&a.indexOf(lv)===-1)a.push(lv)}catch(_){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('settings/permissions.js', _, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }try{var v=st&&st.get?st.get(k,''):'';if(v&&a.indexOf(v)===-1)a.push(v)}catch(_){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('settings/permissions.js', _, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }return a}
-  function currentUserId(){var keys=[CURRENT_KEY,'petatoe_current_user_v139','petatoe_current_user_v2','petatoe_current_user','currentUser','PETATOE_CURRENT_USER'], us=seedUsers(), refs=[],seen={};function add(r){if(!r)return;var key='';try{key=JSON.stringify(r)}catch(_){key=String(r)}if(!seen[key]){seen[key]=true;refs.push(r)}}keys.forEach(function(k){storageValues(k).forEach(function(v){add(parseCurrentRef(v))})});for(var i=0;i<refs.length;i++){var m=matchUserRef(us,refs[i]);if(m&&isSuperUser(m))return m.id;if(isSuperUser(refs[i]))return refs[i].id||refs[i].username||'u_admin'}for(var j=0;j<refs.length;j++){var f=matchUserRef(us,refs[j]);if(f)return f.id;var r=refs[j];if(r&&(r.id||r.username))return r.id||r.username}
-    var bootSuper=us.find(function(x){return isSuperUser(x)});
-    return (bootSuper&&bootSuper.id)||'u_admin'}
+  function currentUserId(){
+    try{if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'){var au=window.PETATOEAuth.currentUser(); if(au&&(au.id||au.username)) return au.id||au.username;}}catch(e){}
+    try{if(window.currentUser&&(window.currentUser.id||window.currentUser.username)) return window.currentUser.id||window.currentUser.username;}catch(e){}
+    var us=seedUsers(); var bootSuper=us.find(function(x){return isSuperUser(x)}); return (bootSuper&&bootSuper.id)||(us[0]&&us[0].id)||'';
+  }
   function can(uid,screen,action){uid=uid||currentUserId();if(!uid)return false;var u=getUserById(uid);if(isSuperUser(u))return true;var p=getUserPerm(uid);return !!(p.screens&&p.screens[screen]&&p.screens[screen][action||'view'])}
   function canSpecial(uid,key){uid=uid||currentUserId();if(!uid)return false;var u=getUserById(uid);if(isSuperUser(u))return true;var p=getUserPerm(uid);return !!(p.special&&p.special[key])}
   function screenByKey(k){return screenPerms.find(function(s){return s[0]===k})||[k,k,'']}
@@ -182,7 +189,7 @@
     return '<section class="pet-v139-module-section" id="petV139Module_'+esc(m.id)+'"><div class="pet-v139-module-head"><div><h3>'+esc(m.icon)+' '+esc(m.title)+'</h3><p>'+esc(m.hint||'')+'</p></div><span class="pet-v139-module-badge">'+((m.screens||[]).length)+' شاشات</span></div><div class="pet-v139-perm-table erp"><table><thead><tr><th>الشاشة / الوظيفة</th>'+crudActions.map(function(a){return '<th>'+esc(a[1])+'</th>'}).join('')+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+(specials?'<div class="pet-v139-special-box"><h4>صلاحيات إضافية داخل '+esc(m.title)+'</h4><div class="pet-v139-special-grid erp">'+specials+'</div></div>':'')+'</section>';
   }
   function renderPermissionsBody(api){
-    var us=users(api), selected=((S()&&S().get)?S().get('pet_v139_selected_user',''):'')||((S()&&S().get)?S().get(CURRENT_KEY,''):'')||((us[0]||{}).id||'');
+    var us=users(api), selected=__petV139SelectedUser||currentUserId()||((us[0]||{}).id||'');
     if(!us.some(function(u){return u.id===selected})&&us[0])selected=us[0].id;
     var u=us.find(function(x){return x.id===selected})||us[0]||{}, p=getUserPerm(selected), locked=isSuperUser(u);
     var opts=us.map(function(x){return '<option value="'+esc(x.id)+'" '+(x.id===selected?'selected':'')+'>'+esc((x.fullName||x.username||x.id)+' - '+(x.username||''))+'</option>'}).join('');
@@ -199,12 +206,12 @@
       +'<div class="pet-v139-layout"><div class="pet-v139-modules">'+modules+(orphanSpecials?'<section class="pet-v139-module-section"><div class="pet-v139-module-head"><div><h3>🔐 صلاحيات عامة أخرى</h3><p>صلاحيات عامة غير مرتبطة بشاشة واحدة.</p></div></div><div class="pet-v139-special-grid erp">'+orphanSpecials+'</div></section>':'')+vehicleScopeHtml+'</div><aside class="pet-v139-help"><div class="pet-v139-help-card"><h3>ℹ️ معلومات</h3><p>الصلاحيات محفوظة على مستوى المستخدم. القائمة الجانبية يجب أن تُبنى من الشاشات التي يمتلك المستخدم عليها صلاحية واحدة على الأقل.</p></div><div class="pet-v139-help-card"><h3>💡 قوالب أساسية</h3><ul><li>Driver/Groomer: كشف الراتب + كشف العمولة + تشغيل السيارات فقط.</li><li>Accountant: المبيعات والخزنة والرواتب.</li><li>Operations: تشغيل السيارات وتقارير التشغيل.</li><li>Super Admin: كل الصلاحيات.</li></ul></div></aside></div>'
       +'</div>';
   }
-  window.petV139SelectUser=function(uid){var st=S();if(st&&st.set)st.set('pet_v139_selected_user',uid||'');if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions')};
-  window.petV139ReadFormPerm=function(){var uid=(document.getElementById('petV139UserSelect')||{}).value||((S()&&S().get)?S().get('pet_v139_selected_user',''):''), o={screens:{},special:{}};screenPerms.forEach(function(s){o.screens[s[0]]={view:false,add:false,edit:false,delete:false}});document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){var sc=c.getAttribute('data-v139-screen'),ac=c.getAttribute('data-v139-action');if(!o.screens[sc])o.screens[sc]={view:false,add:false,edit:false,delete:false};o.screens[sc][ac]=!!c.checked});specialPerms.forEach(function(s){o.special[s[0]]=false});document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){o.special[c.getAttribute('data-v139-special')]=!!c.checked});var allVeh=document.getElementById('petV139AllVehicles');o.vehicleScope={allVehicles:allVeh?!!allVeh.checked:true,vehicles:[]};document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){if(c.checked)o.vehicleScope.vehicles.push(c.getAttribute('data-v139-vehicle'))});return {uid:uid,perm:o}};
-  window.petV139SaveUserPermissions=function(){var api=window.__PETATOE_SETTINGS_API__||{}, f=window.petV139ReadFormPerm(), u=users(api).find(function(x){return x.id===f.uid});if(!u){toast('اختر مستخدم أولاً');return}if(isSuperUser(u)){toast('Super Admin كامل الصلاحيات ومحمي');return}saveUserPerm(f.uid,f.perm);if(api.audit)api.audit('User Permissions Updated','Permissions saved for '+(u.username||u.id),'warn');toast('تم حفظ صلاحيات المستخدم');if(api.render)api.render('permissions')};
+  window.petV139SelectUser=function(uid){__petV139SelectedUser=uid||'';if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions')};
+  window.petV139ReadFormPerm=function(){var uid=(document.getElementById('petV139UserSelect')||{}).value||__petV139SelectedUser, o={screens:{},special:{}};screenPerms.forEach(function(s){o.screens[s[0]]={view:false,add:false,edit:false,delete:false}});document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){var sc=c.getAttribute('data-v139-screen'),ac=c.getAttribute('data-v139-action');if(!o.screens[sc])o.screens[sc]={view:false,add:false,edit:false,delete:false};o.screens[sc][ac]=!!c.checked});specialPerms.forEach(function(s){o.special[s[0]]=false});document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){o.special[c.getAttribute('data-v139-special')]=!!c.checked});var allVeh=document.getElementById('petV139AllVehicles');o.vehicleScope={allVehicles:allVeh?!!allVeh.checked:true,vehicles:[]};document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){if(c.checked)o.vehicleScope.vehicles.push(c.getAttribute('data-v139-vehicle'))});return {uid:uid,perm:o}};
+  window.petV139SaveUserPermissions=async function(){var api=window.__PETATOE_SETTINGS_API__||{}, f=window.petV139ReadFormPerm(), u=users(api).find(function(x){return String(x.id)===String(f.uid)});if(!u){toast('اختر مستخدم أولاً');return}if(isSuperUser(u)){toast('Super Admin كامل الصلاحيات ومحمي');return}var res=await saveUserPerm(f.uid,f.perm);if(res&&res.ok===false){toast('فشل حفظ الصلاحيات: '+(res.error||''));return}try{window.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));}catch(e){}if(api.audit)api.audit('User Permissions Updated','Permissions saved for '+(u.username||u.id),'warn');toast('تم حفظ صلاحيات المستخدم');if(api.render)api.render('permissions')};
   window.petV139GrantReadOnly=function(){document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){c.checked=c.getAttribute('data-v139-action')==='view'});document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){c.checked=false});var av=document.getElementById('petV139AllVehicles');if(av){av.checked=true;window.petV139ToggleVehicleScope&&window.petV139ToggleVehicleScope(true)}toast('تم تجهيز صلاحية العرض فقط، اضغط حفظ للتأكيد')};
   window.petV139GrantOperational=function(){document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){var sc=c.getAttribute('data-v139-screen'),ac=c.getAttribute('data-v139-action');c.checked=(ac==='view'||ac==='add'||ac==='edit')&&['sales','customers','services','vehicles','vehicleOperations','vaults','treasury','expenses','obligations','commissions','reports'].indexOf(sc)>-1});document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){var k=c.getAttribute('data-v139-special');c.checked=['export_excel','export_pdf','data_quality','vehicle_ops_create_trip','vehicle_ops_edit_trip','vehicle_ops_print','vehicle_ops_export','vehicle_ops_export_excel','vehicle_ops_export_pdf','vehicle_ops_view_reports','vehicle_ops_view_kpis'].indexOf(k)>-1});var av=document.getElementById('petV139AllVehicles');if(av){av.checked=true;window.petV139ToggleVehicleScope&&window.petV139ToggleVehicleScope(true)}toast('تم تجهيز الصلاحيات التشغيلية، اضغط حفظ للتأكيد')};
-  window.petV139ResetUserPermissions=function(){var api=window.__PETATOE_SETTINGS_API__||{}, uid=(document.getElementById('petV139UserSelect')||{}).value||((S()&&S().get)?S().get('pet_v139_selected_user',''):''), u=users(api).find(function(x){return x.id===uid});if(!u)return;if(!confirm('إرجاع صلاحيات هذا المستخدم للوضع الافتراضي؟'))return;var st=userPermStore();delete st[uid];saveUserPermStore(st);if(api.audit)api.audit('User Permissions Reset','Default permissions for '+(u.username||uid),'warn');toast('تم إرجاع صلاحيات المستخدم');if(api.render)api.render('permissions')};
+  window.petV139ResetUserPermissions=async function(){var api=window.__PETATOE_SETTINGS_API__||{}, uid=(document.getElementById('petV139UserSelect')||{}).value||__petV139SelectedUser, u=users(api).find(function(x){return x.id===uid});if(!u)return;if(!confirm('إرجاع صلاحيات هذا المستخدم للوضع الافتراضي؟'))return;var st=userPermStore();delete st[uid];try{var ids=identity(); if(ids&&typeof ids.deletePermission==='function') await ids.deletePermission(uid); else await saveUserPermStore(st);}catch(e){await saveUserPermStore(st);}if(api.audit)api.audit('User Permissions Reset','Default permissions for '+(u.username||uid),'warn');toast('تم إرجاع صلاحيات المستخدم');if(api.render)api.render('permissions')};
   window.petV139ToggleVehicleScope=function(force){var all=document.getElementById('petV139AllVehicles');var checked=typeof force==='boolean'?force:!!(all&&all.checked);document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){c.disabled=checked;c.checked=checked?true:c.checked});};
   document.addEventListener('click',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-v139-scroll-module]');if(!t)return;var id=t.getAttribute('data-v139-scroll-module')||'';var target=document.getElementById('petV139Module_'+id);if(target&&target.scrollIntoView)target.scrollIntoView({behavior:'smooth',block:'start'});});
   document.addEventListener('change',function(e){var t=e.target;if(t&&t.id==='petV139AllVehicles')window.petV139ToggleVehicleScope(!!t.checked)});
