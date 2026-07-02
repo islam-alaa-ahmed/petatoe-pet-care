@@ -3,13 +3,15 @@
   if(window.__PETATOE_NAVIGATION_PERMISSIONS_SUPABASE_STRICT_ERP__) return;
   window.__PETATOE_NAVIGATION_PERMISSIONS_SUPABASE_STRICT_ERP__ = true;
 
+  // PETATOE v8.0.2 Phase 1: canonical permission screen aliases.
+  // Keep navigation/panel route ids mapped to existing permission keys to avoid orphan screen keys.
   var SCREEN_ALIASES = {
-    dashboard:'dashboardManagement', dashboardManagement:'dashboardManagement', dashboardOperations:'dashboardOperations',
-    entry:'sales', import:'sales', records:'reports', logs:'audit', smart:'reports', customer360:'customers', executive:'reports',
-    treasury:'treasury', warehouses:'warehouses', warehouse:'warehouses', obligations:'obligations', expenses:'expenses',
+    dashboard:'dashboardManagement', dashboardManagement:'dashboardManagement', dashboardOperations:'dashboardOperations', dashboardOperationsPanel:'dashboardOperations',
+    entry:'sales', import:'sales', records:'reports', logs:'audit', smart:'reports', reports:'reports', customer360:'customers', executive:'reports',
+    treasury:'treasury', warehouses:'vehicles', warehouse:'vehicles', obligations:'obligations', expenses:'expenses',
     commissions:'commissions', commissionStatement:'commissionStatement', fleet:'vehicles', vehicles:'vehicles',
     payroll:'payroll', salarySlip:'salarySlip', childrenExpenses:'childrenExpenses',
-    appointments:'appointments', 'appointments-master':'appointmentsMaster', appointmentsMaster:'appointmentsMaster',
+    appointments:'appointments', 'appointments-master':'setup', appointmentsMaster:'setup',
     vehicleOperations:'vehicleOperations', vehicleOperationsReports:'vehicleOperationsReports', operationKpis:'operationKpis',
     settings:'settings', system:'settings', setup:'setup', permissions:'permissions', users:'users', audit:'audit'
   };

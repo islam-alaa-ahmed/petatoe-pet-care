@@ -70,7 +70,7 @@
       var G=window.PETATOENavigationPermissions;
       if(G&&typeof G.normalizeScreen==='function') return G.normalizeScreen(screen||'');
     }catch(e){}
-    var m={dashboard:'dashboardManagement',system:'settings',logs:'audit','appointments-master':'appointmentsMaster',warehouse:'warehouses'};
+    var m={dashboard:'dashboardManagement',system:'settings',logs:'audit','appointments-master':'setup',appointmentsMaster:'setup',warehouse:'vehicles',warehouses:'vehicles',fleet:'vehicles',entry:'sales',import:'sales',records:'reports',smart:'reports',customer360:'customers',executive:'reports'};
     return m[screen]||screen||'';
   }
   function navCan(screen){
