@@ -14,7 +14,7 @@
   function users(){var a=api();return a.users?a.users():[]}
   function audit(action,details,level){var a=api();try{if(a.audit)return a.audit(action,details,level)}catch(_){}}
   function renderUsers(){var a=api();if(a.render)return a.render('users')}
-  function roleNames(){return api().roleNames||{superadmin:'Super Admin',admin:'Admin',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',viewer:'Viewer'}}
+  function roleNames(){return api().roleNames||{superadmin:'Super Admin',admin:'Admin',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',driver:'Driver',groomer:'Groomer',driver_groomer:'Driver / Groomer',viewer:'Viewer'}}
   function currentUser(){var a=api();return a.currentUser?a.currentUser():{id:'',username:'Guest',fullName:'Guest',role:'guest',status:'inactive'}}
   function isSuperUser(u){var a=api();return a.isSuperUser?a.isSuperUser(u):!!(u&&(u.role==='superadmin'||u.role_code==='superadmin'||u.id==='u_admin'||String(u.username||'').toLowerCase()==='admin'))}
   function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}

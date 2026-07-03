@@ -5,7 +5,7 @@
   if(window.__PETATOE_SETTINGS_CORE_BOOTED__) return;
   window.__PETATOE_SETTINGS_CORE_BOOTED__=true;
   var MAIN_KEY='settings_main', SUB_KEY='settings_sub', USERS_KEY='app_users', ROLES_KEY='roles', CURRENT_KEY='app_current_user_ref', SEC_KEY='security_settings', SYSTEM_KEY='system_settings', AUDIT_KEY='audit_logs';
-  var roleNames={superadmin:'Super Admin',admin:'Admin',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',viewer:'Viewer'};
+  var roleNames={superadmin:'Super Admin',admin:'Admin',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',driver:'Driver',groomer:'Groomer',driver_groomer:'Driver / Groomer',viewer:'Viewer'};
   var perms=[['dashboard','عرض الرئيسية'],['entry','إدخال البيانات'],['reports','عرض التقارير'],['pdf','تصدير PDF'],['excel','تصدير Excel'],['treasury','عرض الخزنة'],['treasury_edit','تعديل/حذف الخزنة'],['vehicles','إدارة السيارات'],['obligations','إدارة الالتزامات'],['commissions','إدارة العمولات'],['appointments','إدارة المواعيد'],['childrenExpenses','مصروفات الأبناء'],['settings','الإعدادات'],['users','المستخدمون والصلاحيات']];
   var defaults={superadmin:perms.map(function(p){return p[0]}),admin:['dashboard','entry','reports','pdf','excel','treasury','treasury_edit','vehicles','obligations','commissions','childrenExpenses','settings','users'],accountant:['dashboard','entry','reports','pdf','excel','treasury','treasury_edit','obligations','settings'],sales:['dashboard','entry','reports','pdf','excel','vehicles'],fleet:['dashboard','reports','vehicles','treasury','treasury_edit'],viewer:['dashboard','reports']};
   function byId(id){return document.getElementById(id)}

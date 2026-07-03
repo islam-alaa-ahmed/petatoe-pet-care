@@ -4,7 +4,7 @@
 (function(){
   'use strict';
   var USERS_KEY='app_users', USER_PERMS_KEY='app_user_permissions', CURRENT_KEY='app_current_user_ref';
-  var roleNames={superadmin:'Super Admin',super_admin:'Super Admin',admin:'Admin',manager:'Manager',operations_manager:'Operations Manager',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',driver:'Driver',groomer:'Groomer',viewer:'Viewer'};
+  var roleNames={superadmin:'Super Admin',super_admin:'Super Admin',admin:'Admin',manager:'Manager',operations_manager:'Operations Manager',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',driver:'Driver',groomer:'Groomer',driver_groomer:'Driver / Groomer',viewer:'Viewer'};
   var screenPerms=[
     ['dashboardManagement','Dashboard الإدارة','لوحة المؤشرات المالية والإدارية للإدارة فقط'],
     ['dashboardOperations','Dashboard التشغيل','لوحة تشغيل مبسطة للسائقين والجرومرز ومشرفي التشغيل'],
@@ -99,7 +99,7 @@
   function defaultUserPerm(u){
     if(isSuperUser(u))return fullUserPerm();
     var o=emptyUserPerm(), r=normalizeRole(u);
-    if(r==='driver'||r==='groomer'){
+    if(r==='driver'||r==='groomer'||r==='driver_groomer'){
       grantScreen(o,'dashboardOperations',['view']);
       grantScreen(o,'vehicleOperations',['view','edit']);
       grantScreen(o,'salarySlip',['view']);
@@ -148,7 +148,7 @@
   function userKeyCandidates(u){
     var out=[],seen={};
     function add(v){v=String(v==null?'':v).trim();var k=v.toLowerCase();if(k&&!seen[k]){seen[k]=1;out.push(v)}}
-    if(u&&typeof u==='object'){add(u.id);add(u.userId);add(u.uid);add(u.username);add(u.login);add(u.name);add(u.fullName);add(u.full_name);add(u.email)}
+    if(u&&typeof u==='object'){add(u.id);add(u.userId);add(u.uid);add(u.supabase_id);add(u.row_id);add(u.username);add(u.login);add(u.name);add(u.fullName);add(u.full_name);add(u.email)}
     else add(u);
     return out;
   }
@@ -164,14 +164,20 @@
   function permissionRecordFor(store,u){
     store=store||{};
     var keys=userKeyCandidates(u);
-    for(var i=0;i<keys.length;i++){if(store[keys[i]])return store[keys[i]]}
-    return {};
+    for(var i=0;i<keys.length;i++){
+      if(Object.prototype.hasOwnProperty.call(store,keys[i]))return {found:true,perm:store[keys[i]]||{}};
+    }
+    return {found:false,perm:{}};
   }
   function getUserPerm(uid){
     var u=getUserById(uid);
     if(!u)return emptyUserPerm();
     if(isSuperUser(u))return fullUserPerm();
-    var store=userPermStore(), base=defaultUserPerm(u), saved=permissionRecordFor(store,u);
+    var store=userPermStore(), rec=permissionRecordFor(store,u), saved=rec.perm||{};
+    // PETATOE v8.0.2 Phase 13: explicit user permissions override role defaults.
+    // If a user has a saved permission record, start from empty permissions so unchecked screens stay denied.
+    // Role defaults are used only when no saved record exists at all.
+    var base=rec.found?emptyUserPerm():defaultUserPerm(u);
     screenPerms.forEach(function(s){var k=s[0], src=(saved.screens&&saved.screens[k])||{};base.screens[k]=Object.assign(base.screens[k]||{},src)});
     specialPerms.forEach(function(s){var k=s[0];if(saved.special&&Object.prototype.hasOwnProperty.call(saved.special,k))base.special[k]=!!saved.special[k]});
     base.vehicleScope=normalizeVehicleScope(saved.vehicleScope||base.vehicleScope);
