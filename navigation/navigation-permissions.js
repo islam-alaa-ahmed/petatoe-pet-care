@@ -64,6 +64,22 @@
   }
   function hideElement(el){ if(!el) return; el.style.display='none'; el.classList.add('pet-nav-hidden-by-permission'); el.setAttribute('aria-hidden','true'); }
   function showElement(el){ if(!el) return; el.style.display=''; el.classList.remove('pet-nav-hidden-by-permission'); el.removeAttribute('aria-hidden'); }
+  function permissionButtons(root){
+    return Array.prototype.slice.call((root||document).querySelectorAll('button[data-tab],button[data-settings-main],button[data-pet-nav-screen],button[data-pet-permission-screen]'));
+  }
+  function syncGroups(root){
+    Array.prototype.forEach.call((root||document).querySelectorAll('.pet-v142-group'),function(g){
+      var visible=Array.prototype.some.call(g.querySelectorAll('.pet-v142-items button'),function(b){return b.style.display!=='none';});
+      if(visible) showElement(g); else hideElement(g);
+    });
+  }
+  function applyPendingVisibility(root){
+    root=root||document.getElementById('nav'); if(!root) return;
+    var u=currentUser();
+    if(isSuperUser(u)) return;
+    permissionButtons(root).forEach(function(btn){ hideElement(btn); });
+    syncGroups(root);
+  }
 
   // PETATOE v8.0.2 Phase 3: defer menu permission filtering until the Supabase identity cache is actually ready.
   // Root cause: permissionsSync() starts async load and returns an empty cache on first boot, so early apply() hides items progressively.
@@ -90,18 +106,21 @@
   }
   function apply(root){
     root=root||document.getElementById('nav'); if(!root) return;
-    if(!identityReady()){ scheduleApply(root); return; }
+    if(!identityReady()){
+      // PETATOE v8.0.2 Phase 10: fail closed while permissions are loading.
+      // Root cause regression: Phase 7 builds the full menu DOM first; returning here left unauthorized screens visible until a later refresh/apply.
+      applyPendingVisibility(root);
+      scheduleApply(root);
+      return;
+    }
     deferredApplyAttempts = 0;
     var u=currentUser();
-    Array.prototype.forEach.call(root.querySelectorAll('button[data-tab],button[data-settings-main],button[data-pet-nav-screen],button[data-pet-permission-screen]'),function(btn){
+    permissionButtons(root).forEach(function(btn){
       var screen=screenFromButton(btn);
       var allowed=screen?hasAnyAction(u, screen):true;
       if(allowed) showElement(btn); else hideElement(btn);
     });
-    Array.prototype.forEach.call(root.querySelectorAll('.pet-v142-group'),function(g){
-      var visible=Array.prototype.some.call(g.querySelectorAll('.pet-v142-items button'),function(b){return b.style.display!=='none';});
-      if(visible) showElement(g); else hideElement(g);
-    });
+    syncGroups(root);
     // PETATOE v8.0.2 Phase 9: notify the canonical navigation after permission visibility changes
     // so active state is recalculated against visible/authorized buttons only.
     try{ document.dispatchEvent(new CustomEvent('petatoe:navigationpermissionsapplied',{detail:{root:root}})); }catch(_e){}
