@@ -187,6 +187,11 @@ function renderResults(keepFocus){ensureEntryUi();var active=document.activeElem
     }
     try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
     try{save()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    try{
+      if(window.PETATOEReferenceRegistry&&typeof window.PETATOEReferenceRegistry.syncSalesRows==='function'){
+        window.PETATOEReferenceRegistry.syncSalesRows(rows,{source:'manual-invoice'});
+      }
+    }catch(e){console.warn('PETATOE reference registry sync after manual invoice failed',e)}
     try{updateItemDatalist()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
     try{if(typeof renderRecords==='function')renderRecords()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
     try{if(window.PETATOESalesInvoiceReport&&window.PETATOESalesInvoiceReport.render)window.PETATOESalesInvoiceReport.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}

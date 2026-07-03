@@ -235,13 +235,17 @@
   function getVehicleList(){
     var out=[],seen={};
     try{
-      var ops=window.PETATOEOperationsStorage;
-      if(ops&&typeof ops.readMasterDataSync==='function'){
-        var md=ops.readMasterDataSync()||{};
-        (md.vehicleStaffLinks||md.vehicleAssignments||md.vehicles||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.vehicle||v.name||v.car,v.vehicle||v.name||v.car||v.id,'operations')});
+      var reg=window.PETATOEReferenceRegistry;
+      if(reg&&typeof reg.getVehicles==='function'){
+        (reg.getVehicles()||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.code||v.name||v.plate,v.name||v.vehicle||v.car||v.plate||v.id,v.plate||v.code||'setup')});
       }
     }catch(e){}
-    if(!out.length){['VAN A','VAN B'].forEach(function(v){addVehicleUnique(out,seen,v,v,'default')})}
+    try{
+      if(!out.length&&window.PETATOESetup&&typeof window.PETATOESetup.masterData==='function'){
+        var md=window.PETATOESetup.masterData(false)||{};
+        (md.cars||[]).forEach(function(v){if(!v.status||v.status==='active')addVehicleUnique(out,seen,v.id||v.code||v.name||v.plate,v.name||v.vehicle||v.car||v.plate||v.id,v.plate||v.code||'setup')});
+      }
+    }catch(e2){}
     return out.sort(function(a,b){return String(a.name).localeCompare(String(b.name),'ar')});
   }
   function defaultVehicleScope(){return {allVehicles:true,vehicles:[]}}

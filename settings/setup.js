@@ -72,8 +72,8 @@
       changed=addMasterAuto(d,'customers',rVal(r,['client','customer','customerName','clientName','name','العميل']),{code:rVal(r,['customerCode','clientCode','code']),phone:rVal(r,['phone','mobile','هاتف']),notes:'مستورد من الفواتير'})||changed;
       changed=addMasterAuto(d,'services',rVal(r,['item','itemName','service','serviceName','product','description','الصنف','الخدمة']),{category:'من الفواتير',price:rVal(r,['price','unitPrice','unit_price','سعر الوحدة']),description:'مستورد من الفواتير'})||changed;
     });
-    var fleet=safeLocalObj('PETATOE_FLEET_MANAGEMENT_V1',{vehicles:[]});
-    (fleet.vehicles||[]).forEach(function(v){changed=addMasterAuto(d,'cars',v.name||v.plate,{code:v.id||'',plate:v.plate||'',driver:v.driver||v.groomer||'',status:v.status||'active',notes:v.notes||'مستورد من إدارة السيارات'})||changed});
+    // Phase 22: إدارة التشغيل مستقلة بالكامل ولا تغذي بيانات التهيئة.
+    // بيانات التهيئة هنا تُغذى فقط من الفواتير/الإدخال/الرفع والخزنة.
     var txs=safeLocalArr('PETATOE_TREASURY_TRANSACTIONS_V1');
     txs.forEach(function(t){
       var v=t.vehicle||t.source||t.from||'';
@@ -88,7 +88,6 @@
     var carVaultSet={};
     (d.cars||[]).forEach(function(c){var n=String((c&&c.name)||'').trim(); if(n)carVaultSet[n]=1; var p=String((c&&c.plate)||'').trim(); if(p)carVaultSet[p]=1});
     rs.forEach(function(r){var n=String(rVal(r,['van','vehicle','car','carName','truck','السيارة'])||'').trim(); if(n)carVaultSet[n]=1});
-    (fleet.vehicles||[]).forEach(function(v){var n=String((v&&v.name)||(v&&v.plate)||'').trim(); if(n)carVaultSet[n]=1});
     Object.keys(carVaultSet).filter(Boolean).sort().forEach(function(v){
       if(String(v).indexOf('الخزنة الرئيسية')>-1)return;
       changed=addMasterAuto(d,'vaults','خزنة '+v,{code:'CAR-'+v.replace(/\s+/g,'_'),type:'car',balance:0,notes:'خزنة فرعية للسيارة - مستوردة تلقائيًا من بيانات السيارات والفواتير'})||changed;
@@ -158,10 +157,57 @@
   };
   if(!window.__PETATOE_SETUP_TAB_CLICK_BOUND__){window.__PETATOE_SETUP_TAB_CLICK_BOUND__=true;document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('[data-v120-setup-tab]');if(t){e.preventDefault();e.stopPropagation();var S=store();if(S&&S.set)S.set('pet_settings_v120_setup_tab',t.getAttribute('data-v120-setup-tab'));render('setup')}},true);}
 
+
+  function syncSalesRows(rows,options){
+    rows=Array.isArray(rows)?rows:[];
+    options=options||{};
+    if(!rows.length)return {ok:true,changed:false,rows:0};
+    var d=masterData(false), changed=false, source=String(options.source||'invoice-sync');
+    rows.forEach(function(r){
+      var car=rVal(r,['van','vehicle','car','carName','truck','السيارة']);
+      var customer=rVal(r,['client','customer','customerName','clientName','name','العميل']);
+      var service=rVal(r,['item','itemName','service','serviceName','product','description','الصنف','الخدمة']);
+      changed=addMasterAuto(d,'cars',car,{plate:'',driver:'',notes:'مستورد من '+source})||changed;
+      changed=addMasterAuto(d,'customers',customer,{code:rVal(r,['customerCode','clientCode','code']),phone:rVal(r,['phone','mobile','هاتف']),notes:'مستورد من '+source})||changed;
+      changed=addMasterAuto(d,'services',service,{category:'من الفواتير',price:rVal(r,['price','unitPrice','unit_price','سعر الوحدة']),description:'مستورد من '+source})||changed;
+      if(car){
+        changed=addMasterAuto(d,'vaults','خزنة '+String(car).trim(),{code:'CAR-'+String(car).trim().replace(/\s+/g,'_'),type:'car',balance:0,notes:'خزنة فرعية للسيارة - مستوردة من '+source})||changed;
+      }
+    });
+    changed=addMasterAuto(d,'vaults','الخزنة الرئيسية للمالك',{code:'MAIN',type:'main',balance:0,notes:'خزنة رئيسية'})||changed;
+    if(changed){
+      saveMasterData(d);
+      try{document.dispatchEvent(new CustomEvent('petatoe:reference-registry-updated',{detail:{source:source,rows:rows.length}}))}catch(_e){}
+    }
+    return {ok:true,changed:changed,rows:rows.length};
+  }
+  function getMasterList(type){var d=masterData(false);return ((d&&d[type])||[]).filter(function(x){return !x.status||x.status==='active'}).slice()}
+  function getVehicles(){return getMasterList('cars')}
+  function getCustomers(){return getMasterList('customers')}
+  function getServices(){return getMasterList('services')}
+  function getVaults(){return getMasterList('vaults')}
+
+  window.PETATOEReferenceRegistry={
+    syncSalesRows:syncSalesRows,
+    syncInvoices:syncSalesRows,
+    refreshFromInvoices:function(){return syncSalesRows(records(),{source:'existing-invoices'})},
+    masterData:masterData,
+    saveMasterData:saveMasterData,
+    getVehicles:getVehicles,
+    getCustomers:getCustomers,
+    getServices:getServices,
+    getVaults:getVaults,
+    __v:'phase22-reference-registry-invoice-treasury-only'
+  };
   window.PETATOESetup={
     renderSetupBody:function(settingsApi){currentApi=settingsApi||currentApi;return setupBody()},
     masterData:masterData,
     saveMasterData:saveMasterData,
-    setupTypeMeta:setupTypeMeta
+    setupTypeMeta:setupTypeMeta,
+    syncSalesRows:syncSalesRows,
+    getVehicles:getVehicles,
+    getCustomers:getCustomers,
+    getServices:getServices,
+    getVaults:getVaults
   };
 })();

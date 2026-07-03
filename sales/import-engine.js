@@ -332,6 +332,11 @@
       return false;
     }
 
+    try{
+      if(window.PETATOEReferenceRegistry&&typeof window.PETATOEReferenceRegistry.syncSalesRows==='function'){
+        window.PETATOEReferenceRegistry.syncSalesRows(uploadRows,{source:eventName||'excel-import'});
+      }
+    }catch(e){console.warn('PETATOE reference registry sync after import failed',e)}
     try{if(window.PETATOESmartTabs&&typeof window.PETATOESmartTabs.notifyDataChanged==='function')window.PETATOESmartTabs.notifyDataChanged(eventName||'import-confirmed');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/import-engine.js",e);}
     try{ if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex(); }catch(_e){}
     try{ if(typeof renderRecords==='function') renderRecords(); }catch(_e){}
