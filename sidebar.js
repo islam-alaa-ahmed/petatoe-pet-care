@@ -50,6 +50,9 @@
     nav.__petatoeFinalNavBound = true;
 
     nav.addEventListener('click', function(e){
+      // PETATOE v8.0.2 Phase 6: do not let the legacy accordion handler own clicks
+      // after navigation/navigation.js has rebuilt #nav as the canonical v142 menu.
+      if(nav.classList && nav.classList.contains('pet-v142-nav')) return;
       var groupBtn = e.target.closest && e.target.closest('.pet-nav-group-toggle');
       if(groupBtn && nav.contains(groupBtn)){
         e.preventDefault(); e.stopPropagation();

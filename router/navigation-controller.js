@@ -66,7 +66,19 @@
   }
   function bind(){
     var nav=byIdSafe('nav'); if(!nav||nav.__petatoeRouterFinalBound) return; nav.__petatoeRouterFinalBound=true;
-    nav.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('button[data-tab], .pet-nav-direct[data-tab]'); if(!b||!nav.contains(b)) return; e.preventDefault(); e.stopPropagation(); openTab(b.getAttribute('data-tab'),b.getAttribute('data-smart-open')||b.dataset.smartOpen||''); return false;},true);
+    nav.addEventListener('click',function(e){
+      // PETATOE v8.0.2 Phase 6: when the canonical v142 navigation is active,
+      // navigation/navigation.js owns menu click routing because it also carries
+      // data-pet-nav-screen, settings navigation, sub-tab intent, and permission guardClick.
+      // This legacy router listener must fail-open, otherwise it captures data-tab clicks
+      // first and checks only tabId, causing wrong permission/screen identity decisions.
+      if(nav.classList && nav.classList.contains('pet-v142-nav')) return;
+      var b=e.target.closest&&e.target.closest('button[data-tab], .pet-nav-direct[data-tab]');
+      if(!b||!nav.contains(b)) return;
+      e.preventDefault(); e.stopPropagation();
+      openTab(b.getAttribute('data-tab'),b.getAttribute('data-smart-open')||b.dataset.smartOpen||'');
+      return false;
+    },true);
   }
   window.PETATOENavigationController={openTab:openTab,currentTab:currentTab,bind:bind,markNav:markNav};
   window.PETATOERouter={openTab:openTab,currentTab:currentTab,bind:bind,current:currentTab()};
