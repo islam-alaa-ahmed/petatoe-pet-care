@@ -92,8 +92,22 @@
   }
   function hideElement(el){ if(!el) return; el.style.display='none'; el.classList.add('pet-nav-hidden-by-permission'); el.setAttribute('aria-hidden','true'); }
   function showElement(el){ if(!el) return; el.style.display=''; el.classList.remove('pet-nav-hidden-by-permission'); el.removeAttribute('aria-hidden'); }
+  // PETATOE v8.0.2 Phase 16: collect permission-controlled UI targets without touching inner feature tabs.
+  // Root cause: applying permissions only to #nav left header buttons and the currently active panel visible.
   function permissionButtons(root){
-    return Array.prototype.slice.call((root||document).querySelectorAll('button[data-tab],button[data-settings-main],button[data-pet-nav-screen],button[data-pet-permission-screen]'));
+    root=root||document;
+    var isNavRoot=(root.id==='nav')||(root.closest&&root.closest('#nav'));
+    var selector=isNavRoot
+      ? 'button[data-tab],button[data-settings-main],button[data-pet-nav-screen],button[data-pet-permission-screen]'
+      : '#nav button[data-tab],#nav button[data-settings-main],#nav button[data-pet-nav-screen],#nav button[data-pet-permission-screen],[data-pet-permission-screen],[data-pet-nav-screen],[data-settings-main]';
+    return Array.prototype.slice.call(root.querySelectorAll(selector)).filter(function(el){
+      if(!el) return false;
+      if(!isNavRoot && el.closest && el.closest('#nav')) return true;
+      if(el.hasAttribute&&el.hasAttribute('data-pet-permission-screen')) return true;
+      if(el.hasAttribute&&el.hasAttribute('data-pet-nav-screen')) return true;
+      if(el.hasAttribute&&el.hasAttribute('data-settings-main')) return true;
+      return false;
+    });
   }
   function syncGroups(root){
     Array.prototype.forEach.call((root||document).querySelectorAll('.pet-v142-group'),function(g){
@@ -102,11 +116,58 @@
     });
   }
   function applyPendingVisibility(root){
-    root=root||document.getElementById('nav'); if(!root) return;
+    root=root||document; if(!root) return;
     var u=currentUser();
     if(isSuperUser(u)) return;
     permissionButtons(root).forEach(function(btn){ hideElement(btn); });
     syncGroups(root);
+    enforceActivePanelPermission(u);
+  }
+
+  function panelScreen(panelId){
+    panelId=String(panelId||'');
+    var map={
+      dashboard:'dashboardManagement', dashboardManagement:'dashboardManagement', dashboardOperations:'dashboardOperations',
+      appointments:'appointments', vehicleOperations:'vehicleOperations', vehicleOperationsReports:'vehicleOperationsReports', operationKpis:'operationKpis',
+      smart:'reports', executive:'reports', records:'reports', logs:'audit', entry:'sales', import:'sales', sales:'sales',
+      customer360:'customers', services:'services', vans:'vehicles', warehouses:'vehicles', fleet:'vehicles',
+      treasury:'treasury', obligations:'obligations', payroll:'payroll', salarySlip:'salarySlip', commissionStatement:'commissionStatement',
+      childrenExpenses:'childrenExpenses', settings:'settings'
+    };
+    return normalizeScreen(map[panelId]||panelId);
+  }
+  function ensureNoAccessPanel(){
+    var p=document.getElementById('petatoeNoPermissionPanel');
+    if(p) return p;
+    p=document.createElement('div');
+    p.id='petatoeNoPermissionPanel';
+    p.className='panel';
+    p.setAttribute('data-pet-system-panel','no-permission');
+    p.innerHTML='<div class="card" style="margin:24px"><h2>غير متاح للصلاحية الحالية</h2><p>لا توجد شاشة مصرح بها لهذا المستخدم. راجع صلاحيات المستخدم من حساب Super Admin.</p></div>';
+    var main=document.querySelector('main.main')||document.querySelector('.main')||document.body;
+    main.appendChild(p);
+    return p;
+  }
+  function openFirstAllowedPanel(u){
+    var btns=permissionButtons(document).filter(function(b){
+      return b.style.display!=='none' && !(b.classList&&b.classList.contains('pet-nav-hidden-by-permission')) && screenFromButton(b) && hasAnyAction(u,screenFromButton(b));
+    });
+    for(var i=0;i<btns.length;i++){
+      var tab=btns[i].getAttribute('data-tab');
+      if(tab && document.getElementById(tab)){ try{btns[i].click(); return true;}catch(_e){} }
+    }
+    return false;
+  }
+  function enforceActivePanelPermission(u){
+    u=u||currentUser();
+    if(isSuperUser(u)) return;
+    var active=document.querySelector('.panel.active');
+    if(!active) return;
+    var screen=panelScreen(active.id);
+    if(screen && hasAnyAction(u,screen)) return;
+    if(openFirstAllowedPanel(u)) return;
+    Array.prototype.forEach.call(document.querySelectorAll('.panel.active'),function(p){p.classList.remove('active')});
+    ensureNoAccessPanel().classList.add('active');
   }
 
   // PETATOE v8.0.2 Phase 3: defer menu permission filtering until the Supabase identity cache is actually ready.
@@ -133,7 +194,7 @@
     }, 250);
   }
   function apply(root){
-    root=root||document.getElementById('nav'); if(!root) return;
+    root=root||document; if(!root) return;
     if(!identityReady()){
       // PETATOE v8.0.2 Phase 10: fail closed while permissions are loading.
       // Root cause regression: Phase 7 builds the full menu DOM first; returning here left unauthorized screens visible until a later refresh/apply.
@@ -149,6 +210,7 @@
       if(allowed) showElement(btn); else hideElement(btn);
     });
     syncGroups(root);
+    enforceActivePanelPermission(u);
     // PETATOE v8.0.2 Phase 9: notify the canonical navigation after permission visibility changes
     // so active state is recalculated against visible/authorized buttons only.
     try{ document.dispatchEvent(new CustomEvent('petatoe:navigationpermissionsapplied',{detail:{root:root}})); }catch(_e){}
@@ -160,8 +222,14 @@
     notify('غير متاح للصلاحية الحالية');
     return false;
   }
-  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase'};
-  try{ document.dispatchEvent(new CustomEvent('petatoe:navigationpermissionsready',{detail:{version:'v8.0.2-phase5'}})); }catch(_e){}
+  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase-phase16'};
+  document.addEventListener('click',function(e){
+    var el=e.target&&e.target.closest&&e.target.closest('[data-pet-permission-screen],[data-pet-nav-screen],[data-settings-main]');
+    if(!el) return;
+    if(el.closest&&el.closest('#nav')) return;
+    if(!guardClick(el)){ e.preventDefault(); e.stopPropagation(); return false; }
+  },true);
+  try{ document.dispatchEvent(new CustomEvent('petatoe:navigationpermissionsready',{detail:{version:'v8.0.2-phase16'}})); }catch(_e){}
   document.addEventListener('petatoe:navbuilt',function(e){ apply(e.detail&&e.detail.nav); });
   document.addEventListener('petatoe:permissionschanged',function(){ apply(); });
   document.addEventListener('petatoe:userchanged',function(){ apply(); });
