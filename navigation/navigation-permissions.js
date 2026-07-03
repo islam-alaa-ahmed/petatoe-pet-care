@@ -35,18 +35,24 @@
   }
   function isActive(u){ var s=String((u&&u.status)||'active').trim().toLowerCase(); return s==='active'||s==='نشط'; }
   function settingsScreen(screen){ screen=normalizeScreen(screen); return screen==='settings'||screen==='setup'||screen==='permissions'||screen==='users'||screen==='audit'; }
+  // PETATOE v8.0.2 Phase 15: strict user identity candidates.
+  // Do not match permissions by display name/fullName, because legacy duplicated names can leak permissions.
   function userIdCandidates(u){
     u=u||currentUser();
     var out=[], seen={};
-    function add(v){ v=String(v||'').trim(); if(v&&!seen[v]){ seen[v]=1; out.push(v); } }
-    add(u&&u.id); add(u&&u.userId); add(u&&u.uid); add(u&&u.username); add(u&&u.login); add(u&&u.name); add(u&&u.fullName); add(u&&u.full_name); add(u&&u.email);
+    function add(v){ v=String(v||'').trim(); var k=v.toLowerCase(); if(k&&!seen[k]){ seen[k]=1; out.push(v); } }
+    add(u&&u.id); add(u&&u.userId); add(u&&u.uid); add(u&&u.supabase_id); add(u&&u.row_id);
+    add(u&&u.username); add(u&&u.login); add(u&&u.email);
     try{
       var ids=window.PETATOEIdentityStore||null;
       var users=(ids&&typeof ids.usersSync==='function'&&ids.usersSync())||[];
       var keys=out.map(function(x){return String(x).trim().toLowerCase();});
       users.forEach(function(x){
-        var vals=[x.id,x.userId,x.uid,x.username,x.login,x.name,x.fullName,x.full_name,x.email].map(function(v){return String(v||'').trim().toLowerCase();}).filter(Boolean);
-        if(vals.some(function(v){return keys.indexOf(v)>-1;})){ add(x.id); add(x.userId); add(x.uid); add(x.username); }
+        var primary=[x.id,x.userId,x.uid,x.supabase_id,x.row_id].map(function(v){return String(v||'').trim().toLowerCase();}).filter(Boolean);
+        var login=[x.username,x.login,x.email].map(function(v){return String(v||'').trim().toLowerCase();}).filter(Boolean);
+        var primaryHit=primary.some(function(v){return keys.indexOf(v)>-1;});
+        var loginHit=login.some(function(v){return keys.indexOf(v)>-1;});
+        if(primaryHit||loginHit){ add(x.id); add(x.userId); add(x.uid); add(x.supabase_id); add(x.username); add(x.login); add(x.email); }
       });
     }catch(_e){}
     return out;
@@ -57,6 +63,7 @@
     if(isSuperUser(u)) return true;
     try{
       if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.can==='function'){
+        if(window.PETATOEPermissions.can(u, screen, action)) return true;
         var ids=userIdCandidates(u);
         for(var i=0;i<ids.length;i++){ if(window.PETATOEPermissions.can(ids[i], screen, action)) return true; }
       }

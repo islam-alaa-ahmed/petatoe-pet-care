@@ -144,26 +144,56 @@
   // PETATOE v8.0.2 Phase 12: strict user identity resolution for permissions.
   // Root cause: the old getUserById() returned us[0] when the requested user was not matched.
   // If us[0] was Super Admin, normal users could inherit full permissions during runtime checks.
+  // PETATOE v8.0.2 Phase 15: strict user identity resolution.
+  // Runtime permissions must never match a user by display name or fallback to another record.
+  // Matching priority: stable technical ids first, then username/login/email only when unique.
   function normalizeIdentityValue(v){return String(v==null?'':v).trim().toLowerCase()}
-  function userKeyCandidates(u){
+  function primaryUserKeys(u){
     var out=[],seen={};
     function add(v){v=String(v==null?'':v).trim();var k=v.toLowerCase();if(k&&!seen[k]){seen[k]=1;out.push(v)}}
-    if(u&&typeof u==='object'){add(u.id);add(u.userId);add(u.uid);add(u.supabase_id);add(u.row_id);add(u.username);add(u.login);add(u.name);add(u.fullName);add(u.full_name);add(u.email)}
+    if(u&&typeof u==='object'){add(u.id);add(u.userId);add(u.uid);add(u.supabase_id);add(u.row_id)}
     else add(u);
     return out;
   }
-  function sameUserKey(u,ref){
-    var a=userKeyCandidates(u).map(normalizeIdentityValue), b=userKeyCandidates(ref).map(normalizeIdentityValue);
+  function loginUserKeys(u){
+    var out=[],seen={};
+    function add(v){v=String(v==null?'':v).trim();var k=v.toLowerCase();if(k&&!seen[k]){seen[k]=1;out.push(v)}}
+    if(u&&typeof u==='object'){add(u.username);add(u.login);add(u.email)}
+    else add(u);
+    return out;
+  }
+  function permissionStoreKeys(u){
+    var out=[],seen={};
+    function add(v){v=String(v==null?'':v).trim();var k=v.toLowerCase();if(k&&!seen[k]){seen[k]=1;out.push(v)}}
+    primaryUserKeys(u).forEach(add); loginUserKeys(u).forEach(add);
+    return out;
+  }
+  function findUniqueByLoginKey(us,key){
+    key=normalizeIdentityValue(key); if(!key)return null;
+    var matches=(us||[]).filter(function(x){
+      return loginUserKeys(x).map(normalizeIdentityValue).indexOf(key)>-1;
+    });
+    return matches.length===1?matches[0]:null;
+  }
+  function samePrimaryUserKey(u,ref){
+    var a=primaryUserKeys(u).map(normalizeIdentityValue), b=primaryUserKeys(ref).map(normalizeIdentityValue);
     return a.some(function(x){return b.indexOf(x)>-1});
   }
   function getUserById(uid){
     var us=seedUsers(), ref=(uid&&typeof uid==='object')?uid:{id:uid,username:uid};
     if(!uid&&uid!==0)return null;
-    return us.find(function(x){return sameUserKey(x,ref)})||null;
+    var primary=us.find(function(x){return samePrimaryUserKey(x,ref)});
+    if(primary)return primary;
+    var loginKeys=loginUserKeys(ref);
+    for(var i=0;i<loginKeys.length;i++){
+      var unique=findUniqueByLoginKey(us,loginKeys[i]);
+      if(unique)return unique;
+    }
+    return null;
   }
   function permissionRecordFor(store,u){
     store=store||{};
-    var keys=userKeyCandidates(u);
+    var keys=permissionStoreKeys(u);
     for(var i=0;i<keys.length;i++){
       if(Object.prototype.hasOwnProperty.call(store,keys[i]))return {found:true,perm:store[keys[i]]||{}};
     }
@@ -178,12 +208,13 @@
     // Runtime access is controlled only by the saved per-user permission record.
     // Role defaults remain templates for creation/reset buttons, but they must not grant access automatically.
     var base=emptyUserPerm();
+    if(!rec.found)return base;
     screenPerms.forEach(function(s){var k=s[0], src=(saved.screens&&saved.screens[k])||{};base.screens[k]=Object.assign(base.screens[k]||{},src)});
     specialPerms.forEach(function(s){var k=s[0];if(saved.special&&Object.prototype.hasOwnProperty.call(saved.special,k))base.special[k]=!!saved.special[k]});
     base.vehicleScope=normalizeVehicleScope(saved.vehicleScope||base.vehicleScope);
     return base
   }
-  function saveUserPerm(uid,perm){var u=getUserById(uid);if(!u||isSuperUser(u))return Promise.resolve({ok:false,skipped:true});var store=userPermStore();store[u.id||uid]=perm;try{var ids=identity(); if(ids&&typeof ids.savePermission==='function') return ids.savePermission(u.id||uid,perm);}catch(e){try{console.warn('PETATOE save permission failed',e)}catch(_){}}return saveUserPermStore(store)||Promise.resolve({ok:true})}
+  function saveUserPerm(uid,perm){var u=getUserById(uid);if(!u||isSuperUser(u))return Promise.resolve({ok:false,skipped:true});var key=(primaryUserKeys(u)[0]||loginUserKeys(u)[0]||uid);var store=userPermStore();store[key]=perm;try{var ids=identity(); if(ids&&typeof ids.savePermission==='function') return ids.savePermission(key,perm);}catch(e){try{console.warn('PETATOE save permission failed',e)}catch(_){}}return saveUserPermStore(store)||Promise.resolve({ok:true})}
   function normalizeVehicleKey(v){return String(v==null?'':v).trim().toLowerCase().replace(/\s+/g,' ')}
   function addVehicleUnique(out,seen,id,name,meta){
     name=String(name||'').trim(); id=String(id||name||'').trim();
@@ -214,9 +245,10 @@
   function parseCurrentRef(raw){try{if(raw&&typeof raw==='object')return raw;var s=String(raw||'').trim();if(!s)return null;if((s.charAt(0)==='{'&&s.charAt(s.length-1)==='}')||(s.charAt(0)==='['&&s.charAt(s.length-1)===']'))return JSON.parse(s);return {id:s,username:s}}catch(_){return null}}
   function matchUserRef(us,ref){if(!ref)return null;var rid=String(ref.id||ref.userId||ref.uid||'').trim(), rn=String(ref.username||ref.name||ref.fullName||ref.login||'').trim().toLowerCase();return (us||[]).find(function(u){var uid=String(u.id||u.userId||u.uid||'').trim(), un=String(u.username||u.name||u.login||'').trim().toLowerCase(), fn=String(u.fullName||'').trim().toLowerCase();return (rid&&uid===rid)||(rid&&un===rid.toLowerCase())||(rid&&fn===rid.toLowerCase())||(rn&&un===rn)||(rn&&uid.toLowerCase()===rn)||(rn&&fn===rn)})||null}
   function currentUserId(){
-    try{if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'){var au=window.PETATOEAuth.currentUser(); if(au&&(au.id||au.username)) return au.id||au.username;}}catch(e){}
-    try{if(window.currentUser&&(window.currentUser.id||window.currentUser.username)) return window.currentUser.id||window.currentUser.username;}catch(e){}
-    var us=seedUsers(); var bootSuper=us.find(function(x){return isSuperUser(x)}); return (bootSuper&&bootSuper.id)||(us[0]&&us[0].id)||'';
+    try{if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'){var au=window.PETATOEAuth.currentUser(); if(au&&(au.id||au.userId||au.uid||au.username||au.login||au.email)) return au;}}catch(e){}
+    try{if(window.__PETATOE_ACTIVE_USER__&&(window.__PETATOE_ACTIVE_USER__.id||window.__PETATOE_ACTIVE_USER__.username||window.__PETATOE_ACTIVE_USER__.email)) return window.__PETATOE_ACTIVE_USER__;}catch(e){}
+    try{if(window.currentUser&&(window.currentUser.id||window.currentUser.username||window.currentUser.email)) return window.currentUser;}catch(e){}
+    return '';
   }
   function can(uid,screen,action){uid=uid||currentUserId();if(!uid)return false;var u=getUserById(uid);if(!u)return false;if(isSuperUser(u))return true;var p=getUserPerm(uid);return !!(p.screens&&p.screens[screen]&&p.screens[screen][action||'view'])}
   function canSpecial(uid,key){uid=uid||currentUserId();if(!uid)return false;var u=getUserById(uid);if(!u)return false;if(isSuperUser(u))return true;var p=getUserPerm(uid);return !!(p.special&&p.special[key])}
