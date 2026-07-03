@@ -112,6 +112,29 @@
     try{ localStorage.removeItem(STORAGE_KEY); }catch(_e){}
   }
 
+  function injectRestoreHoldStyle(){
+    try{
+      if(document.getElementById('petatoeNavRestoreHoldStyle')) return;
+      var st=document.createElement('style');
+      st.id='petatoeNavRestoreHoldStyle';
+      st.textContent='body.pet-nav-restore-hold .panel.active{visibility:hidden!important}';
+      (document.head||document.documentElement).appendChild(st);
+    }catch(_e){}
+  }
+  function releaseRestoreHold(){
+    try{ if(document.body) document.body.classList.remove('pet-nav-restore-hold'); }catch(_e){}
+  }
+  function applyInitialRestoreHold(){
+    try{
+      var s=loadState();
+      if(s && s.panel && s.panel !== 'dashboard' && document.body){
+        injectRestoreHoldStyle();
+        document.body.classList.add('pet-nav-restore-hold');
+        setTimeout(releaseRestoreHold,2600);
+      }
+    }catch(_e){}
+  }
+
   function openSettingsState(s){
     try{ window.__PETATOE_SETTINGS_MAIN__ = s.settingsMain || 'system'; window.__PETATOE_SETTINGS_SUB__ = s.settingsSub || ''; }catch(_e){}
     try{ if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function') window.PETATOERouter.openTab('settings'); }catch(_e){}
@@ -144,10 +167,10 @@
   function restoreNow(){
     if(RESTORE_DONE) return false;
     var s = loadState();
-    if(!s || !s.panel) return false;
+    if(!s || !s.panel){ releaseRestoreHold(); return false; }
     var uk = userKey();
     if(s.userKey && uk && s.userKey !== uk){ clear(); return false; }
-    if(!canOpenPanel(s.panel)) return false;
+    if(!canOpenPanel(s.panel)){ releaseRestoreHold(); return false; }
 
     RESTORE_DONE = true;
     RESTORE_FLAG = true;
@@ -160,7 +183,7 @@
       RESTORE_DONE = false;
       try{ console.warn('[PETATOE] nav state restore skipped', e); }catch(_e){}
     }finally{
-      setTimeout(function(){ RESTORE_FLAG = false; }, 1200);
+      setTimeout(function(){ RESTORE_FLAG = false; releaseRestoreHold(); }, 1200);
     }
     return true;
   }
@@ -175,6 +198,8 @@
       setTimeout(restoreNow, 1500);
     }, delay == null ? 250 : delay);
   }
+
+  applyInitialRestoreHold();
 
   document.addEventListener('petatoe:tabchange', function(){ scheduleSave('tabchange', 120); });
   document.addEventListener('petatoe:settingsnavigate', function(){ scheduleSave('settingsnavigate', 160); });
