@@ -324,7 +324,25 @@
   }
   function sumLines(lines){return (Array.isArray(lines)?lines:[]).reduce(function(s,x){return s+num(x.value)},0)}
   function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var gross=num(slip.base)+num(slip.housing)+num(slip.transport)+commission+num(slip.incentives)+additions;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,gross:gross,net:net}}
-  function employeeLinkedToCurrentUser(emp){if(!emp)return false;var u=currentUser();if(emp.userId)return String(emp.userId)===String(u.id||'');var keys=[norm(u.username),norm(u.fullName),norm(u.email),norm(u.phone)].filter(Boolean);var empKeys=[norm(emp.userKey),norm(emp.username),norm(emp.name),norm(emp.email),norm(emp.phone)].filter(Boolean);return keys.some(function(k){return empKeys.indexOf(k)>-1})}
+  function identityKeys(obj){
+    obj=obj||{};
+    var keys=[];
+    ['id','userId','uid','supabase_id','username','login','email','fullName','name','userKey','phone'].forEach(function(k){
+      var v=obj[k];
+      if(v!==null&&v!==undefined&&String(v).trim())keys.push(norm(v));
+    });
+    return keys.filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i});
+  }
+  function employeeLinkedToCurrentUser(emp){
+    if(!emp)return false;
+    var u=currentUser();
+    var userKeys=identityKeys(u);
+    var empKeys=identityKeys(emp);
+    /* Phase 32: employee.userId can be stored as username/login label (e.g. Brian),
+       while currentUser.id can be an internal/Supabase id. Do not fail on id-only mismatch;
+       compare all stable identity keys used by auth, users, and payroll linking. */
+    return userKeys.some(function(k){return empKeys.indexOf(k)>-1});
+  }
   function canEmployeeSee(slip){var emp=getEmployee(slip.employeeId);return employeeLinkedToCurrentUser(emp)}
   function lineInputsHtml(kind,lines){lines=Array.isArray(lines)?lines:[];return '<div class="payroll-lines" id="'+kind+'Lines">'+lines.map(function(x,i){return lineRowHtml(kind,i,x.name,x.value)}).join('')+'</div><button type="button" class="btn btn-ghost" data-payroll-action="add-line" data-payroll-kind="'+esc(kind)+'">+ إضافة بند</button>'}
   function lineRowHtml(kind,i,name,value){return '<div class="payroll-line" data-line-kind="'+kind+'"><input data-line-name="'+kind+'" placeholder="اسم البند" value="'+esc(name||'')+'"><input data-line-value="'+kind+'" type="number" step="0.01" placeholder="القيمة" value="'+esc(value||'')+'"><button type="button" class="btn btn-danger" data-payroll-action="remove-line">حذف</button></div>'}
@@ -543,6 +561,11 @@
     var tab=btn.getAttribute('data-payroll-tab')||'';
     var P=window.PETATOEPayroll||{};
     try{
+      /* Phase 32: payroll owns clicks inside payroll/salary panels.
+         Stop later generic handlers that treat any Arabic 'فتح' button as Customer 360/D360. */
+      e.preventDefault();
+      e.stopPropagation();
+      if(typeof e.stopImmediatePropagation==='function')e.stopImmediatePropagation();
       if(action==='remove-line'){var row=btn.closest('.payroll-line');if(row)row.remove();return}
       if(action==='back-to-monthly-slips'){if(window.PETATOERouter&&PETATOERouter.openTab){PETATOERouter.openTab('payroll');setTimeout(function(){if(P.openTab)P.openTab('monthly')},80)}return}
       var map={
@@ -578,7 +601,7 @@
         'export-monthly-report-pdf':function(){P.exportMonthlyReportPdf&&P.exportMonthlyReportPdf()},
         'export-monthly-report-csv':function(){P.exportMonthlyReportCsv&&P.exportMonthlyReportCsv()}
       };
-      if(map[action]){e.preventDefault();map[action]()}
+      if(map[action]){map[action]()}
     }catch(err){console.warn('PETATOEPayroll delegated action failed',action,err)}
   }
   function payrollDelegatedChange(e){
