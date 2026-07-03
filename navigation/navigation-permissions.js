@@ -94,8 +94,20 @@
     if(sm) return normalizeScreen(sm);
     return normalizeScreen(btn.getAttribute('data-pet-nav-screen')||btn.getAttribute('data-pet-permission-screen')||btn.getAttribute('data-tab')||'');
   }
-  function hideElement(el){ if(!el) return; el.style.display='none'; el.classList.add('pet-nav-hidden-by-permission'); el.setAttribute('aria-hidden','true'); }
-  function showElement(el){ if(!el) return; el.style.display=''; el.classList.remove('pet-nav-hidden-by-permission'); el.removeAttribute('aria-hidden'); }
+  function hideElement(el){
+    if(!el) return;
+    // PETATOE v8.0.2 Phase 19: right-sidebar CSS uses display:flex!important.
+    // Inline display='none' without priority is overridden, so unauthorized nav items stayed visible.
+    try{ el.style.setProperty('display','none','important'); }catch(_e){ el.style.display='none'; }
+    el.classList.add('pet-nav-hidden-by-permission');
+    el.setAttribute('aria-hidden','true');
+  }
+  function showElement(el){
+    if(!el) return;
+    try{ el.style.removeProperty('display'); }catch(_e){ el.style.display=''; }
+    el.classList.remove('pet-nav-hidden-by-permission');
+    el.removeAttribute('aria-hidden');
+  }
   // PETATOE v8.0.2 Phase 16: collect permission-controlled UI targets without touching inner feature tabs.
   // Root cause: applying permissions only to #nav left header buttons and the currently active panel visible.
   function permissionButtons(root){
@@ -226,7 +238,7 @@
     notify('غير متاح للصلاحية الحالية');
     return false;
   }
-  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase-phase18-engine'};
+  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase-phase19-right-sidebar-binding'};
   document.addEventListener('click',function(e){
     var el=e.target&&e.target.closest&&e.target.closest('[data-pet-permission-screen],[data-pet-nav-screen],[data-settings-main]');
     if(!el) return;
