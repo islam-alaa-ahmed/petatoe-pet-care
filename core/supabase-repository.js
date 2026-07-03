@@ -18,10 +18,27 @@
     var res=await q;
     if(res.error){ console.warn('PETATOESupabaseRepository list failed', table, resultError(res)); return []; }
     return (Array.isArray(res.data)?res.data:[]).map(function(row){
-      var data=row && row.data && typeof row.data==='object' ? clone(row.data) : {};
-      if(row && row.id != null && data.id == null) data.id=row.id;
+      row=row||{};
+      var data={};
+      if(row.data && typeof row.data==='object') data=clone(row.data);
+      else if(row.legacy_payload && typeof row.legacy_payload==='object') data=clone(row.legacy_payload);
+      data=data&&typeof data==='object'?data:{};
+      if(row.id != null && data.id == null) data.id=row.id;
+      if(table==='payroll_slips'){
+        data.employeeId=data.employeeId||data.employee_id||row.employee_id||'';
+        data.period=data.period||row.period||'';
+        data.status=data.status||row.status||'';
+        data.paymentMethod=data.paymentMethod||data.payment_method||row.payment_method||'';
+        data.netAmount=data.netAmount||data.net_amount||row.net_amount||0;
+        data.updatedAt=data.updatedAt||row.updated_at||'';
+      }
       return data;
     });
+  }
+
+  function missingColumn(err, col){
+    var msg=String(err||'').toLowerCase();
+    return msg.indexOf('could not find')>-1 && msg.indexOf(String(col||'').toLowerCase())>-1;
   }
 
   async function upsertJsonRow(table, id, data, extra){
@@ -29,10 +46,31 @@
     if(!hasClient()) return { ok:false, error:'Supabase client not ready' };
     data=data&&typeof data==='object'?clone(data):{};
     data.id=data.id||id;
-    var payload=Object.assign({ id:String(id), data:data, updated_at:new Date().toISOString() }, extra||{});
+    var base={ id:String(id), updated_at:new Date().toISOString() };
+    var extraPayload=extra||{};
+    var payload=Object.assign({}, base, { data:data }, extraPayload);
     var res=await client().from(table).upsert(payload, { onConflict:'id' });
-    if(res.error){ console.warn('PETATOESupabaseRepository upsert failed', table, resultError(res)); return { ok:false, error:resultError(res) }; }
-    return { ok:true, data:res.data };
+    if(!res.error) return { ok:true, data:res.data };
+
+    var err=resultError(res);
+    if(missingColumn(err,'data')){
+      var legacyPayload=Object.assign({}, base, { legacy_payload:data }, extraPayload);
+      var legacyRes=await client().from(table).upsert(legacyPayload, { onConflict:'id' });
+      if(!legacyRes.error) return { ok:true, data:legacyRes.data, schemaFallback:'legacy_payload' };
+      var legacyErr=resultError(legacyRes);
+      if(table==='payroll_slips' && missingColumn(legacyErr,'legacy_payload')){
+        var flat=Object.assign({}, base, extraPayload);
+        var flatRes=await client().from(table).upsert(flat, { onConflict:'id' });
+        if(!flatRes.error) return { ok:true, data:flatRes.data, schemaFallback:'flat' };
+        console.warn('PETATOESupabaseRepository upsert failed', table, resultError(flatRes));
+        return { ok:false, error:resultError(flatRes) };
+      }
+      console.warn('PETATOESupabaseRepository upsert failed', table, legacyErr);
+      return { ok:false, error:legacyErr };
+    }
+
+    console.warn('PETATOESupabaseRepository upsert failed', table, err);
+    return { ok:false, error:err };
   }
 
   async function deleteById(table, id){
