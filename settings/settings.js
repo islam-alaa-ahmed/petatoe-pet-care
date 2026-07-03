@@ -51,10 +51,28 @@
   function parseCurrentRef(raw){try{if(raw&&typeof raw==='object')return raw;var s=String(raw||'').trim();if(!s)return null;if((s.charAt(0)==='{'&&s.charAt(s.length-1)==='}')||(s.charAt(0)==='['&&s.charAt(s.length-1)===']'))return JSON.parse(s);return {id:s,username:s}}catch(_){return null}}
   function matchCurrentUser(us,ref){if(!ref)return null;var rid=String(ref.id||ref.userId||ref.uid||'').trim(), rn=String(ref.username||ref.name||ref.fullName||ref.login||'').trim().toLowerCase();return (us||[]).find(function(u){var uid=String(u.id||u.userId||u.uid||'').trim(), un=String(u.username||u.name||u.login||'').trim().toLowerCase(), fn=String(u.fullName||'').trim().toLowerCase();return (rid&&uid===rid)||(rid&&un===rid.toLowerCase())||(rid&&fn===rid.toLowerCase())||(rn&&un===rn)||(rn&&uid.toLowerCase()===rn)||(rn&&fn===rn)})||null}
   function storageValues(k){var a=[];try{if(window.PETATOE_CURRENT_USER_REF)a.push(String(window.PETATOE_CURRENT_USER_REF));}catch(_){}return a}
-  function currentUser(){seed();var us=users(), keys=['app_current_user_ref'];var refs=[],seen={};function add(r){if(!r)return;var key='';try{key=JSON.stringify(r)}catch(_){key=String(r)}if(!seen[key]){seen[key]=true;refs.push(r)}}keys.forEach(function(k){storageValues(k).forEach(function(v){add(parseCurrentRef(v))})});try{if(window.currentUser)add(parseCurrentRef(window.currentUser))}catch(_){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('settings/settings.js', _, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }for(var i=0;i<refs.length;i++){var direct=refs[i];if(isSuperUser(direct))return Object.assign({id:'u_admin',username:'Admin',fullName:'Admin',role:'superadmin',status:'active'},direct,{role:direct.role||'superadmin',status:direct.status||'active'});var m=matchCurrentUser(us,direct);if(m&&isSuperUser(m))return m}for(var j=0;j<refs.length;j++){var f=matchCurrentUser(us,refs[j]);if(f)return f}
-    var bootSuper=us.find(function(x){return isSuperUser(x)});
-    if(bootSuper)return Object.assign({status:'active'},bootSuper,{status:bootSuper.status||'active'});
-    return {id:'u_admin',username:'Admin',fullName:'Admin',role:'superadmin',status:'active',__bootstrap:true}}
+  function currentUser(){
+    seed();
+    var us=users();
+    function validRef(r){return r&&typeof r==='object'&&(r.id||r.userId||r.uid||r.username||r.login||r.email)}
+    function canonicalRef(){
+      try{if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'){var a=window.PETATOEAuth.currentUser();if(validRef(a))return a}}catch(_e){}
+      try{if(validRef(window.__PETATOE_ACTIVE_USER__))return window.__PETATOE_ACTIVE_USER__;if(validRef(window.currentUser))return window.currentUser}catch(_e){}
+      return null;
+    }
+    var canonical=canonicalRef();
+    if(canonical){
+      var matched=matchCurrentUser(us,canonical);
+      if(matched)return matched;
+      if(isSuperUser(canonical))return Object.assign({id:'u_admin',username:'Admin',fullName:'Admin',role:'superadmin',status:'active'},canonical,{role:canonical.role||'superadmin',status:canonical.status||'active'});
+      return Object.assign({id:'',username:'Guest',fullName:'Guest',role:'guest',status:'inactive'},canonical);
+    }
+    var refs=[],seen={};
+    function add(r){if(!r)return;var key='';try{key=JSON.stringify(r)}catch(_e){key=String(r)}if(!seen[key]){seen[key]=true;refs.push(r)}}
+    storageValues('app_current_user_ref').forEach(function(v){add(parseCurrentRef(v))});
+    for(var j=0;j<refs.length;j++){var f=matchCurrentUser(us,refs[j]);if(f)return f}
+    return {id:'',username:'Guest',fullName:'Guest',role:'guest',status:'inactive'}
+  }
   function system(){return Object.assign({companyName:'PETATOE',currency:'SAR',monthlyTarget:92000,vatRate:15,language:'ar',theme:document.documentElement.getAttribute('data-theme')||'dark'},read(SYSTEM_KEY,{}))}
   function saveSystem(v){write(SYSTEM_KEY,Object.assign(system(),v||{}))}
   function security(){var sec=window.PETATOEPasswordSecurity;if(sec&&sec.migrateSecurity)sec.migrateSecurity();return Object.assign({lockDelete:true,requireEditReason:true,requireDeleteReason:true,enableAudit:true,protectReports:false,sensitiveAmount:10000,managerPasswordHash:null},read(SEC_KEY,{}))}

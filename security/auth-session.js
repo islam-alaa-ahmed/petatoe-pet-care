@@ -147,12 +147,24 @@
     return {ok:true,user:merged};
   }
 
+  function clearLegacyUserRefs(){
+    ['app_current_user_ref','PETATOE_CURRENT_USER','petatoe_current_user_v108','petatoe_current_user_v139','petatoe_current_user'].forEach(function(k){ rawRemove(k); try{ localStorage.removeItem(k); }catch(_e){} });
+  }
   function writeCurrentUser(user){
     if(!user) return;
-    try{ window.currentUser = user; window.__PETATOE_ACTIVE_USER__ = user; rawSet('currentUser', user.id || user.username || ''); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
+    try{
+      clearLegacyUserRefs();
+      window.currentUser = user;
+      window.__PETATOE_ACTIVE_USER__ = user;
+      rawSet('currentUser', user.id || user.username || '');
+      rawSet('app_current_user_ref', JSON.stringify({id:user.id||'',username:user.username||user.login||'',email:user.email||'',role:user.role||'',status:user.status||'active'}));
+      try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged',{detail:{user:user,source:'auth-session'}})); }catch(_e){}
+      try{ document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:user.id||user.username||''}})); }catch(_e){}
+    }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
   }
   function clearCurrentUser(){
     rawRemove('currentUser');
+    clearLegacyUserRefs();
     try{ window.currentUser = null; window.__PETATOE_ACTIVE_USER__ = null; }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
   }
   function setLoggedInClass(on){
