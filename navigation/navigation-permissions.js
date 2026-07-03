@@ -111,6 +111,7 @@
     return false;
   }
   window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase'};
+  try{ document.dispatchEvent(new CustomEvent('petatoe:navigationpermissionsready',{detail:{version:'v8.0.2-phase5'}})); }catch(_e){}
   document.addEventListener('petatoe:navbuilt',function(e){ apply(e.detail&&e.detail.nav); });
   document.addEventListener('petatoe:permissionschanged',function(){ apply(); });
   document.addEventListener('petatoe:userchanged',function(){ apply(); });

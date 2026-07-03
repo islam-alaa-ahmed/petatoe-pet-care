@@ -78,15 +78,18 @@
     if(!screen) return false;
     try{
       var G=window.PETATOENavigationPermissions;
+      // PETATOE v8.0.2 Phase 5: fail-open while the navigation permission module is still loading.
+      // Root cause: build() permanently removes items before apply()/guardClick can run when this file loads first.
+      if(!G) return true;
       // PETATOE v8.0.2 Phase 4: use canOpen() before hasAnyAction().
       // canOpen() contains the Phase 3 readiness guard; hasAnyAction() must only run after identity is ready.
-      if(G&&typeof G.canOpen==='function') return !!G.canOpen(screen);
-      if(G&&typeof G.hasAnyAction==='function') return !!G.hasAnyAction(G.currentUser&&G.currentUser(),screen);
+      if(typeof G.canOpen==='function') return !!G.canOpen(screen);
+      if(typeof G.hasAnyAction==='function') return !!G.hasAnyAction(G.currentUser&&G.currentUser(),screen);
       var P=window.PETATOEPermissions, A=window.PETATOEAuth&&window.PETATOEAuth.currentUser?window.PETATOEAuth.currentUser():window.currentUser;
       var uid=A&&(A.id||A.username);
       if(P&&P.can&&uid) return ['view','add','edit','delete'].some(function(a){return P.can(uid,screen,a)});
     }catch(e){}
-    return false;
+    return true;
   }
   function itemScreen(it){
     it=it||{};
@@ -222,9 +225,23 @@
     // settings must stay collapsed by default on dashboard. Open only when active inside settings/logs or when user clicks.
     if(active==='dashboard') closeOpen(nav,''); else closeOpen(nav,groupId);
   }
+  var buildTimer=null;
   function force(){build();}
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',force); else force();
-  window.addEventListener('load',function(){setTimeout(force,30); setTimeout(force,350); setTimeout(force,1400);});
-  setTimeout(force,700); setTimeout(force,1800); setTimeout(force,3200);
+  function scheduleBuild(delay){
+    if(buildTimer) clearTimeout(buildTimer);
+    buildTimer=setTimeout(function(){buildTimer=null; force();}, delay||0);
+  }
+  function buildIfMissing(delay){
+    setTimeout(function(){
+      var nav=petBlock7937_q('#nav');
+      if(!nav||!nav.classList.contains('pet-v142-nav')) scheduleBuild(0);
+    }, delay||0);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){scheduleBuild(0);}); else scheduleBuild(0);
+  window.addEventListener('load',function(){buildIfMissing(80); buildIfMissing(800);});
+  document.addEventListener('petatoe:navigationpermissionsready',function(){scheduleBuild(30);});
+  document.addEventListener('petatoe:permissionschanged',function(){scheduleBuild(30);});
+  document.addEventListener('petatoe:userchanged',function(){scheduleBuild(30);});
+  window.addEventListener('petatoe:identity-ready',function(){scheduleBuild(30);});
   document.addEventListener('petatoe:tabchange',function(){setTimeout(markActive,60)});
 })();
