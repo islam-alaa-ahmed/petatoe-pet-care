@@ -122,13 +122,17 @@
     nav.id='nav'; nav.className='nav pet-v142-nav'; clearNode(nav);
 
     function appendGroup(id,label,items){
-      var allowed=(items||[]).filter(itemAllowed);
-      if(!allowed.length) return false;
+      // PETATOE v8.0.2 Phase 7: build the canonical menu DOM first, then let
+      // PETATOENavigationPermissions.apply() hide unauthorized items after identity readiness.
+      // Root cause: pre-filtering here permanently removed buttons when user/permissions were still loading,
+      // so later permission readiness guards could not restore them without another full rebuild.
+      var list=(items||[]);
+      if(!list.length) return false;
       var wrap=document.createElement('div'); wrap.className='pet-v142-group'; wrap.setAttribute('data-group',id);
       var head=document.createElement('button'); head.type='button'; head.className='pet-v142-toggle'; head.setAttribute('data-v142-toggle',id);
       setToggleLabel(head,label);
       var body=document.createElement('div'); body.className='pet-v142-items';
-      allowed.forEach(function(it){ body.appendChild(itemButton(it)); });
+      list.forEach(function(it){ body.appendChild(itemButton(it)); });
       wrap.appendChild(head); wrap.appendChild(body); nav.appendChild(wrap);
       return true;
     }
@@ -148,10 +152,9 @@
     }
 
     var childItem={tab:'childrenExpenses',screen:'childrenExpenses',title:'👨‍👧‍👦 مصروفات الأبناء',sub:''};
-    if(itemAllowed(childItem)){
-      var childExpenses=document.createElement('button'); childExpenses.type='button'; childExpenses.className='pet-v142-direct'; childExpenses.setAttribute('data-tab','childrenExpenses'); childExpenses.setAttribute('data-pet-permission-screen','childrenExpenses'); setDirectLabel(childExpenses,'👨‍👧‍👦 مصروفات الأبناء');
-      nav.appendChild(childExpenses);
-    }
+    // PETATOE v8.0.2 Phase 7: keep direct buttons in DOM; permission apply() owns visibility.
+    var childExpenses=document.createElement('button'); childExpenses.type='button'; childExpenses.className='pet-v142-direct'; childExpenses.setAttribute('data-tab','childrenExpenses'); childExpenses.setAttribute('data-pet-permission-screen','childrenExpenses'); setDirectLabel(childExpenses,'👨‍👧‍👦 مصروفات الأبناء');
+    nav.appendChild(childExpenses);
 
     groups.forEach(function(g){ appendGroup(g.id,g.label,g.items||[]); });
     bind(nav); markActive();
