@@ -62,10 +62,11 @@
     if(!screen) return false;
     if(isSuperUser(u)) return true;
     try{
+      if(window.PETATOEPermissionEngine&&typeof window.PETATOEPermissionEngine.decision==='function'){
+        return !!window.PETATOEPermissionEngine.decision(u||currentUser(),screen,action).allow;
+      }
       if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.can==='function'){
-        if(window.PETATOEPermissions.can(u, screen, action)) return true;
-        var ids=userIdCandidates(u);
-        for(var i=0;i<ids.length;i++){ if(window.PETATOEPermissions.can(ids[i], screen, action)) return true; }
+        return !!window.PETATOEPermissions.can(u||currentUser(), screen, action);
       }
     }catch(e){}
     return false;
@@ -74,11 +75,14 @@
     screen=normalizeScreen(screen);
     if(!screen) return false;
     if(isSuperUser(u)) return true;
-    return ['view','add','edit','delete','export','approve','print'].some(function(a){ return canPermission(u, screen, a); });
+    try{
+      if(window.PETATOEPermissionEngine&&typeof window.PETATOEPermissionEngine.canAny==='function') return !!window.PETATOEPermissionEngine.canAny(u||currentUser(),screen);
+    }catch(_e){}
+    return ['view','add','edit','delete'].some(function(a){ return canPermission(u, screen, a); });
   }
   function canOpen(screen){
     screen=normalizeScreen(screen);
-    if(!identityReady()) return true;
+    if(!identityReady()) return false;
     var u=currentUser();
     if(isSuperUser(u)) return true;
     if(!u||!isActive(u)||!(u.id||u.username)) return false;
@@ -222,14 +226,14 @@
     notify('غير متاح للصلاحية الحالية');
     return false;
   }
-  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase-phase16'};
+  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase-phase18-engine'};
   document.addEventListener('click',function(e){
     var el=e.target&&e.target.closest&&e.target.closest('[data-pet-permission-screen],[data-pet-nav-screen],[data-settings-main]');
     if(!el) return;
     if(el.closest&&el.closest('#nav')) return;
     if(!guardClick(el)){ e.preventDefault(); e.stopPropagation(); return false; }
   },true);
-  try{ document.dispatchEvent(new CustomEvent('petatoe:navigationpermissionsready',{detail:{version:'v8.0.2-phase16'}})); }catch(_e){}
+  try{ document.dispatchEvent(new CustomEvent('petatoe:navigationpermissionsready',{detail:{version:'v8.0.2-phase18'}})); }catch(_e){}
   document.addEventListener('petatoe:navbuilt',function(e){ apply(e.detail&&e.detail.nav); });
   document.addEventListener('petatoe:permissionschanged',function(){ apply(); });
   document.addEventListener('petatoe:userchanged',function(){ apply(); });
