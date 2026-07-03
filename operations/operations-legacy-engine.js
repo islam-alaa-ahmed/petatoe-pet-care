@@ -716,13 +716,6 @@
     if(v){var ov=v.value;safeHtml(v,optionList(cars,'اختر السيارة',ov),'operations master vehicle select')}
     if(g){var og=g.value;safeHtml(g,optionList(groomers,'اختر الجرومر',og),'operations master groomer select')}
     if(d){var od=d.value;safeHtml(d,optionList(drivers,'اختر السائق',od),'operations master driver select')}
-    var lists=byId('appointmentOperationResourcesList');
-    if(lists){
-      var vehiclePills=cars.map(function(x){return '<span class="appointments-master-pill">'+esc(x)+'</span>'}).join('')||'<span class="appointments-empty appointments-master-empty">لا توجد سيارات في بيانات التهيئة</span>';
-      var groomerPills=groomers.map(function(x){return '<span class="appointments-master-pill">'+esc(x)+'</span>'}).join('')||'<span class="appointments-empty appointments-master-empty">لا يوجد جرومرز نشطون في إدارة الرواتب</span>';
-      var driverPills=drivers.map(function(x){return '<span class="appointments-master-pill">'+esc(x)+'</span>'}).join('')||'<span class="appointments-empty appointments-master-empty">لا يوجد سائقون نشطون في إدارة الرواتب</span>';
-      safeHtml(lists,'<div><b>السيارات من بيانات التهيئة</b><div class="appointments-master-list">'+vehiclePills+'</div></div><div><b>الجرومرز من إدارة الرواتب</b><div class="appointments-master-list">'+groomerPills+'</div></div><div><b>السائقين من إدارة الرواتب</b><div class="appointments-master-list">'+driverPills+'</div></div>','operations resources lists');
-    }
     var body=byId('appointmentMasterVehicleStaffList'); if(!body)return;
     var assignmentRows=(master.vehicleAssignments||[]).map(cleanVehicleAssignment).filter(Boolean);
     var html=assignmentRows.length?assignmentRows.map(function(r){
