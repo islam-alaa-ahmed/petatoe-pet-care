@@ -232,6 +232,14 @@
     seen[key]=1;
     out.push({id:id||name,name:name||id,meta:meta||''});
   }
+  function collectSetupVehicles(out,seen,forceSync){
+    try{
+      if(window.PETATOESetup&&typeof window.PETATOESetup.masterData==='function'){
+        var md=window.PETATOESetup.masterData(!!forceSync)||{};
+        (md.cars||[]).forEach(function(v){if(!v.status||v.status==='active')addVehicleUnique(out,seen,v.id||v.code||v.name||v.plate,v.name||v.vehicle||v.car||v.plate||v.id,v.plate||v.code||'setup')});
+      }
+    }catch(e){}
+  }
   function getVehicleList(){
     var out=[],seen={};
     try{
@@ -240,12 +248,16 @@
         (reg.getVehicles()||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.code||v.name||v.plate,v.name||v.vehicle||v.car||v.plate||v.id,v.plate||v.code||'setup')});
       }
     }catch(e){}
-    try{
-      if(!out.length&&window.PETATOESetup&&typeof window.PETATOESetup.masterData==='function'){
-        var md=window.PETATOESetup.masterData(false)||{};
-        (md.cars||[]).forEach(function(v){if(!v.status||v.status==='active')addVehicleUnique(out,seen,v.id||v.code||v.name||v.plate,v.name||v.vehicle||v.car||v.plate||v.id,v.plate||v.code||'setup')});
-      }
-    }catch(e2){}
+    collectSetupVehicles(out,seen,false);
+    // Phase 23: if the setup registry has not been hydrated yet, backfill it from existing invoice records.
+    // This keeps vehicle permissions sourced from Setup Reference Data without touching Operations data.
+    if(!out.length){
+      try{
+        var reg2=window.PETATOEReferenceRegistry;
+        if(reg2&&typeof reg2.refreshFromInvoices==='function')reg2.refreshFromInvoices();
+      }catch(e2){}
+      collectSetupVehicles(out,seen,true);
+    }
     return out.sort(function(a,b){return String(a.name).localeCompare(String(b.name),'ar')});
   }
   function defaultVehicleScope(){return {allVehicles:true,vehicles:[]}}
