@@ -670,18 +670,58 @@
     var html=rows.length?rows.map(function(c){return '<tr><td>'+esc(c.code||'-')+'</td><td>'+esc(c.name||'-')+'</td><td>'+esc(c.address||'-')+'</td><td>'+esc(c.phone||'-')+'</td><td><button type="button" class="appointments-master-action" data-op-click="editMasterCustomer" data-op-arg1="'+esc(c.code)+'">تعديل</button><button type="button" class="appointments-master-action danger" data-op-click="removeMasterCustomer" data-op-arg1="'+esc(c.code)+'">حذف</button></td></tr>'}).join(''):'<tr><td colspan="5" class="appointments-empty appointments-master-empty">لا توجد بيانات عملاء</td></tr>';
     safeHtml(body,html,'operations master customers table');
   }
+  function setupVehicleNamesForAppointments(){
+    var names=[];
+    try{
+      var api=window.PETATOESetup||window.PETATOEReferenceRegistry||null;
+      var rows=(api&&typeof api.getVehicles==='function')?api.getVehicles():[];
+      (Array.isArray(rows)?rows:[]).forEach(function(v){
+        if(!v)return;
+        if(v.status&&String(v.status)!=='active')return;
+        names.push(v.name||v.vehicle||v.car||v.plate||v.code||'');
+      });
+    }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('operations appointment setup vehicle source',e);}
+    return normalizeNamedList(names);
+  }
+  function payrollRowsForAppointments(){
+    var rows=[];
+    try{
+      if(window.PETATOEPayrollReadFacade&&typeof window.PETATOEPayrollReadFacade.employees==='function')rows=window.PETATOEPayrollReadFacade.employees()||[];
+    }catch(e){rows=[];window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('operations appointment payroll facade source',e);}
+    if(!Array.isArray(rows)||!rows.length){
+      try{rows=readKey('PETATOE_PAYROLL_EMPLOYEES_V1',[])||[]}catch(_e){rows=[]}
+    }
+    return Array.isArray(rows)?rows:[];
+  }
+  function payrollEmployeeNamesByJob(kind){
+    var isDriver=kind==='driver';
+    var out=[];
+    payrollRowsForAppointments().forEach(function(e){
+      if(!e)return;
+      var status=String(e.status||'active').toLowerCase();
+      if(['stopped','resigned','deleted','inactive'].indexOf(status)>-1)return;
+      var job=String(e.job||e.job_title||e.position||e.role||'').toLowerCase();
+      var ok=isDriver?(job.indexOf('driver')>-1||job.indexOf('سائق')>-1):(job.indexOf('groom')>-1||job.indexOf('جروم')>-1||job.indexOf('جرووم')>-1);
+      if(!ok)return;
+      out.push(e.name||e.fullName||e.employeeName||e.username||e.code||'');
+    });
+    return normalizeNamedList(out);
+  }
   function renderVehicleAssignments(){
-    var master=readMasterData(), cars=normalizeNamedList((master.vehicles||[]).concat((master.vehicleAssignments||[]).map(function(v){return v.vehicle})).filter(Boolean)), groomers=normalizeNamedList((master.groomers||[]).concat((master.vehicleAssignments||[]).map(function(v){return v.groomer})).filter(Boolean)), drivers=normalizeNamedList((master.drivers||[]).concat((master.vehicleAssignments||[]).map(function(v){return v.driver})).filter(Boolean));
+    var master=readMasterData(), cars=setupVehicleNamesForAppointments(), groomers=payrollEmployeeNamesByJob('groomer'), drivers=payrollEmployeeNamesByJob('driver');
+    var legacyAssignmentVehicles=normalizeNamedList((master.vehicleAssignments||[]).map(function(v){return v.vehicle}).filter(Boolean));
+    legacyAssignmentVehicles.forEach(function(x){if(cars.indexOf(x)===-1)cars.push(x)});
+    cars=normalizeNamedList(cars);
     var v=byId('appointmentMasterVehicle'), g=byId('appointmentMasterGroomer'), d=byId('appointmentMasterDriver');
     if(v){var ov=v.value;safeHtml(v,optionList(cars,'اختر السيارة',ov),'operations master vehicle select')}
     if(g){var og=g.value;safeHtml(g,optionList(groomers,'اختر الجرومر',og),'operations master groomer select')}
     if(d){var od=d.value;safeHtml(d,optionList(drivers,'اختر السائق',od),'operations master driver select')}
     var lists=byId('appointmentOperationResourcesList');
     if(lists){
-      var vehiclePills=cars.map(function(x){return '<span class="appointments-master-pill">'+esc(x)+' <button type="button" data-op-click="removeOperationsVehicle" data-op-arg1="'+esc(x)+'">×</button></span>'}).join('')||'<span class="appointments-empty appointments-master-empty">لا توجد سيارات</span>';
-      var groomerPills=groomers.map(function(x){return '<span class="appointments-master-pill">'+esc(x)+' <button type="button" data-op-click="removeOperationsGroomer" data-op-arg1="'+esc(x)+'">×</button></span>'}).join('')||'<span class="appointments-empty appointments-master-empty">لا يوجد جرومرز</span>';
-      var driverPills=drivers.map(function(x){return '<span class="appointments-master-pill">'+esc(x)+' <button type="button" data-op-click="removeOperationsDriver" data-op-arg1="'+esc(x)+'">×</button></span>'}).join('')||'<span class="appointments-empty appointments-master-empty">لا يوجد سائقين</span>';
-      safeHtml(lists,'<div><b>السيارات</b><div class="appointments-master-list">'+vehiclePills+'</div></div><div><b>الجرومرز</b><div class="appointments-master-list">'+groomerPills+'</div></div><div><b>السائقين</b><div class="appointments-master-list">'+driverPills+'</div></div>','operations resources lists');
+      var vehiclePills=cars.map(function(x){return '<span class="appointments-master-pill">'+esc(x)+'</span>'}).join('')||'<span class="appointments-empty appointments-master-empty">لا توجد سيارات في بيانات التهيئة</span>';
+      var groomerPills=groomers.map(function(x){return '<span class="appointments-master-pill">'+esc(x)+'</span>'}).join('')||'<span class="appointments-empty appointments-master-empty">لا يوجد جرومرز نشطون في إدارة الرواتب</span>';
+      var driverPills=drivers.map(function(x){return '<span class="appointments-master-pill">'+esc(x)+'</span>'}).join('')||'<span class="appointments-empty appointments-master-empty">لا يوجد سائقون نشطون في إدارة الرواتب</span>';
+      safeHtml(lists,'<div><b>السيارات من بيانات التهيئة</b><div class="appointments-master-list">'+vehiclePills+'</div></div><div><b>الجرومرز من إدارة الرواتب</b><div class="appointments-master-list">'+groomerPills+'</div></div><div><b>السائقين من إدارة الرواتب</b><div class="appointments-master-list">'+driverPills+'</div></div>','operations resources lists');
     }
     var body=byId('appointmentMasterVehicleStaffList'); if(!body)return;
     var assignmentRows=(master.vehicleAssignments||[]).map(cleanVehicleAssignment).filter(Boolean);
@@ -2877,6 +2917,11 @@
     showAppointmentDetails:showAppointmentDetails,
     closeAppointmentDetails:closeAppointmentDetails
   };
+  if(!window.__PETATOE_APPOINTMENT_REFERENCE_REFRESH_BOUND__){
+    window.__PETATOE_APPOINTMENT_REFERENCE_REFRESH_BOUND__=true;
+    window.addEventListener('petatoe:payroll-read-facade-refreshed',function(){try{if(currentTab==='master'&&appointmentMasterSectionValue()==='vehicleStaff')renderMasterData();}catch(_e){} });
+    document.addEventListener('petatoe:reference-registry-updated',function(){try{if(currentTab==='master'&&appointmentMasterSectionValue()==='vehicleStaff')renderMasterData();}catch(_e){} });
+  }
   window.__PETATOEAppointmentsLegacyEngine=appointmentsPublicApi;
   window.PETATOEAppointments=appointmentsPublicApi;
 })();
