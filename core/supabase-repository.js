@@ -41,6 +41,31 @@
     return msg.indexOf('could not find')>-1 && msg.indexOf(String(col||'').toLowerCase())>-1;
   }
 
+  function missingColumnName(err){
+    var msg=String(err||'');
+    var m=msg.match(/Could not find the ['\"]([^'\"]+)['\"] column/i) || msg.match(/column ['\"]([^'\"]+)['\"]/i);
+    return m && m[1] ? String(m[1]) : '';
+  }
+
+  async function upsertWithSchemaPrune(table, payload, protectedColumns){
+    protectedColumns=protectedColumns||{};
+    var p=clone(payload||{});
+    var removed=[];
+    for(var attempt=0;attempt<12;attempt++){
+      var res=await client().from(table).upsert(p, { onConflict:'id' });
+      if(!res.error) return { ok:true, data:res.data, removedColumns:removed };
+      var err=resultError(res);
+      var col=missingColumnName(err);
+      if(col && Object.prototype.hasOwnProperty.call(p,col) && !protectedColumns[col]){
+        delete p[col];
+        removed.push(col);
+        continue;
+      }
+      return { ok:false, error:err, removedColumns:removed };
+    }
+    return { ok:false, error:'Schema prune retry limit exceeded', removedColumns:removed };
+  }
+
   async function upsertJsonRow(table, id, data, extra){
     if(!id) throw new Error('Supabase row id is required for '+table);
     if(!hasClient()) return { ok:false, error:'Supabase client not ready' };
@@ -49,21 +74,22 @@
     var base={ id:String(id), updated_at:new Date().toISOString() };
     var extraPayload=extra||{};
     var payload=Object.assign({}, base, { data:data }, extraPayload);
-    var res=await client().from(table).upsert(payload, { onConflict:'id' });
-    if(!res.error) return { ok:true, data:res.data };
 
-    var err=resultError(res);
+    var primary=await upsertWithSchemaPrune(table, payload, { id:true, data:true });
+    if(primary.ok) return Object.assign({ schemaFallback:'data' }, primary);
+
+    var err=primary.error||'';
     if(missingColumn(err,'data')){
       var legacyPayload=Object.assign({}, base, { legacy_payload:data }, extraPayload);
-      var legacyRes=await client().from(table).upsert(legacyPayload, { onConflict:'id' });
-      if(!legacyRes.error) return { ok:true, data:legacyRes.data, schemaFallback:'legacy_payload' };
-      var legacyErr=resultError(legacyRes);
+      var legacy=await upsertWithSchemaPrune(table, legacyPayload, { id:true, legacy_payload:true });
+      if(legacy.ok) return Object.assign({ schemaFallback:'legacy_payload' }, legacy);
+      var legacyErr=legacy.error||'';
       if(table==='payroll_slips' && missingColumn(legacyErr,'legacy_payload')){
         var flat=Object.assign({}, base, extraPayload);
-        var flatRes=await client().from(table).upsert(flat, { onConflict:'id' });
-        if(!flatRes.error) return { ok:true, data:flatRes.data, schemaFallback:'flat' };
-        console.warn('PETATOESupabaseRepository upsert failed', table, resultError(flatRes));
-        return { ok:false, error:resultError(flatRes) };
+        var flatRes=await upsertWithSchemaPrune(table, flat, { id:true });
+        if(flatRes.ok) return Object.assign({ schemaFallback:'flat' }, flatRes);
+        console.warn('PETATOESupabaseRepository upsert failed', table, flatRes.error);
+        return { ok:false, error:flatRes.error };
       }
       console.warn('PETATOESupabaseRepository upsert failed', table, legacyErr);
       return { ok:false, error:legacyErr };
