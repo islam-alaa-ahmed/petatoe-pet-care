@@ -64,6 +64,21 @@
   function setButtonTitleSub(btn, title, sub){ clearNode(btn); btn.appendChild(navSpan('pet-v142-title', title||'')); btn.appendChild(navSpan('pet-v142-sub', sub||'')); }
   function setToggleLabel(btn, label){ clearNode(btn); btn.appendChild(navSpan('', label||'')); btn.appendChild(navArrow()); }
   function setDirectLabel(btn, label){ clearNode(btn); btn.appendChild(navSpan('', label||'')); }
+  // PETATOE v8.0.2 Phase 9: active-state must ignore buttons hidden by the permission layer.
+  // Root cause: after permission apply() hides unauthorized buttons, markActive() could still select
+  // the first DOM match, leaving a hidden button active or opening the wrong collapsed group.
+  function isNavButtonVisible(btn){
+    if(!btn) return false;
+    if(btn.classList&&btn.classList.contains('pet-nav-hidden-by-permission')) return false;
+    if(btn.getAttribute&&btn.getAttribute('aria-hidden')==='true') return false;
+    if(btn.style&&btn.style.display==='none') return false;
+    return true;
+  }
+  function firstVisibleButton(selector, root){
+    var list=qa(selector,root);
+    for(var i=0;i<list.length;i++){ if(isNavButtonVisible(list[i])) return list[i]; }
+    return list[0]||null;
+  }
 
   function normalizeScreenKey(screen){
     try{
@@ -208,10 +223,10 @@
     qa('button',nav).forEach(function(b){b.classList.remove('active')});
     var activeBtn=null, groupId='';
     if(active==='settings'){
-      activeBtn=petBlock7937_q('button[data-settings-main="'+sm+'"]',nav)||petBlock7937_q('button[data-settings-main="system"]',nav);
+      activeBtn=firstVisibleButton('button[data-settings-main="'+sm+'"]',nav)||firstVisibleButton('button[data-settings-main="system"]',nav);
       groupId='settings';
     }else if(active==='logs'){
-      activeBtn=petBlock7937_q('button[data-tab="logs"]',nav); groupId='settings';
+      activeBtn=firstVisibleButton('button[data-tab="logs"]',nav); groupId='settings';
     }else{
       if(active==='appointments'){
         var appointmentsActiveTab='';
@@ -219,9 +234,9 @@
           var appointmentTab=petBlock7937_q('#appointments .appointments-tab.active[data-appointment-tab]');
           appointmentsActiveTab=appointmentTab?appointmentTab.getAttribute('data-appointment-tab'):'';
         }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('navigation/navigation.js',e);}
-        if(appointmentsActiveTab==='master') activeBtn=petBlock7937_q('button[data-tab="appointments"][data-appointments-subtab="master"]',nav);
+        if(appointmentsActiveTab==='master') activeBtn=firstVisibleButton('button[data-tab="appointments"][data-appointments-subtab="master"]',nav);
       }
-      if(!activeBtn) activeBtn=petBlock7937_q('button[data-tab="'+active+'"]',nav);
+      if(!activeBtn) activeBtn=firstVisibleButton('button[data-tab="'+active+'"]',nav);
       var grp=activeBtn&&activeBtn.closest('.pet-v142-group'); groupId=grp?grp.getAttribute('data-group'):'';
     }
     if(activeBtn) activeBtn.classList.add('active');
@@ -247,5 +262,6 @@
   document.addEventListener('petatoe:permissionschanged',function(){scheduleBuild(30);});
   document.addEventListener('petatoe:userchanged',function(){scheduleBuild(30);});
   window.addEventListener('petatoe:identity-ready',function(){scheduleBuild(30);});
+  document.addEventListener('petatoe:navigationpermissionsapplied',function(){setTimeout(markActive,30);});
   document.addEventListener('petatoe:tabchange',function(){setTimeout(markActive,60)});
 })();

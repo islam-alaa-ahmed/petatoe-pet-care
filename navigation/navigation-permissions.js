@@ -102,6 +102,9 @@
       var visible=Array.prototype.some.call(g.querySelectorAll('.pet-v142-items button'),function(b){return b.style.display!=='none';});
       if(visible) showElement(g); else hideElement(g);
     });
+    // PETATOE v8.0.2 Phase 9: notify the canonical navigation after permission visibility changes
+    // so active state is recalculated against visible/authorized buttons only.
+    try{ document.dispatchEvent(new CustomEvent('petatoe:navigationpermissionsapplied',{detail:{root:root}})); }catch(_e){}
   }
   function guardClick(btn){
     var screen=screenFromButton(btn);
