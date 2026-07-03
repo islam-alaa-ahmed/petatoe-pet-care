@@ -141,9 +141,43 @@
     if(v.edit){o.special.vehicle_ops_edit_trip=true;}
     return o;
   }
-  function getUserById(uid){var us=seedUsers();return us.find(function(x){return x.id===uid})||us[0]}
-  function getUserPerm(uid){var u=getUserById(uid);if(isSuperUser(u))return fullUserPerm();var store=userPermStore(), base=defaultUserPerm(u), saved=store[u.id]||{};screenPerms.forEach(function(s){var k=s[0], src=(saved.screens&&saved.screens[k])||{};base.screens[k]=Object.assign(base.screens[k]||{},src)});specialPerms.forEach(function(s){var k=s[0];if(saved.special&&Object.prototype.hasOwnProperty.call(saved.special,k))base.special[k]=!!saved.special[k]});base.vehicleScope=normalizeVehicleScope(saved.vehicleScope||base.vehicleScope);return base}
-  function saveUserPerm(uid,perm){var u=getUserById(uid);if(!u||isSuperUser(u))return Promise.resolve({ok:false,skipped:true});var store=userPermStore();store[uid]=perm;try{var ids=identity(); if(ids&&typeof ids.savePermission==='function') return ids.savePermission(uid,perm);}catch(e){try{console.warn('PETATOE save permission failed',e)}catch(_){}}return saveUserPermStore(store)||Promise.resolve({ok:true})}
+  // PETATOE v8.0.2 Phase 12: strict user identity resolution for permissions.
+  // Root cause: the old getUserById() returned us[0] when the requested user was not matched.
+  // If us[0] was Super Admin, normal users could inherit full permissions during runtime checks.
+  function normalizeIdentityValue(v){return String(v==null?'':v).trim().toLowerCase()}
+  function userKeyCandidates(u){
+    var out=[],seen={};
+    function add(v){v=String(v==null?'':v).trim();var k=v.toLowerCase();if(k&&!seen[k]){seen[k]=1;out.push(v)}}
+    if(u&&typeof u==='object'){add(u.id);add(u.userId);add(u.uid);add(u.username);add(u.login);add(u.name);add(u.fullName);add(u.full_name);add(u.email)}
+    else add(u);
+    return out;
+  }
+  function sameUserKey(u,ref){
+    var a=userKeyCandidates(u).map(normalizeIdentityValue), b=userKeyCandidates(ref).map(normalizeIdentityValue);
+    return a.some(function(x){return b.indexOf(x)>-1});
+  }
+  function getUserById(uid){
+    var us=seedUsers(), ref=(uid&&typeof uid==='object')?uid:{id:uid,username:uid};
+    if(!uid&&uid!==0)return null;
+    return us.find(function(x){return sameUserKey(x,ref)})||null;
+  }
+  function permissionRecordFor(store,u){
+    store=store||{};
+    var keys=userKeyCandidates(u);
+    for(var i=0;i<keys.length;i++){if(store[keys[i]])return store[keys[i]]}
+    return {};
+  }
+  function getUserPerm(uid){
+    var u=getUserById(uid);
+    if(!u)return emptyUserPerm();
+    if(isSuperUser(u))return fullUserPerm();
+    var store=userPermStore(), base=defaultUserPerm(u), saved=permissionRecordFor(store,u);
+    screenPerms.forEach(function(s){var k=s[0], src=(saved.screens&&saved.screens[k])||{};base.screens[k]=Object.assign(base.screens[k]||{},src)});
+    specialPerms.forEach(function(s){var k=s[0];if(saved.special&&Object.prototype.hasOwnProperty.call(saved.special,k))base.special[k]=!!saved.special[k]});
+    base.vehicleScope=normalizeVehicleScope(saved.vehicleScope||base.vehicleScope);
+    return base
+  }
+  function saveUserPerm(uid,perm){var u=getUserById(uid);if(!u||isSuperUser(u))return Promise.resolve({ok:false,skipped:true});var store=userPermStore();store[u.id||uid]=perm;try{var ids=identity(); if(ids&&typeof ids.savePermission==='function') return ids.savePermission(u.id||uid,perm);}catch(e){try{console.warn('PETATOE save permission failed',e)}catch(_){}}return saveUserPermStore(store)||Promise.resolve({ok:true})}
   function normalizeVehicleKey(v){return String(v==null?'':v).trim().toLowerCase().replace(/\s+/g,' ')}
   function addVehicleUnique(out,seen,id,name,meta){
     name=String(name||'').trim(); id=String(id||name||'').trim();
@@ -178,8 +212,8 @@
     try{if(window.currentUser&&(window.currentUser.id||window.currentUser.username)) return window.currentUser.id||window.currentUser.username;}catch(e){}
     var us=seedUsers(); var bootSuper=us.find(function(x){return isSuperUser(x)}); return (bootSuper&&bootSuper.id)||(us[0]&&us[0].id)||'';
   }
-  function can(uid,screen,action){uid=uid||currentUserId();if(!uid)return false;var u=getUserById(uid);if(isSuperUser(u))return true;var p=getUserPerm(uid);return !!(p.screens&&p.screens[screen]&&p.screens[screen][action||'view'])}
-  function canSpecial(uid,key){uid=uid||currentUserId();if(!uid)return false;var u=getUserById(uid);if(isSuperUser(u))return true;var p=getUserPerm(uid);return !!(p.special&&p.special[key])}
+  function can(uid,screen,action){uid=uid||currentUserId();if(!uid)return false;var u=getUserById(uid);if(!u)return false;if(isSuperUser(u))return true;var p=getUserPerm(uid);return !!(p.screens&&p.screens[screen]&&p.screens[screen][action||'view'])}
+  function canSpecial(uid,key){uid=uid||currentUserId();if(!uid)return false;var u=getUserById(uid);if(!u)return false;if(isSuperUser(u))return true;var p=getUserPerm(uid);return !!(p.special&&p.special[key])}
   function screenByKey(k){return screenPerms.find(function(s){return s[0]===k})||[k,k,'']}
   function specialByKey(k){return specialPerms.find(function(s){return s[0]===k})||[k,k]}
   function getModuleById(id){return permissionModules.find(function(m){return m.id===id})||permissionModules[0]}
