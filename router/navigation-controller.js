@@ -83,6 +83,10 @@
   window.PETATOENavigationController={openTab:openTab,currentTab:currentTab,bind:bind,markNav:markNav};
   window.PETATOERouter={openTab:openTab,currentTab:currentTab,bind:bind,current:currentTab()};
   window.tab=window.PETATOERouter.openTab; // single compatibility alias for legacy inline HTML
-  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bind); else bind();
-  setTimeout(bind,300); setTimeout(bind,1000);
+  function bindWhenReady(){ bind(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindWhenReady,{once:true}); else bindWhenReady();
+  // PETATOE v8.0.2 Phase 8: remove blind retry timers.
+  // Re-bind only when the canonical navigation module reports that #nav was rebuilt.
+  document.addEventListener('petatoe:navbuilt',bindWhenReady);
+  window.addEventListener('load',bindWhenReady,{once:true});
 })();

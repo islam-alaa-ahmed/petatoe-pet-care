@@ -241,7 +241,8 @@
     }, delay||0);
   }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',function(){scheduleBuild(0);}); else scheduleBuild(0);
-  window.addEventListener('load',function(){buildIfMissing(80); buildIfMissing(800);});
+  // PETATOE v8.0.2 Phase 8: keep one safety probe after load instead of two blind rebuild retries.
+  window.addEventListener('load',function(){buildIfMissing(120);},{once:true});
   document.addEventListener('petatoe:navigationpermissionsready',function(){scheduleBuild(30);});
   document.addEventListener('petatoe:permissionschanged',function(){scheduleBuild(30);});
   document.addEventListener('petatoe:userchanged',function(){scheduleBuild(30);});

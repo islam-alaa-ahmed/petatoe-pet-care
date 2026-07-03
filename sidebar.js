@@ -74,7 +74,10 @@
     if(active) markActive(active.getAttribute('data-tab')); else closeAllGroups('');
   }
   document.addEventListener('petatoe:tabchange', function(e){var name=e.detail&&e.detail.tabId;try{ markActive(name); }catch(err){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sidebar.js",err);}});
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindMenu); else bindMenu();
-  setTimeout(bindMenu,300);
-  setTimeout(bindMenu,1000);
+  function bindMenuWhenReady(){ bindMenu(); }
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindMenuWhenReady, {once:true}); else bindMenuWhenReady();
+  // PETATOE v8.0.2 Phase 8: remove blind retry timers.
+  // Legacy sidebar binding now follows the canonical nav rebuild event instead of polling.
+  document.addEventListener('petatoe:navbuilt', bindMenuWhenReady);
+  window.addEventListener('load', bindMenuWhenReady, {once:true});
 })();
