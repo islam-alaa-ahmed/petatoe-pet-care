@@ -50,6 +50,7 @@
   }
   function canOpen(screen){
     screen=normalizeScreen(screen);
+    if(!identityReady()) return true;
     var u=currentUser();
     if(isSuperUser(u)) return true;
     if(!u||!isActive(u)||!(u.id||u.username)) return false;
@@ -63,8 +64,34 @@
   }
   function hideElement(el){ if(!el) return; el.style.display='none'; el.classList.add('pet-nav-hidden-by-permission'); el.setAttribute('aria-hidden','true'); }
   function showElement(el){ if(!el) return; el.style.display=''; el.classList.remove('pet-nav-hidden-by-permission'); el.removeAttribute('aria-hidden'); }
+
+  // PETATOE v8.0.2 Phase 3: defer menu permission filtering until the Supabase identity cache is actually ready.
+  // Root cause: permissionsSync() starts async load and returns an empty cache on first boot, so early apply() hides items progressively.
+  var deferredApplyTimer = null;
+  var deferredApplyAttempts = 0;
+  function identityReady(){
+    try{
+      var ids = window.PETATOEIdentityStore;
+      if(!ids) return true;
+      var c = ids._cache || null;
+      if(c && c.loaded === true) return true;
+      if(c && c.loading) return false;
+      if(typeof ids.load === 'function') ids.load();
+      return !!(c && c.loaded === true);
+    }catch(_e){ return true; }
+  }
+  function scheduleApply(root){
+    if(deferredApplyTimer) return;
+    deferredApplyTimer = setTimeout(function(){
+      deferredApplyTimer = null;
+      deferredApplyAttempts += 1;
+      if(deferredApplyAttempts <= 20) apply(root);
+    }, 250);
+  }
   function apply(root){
     root=root||document.getElementById('nav'); if(!root) return;
+    if(!identityReady()){ scheduleApply(root); return; }
+    deferredApplyAttempts = 0;
     var u=currentUser();
     Array.prototype.forEach.call(root.querySelectorAll('button[data-tab],button[data-settings-main],button[data-pet-nav-screen],button[data-pet-permission-screen]'),function(btn){
       var screen=screenFromButton(btn);
