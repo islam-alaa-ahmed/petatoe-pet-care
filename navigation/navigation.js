@@ -70,7 +70,7 @@
       var G=window.PETATOENavigationPermissions;
       if(G&&typeof G.normalizeScreen==='function') return G.normalizeScreen(screen||'');
     }catch(e){}
-    var m={dashboard:'dashboardManagement',system:'settings',logs:'audit','appointments-master':'setup',appointmentsMaster:'setup',warehouse:'vehicles',warehouses:'vehicles',fleet:'vehicles',entry:'sales',import:'sales',records:'reports',smart:'reports',customer360:'customers',executive:'reports'};
+    var m={dashboard:'dashboardManagement',system:'settings',logs:'audit','appointments-master':'appointmentsMaster',warehouse:'warehouses'};
     return m[screen]||screen||'';
   }
   function navCan(screen){
@@ -78,8 +78,10 @@
     if(!screen) return false;
     try{
       var G=window.PETATOENavigationPermissions;
-      if(G&&typeof G.hasAnyAction==='function') return !!G.hasAnyAction(G.currentUser&&G.currentUser(),screen);
+      // PETATOE v8.0.2 Phase 4: use canOpen() before hasAnyAction().
+      // canOpen() contains the Phase 3 readiness guard; hasAnyAction() must only run after identity is ready.
       if(G&&typeof G.canOpen==='function') return !!G.canOpen(screen);
+      if(G&&typeof G.hasAnyAction==='function') return !!G.hasAnyAction(G.currentUser&&G.currentUser(),screen);
       var P=window.PETATOEPermissions, A=window.PETATOEAuth&&window.PETATOEAuth.currentUser?window.PETATOEAuth.currentUser():window.currentUser;
       var uid=A&&(A.id||A.username);
       if(P&&P.can&&uid) return ['view','add','edit','delete'].some(function(a){return P.can(uid,screen,a)});
