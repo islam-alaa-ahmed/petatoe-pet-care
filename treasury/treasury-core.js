@@ -193,13 +193,13 @@
     return {allVehicles:false,vehicles:[]};
   }
   function masterVehicles(){
-    try{
-      if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.getVehicleList==='function'){
-        var arr=window.PETATOEPermissions.getVehicleList()||[];
-        return Array.isArray(arr)?arr:[];
-      }
-    }catch(_e){}
-    return [];
+    var out=[];
+    function pushAll(arr){if(Array.isArray(arr))arr.forEach(function(v){if(v)out.push(v)});}
+    try{if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.getVehicleList==='function')pushAll(window.PETATOEPermissions.getVehicleList()||[]);}catch(_e){}
+    try{if(window.PETATOEReferenceRegistry&&typeof window.PETATOEReferenceRegistry.getVehicles==='function')pushAll(window.PETATOEReferenceRegistry.getVehicles()||[]);}catch(_e2){}
+    try{if(window.PETATOESetup&&typeof window.PETATOESetup.masterData==='function'){var md=window.PETATOESetup.masterData(false)||{};pushAll(md.cars||[]);}}catch(_e3){}
+    var seen={};
+    return out.filter(function(v){var k=normVehicleKey(v&&typeof v==='object'?(v.name||v.vehicle||v.car||v.plate||v.id):v);if(!k||seen[k])return false;seen[k]=1;return true;});
   }
   function vehicleAliases(v){
     var a=[];
@@ -211,18 +211,24 @@
     var aa=vehicleAliases(a).map(normVehicleKey), bb=vehicleAliases(b).map(normVehicleKey);
     return aa.some(function(x){return x&&bb.indexOf(x)>-1});
   }
+  function resolvedVehicleName(token){
+    token=clean(token); if(!token)return '';
+    var masters=masterVehicles();
+    var found=masters.find(function(m){return sameVehicle(token,m)});
+    if(found)return clean(found.name||found.vehicle||found.car||found.plate||found.id||token);
+    // Never expose internal setup ids to users; if unresolved, ignore the token instead of rendering auto_cars_* as a vault.
+    if(/^auto[_-]?cars[_-]/i.test(token))return '';
+    return token;
+  }
   function scopedVehicleNames(){
     var sc=scopeVehicleKeys(), masters=masterVehicles(), out=[], seen={};
-    function add(v){v=clean(v);var k=normVehicleKey(v);if(v&&k&&!seen[k]){seen[k]=1;out.push(v)}}
+    function add(v){v=resolvedVehicleName(v);var k=normVehicleKey(v);if(v&&k&&!seen[k]){seen[k]=1;out.push(v)}}
     if(sc.allVehicles){
-      masters.forEach(function(m){add(m.name||m.vehicle||m.car||m.id)});
+      masters.forEach(function(m){add(m.name||m.vehicle||m.car||m.plate||m.id)});
       rawVehicleList().forEach(add);
       return out.sort();
     }
-    sc.vehicles.forEach(function(token){
-      var found=masters.find(function(m){return sameVehicle(token,m)});
-      add(found?(found.name||found.vehicle||found.car||found.id):token);
-    });
+    sc.vehicles.forEach(add);
     return out.sort();
   }
   function canScreen(screen,action){
@@ -278,7 +284,7 @@
   function cashByVehicle(){var m={};cashRows().forEach(function(r){var v=rowVehicle(r), a=rowAmount(r);m[v]=(m[v]||0)+a});return m}
   function vehicleDelivered(ignoreId){var m={};txRows().forEach(function(t){if(clean(t.id)===clean(ignoreId))return; if(t&&t.type==='handover'){var v=clean(t.vehicle);m[v]=(m[v]||0)+num(t.amount)}});return m}
   function expenseBySource(ignoreId){var m={};txRows().forEach(function(t){if(clean(t.id)===clean(ignoreId))return; if(t&&t.type==='expense'){var src=clean(t.source||t.vehicle||OWNER);m[src]=(m[src]||0)+num(t.amount)}});return m}
-  function vehicleBalanceRaw(v,ignoreId){var c=cashByVehicle(),d=vehicleDelivered(ignoreId),e=expenseBySource(ignoreId);return (c[v]||0)-(d[v]||0)-(e[v]||0)}
+  function vehicleBalanceRaw(v,ignoreId){v=resolvedVehicleName(v)||v;var c=cashByVehicle(),d=vehicleDelivered(ignoreId),e=expenseBySource(ignoreId);return (c[v]||0)-(d[v]||0)-(e[v]||0)}
   function vehicleBalance(v,ignoreId){return availNum(vehicleBalanceRaw(v,ignoreId))}
   function mainReceived(ignoreId){return txRows().reduce(function(s,t){return s+((t&&t.type==='handover'&&clean(t.id)!==clean(ignoreId))?num(t.amount):0)},0)}
   function mainSpent(ignoreId){return txRows().reduce(function(s,t){return s+((t&&t.type==='expense'&&clean(t.id)!==clean(ignoreId)&&clean(t.source||OWNER)===OWNER)?num(t.amount):0)},0)}

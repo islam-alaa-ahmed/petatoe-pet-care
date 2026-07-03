@@ -227,10 +227,13 @@
   function addVehicleUnique(out,seen,id,name,meta){
     name=String(name||'').trim(); id=String(id||name||'').trim();
     if(!name&&!id)return;
-    var key=normalizeVehicleKey(id||name);
+    var display=name||id;
+    // PETATOE v8.0.2 Phase 24: vehicle permissions must store/display the real vehicle name.
+    // Internal setup ids like auto_cars_* are aliases only, never the visible permission token.
+    var key=normalizeVehicleKey(display);
     if(!key||seen[key])return;
     seen[key]=1;
-    out.push({id:id||name,name:name||id,meta:meta||''});
+    out.push({id:id||display,name:display,meta:meta||'',aliases:[id,display,meta].filter(Boolean)});
   }
   function collectSetupVehicles(out,seen,forceSync){
     try{
@@ -261,9 +264,22 @@
     return out.sort(function(a,b){return String(a.name).localeCompare(String(b.name),'ar')});
   }
   function defaultVehicleScope(){return {allVehicles:true,vehicles:[]}}
+  function resolveVehicleScopeToken(token){
+    token=String(token==null?'':token).trim();
+    if(!token)return '';
+    var vehicles=[];
+    try{vehicles=getVehicleList()||[];}catch(_e){vehicles=[];}
+    var tk=normalizeVehicleKey(token);
+    for(var i=0;i<vehicles.length;i++){
+      var v=vehicles[i]||{}, aliases=[v.id,v.name,v.vehicle,v.car,v.plate,v.code,v.meta].map(function(x){return normalizeVehicleKey(x)});
+      if(aliases.indexOf(tk)>-1)return String(v.name||v.vehicle||v.car||v.plate||v.id||token).trim();
+    }
+    return token;
+  }
   function normalizeVehicleScope(scope){
     scope=scope&&typeof scope==='object'?scope:{};
-    var list=Array.isArray(scope.vehicles)?scope.vehicles.map(function(x){return String(x||'').trim()}).filter(Boolean):[];
+    var seen={};
+    var list=Array.isArray(scope.vehicles)?scope.vehicles.map(resolveVehicleScopeToken).map(function(x){return String(x||'').trim()}).filter(Boolean).filter(function(x){var k=normalizeVehicleKey(x);if(!k||seen[k])return false;seen[k]=1;return true;}):[];
     return {allVehicles:scope.allVehicles!==false,vehicles:list};
   }
   function parseCurrentRef(raw){try{if(raw&&typeof raw==='object')return raw;var s=String(raw||'').trim();if(!s)return null;if((s.charAt(0)==='{'&&s.charAt(s.length-1)==='}')||(s.charAt(0)==='['&&s.charAt(s.length-1)===']'))return JSON.parse(s);return {id:s,username:s}}catch(_){return null}}
@@ -380,7 +396,7 @@
     var vehicleScopeHtml='';
     if(active==='operations'||active==='fleet'){
       var vehicleScope=normalizeVehicleScope(p.vehicleScope), vehicleList=getVehicleList();
-      var vehicleChecks=vehicleList.map(function(v){var key=String(v.id||v.name||'');var checked=vehicleScope.allVehicles||vehicleScope.vehicles.indexOf(key)>-1||vehicleScope.vehicles.indexOf(v.name)>-1;return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-vehicle="'+esc(key)+'" '+(checked?'checked':'')+' '+(locked||vehicleScope.allVehicles?'disabled':'')+'> <span>'+esc(v.name)+(v.meta?'<small style="opacity:.7"> — '+esc(v.meta)+'</small>':'')+'</span></label>'}).join('')||'<div class="pet-v110-note">لا توجد سيارات مسجلة حاليًا. يمكن إضافة السيارات من شاشة التهيئة أو إدارة السيارات.</div>';
+      var vehicleChecks=vehicleList.map(function(v){var key=String(v.name||v.vehicle||v.car||v.plate||v.id||'');var aliases=[key,v.id,v.code,v.plate,v.meta].map(function(x){return normalizeVehicleKey(x)});var checked=vehicleScope.allVehicles||vehicleScope.vehicles.some(function(x){return aliases.indexOf(normalizeVehicleKey(x))>-1});return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-vehicle="'+esc(key)+'" '+(checked?'checked':'')+' '+(locked||vehicleScope.allVehicles?'disabled':'')+'> <span>'+esc(v.name)+(v.meta?'<small style="opacity:.7"> — '+esc(v.meta)+'</small>':'')+'</span></label>'}).join('')||'<div class="pet-v110-note">لا توجد سيارات مسجلة حاليًا. يمكن إضافة السيارات من شاشة التهيئة أو إدارة السيارات.</div>';
       vehicleScopeHtml='<section class="pet-v139-module-section"><div class="pet-v139-module-head"><div><h3>🚐 ربط تشغيل السيارات بالسيارات</h3><p>تحديد السيارات المسموح للمستخدم بتشغيلها أو عرض تقاريرها.</p></div></div><label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" id="petV139AllVehicles" data-v139-all-vehicles="1" '+(vehicleScope.allVehicles?'checked':'')+' '+(locked?'disabled':'')+'> <span>كل السيارات الحالية والمستقبلية</span></label><div class="pet-v139-special-grid erp" id="petV139VehicleScopeGrid">'+vehicleChecks+'</div></section>';
     }
     return '<div class="pet-v139-user-permissions pet-v139-erp-ui">'
@@ -446,7 +462,7 @@
   window.petV139SyncBulkHeaders=function(){var section=document.querySelector('#settings [data-v139-current-module]');if(!section)return;crudActions.forEach(function(a){var inputs=[].slice.call(section.querySelectorAll('[data-v139-action="'+a[0]+'"]'));var head=section.querySelector('[data-v139-bulk-action="'+a[0]+'"]');if(head)head.checked=!!inputs.length&&inputs.every(function(x){return x.checked})})};
   document.addEventListener('change',function(e){var t=e.target;if(!t)return;if(t.matches&&t.matches('[data-v139-bulk-action]')){var act=t.getAttribute('data-v139-bulk-action');var section=t.closest('[data-v139-current-module]')||document.querySelector('#settings [data-v139-current-module]');if(section){section.querySelectorAll('[data-v139-action="'+act+'"]').forEach(function(c){if(!c.disabled)c.checked=!!t.checked});window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();}}else if(t.matches&&t.matches('[data-v139-screen][data-v139-action]')){window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();}if(t&&t.id==='petV139AllVehicles')window.petV139ToggleVehicleScope(!!t.checked)});
   function getVehicleScope(uid){var p=getUserPerm(uid||currentUserId());return normalizeVehicleScope(p.vehicleScope)}
-  function canAccessVehicle(uid,vehicle){var u=getUserById(uid||currentUserId());if(isSuperUser(u))return true;var scope=getVehicleScope(uid);if(scope.allVehicles)return true;var key=normalizeVehicleKey(vehicle&&typeof vehicle==='object'?(vehicle.id||vehicle.name||vehicle.plate):vehicle);return !!key&&scope.vehicles.some(function(x){return normalizeVehicleKey(x)===key})}
+  function canAccessVehicle(uid,vehicle){var u=getUserById(uid||currentUserId());if(isSuperUser(u))return true;var scope=getVehicleScope(uid);if(scope.allVehicles)return true;var candidates=[];if(vehicle&&typeof vehicle==='object')candidates=[vehicle.name,vehicle.vehicle,vehicle.car,vehicle.plate,vehicle.code,vehicle.id,vehicle.meta];else candidates=[vehicle];var keys=candidates.map(function(x){return normalizeVehicleKey(x)}).filter(Boolean);return !!keys.length&&scope.vehicles.some(function(x){var rx=normalizeVehicleKey(resolveVehicleScopeToken(x));return keys.indexOf(rx)>-1||normalizeVehicleKey(x)&&keys.indexOf(normalizeVehicleKey(x))>-1})}
   window.PETATOEPermissionEngine={
     canonicalScreenKey:canonicalScreenKey,
     currentUser:currentPermissionUser,
