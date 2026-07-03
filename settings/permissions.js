@@ -63,14 +63,22 @@
     ['vehicle_ops_export_excel','تقارير تشغيل السيارات - تصدير Excel'],
     ['vehicle_ops_export_pdf','تقارير تشغيل السيارات - تصدير PDF'],
     ['vehicle_ops_view_reports','تقارير تشغيل السيارات - عرض'],
-    ['vehicle_ops_view_kpis','مؤشرات التشغيل - عرض']
+    ['vehicle_ops_view_kpis','مؤشرات التشغيل - عرض'],
+    ['treasury_tab_home','الخزينة - الواجهة الرئيسية'],
+    ['treasury_tab_balances','الخزينة - الأرصدة'],
+    ['treasury_tab_movements','الخزينة - التسليمات'],
+    ['treasury_tab_expenses','الخزينة - المصروفات'],
+    ['treasury_tab_statement','الخزينة - كشف الحساب'],
+    ['treasury_tab_log','الخزينة - سجل الحركات'],
+    ['treasury_tab_audit','الخزينة - سجل التدقيق'],
+    ['treasury_tab_reports','الخزينة - التقارير']
   ];
   var permissionModules=[
     {id:'home',icon:'🏠',title:'الرئيسية',hint:'فصل Dashboard الإدارة عن Dashboard التشغيل',screens:['dashboardManagement','dashboardOperations'],specials:[]},
     {id:'operations',icon:'🚗',title:'إدارة التشغيل',hint:'تشغيل السيارات منفصل عن تقارير التشغيل ومؤشرات الأداء',screens:['appointments','vehicleOperations','vehicleOperationsReports','operationKpis'],specials:['vehicle_ops_create_trip','vehicle_ops_edit_trip','vehicle_ops_cancel_trip','vehicle_ops_reopen_trip','vehicle_ops_approve_trip','operations_close_session','operations_reopen_session','operations_confirm_session','operations_edit_confirmed_session','vehicle_ops_print','vehicle_ops_export','vehicle_ops_export_excel','vehicle_ops_export_pdf','vehicle_ops_view_reports','vehicle_ops_view_kpis']},
     {id:'salary',icon:'💵',title:'الرواتب والعمولات',hint:'صلاحيات الموظف الشخصية منفصلة عن إدارة الرواتب',screens:['salarySlip','commissionStatement','payroll','commissions'],specials:['payroll_cancel_approval']},
     {id:'sales',icon:'🛒',title:'المبيعات والعملاء',hint:'الفواتير والعملاء والخدمات والتقارير العامة',screens:['sales','customers','services','reports'],specials:['export_pdf','export_excel','view_profit','edit_targets']},
-    {id:'finance',icon:'💰',title:'الخزنة والحسابات',hint:'الخزن والحركات المالية والمصروفات والالتزامات',screens:['vaults','treasury','expenses','obligations'],specials:['hard_delete','edit_closed']},
+    {id:'finance',icon:'💰',title:'الخزنة والحسابات',hint:'الخزن والحركات المالية والمصروفات والالتزامات',screens:['vaults','treasury','expenses','obligations'],specials:['treasury_tab_home','treasury_tab_balances','treasury_tab_movements','treasury_tab_expenses','treasury_tab_statement','treasury_tab_log','treasury_tab_audit','treasury_tab_reports','hard_delete','edit_closed']},
     {id:'fleet',icon:'🚐',title:'السيارات والمخازن',hint:'إدارة السيارات وربط التشغيل بالسيارات',screens:['vehicles'],specials:[]},
     {id:'children',icon:'👶',title:'مصروفات الأبناء',hint:'مصروفات الأبناء وميزانيتها وتقاريرها',screens:['childrenExpenses'],specials:['children_expenses_budget','children_expenses_export']},
     {id:'admin',icon:'⚙️',title:'الإدارة والإعدادات',hint:'إدارة المستخدمين والصلاحيات والتهيئة والأمان',screens:['settings','setup','users','permissions','audit'],specials:['manage_users','manage_permissions','backup','restore','manage_security','data_quality']}
