@@ -182,6 +182,49 @@
     try{if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function')return window.PETATOEAuth.currentUser();}catch(_e2){}
     try{return window.__PETATOE_ACTIVE_USER__||window.currentUser||'';}catch(_e3){return ''}
   }
+  function normVehicleKey(v){return clean(v).toLowerCase().replace(/[\u200f\u200e]/g,'').replace(/\s+/g,' ')}
+  function scopeVehicleKeys(){
+    try{
+      if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.getVehicleScope==='function'){
+        var sc=window.PETATOEPermissions.getVehicleScope(currentTreasuryUser())||{};
+        return {allVehicles:!!sc.allVehicles,vehicles:Array.isArray(sc.vehicles)?sc.vehicles.map(clean).filter(Boolean):[]};
+      }
+    }catch(_e){}
+    return {allVehicles:false,vehicles:[]};
+  }
+  function masterVehicles(){
+    try{
+      if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.getVehicleList==='function'){
+        var arr=window.PETATOEPermissions.getVehicleList()||[];
+        return Array.isArray(arr)?arr:[];
+      }
+    }catch(_e){}
+    return [];
+  }
+  function vehicleAliases(v){
+    var a=[];
+    if(v&&typeof v==='object'){a.push(v.id,v.vehicle,v.name,v.car,v.plate,v.code,v.meta)}
+    else a.push(v);
+    return a.map(clean).filter(Boolean);
+  }
+  function sameVehicle(a,b){
+    var aa=vehicleAliases(a).map(normVehicleKey), bb=vehicleAliases(b).map(normVehicleKey);
+    return aa.some(function(x){return x&&bb.indexOf(x)>-1});
+  }
+  function scopedVehicleNames(){
+    var sc=scopeVehicleKeys(), masters=masterVehicles(), out=[], seen={};
+    function add(v){v=clean(v);var k=normVehicleKey(v);if(v&&k&&!seen[k]){seen[k]=1;out.push(v)}}
+    if(sc.allVehicles){
+      masters.forEach(function(m){add(m.name||m.vehicle||m.car||m.id)});
+      rawVehicleList().forEach(add);
+      return out.sort();
+    }
+    sc.vehicles.forEach(function(token){
+      var found=masters.find(function(m){return sameVehicle(token,m)});
+      add(found?(found.name||found.vehicle||found.car||found.id):token);
+    });
+    return out.sort();
+  }
   function canScreen(screen,action){
     try{if(window.PETATOEPermissionEngine&&typeof window.PETATOEPermissionEngine.can==='function')return !!window.PETATOEPermissionEngine.can(currentTreasuryUser(),screen,action||'view');}catch(_e){}
     try{if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.can==='function')return !!window.PETATOEPermissions.can(currentTreasuryUser(),screen,action||'view');}catch(_e2){}
@@ -194,8 +237,16 @@
   }
   function canAccessVehicle(v){
     if(!canScreen('treasury','view')||!clean(v))return false;
-    try{if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.canAccessVehicle==='function')return !!window.PETATOEPermissions.canAccessVehicle(currentTreasuryUser(),v);}catch(_e){}
-    return false;
+    try{if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.canAccessVehicle==='function'&&window.PETATOEPermissions.canAccessVehicle(currentTreasuryUser(),v))return true;}catch(_e){}
+    var sc=scopeVehicleKeys();
+    if(sc.allVehicles)return true;
+    if(!sc.vehicles.length)return false;
+    var masters=masterVehicles();
+    return sc.vehicles.some(function(token){
+      if(sameVehicle(token,v))return true;
+      var m=masters.find(function(x){return sameVehicle(token,x)});
+      return !!(m&&sameVehicle(v,m));
+    });
   }
   function canAccessOwnerVault(){
     if(!canScreen('treasury','view'))return false;
@@ -208,7 +259,15 @@
     return false;
   }
   function canAccessVault(src){src=clean(src)||OWNER;return src===OWNER?canAccessOwnerVault():canAccessVehicle(src)}
-  function vehicleList(){return rawVehicleList().filter(canAccessVehicle)}
+  function vehicleList(){
+    var seen={}, out=[];
+    function add(v){v=clean(v);var k=normVehicleKey(v);if(v&&k&&!seen[k]&&canAccessVehicle(v)){seen[k]=1;out.push(v)}}
+    // Phase 21: the allowed vehicle vaults must come from vehicleScope, not only from existing cash rows/transactions.
+    // This lets a linked Driver/Groomer see the vehicle vault even when the current balance is 0.00 SAR.
+    scopedVehicleNames().forEach(add);
+    rawVehicleList().forEach(add);
+    return out.sort();
+  }
   function cashRows(){return dataRows().filter(function(r){var v=rowVehicle(r);return v && canAccessVehicle(v) && isCash(rowPay(r))})}
   function txRows(){return getTx().filter(function(t){
     if(!t)return false;
@@ -299,7 +358,7 @@
     }
     var box=byId('treasuryVaultCards'); if(!box)return;
     var vs=vehicleList(), c=cashByVehicle();
-    treasurySafeHtml(box,vs.length?vs.map(function(v){return '<div class="tr-vault"><div><b>'+esc(v)+'</b><span>تحصيل نقدي: '+fmt(c[v]||0)+'</span><strong>'+fmtAvail(vehicleBalance(v))+'</strong></div><button type="button" class="vico tr-statement-open" data-vault="'+esc(v)+'" title="كشف حساب '+esc(v)+'">🚐</button></div>'}).join(''):'<div class="tr-note">لا توجد سيارات في البيانات الحالية.</div>','treasury vehicle balances');
+    treasurySafeHtml(box,vs.length?vs.map(function(v){return '<div class="tr-vault"><div><b>'+esc(v)+'</b><span>تحصيل نقدي: '+fmt(c[v]||0)+'</span><strong>'+fmtAvail(vehicleBalance(v))+'</strong></div><button type="button" class="vico tr-statement-open" data-vault="'+esc(v)+'" title="كشف حساب '+esc(v)+'">🚐</button></div>'}).join(''):'<div class="tr-note">لا توجد سيارات مصرح بها لهذا المستخدم.</div>','treasury vehicle balances');
   }
   function allMovements(){
     var list=[];
