@@ -212,12 +212,34 @@ function renderSettings(){const p=currentPeriod(), cfg=getConfig(p);function car
 
 function commissionCurrentUser(){
   try{
+    var eng=window.PETATOEPermissionEngine;
+    if(eng&&typeof eng.currentUser==='function'){
+      var ref=eng.currentUser();
+      var resolved=(eng.resolveUser&&ref)?eng.resolveUser(ref):null;
+      if(resolved&&(resolved.id||resolved.username||resolved.email)) return resolved;
+      if(ref&&(ref.id||ref.username||ref.email)) return ref;
+    }
+  }catch(e){}
+  try{
+    if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'){
+      var au=window.PETATOEAuth.currentUser();
+      if(au&&(au.id||au.username||au.email)) return au;
+    }
+  }catch(e){}
+  try{
+    if(window.__PETATOE_ACTIVE_USER__&&(window.__PETATOE_ACTIVE_USER__.id||window.__PETATOE_ACTIVE_USER__.username||window.__PETATOE_ACTIVE_USER__.email)) return window.__PETATOE_ACTIVE_USER__;
+  }catch(e){}
+  try{
+    if(window.currentUser&&(window.currentUser.id||window.currentUser.username||window.currentUser.email)) return window.currentUser;
+  }catch(e){}
+  try{
     var st=window.PETATOEStorage;
     var users=(st&&st.readJSON)?st.readJSON('petatoe_users_v108',[]):[];
-    var id=(st&&st.get)?st.get('petatoe_current_user_v108','u_admin'):'u_admin';
-    var user=(Array.isArray(users)?users:[]).find(function(u){return u&&u.id===id;})||(Array.isArray(users)?users[0]:null)||{username:'Admin',fullName:'Admin',role:'superadmin'};
-    return user;
-  }catch(e){return {username:'Admin',fullName:'Admin',role:'superadmin'};}
+    var id=(st&&st.get)?st.get('petatoe_current_user_v108',''):' ';
+    var user=(Array.isArray(users)?users:[]).find(function(u){return u&&(String(u.id)===String(id)||String(u.username||'').toLowerCase()===String(id).toLowerCase());});
+    if(user) return user;
+  }catch(e){}
+  return {username:'Guest',fullName:'Guest',role:'guest'};
 }
 function commissionIsAdminUser(u){
   u=u||commissionCurrentUser();
@@ -227,6 +249,61 @@ function commissionIsAdminUser(u){
 }
 function commissionNormName(v){return String(v||'').trim().replace(/\s+/g,' ').toLowerCase();}
 function commissionKindLabel(kind){return kind==='groomer'?'حلاق':kind==='driver'?'سائق':kind==='sales'?'مندوب':'غير محدد';}
+function commissionPayrollEmployees(){
+  try{
+    var f=window.PETATOEPayrollReadFacade;
+    if(f&&typeof f.employees==='function'){var a=f.employees()||[];if(a.length)return a;}
+  }catch(e){}
+  try{
+    var st=window.PETATOEStorage;
+    var a=(st&&st.readJSON)?st.readJSON('PETATOE_PAYROLL_EMPLOYEES_V1',[]):[];
+    if(Array.isArray(a))return a;
+  }catch(e){}
+  return [];
+}
+function commissionUserKeys(u){
+  u=u||commissionCurrentUser();
+  return [u.id,u.userId,u.uid,u.supabase_id,u.username,u.login,u.email,u.phone,u.fullName,u.name,u.userKey]
+    .map(function(x){return String(x||'').trim().toLowerCase();}).filter(Boolean);
+}
+function commissionEmployeeAliasesForUser(user){
+  user=user||commissionCurrentUser();
+  var keys=commissionUserKeys(user), out=[];
+  function add(v){v=String(v||'').trim();if(v)out.push(v)}
+  [user.fullName,user.username,user.name,user.commissionOwner,user.commissionEmployeeName,user.email].forEach(add);
+  commissionPayrollEmployees().forEach(function(e){
+    var empKeys=[e.userId,e.user_id,e.userKey,e.username,e.login,e.email,e.phone,e.linkedUserId,e.linked_user_id]
+      .map(function(x){return String(x||'').trim().toLowerCase();}).filter(Boolean);
+    var hit=empKeys.some(function(k){return keys.indexOf(k)>-1;});
+    if(hit){
+      [e.name,e.employeeName,e.fullName,e.commissionEmployeeName,e.userKey,e.username].forEach(add);
+    }
+  });
+  var seen={};
+  return out.map(commissionNormName).filter(function(x){if(!x||seen[x])return false;seen[x]=1;return true;});
+}
+function commissionCanAccessCar(user,car){
+  if(commissionIsAdminUser(user))return true;
+  try{
+    var p=window.PETATOEPermissions;
+    if(p&&typeof p.canAccessVehicle==='function')return !!p.canAccessVehicle(user,car);
+  }catch(e){}
+  return false;
+}
+function commissionAllowedCars(){
+  var user=commissionCurrentUser();
+  var cars=getCars();
+  if(commissionIsAdminUser(user))return cars;
+  return cars.filter(function(c){return commissionCanAccessCar(user,c);});
+}
+function commissionApplyDataScope(rows,user){
+  user=user||commissionCurrentUser();
+  if(commissionIsAdminUser(user))return rows||[];
+  var aliases=commissionEmployeeAliasesForUser(user);
+  return (rows||[]).filter(function(r){
+    return aliases.indexOf(commissionNormName(r.person))>-1 && commissionCanAccessCar(user,r.car);
+  });
+}
 
 function commissionStatementFilters(){
   var now=new Date();
@@ -315,10 +392,11 @@ function fillStatementFilters(calc, preserve){
   if(cEl){
     var oldC=String((preserve&&preserve.car)||cEl.value||'');
     var cars=[];
-    try{ cars=getCars(); }catch(e){cars=[];}
-    var cOpts=[{value:'',label:'كل السيارات'}].concat(cars.map(function(c){return {value:c,label:c};}));
+    try{ cars=commissionAllowedCars(); }catch(e){cars=[];}
+    var isAdmin=commissionIsAdminUser(commissionCurrentUser());
+    var cOpts=(isAdmin?[{value:'',label:'كل السيارات'}]:[]).concat(cars.map(function(c){return {value:c,label:c};}));
     var cExists=!oldC || cars.indexOf(oldC)>-1;
-    petBlock5568_replaceOptions(cEl, cOpts, cExists?oldC:'');
+    petBlock5568_replaceOptions(cEl, cOpts, cExists?(oldC||(!isAdmin&&cars.length===1?cars[0]:'')):(!isAdmin&&cars.length===1?cars[0]:''));
   }
   if(pEl){
     var oldP=String((preserve&&preserve.person)||pEl.value||'');
@@ -346,8 +424,7 @@ function commissionStatementAllRows(calc){
 function commissionStatementVisibleRows(calc){
   var user=commissionCurrentUser(), admin=commissionIsAdminUser(user), all=commissionStatementAllRows(calc), personVal=(petBlock5568_q('comStatementPerson')&&petBlock5568_q('comStatementPerson').value)||'';
   if(!admin){
-    var aliases=[user.fullName,user.username,user.name,user.commissionOwner,user.commissionEmployeeName].map(commissionNormName).filter(Boolean);
-    return all.filter(function(r){return aliases.indexOf(commissionNormName(r.person))>-1;});
+    return commissionApplyDataScope(all,user);
   }
   return all.filter(function(r){return !personVal||commissionNormName(r.person)===commissionNormName(personVal);});
 }
