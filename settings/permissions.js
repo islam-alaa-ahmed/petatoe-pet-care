@@ -174,10 +174,10 @@
     if(!u)return emptyUserPerm();
     if(isSuperUser(u))return fullUserPerm();
     var store=userPermStore(), rec=permissionRecordFor(store,u), saved=rec.perm||{};
-    // PETATOE v8.0.2 Phase 13: explicit user permissions override role defaults.
-    // If a user has a saved permission record, start from empty permissions so unchecked screens stay denied.
-    // Role defaults are used only when no saved record exists at all.
-    var base=rec.found?emptyUserPerm():defaultUserPerm(u);
+    // PETATOE v8.0.2 Phase 14: strict runtime permission source of truth.
+    // Runtime access is controlled only by the saved per-user permission record.
+    // Role defaults remain templates for creation/reset buttons, but they must not grant access automatically.
+    var base=emptyUserPerm();
     screenPerms.forEach(function(s){var k=s[0], src=(saved.screens&&saved.screens[k])||{};base.screens[k]=Object.assign(base.screens[k]||{},src)});
     specialPerms.forEach(function(s){var k=s[0];if(saved.special&&Object.prototype.hasOwnProperty.call(saved.special,k))base.special[k]=!!saved.special[k]});
     base.vehicleScope=normalizeVehicleScope(saved.vehicleScope||base.vehicleScope);
