@@ -147,32 +147,51 @@
   function payrollYears(){return uniqueSorted(slips().map(function(s){return periodYear(s.period)}),true)}
   function payrollMonths(year){return uniqueSorted(slips().filter(function(s){return !year||periodYear(s.period)===String(year)}).map(function(s){return periodMonth(s.period)}),false)}
   function norm(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,' ')}
-  var PET_USERS_KEYS=[];
+  var PET_USERS_KEYS=['app_users','petatoe_users_v139','petatoe_users_v108','petatoe_users_v2'];
   function mergeUser(oldU,newU){
     oldU=oldU||{};newU=newU||{};
     return Object.assign({},oldU,newU,{
-      fullName:(newU.fullName||newU.name||newU.displayName||oldU.fullName||oldU.name||oldU.displayName||newU.username||oldU.username||''),
-      username:(newU.username||oldU.username||''),
+      id:String(newU.id||newU.userId||newU.uid||oldU.id||oldU.userId||oldU.uid||newU.username||oldU.username||''),
+      fullName:(newU.fullName||newU.name||newU.displayName||newU.employeeName||oldU.fullName||oldU.name||oldU.displayName||oldU.employeeName||newU.username||oldU.username||''),
+      username:(newU.username||newU.login||oldU.username||oldU.login||''),
+      email:(newU.email||oldU.email||''),
+      phone:(newU.phone||oldU.phone||''),
       role:(newU.role||oldU.role||''),
       status:(newU.status||oldU.status||'active')
     });
   }
+  function pushUsersIntoMap(map,arr){
+    if(!Array.isArray(arr))return;
+    arr.forEach(function(u){
+      if(!u)return;
+      var id=String(u.id||u.userId||u.uid||u.username||u.login||u.email||u.fullName||u.name||'').trim();
+      if(!id)return;
+      var key=String(u.id||u.userId||u.uid||u.username||u.login||u.email||id).toLowerCase();
+      map[key]=mergeUser(map[key],Object.assign({},u,{id:id}));
+    });
+  }
   function appUsers(){
     var map={};
+    try{
+      var ids=window.PETATOEIdentityStore||window.PETATOESupabaseRepository||null;
+      if(ids&&typeof ids.load==='function')ids.load();
+      if(ids&&typeof ids.usersSync==='function')pushUsersIntoMap(map,ids.usersSync()||[]);
+    }catch(e){console.warn('PETATOEPayroll identity users load failed',e)}
+    try{if(window.__PETATOE_SETTINGS_API__&&typeof window.__PETATOE_SETTINGS_API__.users==='function')pushUsersIntoMap(map,window.__PETATOE_SETTINGS_API__.users()||[])}catch(e2){console.warn('PETATOEPayroll settings users load failed',e2)}
     PET_USERS_KEYS.forEach(function(key){
-      var arr=read(key,[]);
-      if(!Array.isArray(arr))return;
-      arr.forEach(function(u){
-        if(!u)return;
-        var id=String(u.id||u.username||u.fullName||'');
-        if(!id)return;
-        map[id]=mergeUser(map[id],Object.assign({},u,{id:id}));
-      });
+      try{var arr=read(key,[]);pushUsersIntoMap(map,arr)}catch(_e){}
+      try{
+        var raw=localStorage.getItem(key)||sessionStorage.getItem(key);
+        if(raw)pushUsersIntoMap(map,JSON.parse(raw));
+      }catch(_e2){}
     });
     var list=Object.keys(map).map(function(k){return map[k]});
     return list.filter(function(u){return String(u.status||'active')!=='deleted'});
   }
-  function getUserById(id){id=String(id||'');return appUsers().find(function(u){return String(u.id)===id})||null}
+  function getUserById(id){
+    id=String(id||'');var nid=norm(id);
+    return appUsers().find(function(u){return String(u.id)===id||norm(u.username)===nid||norm(u.login)===nid||norm(u.email)===nid})||null
+  }
   function currentUser(){
     try{if(typeof window.petCurrentUser==='function')return window.petCurrentUser()}catch(e){console.warn('PETATOEPayroll currentUser fallback',e)}
     try{if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function')return window.PETATOEAuth.currentUser()}catch(e2){console.warn('PETATOEPayroll auth currentUser fallback',e2)}
@@ -269,8 +288,17 @@
     var out=[];raw.forEach(function(x){x=norm(x);if(x&&out.indexOf(x)===-1)out.push(x)});return out;
   }
   function commissionPersonName(row){row=row||{};return row.person||row.name||row.employee||row.employeeName||row.salesPerson||row.driver||row.groomer||''}
+  function payrollEmployeeNames(){
+    var out=[];
+    employees().forEach(function(e){
+      if(!e||String(e.status||'active')==='deleted')return;
+      addUniqueCommissionName(out,e.name||e.fullName||e.employeeName);
+    });
+    return out;
+  }
   function commissionEmployeeNames(){
     var out=[];
+    payrollEmployeeNames().forEach(function(name){addUniqueCommissionName(out,name)});
     currentCommissionEmployeeNames().forEach(function(name){addUniqueCommissionName(out,name)});
     snapshotCommissionEmployeeNames().forEach(function(name){addUniqueCommissionName(out,name)});
     return out.sort(function(a,b){return a.localeCompare(b,'ar')});
@@ -657,6 +685,10 @@
     document.addEventListener('change',payrollDelegatedChange);
     document.addEventListener('click',function(e){var wrap=byId('peStatusSelect');if(!wrap)return;if(!wrap.contains(e.target))PETATOEPayroll.toggleEmployeeStatusMenu(false)});
     document.addEventListener('petatoe:tabchange',function(e){var t=(e.detail||{}).tabId;if(t==='payroll')setTimeout(render,0);if(t==='salarySlip')setTimeout(renderSalarySlip,0)});
+    window.addEventListener('petatoe:identity-ready',function(){refreshPayrollViews()});
+    document.addEventListener('petatoe:identity-ready',function(){refreshPayrollViews()});
+    window.addEventListener('petatoe:permissionschanged',function(){refreshPayrollViews()});
+    document.addEventListener('petatoe:permissionschanged',function(){refreshPayrollViews()});
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(byId('payrollArea'))render();},200)});else setTimeout(function(){if(byId('payrollArea'))render();},200);
   }
   setTimeout(loadPayrollFromSupabase,0);
