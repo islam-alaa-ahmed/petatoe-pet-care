@@ -232,6 +232,7 @@ function scrollDashboardToBottom(ev){
     if(svc){openPetClientServiceDrill(petDecodeHtml(svc.getAttribute('data-customer-name')),petDecodeHtml(svc.getAttribute('data-service-name')));return true}
     var invRow=e.target.closest&&e.target.closest('#petDrillTable tbody tr');
     if(invRow){var invCell=invRow.children&&invRow.children[1];if(invCell)openPetInvoiceDrill(invCell.textContent||'');return true}
+    if(e.target.closest&&e.target.closest('[data-payroll-action],#payrollArea,#salarySlipArea,.payroll-shell,.salary-slip-redesign-shell,.salary-slip-self-service'))return false;
     var customerBtn=e.target.closest&&e.target.closest('button.btn-ghost');
     if(customerBtn && /Customer 360|متابعة|فتح/.test(customerBtn.textContent||'')){var row=customerBtn.closest('tr');var first=row&&row.children&&row.children[0];if(first && /Customer 360|متابعة|فتح/.test(customerBtn.textContent||'')){openPetClient360(first.textContent||'');return true}}
     return false;

@@ -306,6 +306,7 @@
     if(act){var a=act.getAttribute('data-bi-action');if(a==='export-business-intelligence')exportBusinessIntelligenceExcel();else if(a==='refresh-business-intelligence')renderBusinessIntelligence();return}
     var client=e.target.closest&&e.target.closest('[data-pet-client360]');
     if(client){openPetClient360(petBiDecodeHtml(client.getAttribute('data-pet-client360')));return}
+    if(e.target.closest&&e.target.closest('[data-payroll-action],#payrollArea,#salarySlipArea,.payroll-shell,.salary-slip-redesign-shell,.salary-slip-self-service'))return;
     var btn=e.target.closest&&e.target.closest('button.btn-ghost');
     if(btn && /Customer 360|فتح|متابعة/.test(btn.textContent||'')){var row=btn.closest('tr');var first=row&&row.children&&row.children[0];if(first)openPetClient360(first.textContent||'');return}
   },true);

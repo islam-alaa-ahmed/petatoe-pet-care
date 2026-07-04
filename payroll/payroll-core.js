@@ -595,8 +595,8 @@
   function payrollDelegatedClick(e){
     var btn=e.target&&e.target.closest?e.target.closest('[data-payroll-action]'):null;
     if(!btn)return;
-    var root=btn.closest('#payrollArea,#salarySlipArea');
-    if(!root)return;
+    var root=btn.closest('#payrollArea,#salarySlipArea,.payroll-shell,.salary-slip-redesign-shell,.salary-slip-self-service');
+    /* Phase 41: any [data-payroll-action] belongs to payroll. Do not let generic Customer 360 handlers steal Arabic 'فتح' buttons. */
     var action=btn.getAttribute('data-payroll-action')||'';
     var id=btn.getAttribute('data-payroll-id')||'';
     var name=btn.getAttribute('data-payroll-name')||'';
