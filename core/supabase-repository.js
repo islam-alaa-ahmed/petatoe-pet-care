@@ -120,6 +120,20 @@
     return { ok:false, error:'Schema prune retry limit exceeded', removedColumns:removed };
   }
 
+  function payrollSlipFlatPayload(rowId, data, extraPayload){
+    var flat={ id:rowId };
+    var extra=extraPayload&&typeof extraPayload==='object'?extraPayload:{};
+    /* Phase 40: current Supabase payroll_slips schema is flat and does not expose
+       JSON columns (data/legacy_payload) or UI-only columns (payment_method/updated_at).
+       Send only the proven persistence columns first to avoid noisy failing fallback requests. */
+    ['employee_id','period','status','net_amount'].forEach(function(k){
+      if(extra[k]!==undefined && extra[k]!==null && String(extra[k])!=='') flat[k]=extra[k];
+    });
+    if(flat.period==null && data&&data.period!=null) flat.period=String(data.period||'');
+    if(flat.status==null && data&&data.status!=null) flat.status=String(data.status||'');
+    return flat;
+  }
+
   async function upsertJsonRow(table, id, data, extra){
     if(!id) throw new Error('Supabase row id is required for '+table);
     if(!hasClient()) return { ok:false, error:'Supabase client not ready' };
@@ -130,10 +144,19 @@
       rowId=deterministicUuid('payroll_slip:'+rowId);
       data.appSlipId=data.appSlipId||String(id);
     }
-    var base={ id:rowId, updated_at:new Date().toISOString() };
     var extraPayload=extra||{};
+
+    if(table==='payroll_slips'){
+      var slipPayload=payrollSlipFlatPayload(rowId, data, extraPayload);
+      slipPayload=await normalizePayrollSlipPayload(slipPayload, data);
+      var slipRes=await upsertWithSchemaPrune(table, slipPayload, { id:true });
+      if(slipRes.ok) return Object.assign({ schemaFallback:'payroll_flat' }, slipRes);
+      console.warn('PETATOESupabaseRepository upsert failed', table, slipRes.error);
+      return { ok:false, error:slipRes.error };
+    }
+
+    var base={ id:rowId, updated_at:new Date().toISOString() };
     var payload=Object.assign({}, base, { data:data }, extraPayload);
-    if(table==='payroll_slips') payload=await normalizePayrollSlipPayload(payload, data);
 
     var primary=await upsertWithSchemaPrune(table, payload, { id:true, data:true });
     if(primary.ok) return Object.assign({ schemaFallback:'data' }, primary);
@@ -141,13 +164,11 @@
     var err=primary.error||'';
     if(missingColumn(err,'data')){
       var legacyPayload=Object.assign({}, base, { legacy_payload:data }, extraPayload);
-      if(table==='payroll_slips') legacyPayload=await normalizePayrollSlipPayload(legacyPayload, data);
       var legacy=await upsertWithSchemaPrune(table, legacyPayload, { id:true, legacy_payload:true });
       if(legacy.ok) return Object.assign({ schemaFallback:'legacy_payload' }, legacy);
       var legacyErr=legacy.error||'';
-      if(table==='payroll_slips' && missingColumn(legacyErr,'legacy_payload')){
+      if(missingColumn(legacyErr,'legacy_payload')){
         var flat=Object.assign({}, base, extraPayload);
-        if(table==='payroll_slips') flat=await normalizePayrollSlipPayload(flat, data);
         var flatRes=await upsertWithSchemaPrune(table, flat, { id:true });
         if(flatRes.ok) return Object.assign({ schemaFallback:'flat' }, flatRes);
         console.warn('PETATOESupabaseRepository upsert failed', table, flatRes.error);
