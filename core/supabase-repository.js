@@ -199,7 +199,11 @@
     var res=await client().from(table).select('*').eq('id', String(id)).limit(1);
     if(res.error){ console.warn('PETATOESupabaseRepository getSingleton failed', table, resultError(res)); return clone(def||{}); }
     var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
-    return row && row.data && typeof row.data==='object' ? clone(row.data) : clone(def||{});
+    if(!row) return clone(def||{});
+    if(row.data && typeof row.data==='object') return clone(row.data);
+    if(row.legacy_payload && typeof row.legacy_payload==='object') return clone(row.legacy_payload);
+    if(row.value && typeof row.value==='object') return clone(row.value);
+    return clone(def||{});
   }
 
   async function saveSingleton(table, id, data){
@@ -609,7 +613,7 @@
 
 
   window.PETATOESupabaseRepository={
-    version:'8.0.3',
+    version:'8.0.2',
     hasClient:hasClient,
     listJsonRows:listJsonRows,
     upsertJsonRow:upsertJsonRow,
