@@ -47,6 +47,36 @@
     return m && m[1] ? String(m[1]) : '';
   }
 
+  function invalidUuidValue(err){
+    var msg=String(err||'');
+    var m=msg.match(/invalid input syntax for type uuid:\s*"([^"]+)"/i);
+    return m && m[1] ? String(m[1]) : '';
+  }
+
+  function findPayloadKeyByValue(payload, value){
+    if(!payload||!value) return '';
+    var keys=Object.keys(payload);
+    for(var i=0;i<keys.length;i++){
+      var k=keys[i];
+      if(payload[k] == null) continue;
+      if(String(payload[k])===String(value)) return k;
+    }
+    return '';
+  }
+
+  async function normalizePayrollSlipPayload(payload, data){
+    if(!payload||typeof payload!=='object') return payload;
+    if(String(payload.employee_id||'') && !isUuid(payload.employee_id)){
+      var resolved='';
+      try{
+        resolved=await findPayrollEmployeeRowId({id:String((data&&data.employeeId)||payload.employee_id||''), code:String((data&&data.employeeCode)||'')});
+      }catch(_e){resolved='';}
+      if(isUuid(resolved)) payload.employee_id=resolved;
+      else delete payload.employee_id;
+    }
+    return payload;
+  }
+
   async function upsertWithSchemaPrune(table, payload, protectedColumns){
     protectedColumns=protectedColumns||{};
     var p=clone(payload||{});
@@ -59,6 +89,13 @@
       if(col && Object.prototype.hasOwnProperty.call(p,col) && !protectedColumns[col]){
         delete p[col];
         removed.push(col);
+        continue;
+      }
+      var badUuid=invalidUuidValue(err);
+      var badKey=findPayloadKeyByValue(p,badUuid);
+      if(badKey && !protectedColumns[badKey]){
+        delete p[badKey];
+        removed.push(badKey+':invalid_uuid');
         continue;
       }
       return { ok:false, error:err, removedColumns:removed };
@@ -74,6 +111,7 @@
     var base={ id:String(id), updated_at:new Date().toISOString() };
     var extraPayload=extra||{};
     var payload=Object.assign({}, base, { data:data }, extraPayload);
+    if(table==='payroll_slips') payload=await normalizePayrollSlipPayload(payload, data);
 
     var primary=await upsertWithSchemaPrune(table, payload, { id:true, data:true });
     if(primary.ok) return Object.assign({ schemaFallback:'data' }, primary);
@@ -81,11 +119,13 @@
     var err=primary.error||'';
     if(missingColumn(err,'data')){
       var legacyPayload=Object.assign({}, base, { legacy_payload:data }, extraPayload);
+      if(table==='payroll_slips') legacyPayload=await normalizePayrollSlipPayload(legacyPayload, data);
       var legacy=await upsertWithSchemaPrune(table, legacyPayload, { id:true, legacy_payload:true });
       if(legacy.ok) return Object.assign({ schemaFallback:'legacy_payload' }, legacy);
       var legacyErr=legacy.error||'';
       if(table==='payroll_slips' && missingColumn(legacyErr,'legacy_payload')){
         var flat=Object.assign({}, base, extraPayload);
+        if(table==='payroll_slips') flat=await normalizePayrollSlipPayload(flat, data);
         var flatRes=await upsertWithSchemaPrune(table, flat, { id:true });
         if(flatRes.ok) return Object.assign({ schemaFallback:'flat' }, flatRes);
         console.warn('PETATOESupabaseRepository upsert failed', table, flatRes.error);
