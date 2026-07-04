@@ -295,13 +295,45 @@
   function slipPersistenceExtra(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip&&slip.employeeId||''),period:String(slip&&slip.period||''),status:String(slip&&slip.status||''),net_amount:num(c.net||0)}}
   function persistOneSlip(slip){var R=payrollRepo();if(!slip||!slip.id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});return R.upsertJsonRow('payroll_slips',slip.id,slip,slipPersistenceExtra(slip)).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Save failed: payroll_slips');return res||{ok:true}}).catch(function(e){console.warn('PETATOEPayroll single slip persist failed',e);throw e})}
   function removeOneSlip(id){var R=payrollRepo();if(!id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});return R.deleteById('payroll_slips',id).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Delete failed: payroll_slips');return res||{ok:true}}).catch(function(e){console.warn('PETATOEPayroll single slip delete failed',e);throw e})}
-  function getEmployee(id){return employees().find(function(e){return e.id===id})||null}
+  function employeeMatchKeys(emp){
+    emp=emp||{};
+    var out=[];
+    ['id','supabase_id','employee_id','employeeId','app_id','code','userId','userKey'].forEach(function(k){
+      var v=emp[k];
+      if(v!==null&&v!==undefined&&String(v).trim())out.push(String(v).trim());
+    });
+    return out.filter(function(v,i,a){return a.indexOf(v)===i});
+  }
+  function getEmployee(id){
+    id=String(id||'').trim();
+    if(!id)return null;
+    return employees().find(function(e){return employeeMatchKeys(e).indexOf(id)>-1})||null;
+  }
   function activeEmployees(){return employees().filter(function(e){return e.status!=='stopped'&&e.status!=='resigned'})}
   function statusInfo(st){var map={draft:['مسودة','warn'],pending_board:['بانتظار اعتماد رئيس مجلس الإدارة','warn'],board_approved:['معتمد مبدئيًا - بانتظار موافقة الموظف','ok'],employee_objection:['اعتراض من الموظف','bad'],employee_approved:['موافق عليه من الموظف - جاهز للحسابات','ok'],accounts_approved:['معتمد للصرف','ok'],paid:['تم الصرف','ok'],rejected:['مرفوض','bad']};return map[st]||[st||'مسودة','warn']}
   function statusBadge(st){var x=statusInfo(st);return '<span class="payroll-badge '+x[1]+'">'+esc(x[0])+'</span>'}
-  function readCommissionSnapshots(){var s=read(COMM_SNAPSHOT_KEY,{});return s&&typeof s==='object'?s:{}}
+  function isObjectMap(v){return !!(v&&typeof v==='object'&&!Array.isArray(v))}
+  function normalizeCommissionSnapshotsSource(src){
+    src=isObjectMap(src)?src:{};
+    if(isObjectMap(src.snapshots))return src.snapshots;
+    if(isObjectMap(src.monthlySnapshots))return src.monthlySnapshots;
+    if(isObjectMap(src.commissionSnapshots))return src.commissionSnapshots;
+    return src;
+  }
+  function readCommissionSnapshots(){
+    var sources=[];
+    try{if(window.PETATOERepositories&&window.PETATOERepositories.CommissionSnapshots&&typeof window.PETATOERepositories.CommissionSnapshots.get==='function')sources.push(window.PETATOERepositories.CommissionSnapshots.get())}catch(_e){}
+    try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')sources.push(window.PETATOEStorage.readJSON('commissionSnapshots',{}))}catch(_e){}
+    try{if(window.localStorage){var raw=window.localStorage.getItem(COMM_SNAPSHOT_KEY);if(raw)sources.push(JSON.parse(raw))}}catch(_e){}
+    sources.push(read(COMM_SNAPSHOT_KEY,{}));
+    for(var i=0;i<sources.length;i++){
+      var s=normalizeCommissionSnapshotsSource(sources[i]);
+      if(isObjectMap(s)&&Object.keys(s).length)return s;
+    }
+    return {};
+  }
   function readCommissionStore(){
-    var s=read(COMM_SNAPSHOT_KEY,{});
+    var s=readCommissionSnapshots();
     return s&&typeof s==='object'?s:{};
   }
   function addUniqueCommissionName(out,name){
