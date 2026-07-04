@@ -60,13 +60,22 @@
       return res||{ok:true};
     }).catch(function(e){console.warn('PETATOEPayroll master persist failed',e);toastMsg('تعذر حفظ تهيئة الرواتب في Supabase');throw e});
   }
+  function stablePayload(row){
+    var v=cloneVal(row||{});
+    if(v&&typeof v==='object'){
+      delete v._persistPromise;
+    }
+    try{return JSON.stringify(v,Object.keys(v||{}).sort())}catch(_e){try{return JSON.stringify(v)}catch(_e2){return String(v)}}
+  }
   function persistArrayTable(table,nextRows,prevRows,extraForRow){
     var R=payrollRepo();
     if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
     nextRows=Array.isArray(nextRows)?nextRows:[];
     prevRows=Array.isArray(prevRows)?prevRows:[];
     var nextIds={};
+    var prevById={};
     var ops=[];
+    prevRows.forEach(function(row){if(row&&row.id!=null)prevById[String(row.id)]=row});
     nextRows.forEach(function(row){if(row&&row.id!=null)nextIds[String(row.id)]=true});
     prevRows.forEach(function(row){
       if(row&&row.id!=null&&!nextIds[String(row.id)]){
@@ -75,11 +84,13 @@
     });
     nextRows.forEach(function(row){
       if(!row||row.id==null)return;
+      var old=prevById[String(row.id)];
+      if(old && stablePayload(old)===stablePayload(row))return;
       ops.push(R.upsertJsonRow(table,row.id,row,extraForRow?extraForRow(row):{}).then(function(res){if(res&&!res.ok)throw new Error(res.error||('Save failed: '+table));return res||{ok:true}}));
     });
     return Promise.all(ops).then(function(){
-      try{document.dispatchEvent(new CustomEvent('petatoe:payroll-persisted',{detail:{table:table,count:nextRows.length}}))}catch(_e){}
-      return {ok:true,count:nextRows.length};
+      try{document.dispatchEvent(new CustomEvent('petatoe:payroll-persisted',{detail:{table:table,count:ops.length,total:nextRows.length}}))}catch(_e){}
+      return {ok:true,count:ops.length,total:nextRows.length};
     }).catch(function(e){
       console.warn('PETATOEPayroll persist failed',table,e);
       toastMsg('تعذر حفظ بيانات الرواتب في Supabase');

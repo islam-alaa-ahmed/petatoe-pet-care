@@ -164,7 +164,11 @@
   async function deleteById(table, id){
     if(!id) return { ok:false, error:'Missing id' };
     if(!hasClient()) return { ok:false, error:'Supabase client not ready' };
-    var res=await client().from(table).delete().eq('id', String(id));
+    var rowId=String(id);
+    if(table==='payroll_slips' && !isUuid(rowId)){
+      rowId=deterministicUuid('payroll_slip:'+rowId);
+    }
+    var res=await client().from(table).delete().eq('id', rowId);
     if(res.error){ console.warn('PETATOESupabaseRepository delete failed', table, resultError(res)); return { ok:false, error:resultError(res) }; }
     return { ok:true, data:res.data };
   }
