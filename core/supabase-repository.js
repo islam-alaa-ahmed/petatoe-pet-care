@@ -199,10 +199,12 @@
     var res=await client().from(table).select('*').eq('id', String(id)).limit(1);
     if(res.error){ console.warn('PETATOESupabaseRepository getSingleton failed', table, resultError(res)); return clone(def||{}); }
     var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
-    if(!row) return clone(def||{});
-    if(row.data && typeof row.data==='object') return clone(row.data);
-    if(row.legacy_payload && typeof row.legacy_payload==='object') return clone(row.legacy_payload);
-    if(row.value && typeof row.value==='object') return clone(row.value);
+    if(row){
+      if(row.data && typeof row.data==='object') return clone(row.data);
+      if(row.legacy_payload && typeof row.legacy_payload==='object') return clone(row.legacy_payload);
+      if(row.value && typeof row.value==='object') return clone(row.value);
+      if(row.default && typeof row.default==='object') return clone(row.default);
+    }
     return clone(def||{});
   }
 
@@ -282,14 +284,10 @@
       status:String(data.status||'active'),
       updated_at:new Date().toISOString()
     };
-    var res;
-    if(rowId){
-      res=await client().from('payroll_employees').update(payload).eq('id',rowId).select().limit(1);
-    }else{
-      res=await client().from('payroll_employees').insert(payload).select().limit(1);
-    }
-    if(res.error){ console.warn('PETATOESupabaseRepository payroll employee upsert failed', resultError(res)); return {ok:false,error:resultError(res)}; }
-    return {ok:true,data:res.data};
+    if(rowId) payload.id=rowId;
+    var res=await upsertWithSchemaPrune('payroll_employees', payload, rowId?{id:true}:{});
+    if(!res.ok){ console.warn('PETATOESupabaseRepository payroll employee upsert failed', res.error); return {ok:false,error:res.error}; }
+    return Object.assign({schemaFallback:'payroll_employees_pruned'}, res);
   }
 
   async function deletePayrollEmployee(employee){
