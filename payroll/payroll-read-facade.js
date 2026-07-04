@@ -1,4 +1,4 @@
-/* PETATOE v8.0.2 — Payroll Read-Only Facade (Supabase)
+/* PETATOE v8.0.3 — Payroll Read-Only Facade (Full Slip Payload)
    Scope: read-only facade for payroll data.
    Storage rule: no LocalStorage / PETATOEStorage dependency.
    Source: PETATOESupabaseRepository + in-memory runtime cache only. */
@@ -64,6 +64,18 @@
       var emps = R.listPayrollEmployees ? await R.listPayrollEmployees() : [];
       var slips = R.listJsonRows ? await R.listJsonRows('payroll_slips',{order:'created_at'}) : [];
       var master = R.getSingleton ? await R.getSingleton('payroll_master_data', MASTER_ROW_ID, {}) : {};
+      var masterSlips = Array.isArray(master.slips) ? master.slips : [];
+      if(masterSlips.length){
+        var flatById = {};
+        asArray(slips).forEach(function(row){ if(row && row.id != null) flatById[str(row.id)] = row; });
+        slips = masterSlips.map(function(slip){
+          slip = normalizeSlip(slip);
+          var flat = flatById[str(slip.id)] || {};
+          if(flat.status && flat.status !== slip.status) slip.status = flat.status;
+          if(flat.updatedAt && (!slip.updatedAt || str(flat.updatedAt) > str(slip.updatedAt))) slip.updatedAt = flat.updatedAt;
+          return slip;
+        });
+      }
       cache.employees = asArray(emps).map(normalizeEmployee);
       cache.slips = asArray(slips).map(normalizeSlip);
       setCacheFromMaster(master);
@@ -123,7 +135,7 @@
   }
 
   var api = {
-    version: 'v8.0.2-supabase-only',
+    version: 'v8.0.3-full-slip-payload',
     mode: 'read-only-supabase',
     __supabaseOnly: true,
     employees: employees,

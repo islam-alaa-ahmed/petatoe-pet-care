@@ -1,25 +1,21 @@
-PETATOE v8.0.2 — GOLD_FINAL_AUDIT_GITHUB_PRODUCTION_CERTIFICATION
+PETATOE v8.0.3 — PAYROLL_PHASE42_FULL_SLIP_PERSISTENCE_FIX
 
-Release Type: Enterprise Gold Stable Certification
-Base: v8.0.1 — SMART_REPORTS_FILTERS_BINDING_FIX
+Release Type: Payroll Enterprise Stabilization Patch
+Base: v8.0.2 — GOLD_FINAL_AUDIT_GITHUB_PRODUCTION_CERTIFICATION
 
 Purpose:
-- Gold Final Audit before GitHub Pages production upload.
-- GitHub Production Certification package check.
-- No new features.
-- No data logic changes.
-- No critical script loading order changes.
+- Phase 42 targeted payroll stabilization after root-cause audit.
+- Preserve the approved UI/UX and GitHub Pages/Supabase compatibility.
 
 What changed:
-- Unified release version/name to v8.0.2 — GOLD_FINAL_AUDIT_GITHUB_PRODUCTION_CERTIFICATION.
-- Added final GitHub production certification documents under docs/gold-final-audit-v802/.
-- Added final manual pre-upload checklist.
-- Preserved v8.0.1 Smart Reports filter binding fix as baseline.
-
-Known deferred item:
-- Smart Reports PDF print layout polish may remain deferred if manual testing accepts current behavior.
+- Payroll slips now persist the full editable slip payload inside payroll_master_data.slips.
+- payroll_slips remains a flat Supabase index for id/employee/period/status/net_amount compatibility.
+- Loading payroll now prefers the full master slip payload and merges status metadata from the flat index when available.
+- Opening a new salary slip form no longer creates a remote draft before explicit Save/Send.
+- Deleting a salary slip removes the flat index row and updates the full master slip list.
+- Added cache busting for payroll/payroll-core.js in index.html.
 
 Quality Gates:
 - JavaScript syntax check required before release.
 - Source/href/img reference check required before release.
-- Manual regression required: Dashboard, Smart Reports filters, Customer 360, Login/Logout, Appointments, Vehicle Operations, PDF/Excel, Maintenance Center.
+- Payroll regression required: create, edit, delete, send to board, approve, reject, cancel approval, accounts approval, mark paid, reload from Supabase.
