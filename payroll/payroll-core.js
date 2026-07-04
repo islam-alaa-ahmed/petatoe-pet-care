@@ -309,6 +309,59 @@
     if(!id)return null;
     return employees().find(function(e){return employeeMatchKeys(e).indexOf(id)>-1})||null;
   }
+  function employeeRefKeys(ref){
+    ref=String(ref||'').trim();
+    var emp=ref?getEmployee(ref):null;
+    var keys=emp?employeeMatchKeys(emp).slice():[];
+    if(ref&&keys.indexOf(ref)===-1)keys.push(ref);
+    return keys.map(norm).filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i});
+  }
+  function sameEmployeeRef(a,b){
+    var ak=employeeRefKeys(a),bk=employeeRefKeys(b);
+    if(!ak.length||!bk.length)return String(a||'')===String(b||'');
+    return ak.some(function(k){return bk.indexOf(k)>-1});
+  }
+  function canonicalSlipKey(s){
+    s=s||{};
+    var emp=getEmployee(s.employeeId);
+    var empKey=emp?(emp.id||emp.supabase_id||emp.employee_id||emp.code||s.employeeId):s.employeeId;
+    return String(empKey||'')+'|'+String(s.period||'');
+  }
+  function slipCompletenessScore(s){
+    s=s||{};
+    var c=0;
+    ['base','housing','transport','incentives'].forEach(function(k){if(num(s[k])!==0)c+=2});
+    if(String(s.paymentMethod||'').trim())c+=2;
+    if(Array.isArray(s.additions)&&s.additions.length)c+=s.additions.length*2;
+    if(Array.isArray(s.deductions)&&s.deductions.length)c+=s.deductions.length*2;
+    try{var calc=calcSlip(s);if(calc&&num(calc.net)!==0)c+=3;if(calc&&num(calc.commission)!==0)c+=1}catch(_e){}
+    return c;
+  }
+  function slipTimeScore(s){
+    s=s||{};
+    var dates=[s.updatedAt,s.createdAt,s.boardApprovedAt,s.employeeApprovedAt,s.accountsApprovedAt,s.paidAt].filter(Boolean);
+    var best=0;
+    dates.forEach(function(d){var t=Date.parse(d);if(isFinite(t)&&t>best)best=t});
+    return best;
+  }
+  function compareSalarySlipPriority(a,b){
+    var p=String(b.period||'').localeCompare(String(a.period||''));
+    if(p)return p;
+    var ca=slipCompletenessScore(a),cb=slipCompletenessScore(b);
+    if(cb!==ca)return cb-ca;
+    var ta=slipTimeScore(a),tb=slipTimeScore(b);
+    if(tb!==ta)return tb-ta;
+    return String(b.id||'').localeCompare(String(a.id||''));
+  }
+  function canonicalPayrollSlips(rows){
+    var byKey={};
+    (Array.isArray(rows)?rows:[]).forEach(function(s){
+      if(!s)return;
+      var k=canonicalSlipKey(s);
+      if(!byKey[k]||compareSalarySlipPriority(s,byKey[k])<0)byKey[k]=s;
+    });
+    return Object.keys(byKey).map(function(k){return byKey[k]});
+  }
   function activeEmployees(){return employees().filter(function(e){return e.status!=='stopped'&&e.status!=='resigned'})}
   function statusInfo(st){var map={draft:['مسودة','warn'],pending_board:['بانتظار اعتماد رئيس مجلس الإدارة','warn'],board_approved:['معتمد مبدئيًا - بانتظار موافقة الموظف','ok'],employee_objection:['اعتراض من الموظف','bad'],employee_approved:['موافق عليه من الموظف - جاهز للحسابات','ok'],accounts_approved:['معتمد للصرف','ok'],paid:['تم الصرف','ok'],rejected:['مرفوض','bad']};return map[st]||[st||'مسودة','warn']}
   function statusBadge(st){var x=statusInfo(st);return '<span class="payroll-badge '+x[1]+'">'+esc(x[0])+'</span>'}
@@ -456,9 +509,9 @@
     var area=byId('salarySlipArea');
     if(!area)return;
     var allowedStatuses=['board_approved','employee_objection','employee_approved','accounts_approved','paid'];
-    var arr=slips().filter(function(s){
+    var arr=canonicalPayrollSlips(slips().filter(function(s){
       return allowedStatuses.indexOf(s.status)>-1&&canEmployeeSee(s)
-    }).sort(function(a,b){return String(b.period).localeCompare(String(a.period))});
+    })).sort(compareSalarySlipPriority);
     if(!arr.length){
       state.salarySlipId='';
       safeRender(area,'<div class="payroll-shell salary-slip-redesign-shell"><div class="payroll-card salary-slip-empty"><h3>📄 كشف الراتب</h3><p>لا يوجد كشف راتب معتمد مبدئيًا لهذا المستخدم حتى الآن.</p></div></div>','payroll empty self slip');
@@ -569,7 +622,7 @@
     var empId=(byId('payEmployee')||{}).value;
     if(!empId){toastMsg('اختر الموظف أولاً');return}
     var arr=slips();
-    var slip=arr.find(function(s){return s.employeeId===empId&&s.period===period});
+    var slip=arr.find(function(s){return sameEmployeeRef(s.employeeId,empId)&&String(s.period)===String(period)});
     var emp=getEmployee(empId)||{};
     if(!slip){
       slip={
@@ -621,7 +674,7 @@
     }
   }
 
-  function upsertSlip(slip){var arr=slips();var i=arr.findIndex(function(x){return x.id===slip.id});var duplicate=arr.find(function(x){return String(x.id)!==String(slip.id)&&String(x.employeeId)===String(slip.employeeId)&&String(x.period)===String(slip.period)});if(duplicate){toastMsg('يوجد كشف راتب لنفس الموظف في نفس الشهر بالفعل');return null}var old=i>-1?arr[i]:{};slip=Object.assign({},old,slip);if(i>-1)arr[i]=slip;else arr.push(slip);setSlipsCache(arr);slip._persistPromise=persistOneSlip(slip);return slip}
+  function upsertSlip(slip){var arr=slips();var i=arr.findIndex(function(x){return x.id===slip.id});var duplicate=arr.find(function(x){return String(x.id)!==String(slip.id)&&sameEmployeeRef(x.employeeId,slip.employeeId)&&String(x.period)===String(slip.period)});if(duplicate){toastMsg('يوجد كشف راتب لنفس الموظف في نفس الشهر بالفعل');return null}var old=i>-1?arr[i]:{};slip=Object.assign({},old,slip);if(i>-1)arr[i]=slip;else arr.push(slip);setSlipsCache(arr);slip._persistPromise=persistOneSlip(slip);return slip}
   function setStatus(id,st,extra){var arr=slips();var s=arr.find(function(x){return x.id===id});if(!s)return Promise.resolve(false);s.status=st;Object.assign(s,extra||{});s.updatedAt=new Date().toISOString();setSlipsCache(arr);var p=persistOneSlip(s);render();renderSalarySlip();return p;}
   function currentSlipFromForm(){var id=(byId('psId')||{}).value||'';if(!id)return null;return slips().find(function(x){return String(x.id)===String(id)})||null}
   function requireSlipStatus(s,allowed,msg){allowed=Array.isArray(allowed)?allowed:[allowed];if(!s){toastMsg('لم يتم العثور على كشف الراتب');return false}if(allowed.indexOf(String(s.status||'draft'))===-1){toastMsg(msg||'لا يمكن تنفيذ هذه الخطوة مع الحالة الحالية للكشف');return false}return true}
