@@ -53,6 +53,23 @@
     return m && m[1] ? String(m[1]) : '';
   }
 
+
+  function deterministicUuid(input){
+    input=String(input||'');
+    var h1=0x811c9dc5,h2=0x85ebca6b,h3=0xc2b2ae35,h4=0x27d4eb2f;
+    for(var i=0;i<input.length;i++){
+      var ch=input.charCodeAt(i);
+      h1=Math.imul(h1^ch,0x01000193)>>>0;
+      h2=Math.imul(h2^ch,0x85ebca6b)>>>0;
+      h3=Math.imul(h3^ch,0xc2b2ae35)>>>0;
+      h4=Math.imul(h4^ch,0x27d4eb2f)>>>0;
+    }
+    var hex=[h1,h2,h3,h4].map(function(n){return ('00000000'+(n>>>0).toString(16)).slice(-8)}).join('');
+    hex=hex.slice(0,12)+'4'+hex.slice(13);
+    hex=hex.slice(0,16)+(((parseInt(hex.charAt(16),16)||0)&3)|8).toString(16)+hex.slice(17);
+    return hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20,32);
+  }
+
   function findPayloadKeyByValue(payload, value){
     if(!payload||!value) return '';
     var keys=Object.keys(payload);
@@ -108,7 +125,12 @@
     if(!hasClient()) return { ok:false, error:'Supabase client not ready' };
     data=data&&typeof data==='object'?clone(data):{};
     data.id=data.id||id;
-    var base={ id:String(id), updated_at:new Date().toISOString() };
+    var rowId=String(id);
+    if(table==='payroll_slips' && !isUuid(rowId)){
+      rowId=deterministicUuid('payroll_slip:'+rowId);
+      data.appSlipId=data.appSlipId||String(id);
+    }
+    var base={ id:rowId, updated_at:new Date().toISOString() };
     var extraPayload=extra||{};
     var payload=Object.assign({}, base, { data:data }, extraPayload);
     if(table==='payroll_slips') payload=await normalizePayrollSlipPayload(payload, data);
