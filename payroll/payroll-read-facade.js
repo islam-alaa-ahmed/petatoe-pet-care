@@ -1,4 +1,4 @@
-/* PETATOE v8.0.3 — Payroll Read-Only Facade (Full Slip Payload)
+/* PETATOE v8.0.2 — Payroll Read-Only Facade (Supabase)
    Scope: read-only facade for payroll data.
    Storage rule: no LocalStorage / PETATOEStorage dependency.
    Source: PETATOESupabaseRepository + in-memory runtime cache only. */
@@ -52,6 +52,19 @@
     if(master.employeeConfig && typeof master.employeeConfig === 'object') cache.employeeConfig = clone(master.employeeConfig, cache.employeeConfig);
     if(master.commissionSnapshots && typeof master.commissionSnapshots === 'object') cache.commissionSnapshots = clone(master.commissionSnapshots, {});
   }
+  function mergeSlipSources(fullRows, flatRows){
+    fullRows = asArray(fullRows).map(normalizeSlip);
+    flatRows = asArray(flatRows).map(normalizeSlip);
+    var byId = {};
+    fullRows.forEach(function(row){ if(row && row.id) byId[str(row.id)] = row; });
+    flatRows.forEach(function(row){
+      if(!row || !row.id) return;
+      var id = str(row.appSlipId || row.app_slip_id || row.id);
+      if(byId[id]) byId[id] = Object.assign({}, row, byId[id], {id: byId[id].id});
+      else byId[id] = row;
+    });
+    return Object.keys(byId).map(function(id){ return byId[id]; });
+  }
   async function refresh(){
     if(cache.loading) return snapshot();
     var R = repo();
@@ -64,20 +77,8 @@
       var emps = R.listPayrollEmployees ? await R.listPayrollEmployees() : [];
       var slips = R.listJsonRows ? await R.listJsonRows('payroll_slips',{order:'created_at'}) : [];
       var master = R.getSingleton ? await R.getSingleton('payroll_master_data', MASTER_ROW_ID, {}) : {};
-      var masterSlips = Array.isArray(master.slips) ? master.slips : [];
-      if(masterSlips.length){
-        var flatById = {};
-        asArray(slips).forEach(function(row){ if(row && row.id != null) flatById[str(row.id)] = row; });
-        slips = masterSlips.map(function(slip){
-          slip = normalizeSlip(slip);
-          var flat = flatById[str(slip.id)] || {};
-          if(flat.status && flat.status !== slip.status) slip.status = flat.status;
-          if(flat.updatedAt && (!slip.updatedAt || str(flat.updatedAt) > str(slip.updatedAt))) slip.updatedAt = flat.updatedAt;
-          return slip;
-        });
-      }
       cache.employees = asArray(emps).map(normalizeEmployee);
-      cache.slips = asArray(slips).map(normalizeSlip);
+      cache.slips = mergeSlipSources(master && master.payrollSlips, slips);
       setCacheFromMaster(master);
       cache.loaded = true;
       cache.lastError = '';
@@ -135,7 +136,7 @@
   }
 
   var api = {
-    version: 'v8.0.3-full-slip-payload',
+    version: 'v8.0.2-supabase-only',
     mode: 'read-only-supabase',
     __supabaseOnly: true,
     employees: employees,

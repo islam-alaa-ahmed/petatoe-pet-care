@@ -1,4 +1,4 @@
-/* PETATOE v8.0.3 — Payroll Phase 42 Full Slip Persistence Fix
+/* PETATOE v8.0.2 — Payroll Supabase Storage Cleanup
    Payroll operational data reads/writes through Supabase runtime cache only. */
 (function(){
   'use strict';
@@ -51,7 +51,7 @@
     console.warn('PETATOEPayroll ignored non-payroll storage write', key);
     return Promise.resolve({ok:false,skipped:true});
   }
-  function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4},commissionSnapshots:payrollCache[COMM_SNAPSHOT_KEY]||{},slips:payrollCache[SLIP_KEY]||[]}}
+  function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4},commissionSnapshots:payrollCache[COMM_SNAPSHOT_KEY]||{},payrollSlips:Array.isArray(payrollCache[SLIP_KEY])?cloneVal(payrollCache[SLIP_KEY]):[]}}
   function persistMaster(){
     var R=payrollRepo();
     if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
@@ -118,12 +118,25 @@
     });
     return Promise.all(ops).then(function(){return {ok:true,count:nextRows.length}}).catch(function(e){console.warn('PETATOEPayroll employee persist failed',e);toastMsg('تعذر حفظ الموظف في Supabase');throw e});
   }
+  function mergePayrollSlipSources(fullRows, flatRows){
+    fullRows=Array.isArray(fullRows)?cloneVal(fullRows):[];
+    flatRows=Array.isArray(flatRows)?cloneVal(flatRows):[];
+    var byId={};
+    fullRows.forEach(function(row){if(row&&row.id!=null)byId[String(row.id)]=row});
+    flatRows.forEach(function(row){
+      if(!row||row.id==null)return;
+      var id=String(row.appSlipId||row.app_slip_id||row.id||'');
+      if(byId[id]){byId[id]=Object.assign({},row,byId[id],{id:byId[id].id});}
+      else byId[id]=row;
+    });
+    return Object.keys(byId).map(function(id){return byId[id]});
+  }
   function persistPayrollKey(key,val,prev){
     if(key===EMP_KEY){
       return persistPayrollEmployees(val,prev);
     }
     if(key===SLIP_KEY){
-      return persistArrayTable('payroll_slips',val,prev,function(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip.employeeId||''),period:String(slip.period||''),status:String(slip.status||''),payment_method:String(slip.paymentMethod||''),net_amount:num(c.net||0)};});
+      return persistArrayTable('payroll_slips',val,prev,function(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip.employeeId||''),period:String(slip.period||''),status:String(slip.status||''),payment_method:String(slip.paymentMethod||''),net_amount:num(c.net||0)};}).then(function(res){return persistMaster().then(function(){return res})});
     }
     if(key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY||key===COMM_SNAPSHOT_KEY){return persistMaster();}
     return Promise.resolve({ok:true,skipped:true});
@@ -142,20 +155,8 @@
       var emps=typeof R.listPayrollEmployees==='function'?await R.listPayrollEmployees():await R.listJsonRows('payroll_employees',{order:'created_at'});
       var slipsRows=await R.listJsonRows('payroll_slips',{order:'created_at'});
       var master=await R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{});
-      var masterSlips=Array.isArray(master.slips)?master.slips:[];
-      if(masterSlips.length){
-        var flatById={};
-        (Array.isArray(slipsRows)?slipsRows:[]).forEach(function(row){if(row&&row.id!=null)flatById[String(row.id)]=row});
-        slipsRows=masterSlips.map(function(slip){
-          slip=slip&&typeof slip==='object'?cloneVal(slip):{};
-          var flat=flatById[String(slip.id||'')]||{};
-          if(flat.status&&flat.status!==slip.status)slip.status=flat.status;
-          if(flat.updatedAt&&(!slip.updatedAt||String(flat.updatedAt)>String(slip.updatedAt)))slip.updatedAt=flat.updatedAt;
-          return slip;
-        });
-      }
       payrollCache[EMP_KEY]=Array.isArray(emps)?emps:[];
-      payrollCache[SLIP_KEY]=Array.isArray(slipsRows)?slipsRows:[];
+      payrollCache[SLIP_KEY]=mergePayrollSlipSources(master&&master.payrollSlips,slipsRows);
       payrollCache[JOB_TYPES_KEY]=Array.isArray(master.jobTypes)?master.jobTypes:[];
       payrollCache[EMP_CONFIG_KEY]=employeeConfigNormalize(master.employeeConfig||payrollCache[EMP_CONFIG_KEY]);
       payrollCache[COMM_SNAPSHOT_KEY]=master.commissionSnapshots&&typeof master.commissionSnapshots==='object'?master.commissionSnapshots:{};
@@ -568,7 +569,7 @@
       };
       arr.push(slip);
       setSlipsCache(arr);
-      /* Phase 42: opening a new slip form must not create a remote draft before the user explicitly saves or sends it. */
+      persistOneSlip(slip).catch(function(e){console.warn('PETATOEPayroll draft slip persist failed',e)})
     }else if(!slip.paymentMethod&&emp.paymentMethod){
       slip.paymentMethod=emp.paymentMethod;
       setSlipsCache(arr);
