@@ -1,8 +1,13 @@
 (function(){
 'use strict';
 var FLEET_KEY='fleet';
-function petStorageReadJSON(key,fallback){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')return window.PETATOEStorage.readJSON(key,fallback);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/fleet-inline.js",e);}return fallback}
-function petStorageWriteJSON(key,value){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.writeJSON==='function')return window.PETATOEStorage.writeJSON(key,value);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/fleet-inline.js",e);}return false}
+var FLEET_TABLE='operations_master_data';
+var fleetRemoteState={hydrated:false,loading:false,saving:false,cache:{vehicles:[],events:[],seq:1}};
+function repo(){return window.PETATOESupabaseRepository||null}
+function clone(v){try{return JSON.parse(JSON.stringify(v))}catch(e){return v}}
+function fleetNormalizeStore(raw){var s=Object.assign({vehicles:[],events:[],seq:1},raw&&typeof raw==='object'?raw:{});if(!Array.isArray(s.vehicles))s.vehicles=[];if(!Array.isArray(s.events))s.events=[];s.seq=Number(s.seq||1)||1;return s}
+function fleetHydrateRemote(){try{var r=repo();if(fleetRemoteState.hydrated||fleetRemoteState.loading||!r||typeof r.getSingleton!=='function')return;fleetRemoteState.loading=true;r.getSingleton(FLEET_TABLE,FLEET_KEY,{vehicles:[],events:[],seq:1}).then(function(data){fleetRemoteState.cache=fleetNormalizeStore(data);fleetRemoteState.hydrated=true;fleetRemoteState.loading=false;try{if(document.getElementById('fleet'))render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('fleet remote render',e)}}).catch(function(e){fleetRemoteState.loading=false;console.warn('PETATOE Fleet Supabase load failed',e)})}catch(e){fleetRemoteState.loading=false;console.warn('PETATOE Fleet Supabase hydrate failed',e)}}
+function fleetPersistRemote(s){fleetRemoteState.cache=fleetNormalizeStore(s);try{var r=repo();if(!r||typeof r.saveSingleton!=='function'){console.warn('PETATOE Fleet Supabase repository not ready; local fallback disabled');return false}fleetRemoteState.saving=true;r.saveSingleton(FLEET_TABLE,FLEET_KEY,clone(fleetRemoteState.cache)).then(function(){fleetRemoteState.saving=false}).catch(function(e){fleetRemoteState.saving=false;console.warn('PETATOE Fleet Supabase save failed',e)});return true}catch(e){fleetRemoteState.saving=false;console.warn('PETATOE Fleet Supabase persist failed',e);return false}}
 var charts={};
 var state={tab:'overview',period:'',vehicle:'all'};
 function $(id){return document.getElementById(id)}
@@ -20,8 +25,8 @@ function vanOf(r){return String((r&&r.van)||'').trim()||'غير محدد'}
 function uniqueVans(){var o={};recs().forEach(function(r){var v=vanOf(r);if(v&&v!=='غير محدد')o[v]=1});return Object.keys(o).sort()}
 function makeId(name,i){return 'van-'+i+'-'+String(name).replace(/[^a-zA-Z0-9\u0600-\u06FF]+/g,'-')}
 function defaults(){return uniqueVans().map(function(v,i){return {id:makeId(v,i+1),name:v,plate:v,driver:'',groomer:'',model:'',year:'',status:'active',startDate:'',notes:'تمت إضافتها تلقائياً من بيانات المبيعات'}})}
-function fleetReadStore(){var s={vehicles:[],events:[],seq:1};try{s=Object.assign(s,petStorageReadJSON(FLEET_KEY,{})||{})}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/fleet-inline.js",e);}if(!Array.isArray(s.vehicles))s.vehicles=[];if(!Array.isArray(s.events))s.events=[];var changed=false;if(!s.vehicles.length){s.vehicles=defaults();s.seq=s.vehicles.length+1;changed=true}else{var known={};s.vehicles.forEach(function(v){known[String(v.name||v.plate||'').trim()]=1});uniqueVans().forEach(function(v){if(!known[v]){s.vehicles.push({id:'van-'+Date.now()+'-'+Math.random().toString(16).slice(2),name:v,plate:v,driver:'',groomer:'',model:'',year:'',status:'active',startDate:'',notes:'تمت إضافتها تلقائياً من بيانات المبيعات'});changed=true;}})}if(changed)fleetWriteStore(s);return s}
-function fleetWriteStore(s){petStorageWriteJSON(FLEET_KEY,s)}
+function fleetReadStore(){fleetHydrateRemote();var s=fleetNormalizeStore(fleetRemoteState.cache);var changed=false;if(!s.vehicles.length){s.vehicles=defaults();s.seq=s.vehicles.length+1;if(fleetRemoteState.hydrated)changed=true}else{var known={};s.vehicles.forEach(function(v){known[String(v.name||v.plate||'').trim()]=1});uniqueVans().forEach(function(v){if(!known[v]){s.vehicles.push({id:'van-'+Date.now()+'-'+Math.random().toString(16).slice(2),name:v,plate:v,driver:'',groomer:'',model:'',year:'',status:'active',startDate:'',notes:'تمت إضافتها تلقائياً من بيانات المبيعات'});changed=true;}})}fleetRemoteState.cache=s;if(changed)fleetWriteStore(s);return s}
+function fleetWriteStore(s){fleetPersistRemote(s)}
 function vehicles(){return fleetReadStore().vehicles}
 function events(){return fleetReadStore().events}
 function vehById(id){return vehicles().filter(function(v){return String(v.id)===String(id)})[0]||null}
