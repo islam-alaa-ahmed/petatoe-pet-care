@@ -194,9 +194,23 @@ if(!window.renderAll && window.renderDashboardAll){ window.renderAll = window.re
   }
   window.petatoeClearLogs=function(){if(!canDelete()){toastSafe('الصلاحية الحالية لا تسمح بمسح السجل');return} if(!confirm('مسح سجل الحركات؟'))return; removeJSON(LOG_KEY); log('Audit Log Cleared','Log was cleared','warn'); renderLogsPanel();};
   window.petatoeExportLogsExcel=function(){var arr=readJSON(LOG_KEY,[]); if(!window.XLSX){toastSafe('مكتبة Excel غير متاحة');return} var ws=XLSX.utils.json_to_sheet(arr);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Audit Log');XLSX.writeFile(wb,'PETATOE_Audit_Log.xlsx')};
+  function smartRecordsFacade(){
+    return (window.PETATOEDataSource&&typeof window.PETATOEDataSource.getRecordsSync==='function')?window.PETATOEDataSource:null;
+  }
+  function smartExportTheme(){
+    var T=window.PETATOEThemeEngine;
+    if(T&&typeof T.getCurrentTheme==='function')return T.getCurrentTheme();
+    return (document.documentElement&&document.documentElement.getAttribute('data-theme'))||'dark';
+  }
+  function smartRestoreRecordsToSupabase(rows){
+    var D=smartRecordsFacade();
+    if(!D||typeof D.setRecordsSync!=='function')throw new Error('Supabase data source is not ready');
+    D.setRecordsSync(Array.isArray(rows)?rows:[]);
+    if(typeof D.syncRecordsCache==='function')D.syncRecordsCache(Array.isArray(rows)?rows:[],{reason:'smart-reports-backup-restore'});
+  }
   window.petatoeExportBackup=function(){
     if(!canBackup()){toastSafe('الصلاحية الحالية لا تسمح بالنسخ الاحتياطي');return}
-    var payload={version:BACKUP_VERSION,createdAt:new Date().toISOString(),records:dsRecords(),settings:settings(),logs:readJSON(LOG_KEY,[]),monthlyTargets:readJSON('petatoe_monthly_sales_targets_v1',{}),theme:(window.PETATOEStorage&&window.PETATOEStorage.get?window.PETATOEStorage.get('petatoe_theme','dark'):'dark')};
+    var payload={version:BACKUP_VERSION,createdAt:new Date().toISOString(),source:'supabase-safe-smart-reports',records:dsRecords(),settings:settings(),logs:readJSON(LOG_KEY,[]),monthlyTargets:readJSON('petatoe_monthly_sales_targets_v1',{}),theme:smartExportTheme()};
     var blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_BACKUP_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},800);log('Backup Exported','Records: '+payload.records.length,'info');
   };
   window.petatoeRestorePicker=function(){if(!canBackup()){toastSafe('الصلاحية الحالية لا تسمح بالاسترجاع');return} byId('petatoeRestoreInput')?.click()};
@@ -207,7 +221,22 @@ if(!window.renderAll && window.renderDashboardAll){ window.renderAll = window.re
   }
   window.petatoeRestoreBackup=function(e){
     var file=e.target.files&&e.target.files[0]; if(!file)return; var reader=new FileReader();
-    reader.onload=function(ev){var data=petSafeBackupParse(ev.target.result||'{}'); try{if(!data||typeof data!=='object'||!Array.isArray(data.records))throw new Error('Invalid backup'); if(!confirm('استرجاع النسخة الاحتياطية سيستبدل البيانات الحالية. هل أنت متأكد؟'))return; window.PETATOEDataSource.setRecordsSync(data.records); __legacyQualityCache=null; if(data.settings)writeJSON(SETTINGS_KEY,data.settings); if(data.logs)writeJSON(LOG_KEY,data.logs); if(data.monthlyTargets)writeJSON('petatoe_monthly_sales_targets_v1',data.monthlyTargets); if(data.theme){var S=window.PETATOEStorage;if(S&&S.set)S.set('petatoe_theme',data.theme);} try{_invalidateSearchIndex()}catch(e){smartReportsWarn('search index invalidation skipped after restore',e)}; try{save()}catch(e){smartReportsWarn('save skipped after restore',e)}; applyGovernance(); renderSettingsPanel(); log('Backup Restored','Records: '+dsRecords().length,'warn'); toastSafe('تم استرجاع النسخة الاحتياطية بنجاح')}catch(err){console.error(err);toastSafe('ملف Backup غير صالح')}}; reader.readAsText(file); e.target.value='';
+    reader.onload=function(ev){
+      var data=petSafeBackupParse(ev.target.result||'{}');
+      try{
+        if(!data||typeof data!=='object'||!Array.isArray(data.records))throw new Error('Invalid backup');
+        if(!confirm('استرجاع النسخة الاحتياطية سيستبدل البيانات الحالية. هل أنت متأكد؟'))return;
+        smartRestoreRecordsToSupabase(data.records);
+        __legacyQualityCache=null;
+        if(data.settings)writeJSON(SETTINGS_KEY,data.settings);
+        if(data.logs)writeJSON(LOG_KEY,data.logs);
+        if(data.monthlyTargets)writeJSON('petatoe_monthly_sales_targets_v1',data.monthlyTargets);
+        if(data.theme&&window.PETATOEThemeEngine&&typeof window.PETATOEThemeEngine.setTheme==='function')window.PETATOEThemeEngine.setTheme(data.theme);
+        try{_invalidateSearchIndex()}catch(e){smartReportsWarn('search index invalidation skipped after restore',e)};
+        applyGovernance(); renderSettingsPanel(); log('Backup Restored','Records: '+dsRecords().length,'warn'); toastSafe('تم استرجاع النسخة الاحتياطية بنجاح')
+      }catch(err){console.error(err);toastSafe('ملف Backup غير صالح أو مصدر Supabase غير جاهز')}
+    };
+    reader.readAsText(file); e.target.value='';
   };
 
   function petSettingsActionRun(action,id){
