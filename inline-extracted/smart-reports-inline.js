@@ -66,8 +66,9 @@ if(!window.renderAll && window.renderDashboardAll){ window.renderAll = window.re
     if(typeof window.petSettingsV110Open==='function'){
       try{
         var S=window.PETATOEStorage;
-        var main=(S&&S.get?S.get('pet_settings_v110_main','system'):'system')||'system';
-        var sub=(S&&S.get?S.get('pet_settings_v110_sub','backup'):'backup')||'backup';
+        /* UI-only tab state: use named storage keys so PETATOEStorage keeps it separate from business data. */
+        var main=(S&&S.get?S.get('settingsMain','system'):'system')||'system';
+        var sub=(S&&S.get?S.get('settingsSub','backup'):'backup')||'backup';
         window.petSettingsV110Open(main,sub);
       }catch(e){smartReportsWarn('modern settings render skipped',e)}
       return true;

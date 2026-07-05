@@ -65,7 +65,12 @@
     theme:true,
     currentUser:true,
     settingsMain:true,
-    settingsSub:true
+    settingsSub:true,
+    petatoe_theme:true,
+    petatoe_current_user:true,
+    petatoe_current_user_v108:true,
+    pet_settings_v110_main:true,
+    pet_settings_v110_sub:true
   };
   function isLocalOnlyName(nameOrKey){
     if(LOCAL_ONLY_NAMES[nameOrKey]) return true;
