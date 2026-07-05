@@ -9,7 +9,18 @@
   function repo(){return window.PETATOESupabaseRepository||null;}
   function tableFor(name){return (S.tableFor&&S.tableFor(name)) || (S.map&&S.map[name]&&S.map[name].table) || String(name||'');}
   function clone(v){try{return JSON.parse(JSON.stringify(v));}catch(_e){return v;}}
-  function rowId(row, idx){return String((row&&row.id)||(row&&row.code)||(row&&row.key)||('row_'+Date.now().toString(36)+'_'+idx));}
+  function rowId(row, idx){
+    row=row&&typeof row==='object'?row:{};
+    return String(row.id||row.code||row.key||row.invoiceNo||row.invoice_no||row.reference||('row_'+idx));
+  }
+  function uniqueIds(rows){
+    var out={}, list=[];
+    (Array.isArray(rows)?rows:[]).forEach(function(row,idx){
+      var id=rowId(row,idx);
+      if(!out[id]){out[id]=true;list.push(id);}
+    });
+    return list;
+  }
 
   async function loadArray(name){
     var R=repo(), table=tableFor(name);
@@ -23,8 +34,27 @@
     cache[name]=clone(rows)||[];
     var R=repo(), table=tableFor(name);
     if(!R||!R.hasClient||!R.hasClient()||!table) return false;
+
+    var currentIds=uniqueIds(rows);
+    var currentSet={};
+    currentIds.forEach(function(id){currentSet[String(id)]=true;});
+
+    // Phase 42.9J: full-array synchronization. Upsert alone leaves deleted rows
+    // in Supabase, so removed rows can reappear after reload. Delete stale rows first.
+    var existing=[];
+    try{ existing=await R.listJsonRows(table,{}); }catch(_e){ existing=[]; }
+    if(Array.isArray(existing) && R.deleteById){
+      for(var e=0;e<existing.length;e++){
+        var existingId=rowId(existing[e],e);
+        if(existingId && !currentSet[String(existingId)]){
+          await R.deleteById(table, existingId);
+        }
+      }
+    }
+
     for(var i=0;i<rows.length;i++){
-      await R.upsertJsonRow(table,rowId(rows[i],i),rows[i],{});
+      var id=rowId(rows[i],i);
+      await R.upsertJsonRow(table,id,rows[i],{});
     }
     return true;
   }
