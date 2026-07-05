@@ -174,7 +174,7 @@
   function payrollYears(){return uniqueSorted(slips().map(function(s){return periodYear(s.period)}),true)}
   function payrollMonths(year){return uniqueSorted(slips().filter(function(s){return !year||periodYear(s.period)===String(year)}).map(function(s){return periodMonth(s.period)}),false)}
   function norm(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,' ')}
-  var PET_USERS_KEYS=['app_users','petatoe_users_v139','petatoe_users_v108','petatoe_users_v2'];
+  // Business users are loaded from Identity/Settings facades only; no browser-storage fallback.
   function mergeUser(oldU,newU){
     oldU=oldU||{};newU=newU||{};
     return Object.assign({},oldU,newU,{
@@ -205,9 +205,6 @@
       if(ids&&typeof ids.usersSync==='function')pushUsersIntoMap(map,ids.usersSync()||[]);
     }catch(e){console.warn('PETATOEPayroll identity users load failed',e)}
     try{if(window.__PETATOE_SETTINGS_API__&&typeof window.__PETATOE_SETTINGS_API__.users==='function')pushUsersIntoMap(map,window.__PETATOE_SETTINGS_API__.users()||[])}catch(e2){console.warn('PETATOEPayroll settings users load failed',e2)}
-    PET_USERS_KEYS.forEach(function(key){
-      try{var arr=read(key,[]);pushUsersIntoMap(map,arr)}catch(_e){}
-    });
     var list=Object.keys(map).map(function(k){return map[k]});
     return list.filter(function(u){return String(u.status||'active')!=='deleted'});
   }

@@ -203,8 +203,16 @@
       if(R&&R.hasClient&&R.hasClient()&&table){
         if(meta&&meta.type==='array'){
           var rows=Array.isArray(value)?value:[];
+          var desired={};
+          rows.forEach(function(row,idx){desired[rowIdFor(row,idx)]=true;});
           return Promise.all(rows.map(function(row,idx){return R.upsertJsonRow(table,rowIdFor(row,idx),row,{});}))
-            .then(function(){return true;})
+            .then(function(){return (typeof R.listJsonRows==='function')?R.listJsonRows(table,{}):[];})
+            .then(function(existing){
+              existing=Array.isArray(existing)?existing:[];
+              var removals=existing.filter(function(row){return row&&row.id!=null&&!desired[String(row.id)];});
+              if(!removals.length||typeof R.deleteById!=='function') return true;
+              return Promise.all(removals.map(function(row){return R.deleteById(table,row.id);})).then(function(){return true;});
+            })
             .catch(function(e){console.warn('PETATOEStorage.supabaseWriteJSON failed',nameOrKey,e);return false;});
         }
         var payload=(meta&&meta.type==='object')?(isObjectValue(value)?value:{}):{ value:value };

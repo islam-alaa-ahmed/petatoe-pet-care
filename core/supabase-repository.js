@@ -194,12 +194,32 @@
     return { ok:true, data:res.data };
   }
 
+  function singletonValueFromRow(row, def){
+    if(!row) return clone(def||{});
+    var candidates=[row.data,row.legacy_payload,row.value,row.default,row.default_value];
+    for(var i=0;i<candidates.length;i++){
+      var v=candidates[i];
+      if(v===undefined||v===null) continue;
+      if(v&&typeof v==='object') return clone(v);
+      if(typeof v==='string'){
+        var t=v.trim();
+        if(!t) continue;
+        try{
+          var parsed=JSON.parse(t);
+          return (parsed&&typeof parsed==='object')?clone(parsed):parsed;
+        }catch(_e){ return v; }
+      }
+      return v;
+    }
+    return clone(def||{});
+  }
+
   async function getSingleton(table, id, def){
     if(!hasClient()) return clone(def||{});
     var res=await client().from(table).select('*').eq('id', String(id)).limit(1);
     if(res.error){ console.warn('PETATOESupabaseRepository getSingleton failed', table, resultError(res)); return clone(def||{}); }
     var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
-    return row && row.data && typeof row.data==='object' ? clone(row.data) : clone(def||{});
+    return singletonValueFromRow(row, def);
   }
 
   async function saveSingleton(table, id, data){
@@ -278,14 +298,10 @@
       status:String(data.status||'active'),
       updated_at:new Date().toISOString()
     };
-    var res;
-    if(rowId){
-      res=await client().from('payroll_employees').update(payload).eq('id',rowId).select().limit(1);
-    }else{
-      res=await client().from('payroll_employees').insert(payload).select().limit(1);
-    }
-    if(res.error){ console.warn('PETATOESupabaseRepository payroll employee upsert failed', resultError(res)); return {ok:false,error:resultError(res)}; }
-    return {ok:true,data:res.data};
+    if(rowId) payload.id=rowId;
+    var res=await upsertWithSchemaPrune('payroll_employees', payload, rowId?{id:true,data:true}:{data:true});
+    if(!res.ok){ console.warn('PETATOESupabaseRepository payroll employee upsert failed', res.error); return {ok:false,error:res.error,removedColumns:res.removedColumns||[]}; }
+    return {ok:true,data:res.data,removedColumns:res.removedColumns||[]};
   }
 
   async function deletePayrollEmployee(employee){
