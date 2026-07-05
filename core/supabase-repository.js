@@ -199,13 +199,7 @@
     var res=await client().from(table).select('*').eq('id', String(id)).limit(1);
     if(res.error){ console.warn('PETATOESupabaseRepository getSingleton failed', table, resultError(res)); return clone(def||{}); }
     var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
-    if(row){
-      if(row.data && typeof row.data==='object') return clone(row.data);
-      if(row.legacy_payload && typeof row.legacy_payload==='object') return clone(row.legacy_payload);
-      if(row.value && typeof row.value==='object') return clone(row.value);
-      if(row.default && typeof row.default==='object') return clone(row.default);
-    }
-    return clone(def||{});
+    return row && row.data && typeof row.data==='object' ? clone(row.data) : clone(def||{});
   }
 
   async function saveSingleton(table, id, data){
@@ -284,10 +278,14 @@
       status:String(data.status||'active'),
       updated_at:new Date().toISOString()
     };
-    if(rowId) payload.id=rowId;
-    var res=await upsertWithSchemaPrune('payroll_employees', payload, rowId?{id:true}:{});
-    if(!res.ok){ console.warn('PETATOESupabaseRepository payroll employee upsert failed', res.error); return {ok:false,error:res.error}; }
-    return Object.assign({schemaFallback:'payroll_employees_pruned'}, res);
+    var res;
+    if(rowId){
+      res=await client().from('payroll_employees').update(payload).eq('id',rowId).select().limit(1);
+    }else{
+      res=await client().from('payroll_employees').insert(payload).select().limit(1);
+    }
+    if(res.error){ console.warn('PETATOESupabaseRepository payroll employee upsert failed', resultError(res)); return {ok:false,error:resultError(res)}; }
+    return {ok:true,data:res.data};
   }
 
   async function deletePayrollEmployee(employee){
@@ -300,7 +298,9 @@
   }
 
 
-  // Phase 42.9D: system settings are Supabase-only. No localStorage fallback for shared/business settings.
+  function remoteSystemSettingWritesEnabled(){
+    return true;
+  }
 
   async function getSystemSetting(id, def){
     if(!id) return clone(def||{});
@@ -336,16 +336,10 @@
       var res=await c.from('system_settings').upsert(payload,{onConflict:'key'});
       if(!res.error) return {ok:true,data:res.data};
       var err=resultError(res);
-      if(/row-level security|Unauthorized|401/i.test(err||'')){
-        return {ok:false,error:err};
-      }
       console.warn('PETATOESupabaseRepository saveSystemSetting failed', err);
       return {ok:false,error:err};
     }catch(e){
       var msg=String(e&&e.message?e.message:e);
-      if(/row-level security|Unauthorized|401/i.test(msg||'')){
-        return {ok:false,error:msg};
-      }
       console.warn('PETATOESupabaseRepository saveSystemSetting crashed', e);
       return {ok:false,error:msg};
     }
