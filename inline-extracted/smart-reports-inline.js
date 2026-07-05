@@ -21,8 +21,26 @@ if(!window.renderAll && window.renderDashboardAll){ window.renderAll = window.re
   function block_4440_esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function petatoeSetInnerHTML(el, html){(window.PETATOESecurity||{setInnerHTML:function(node,h){node.replaceChildren(document.createRange().createContextualFragment(String(h==null?'':h)));}}).setInnerHTML(el, html);}
   function smartReportsWarn(context,e){if(window.console&&typeof console.warn==='function')console.warn('[PETATOE Smart Reports] '+context,e)}
-  function readJSON(k,def){var S=window.PETATOEStorage;return S&&S.readJSON?S.readJSON(k,def):def}
-  function writeJSON(k,v){var S=window.PETATOEStorage;if(S&&S.writeJSON)S.writeJSON(k,v)}
+  var SMART_REMOTE_TABLE='operations_master_data', SMART_REMOTE_ID='smart_reports_persistent_store_v1';
+  var smartRemoteCache={}, smartRemoteLoaded=false, smartRemoteLoading=null;
+  function smartRepo(){return window.PETATOESupabaseRepository||null}
+  function smartLoadRemote(){
+    if(smartRemoteLoading)return smartRemoteLoading;
+    var R=smartRepo();
+    if(!R||typeof R.getSingleton!=='function'){smartRemoteLoaded=true;return Promise.resolve(smartRemoteCache)}
+    smartRemoteLoading=R.getSingleton(SMART_REMOTE_TABLE,SMART_REMOTE_ID,{}).then(function(data){
+      smartRemoteCache=data&&typeof data==='object'?data:{}; smartRemoteLoaded=true; return smartRemoteCache;
+    }).catch(function(e){smartReportsWarn('Supabase remote load failed',e); smartRemoteLoaded=true; return smartRemoteCache;});
+    return smartRemoteLoading;
+  }
+  function smartSaveRemote(){
+    var R=smartRepo();
+    if(!R||typeof R.saveSingleton!=='function')return Promise.resolve({ok:false,error:'Supabase repository not ready'});
+    return R.saveSingleton(SMART_REMOTE_TABLE,SMART_REMOTE_ID,smartRemoteCache).catch(function(e){smartReportsWarn('Supabase remote save failed',e);return {ok:false,error:String(e&&e.message||e)}});
+  }
+  function readJSON(k,def){if(!smartRemoteLoaded)smartLoadRemote();return Object.prototype.hasOwnProperty.call(smartRemoteCache,k)?smartRemoteCache[k]:def}
+  function writeJSON(k,v){smartRemoteCache[k]=v;smartRemoteLoaded=true;smartSaveRemote()}
+  function removeJSON(k){if(Object.prototype.hasOwnProperty.call(smartRemoteCache,k))delete smartRemoteCache[k];smartRemoteLoaded=true;smartSaveRemote()}
   function settings(){return Object.assign({},DEFAULT_SETTINGS,readJSON(SETTINGS_KEY,{}))}
   function saveSettings(v){writeJSON(SETTINGS_KEY,Object.assign({},settings(),v||{}));applyGovernance();renderSettingsPanel();}
   function log(action,details,level){
@@ -123,7 +141,7 @@ if(!window.renderAll && window.renderDashboardAll){ window.renderAll = window.re
   function petDefaultUsers(){return [{id:'u_admin',username:'Admin',fullName:'Admin',job:'System Owner',phone:'',email:'',role:'superadmin',status:'active',createdAt:new Date().toISOString(),lastLogin:new Date().toISOString()}]}
   function petGetUsers(){var u=readJSON(PET_USERS_KEY,null); if(!Array.isArray(u)||!u.length){u=petDefaultUsers(); writeJSON(PET_USERS_KEY,u)} return u}
   function petSaveUsers(u){writeJSON(PET_USERS_KEY,u)}
-  function petCurrentUser(){var S=window.PETATOEStorage;var id=(S&&S.get?S.get(PET_CURRENT_KEY,''):'')||''; if(!id)return {id:'',username:'Guest',fullName:'Guest',role:'guest',status:'inactive'}; var u=petGetUsers().find(function(x){return x.id===id}); return u||{id:id,username:id,fullName:id,role:'unknown',status:'inactive'}}
+  function petCurrentUser(){var id=String(readJSON(PET_CURRENT_KEY,'')||''); if(!id)return {id:'',username:'Guest',fullName:'Guest',role:'guest',status:'inactive'}; var u=petGetUsers().find(function(x){return x.id===id}); return u||{id:id,username:id,fullName:id,role:'unknown',status:'inactive'}}
   function petSetCurrentRoleFromUser(){var u=petCurrentUser(); var old=PET_ROLE_TO_OLD[u.role]||'viewer'; saveSettings({role:old});}
   function petSecDefaults(){return {requireDeleteReason:true,requireEditReason:true,lockSensitiveDeletes:true,enableAudit:true,sensitiveAmount:10000,managerPasswordHash:null}}
   function petSecurity(){return Object.assign(petSecDefaults(),readJSON(PET_SEC_KEY,{}))}
@@ -153,13 +171,13 @@ if(!window.renderAll && window.renderDashboardAll){ window.renderAll = window.re
   window.petEditUser=function(id){var u=petGetUsers().find(function(x){return x.id===id}); if(!u)return; window.__petSettingsActiveTab='users'; renderSettingsPanel(); setTimeout(function(){[['pu_id',u.id],['pu_username',u.username],['pu_fullName',u.fullName],['pu_job',u.job||''],['pu_phone',u.phone||''],['pu_email',u.email||'']].forEach(function(a){var e=byId(a[0]); if(e)e.value=a[1]}); var r=byId('pu_role'); if(r)r.value=u.role; var s=byId('pu_status'); if(s)s.value=u.status||'active'},30)};
   window.petDeleteUser=function(id){var users=petGetUsers(); var u=users.find(function(x){return x.id===id}); if(!u)return; if(u.role==='superadmin'){toastSafe('لا يمكن حذف Super Admin');return} var reason=prompt('سبب حذف المستخدم؟'); if(!reason)return; users=users.filter(function(x){return x.id!==id}); petSaveUsers(users); log('User Deleted',u.username+' | '+reason,'warn'); toastSafe('تم حذف المستخدم'); renderSettingsPanel()};
   window.petResetUserPass=function(id){var users=petGetUsers(), u=users.find(function(x){return x.id===id}); if(!u)return; var p=prompt('كلمة المرور الجديدة للمستخدم '+u.username,''); if(!p)return; var sec=window.PETATOEPasswordSecurity; if(sec&&sec.setPassword)sec.setPassword(u,p); petSaveUsers(users); log('Password Reset',u.username,'warn'); toastSafe('تم تغيير كلمة المرور')};
-  window.petSetCurrentUser=function(id){var u=petGetUsers().find(function(x){return x.id===id}); if(!u)return; if(u.status!=='active'){toastSafe('المستخدم غير نشط');return} var S=window.PETATOEStorage;if(S&&S.set)S.set(PET_CURRENT_KEY,id); u.lastLogin=new Date().toISOString(); petSaveUsers(petGetUsers().map(function(x){return x.id===id?u:x})); petSetCurrentRoleFromUser(); log('Current User Changed',u.username+' / '+u.role,'warn'); toastSafe('تم تفعيل المستخدم: '+u.fullName); renderSettingsPanel(); applyGovernance()};
+  window.petSetCurrentUser=function(id){var u=petGetUsers().find(function(x){return x.id===id}); if(!u)return; if(u.status!=='active'){toastSafe('المستخدم غير نشط');return} writeJSON(PET_CURRENT_KEY,id); u.lastLogin=new Date().toISOString(); petSaveUsers(petGetUsers().map(function(x){return x.id===id?u:x})); petSetCurrentRoleFromUser(); log('Current User Changed',u.username+' / '+u.role,'warn'); toastSafe('تم تفعيل المستخدم: '+u.fullName); renderSettingsPanel(); applyGovernance()};
   window.petSaveRoleMatrix=function(){var roles=petGetRoles(); Object.keys(PET_ROLE_NAMES).forEach(function(r){if(r!=='superadmin')roles[r]=[]}); document.querySelectorAll('.pet-role-matrix input[type=checkbox]').forEach(function(c){if(c.checked){var r=c.getAttribute('data-role'), p=c.getAttribute('data-perm'); if(!roles[r])roles[r]=[]; if(roles[r].indexOf(p)<0)roles[r].push(p)}}); roles.superadmin=PET_PERMS.map(function(p){return p[0]}); petSaveRoles(roles); log('Permissions Updated','Role matrix saved','warn'); toastSafe('تم حفظ الصلاحيات'); renderSettingsPanel()};
-  window.petResetRoleMatrix=function(){if(!confirm('إرجاع صلاحيات الأدوار للافتراضي؟'))return; var S=window.PETATOEStorage;if(S&&S.remove)S.remove(PET_ROLES_KEY); log('Permissions Reset','Default role matrix restored','warn'); renderSettingsPanel()};
+  window.petResetRoleMatrix=function(){if(!confirm('إرجاع صلاحيات الأدوار للافتراضي؟'))return; removeJSON(PET_ROLES_KEY); log('Permissions Reset','Default role matrix restored','warn'); renderSettingsPanel()};
   window.petSaveSecuritySettings=function(){petSaveSecurity({requireDeleteReason:!!(byId('secDeleteReason')&&byId('secDeleteReason').checked),requireEditReason:!!(byId('secEditReason')&&byId('secEditReason').checked),lockSensitiveDeletes:!!(byId('secLockSensitive')&&byId('secLockSensitive').checked),enableAudit:!!(byId('secAudit')&&byId('secAudit').checked),sensitiveAmount:parseFloat(byId('secAmount')?byId('secAmount').value:0)||0,managerPasswordHash:(byId('secManagerPass')&&byId('secManagerPass').value&&window.PETATOEPasswordSecurity)?window.PETATOEPasswordSecurity.hashPassword(byId('secManagerPass').value):(petSecurity().managerPasswordHash||null)}); log('Security Settings Updated','Sensitive operations settings saved','warn'); toastSafe('تم حفظ إعدادات الأمان')};
   window.petSaveMyProfile=function(){var users=petGetUsers(), cu=petCurrentUser(), u=users.find(function(x){return x.id===cu.id}); if(!u)return; u.fullName=(byId('profName')?byId('profName').value.trim():'')||u.fullName; u.phone=byId('profPhone')?byId('profPhone').value.trim():u.phone; u.email=byId('profEmail')?byId('profEmail').value.trim():u.email; var p=byId('profPass')?byId('profPass').value:''; if(p){var sec=window.PETATOEPasswordSecurity;if(sec&&sec.setPassword)sec.setPassword(u,p);} petSaveUsers(users); log('My Profile Updated',u.username,'info'); toastSafe('تم تحديث بياناتي'); renderSettingsPanel()};
   window.petExportAuditCsv=function(){var rows=readJSON(LOG_KEY,[]), header=['time','role','action','level','details']; var csv='\ufeff'+header.join(',')+'\n'+rows.map(function(r){return header.map(function(h){return '"'+String(r[h]||'').replace(/"/g,'""')+'"'}).join(',')}).join('\n'); var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download='PETATOE_Audit_Log.csv'; a.click(); setTimeout(function(){URL.revokeObjectURL(a.href)},1000)};
-  window.petClearAuditLog=function(){if(!confirm('مسح سجل النشاط؟'))return; var S=window.PETATOEStorage;if(S&&S.remove)S.remove(LOG_KEY); log('Audit Log Cleared','User permissions center','warn'); toastSafe('تم مسح السجل'); renderSettingsPanel()};
+  window.petClearAuditLog=function(){if(!confirm('مسح سجل النشاط؟'))return; removeJSON(LOG_KEY); log('Audit Log Cleared','User permissions center','warn'); toastSafe('تم مسح السجل'); renderSettingsPanel()};
   window.petatoeSaveRole=function(){var v=byId('petRoleSelect')?byId('petRoleSelect').value:'admin';saveSettings({role:v});log('Role Changed','Current role: '+v,'warn');toastSafe('تم حفظ الصلاحية: '+(ROLE_LABELS[v]||v))};
   window.petatoeSaveValidationSettings=function(){saveSettings({strictValidation:!!byId('strictValidation')?.checked,duplicateProtection:!!byId('duplicateProtection')?.checked,autoFixMonth:!!byId('autoFixMonth')?.checked});log('Validation Settings Updated','Data quality rules updated','info');toastSafe('تم حفظ قواعد جودة البيانات')};
   window.petatoeFixMonthMismatch=function(){
@@ -174,7 +192,7 @@ if(!window.renderAll && window.renderDashboardAll){ window.renderAll = window.re
       (arr.map(function(x){var cls=x.level==='warn'?'warn':x.level==='error'?'bad':'ok';return '<tr><td>'+block_4440_esc(new Date(x.time).toLocaleString('ar-EG'))+'</td><td>'+block_4440_esc(x.action)+'</td><td><span class="gov-badge '+cls+'">'+block_4440_esc(x.level)+'</span></td><td>'+block_4440_esc(x.details)+'</td><td>'+block_4440_esc(x.count)+'</td><td>'+block_4440_esc(ROLE_LABELS[x.role]||x.role)+'</td></tr>'}).join('')||'<tr><td colspan="6">لا توجد حركات مسجلة بعد.</td></tr>')+
       '</tbody></table></div></div>');
   }
-  window.petatoeClearLogs=function(){if(!canDelete()){toastSafe('الصلاحية الحالية لا تسمح بمسح السجل');return} if(!confirm('مسح سجل الحركات؟'))return; var S=window.PETATOEStorage;if(S&&S.remove)S.remove(LOG_KEY); log('Audit Log Cleared','Log was cleared','warn'); renderLogsPanel();};
+  window.petatoeClearLogs=function(){if(!canDelete()){toastSafe('الصلاحية الحالية لا تسمح بمسح السجل');return} if(!confirm('مسح سجل الحركات؟'))return; removeJSON(LOG_KEY); log('Audit Log Cleared','Log was cleared','warn'); renderLogsPanel();};
   window.petatoeExportLogsExcel=function(){var arr=readJSON(LOG_KEY,[]); if(!window.XLSX){toastSafe('مكتبة Excel غير متاحة');return} var ws=XLSX.utils.json_to_sheet(arr);var wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Audit Log');XLSX.writeFile(wb,'PETATOE_Audit_Log.xlsx')};
   window.petatoeExportBackup=function(){
     if(!canBackup()){toastSafe('الصلاحية الحالية لا تسمح بالنسخ الاحتياطي');return}
