@@ -2,6 +2,12 @@
 'use strict';
 const COMM_KEY='commissions';
 const COMM_SNAPSHOT_KEY='commissionSnapshots';
+const COMM_REMOTE_STORE_ID='commission_reference_data';
+const COMM_REMOTE_SNAPSHOT_ID='commission_monthly_snapshots';
+let commissionStoreCache=null;
+let commissionSnapsCache=null;
+let commissionRemoteLoaded=false;
+let commissionRemoteLoading=false;
 function petStorageReadJSON(key,fallback){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')return window.PETATOEStorage.readJSON(key,fallback);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/commission-inline.js",e);}return fallback}
 function petStorageWriteJSON(key,value){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.writeJSON==='function')return window.PETATOEStorage.writeJSON(key,value);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/commission-inline.js",e);}return false}
 const DEFAULT_CONFIG={
@@ -36,10 +42,88 @@ function comSafeHtml(target, html, reason){
 function clone(o){return JSON.parse(JSON.stringify(o||{}))}
 function ym(y,m){return String(y||'').padStart(4,'0')+'-'+String(m||'').padStart(2,'0')}
 function currentPeriod(){return ym(petBlock5568_q('comYear')?.value||new Date().getFullYear(), petBlock5568_q('comMonth')?.value||String(new Date().getMonth()+1).padStart(2,'0'))}
-function readStore(){try{const s=petStorageReadJSON(COMM_KEY,null);if(s&&s.rules&&s.employees)return s}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/commission-inline.js",e);} return clone(DEFAULT_CONFIG)}
-function writeStore(s){petStorageWriteJSON(COMM_KEY,s);}
-function readSnaps(){try{return petStorageReadJSON(COMM_SNAPSHOT_KEY,{})||{}}catch(e){return {}}}
-function writeSnaps(s){petStorageWriteJSON(COMM_SNAPSHOT_KEY,s||{});}
+function validCommissionStore(s){return !!(s&&typeof s==='object'&&s.rules&&s.employees)}
+function validCommissionSnaps(s){return !!(s&&typeof s==='object'&&!Array.isArray(s))}
+function mergeCommissionStore(remote,local){
+  const base=clone(DEFAULT_CONFIG);
+  const out=validCommissionStore(remote)?clone(remote):(validCommissionStore(local)?clone(local):base);
+  out.rules=Array.isArray(out.rules)?out.rules:base.rules;
+  out.employees=out.employees&&typeof out.employees==='object'?out.employees:base.employees;
+  ['groomers','drivers','sales'].forEach(function(k){out.employees[k]=Array.isArray(out.employees[k])?out.employees[k]:[];});
+  return out;
+}
+function repository(){return window.PETATOESupabaseRepository||null}
+async function readRemoteCommissionPayload(id,def){
+  const repo=repository();
+  if(!repo||!repo.hasClient||!repo.hasClient())return clone(def||{});
+  try{
+    if(typeof repo.getSingleton==='function'){
+      const got=await repo.getSingleton('payroll_master_data',id,null);
+      if(got&&typeof got==='object')return got;
+    }
+    if(typeof repo.listJsonRows==='function'){
+      const rows=await repo.listJsonRows('payroll_master_data');
+      const hit=(rows||[]).find(function(r){return String((r&&r.id)||'')===String(id)});
+      if(hit&&typeof hit==='object')return hit;
+    }
+  }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission remote read',e);}
+  return clone(def||{});
+}
+async function writeRemoteCommissionPayload(id,data){
+  const repo=repository();
+  if(!repo||!repo.hasClient||!repo.hasClient())return false;
+  try{
+    if(typeof repo.saveSingleton==='function'){
+      const res=await repo.saveSingleton('payroll_master_data',id,data&&typeof data==='object'?data:{});
+      return !!(res&&res.ok!==false);
+    }
+    if(typeof repo.upsertJsonRow==='function'){
+      const res=await repo.upsertJsonRow('payroll_master_data',id,data&&typeof data==='object'?data:{},{});
+      return !!(res&&res.ok!==false);
+    }
+  }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission remote write',e);}
+  return false;
+}
+function readStore(){
+  if(validCommissionStore(commissionStoreCache))return clone(commissionStoreCache);
+  let local=null;
+  try{local=petStorageReadJSON(COMM_KEY,null);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/commission-inline.js",e);}
+  commissionStoreCache=mergeCommissionStore(null,local);
+  return clone(commissionStoreCache);
+}
+function writeStore(s){
+  commissionStoreCache=mergeCommissionStore(s,null);
+  petStorageWriteJSON(COMM_KEY,commissionStoreCache);
+  writeRemoteCommissionPayload(COMM_REMOTE_STORE_ID,commissionStoreCache);
+}
+function readSnaps(){
+  if(validCommissionSnaps(commissionSnapsCache))return clone(commissionSnapsCache);
+  try{commissionSnapsCache=petStorageReadJSON(COMM_SNAPSHOT_KEY,{})||{};}catch(e){commissionSnapsCache={};}
+  return clone(commissionSnapsCache);
+}
+function writeSnaps(s){
+  commissionSnapsCache=validCommissionSnaps(s)?clone(s):{};
+  petStorageWriteJSON(COMM_SNAPSHOT_KEY,commissionSnapsCache);
+  writeRemoteCommissionPayload(COMM_REMOTE_SNAPSHOT_ID,commissionSnapsCache);
+}
+async function hydrateCommissionRemoteOnce(){
+  if(commissionRemoteLoaded||commissionRemoteLoading)return;
+  commissionRemoteLoading=true;
+  try{
+    const localStore=petStorageReadJSON(COMM_KEY,null);
+    const remoteStore=await readRemoteCommissionPayload(COMM_REMOTE_STORE_ID,null);
+    const mergedStore=mergeCommissionStore(remoteStore,localStore);
+    commissionStoreCache=mergedStore;
+    petStorageWriteJSON(COMM_KEY,mergedStore);
+
+    const localSnaps=petStorageReadJSON(COMM_SNAPSHOT_KEY,{})||{};
+    const remoteSnaps=await readRemoteCommissionPayload(COMM_REMOTE_SNAPSHOT_ID,null);
+    commissionSnapsCache=validCommissionSnaps(remoteSnaps)&&Object.keys(remoteSnaps).length?remoteSnaps:localSnaps;
+    petStorageWriteJSON(COMM_SNAPSHOT_KEY,commissionSnapsCache||{});
+    commissionRemoteLoaded=true;
+    if(document.getElementById('commissions')&&window.renderCommissionSystem)window.renderCommissionSystem();
+  }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission remote hydrate',e);}finally{commissionRemoteLoading=false;}
+}
 function dataRows(){
   try{return window.PETATOEDataSource.getRecordsSync()||[]}catch(e){return []}
 }
@@ -443,7 +527,7 @@ function renderCommissionStatement(calc){
 }
 
 function renderArchive(){const snaps=readSnaps();const keys=Object.keys(snaps).sort().reverse();return `<div class="com-card"><h3>📚 أرشيف العمولات الشهرية</h3><p>كل شهر مقفل يحتفظ بالأرقام والإعدادات كما كانت وقت القفل.</p><div class="com-table"><table><thead><tr><th>الشهر</th><th>السيارات</th><th>Groomers</th><th>Drivers</th><th>Sales</th><th>الإجمالي</th><th>تاريخ الحفظ</th><th>إجراء</th></tr></thead><tbody>${keys.map(k=>{const s=snaps[k];return `<tr><td>${k}</td><td>${fmt0(s.cars||0)}</td><td>${petBlock5568_money(s.groomerTotal||0)}</td><td>${petBlock5568_money(s.driverTotal||0)}</td><td>${petBlock5568_money(s.salesTotal||0)}</td><td>${petBlock5568_money(s.total||0)}</td><td>${safe(s.savedAt||'')}</td><td><button type="button" class="btn btn-danger" data-commission-action="unlock" data-commission-period="${safe(k)}">🔓 إلغاء قفل الشهر</button></td></tr>`}).join('')||'<tr><td colspan="8">لا توجد شهور مقفلة بعد.</td></tr>'}</tbody></table></div></div>`}
-window.renderCommissionSystem=function(){fillFilters();const calc=buildCalc();renderCommissionKpis(calc);document.querySelectorAll('.com-tab').forEach(b=>b.classList.toggle('active',b.dataset.comTab===comTab));let body='';if(comTab==='overview')body=renderOverview(calc);if(comTab==='groomer')body=`<div class="com-card"><h3>🐾 تقرير عمولات الجرومرز</h3><p>لكل سيارة حسب مبيعاتها قبل الضريبة.</p>${rowsHtml(calc.groomer,'groomer')}</div>`;if(comTab==='driver')body=`<div class="com-card"><h3>🚚 تقرير عمولات السائقين</h3><p>لكل سيارة حسب مبيعاتها قبل الضريبة.</p>${rowsHtml(calc.driver,'driver')}</div>`;if(comTab==='sales')body=`<div class="com-card"><h3>📈 تقرير عمولة مسؤول المبيعات</h3><p>يتم حساب كل سيارة منفصلة: أقل من 40,000 لا يستحق عمولة، ومن 40,000 فأكثر تُحسب الشريحة على كامل مبيعات السيارة.</p>${rowsHtml(calc.sales,'sales')}</div>`;if(comTab==='employees')body=renderEmployees();if(comTab==='settings')body=renderSettings();if(comTab==='archive')body=renderArchive();const area=petBlock5568_q('comArea');if(area)comSafeHtml(area,body,'commission tab body');renderSide(calc)};
+window.renderCommissionSystem=function(){hydrateCommissionRemoteOnce();fillFilters();const calc=buildCalc();renderCommissionKpis(calc);document.querySelectorAll('.com-tab').forEach(b=>b.classList.toggle('active',b.dataset.comTab===comTab));let body='';if(comTab==='overview')body=renderOverview(calc);if(comTab==='groomer')body=`<div class="com-card"><h3>🐾 تقرير عمولات الجرومرز</h3><p>لكل سيارة حسب مبيعاتها قبل الضريبة.</p>${rowsHtml(calc.groomer,'groomer')}</div>`;if(comTab==='driver')body=`<div class="com-card"><h3>🚚 تقرير عمولات السائقين</h3><p>لكل سيارة حسب مبيعاتها قبل الضريبة.</p>${rowsHtml(calc.driver,'driver')}</div>`;if(comTab==='sales')body=`<div class="com-card"><h3>📈 تقرير عمولة مسؤول المبيعات</h3><p>يتم حساب كل سيارة منفصلة: أقل من 40,000 لا يستحق عمولة، ومن 40,000 فأكثر تُحسب الشريحة على كامل مبيعات السيارة.</p>${rowsHtml(calc.sales,'sales')}</div>`;if(comTab==='employees')body=renderEmployees();if(comTab==='settings')body=renderSettings();if(comTab==='archive')body=renderArchive();const area=petBlock5568_q('comArea');if(area)comSafeHtml(area,body,'commission tab body');renderSide(calc)};
 window.setCommissionTab=function(t){comTab=t;renderCommissionSystem()};
 window.commissionSelectRow=function(i,kind){const calc=buildCalc();const arr=kind==='groomer'?calc.groomer:kind==='driver'?calc.driver:calc.sales;const r=arr[i];if(!r)return;const side=petBlock5568_q('comSide');if(side){comSafeHtml(side,`<div class="com-detail-box"><h3>📌 تفاصيل السيارة</h3><div class="row"><span>السيارة</span><b>${safe(r.car)}</b></div><div class="row"><span>عدد الفواتير</span><b>${fmt0(r.invoiceCount||0)}</b></div><div class="row"><span>الموظف</span><b>${safe(r.person)}</b></div><div class="row"><span>المبيعات قبل الضريبة</span><b>${petBlock5568_money(r.amount)}</b></div><div class="row"><span>الهدف الحالي</span><b>${petBlock5568_money(r.target)}</b></div><div class="row"><span>تحقيق الهدف</span><b>${fmt(r.ach)}%</b></div><div class="row"><span>الشريحة</span><b>${segLabel(r.seg)}</b></div><div class="row"><span>النسبة</span><b>${fmt(r.rate)}%</b></div><div class="row"><span>العمولة</span><b>${petBlock5568_money(r.commission)}</b></div></div>`,'commission selected row')}}
 window.commissionAddEmployee=function(type){const st=readStore();st.employees=st.employees||{groomers:[],drivers:[],sales:[]};st.employees[type]=st.employees[type]||[];const name=petBlock5568_q(type+'Name')?.value?.trim();if(!name){toast('اكتب الاسم أولاً');return}if(type==='sales'){st.employees[type].push({name,active:true});}else{const car=petBlock5568_q(type+'Car')?.value, from=petBlock5568_q(type+'From')?.value||currentPeriod(), to=petBlock5568_q(type+'To')?.value||'';if(!car){toast('اختر السيارة');return}st.employees[type].push({name,car,from,to});}writeStore(st);toast('تم حفظ الاسم');renderCommissionSystem()}
