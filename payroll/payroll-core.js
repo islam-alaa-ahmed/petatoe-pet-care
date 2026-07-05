@@ -155,7 +155,7 @@
       payrollLoaded=true;
       console.log('✅ PETATOE Payroll Supabase storage loaded', {employees:payrollCache[EMP_KEY].length, slips:payrollCache[SLIP_KEY].length});
       refreshPayrollViews();
-    }catch(e){console.warn('PETATOEPayroll Supabase load failed',e)}
+    }catch(e){payrollLoadStarted=false;console.warn('PETATOEPayroll Supabase load failed',e)}
   }
   function uid(p){return (p||'id')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}
   function nowPeriod(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
@@ -291,7 +291,7 @@
   function saveSlips(arr){return write(SLIP_KEY,arr)}
   function setSlipsCache(arr){payrollCache[SLIP_KEY]=cloneVal(Array.isArray(arr)?arr:[]);return Promise.resolve({ok:true,cached:true})}
   function slipPersistenceExtra(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip&&slip.employeeId||slip&&slip.employee_id||''),period:String(slip&&slip.period||''),status:String(slip&&slip.status||''),payment_method:String(slip&&slip.paymentMethod||slip&&slip.payment_method||''),net_amount:num(c.net||0)}}
-  function persistOneSlip(slip){var R=payrollRepo();if(!slip||!slip.id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});return R.upsertJsonRow('payroll_slips',slip.id,sanitizePayrollSlip(slip),slipPersistenceExtra(slip)).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Save failed: payroll_slips');return persistMaster().then(function(){return res||{ok:true}})}).catch(function(e){console.warn('PETATOEPayroll single slip persist failed',e);throw e})}
+  function persistOneSlip(slip){var R=payrollRepo();if(!slip||!slip.id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});var safe=sanitizePayrollSlip(slip);return persistMaster().then(function(){return R.upsertJsonRow('payroll_slips',slip.id,safe,slipPersistenceExtra(safe))}).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Save failed: payroll_slips');return res||{ok:true}}).catch(function(e){console.warn('PETATOEPayroll single slip persist failed',e);throw e})}
   function employeeRefTokens(obj){
     var out=[];
     function add(v){v=String(v==null?'':v).trim();if(v&&out.indexOf(v)===-1)out.push(v)}
@@ -306,6 +306,28 @@
     return aa.some(function(x){return bb.some(function(y){return String(x)===String(y)})});
   }
   function sameSlipMonth(a,b){return !!(a&&b&&String(a.period||'')===String(b.period||'')&&sameEmployeeRef(a.employeeId||a.employee_id||a,a&&b.employeeId||b.employee_id||b))}
+  function slipCompletenessScore(s){
+    s=s||{};
+    var score=0;
+    ['base','housing','transport','incentives','paymentMethod','status','period','employeeId'].forEach(function(k){if(s[k]!==undefined&&s[k]!==null&&String(s[k]).trim()!=='')score++});
+    if(Array.isArray(s.additions)&&s.additions.length)score+=2;
+    if(Array.isArray(s.deductions)&&s.deductions.length)score+=2;
+    if(s.createdAt)score++;
+    if(s.updatedAt)score++;
+    return score;
+  }
+  function slipTimeValue(s){
+    s=s||{};
+    var t=Date.parse(s.updatedAt||s.updated_at||s.createdAt||s.created_at||0);
+    return isNaN(t)?0:t;
+  }
+  function sortPayrollSlipsForDisplay(a,b){
+    var byPeriod=String(b&&b.period||'').localeCompare(String(a&&a.period||''));
+    if(byPeriod)return byPeriod;
+    var byTime=slipTimeValue(b)-slipTimeValue(a);
+    if(byTime)return byTime;
+    return slipCompletenessScore(b)-slipCompletenessScore(a);
+  }
   function normalizeSlipRecord(row){
     var v=sanitizePayrollSlip(row||{});
     if(v.employeeId==null&&v.employee_id!=null)v.employeeId=v.employee_id;
@@ -408,7 +430,7 @@
     return (detail.mode==='manual'?'مرتبطة يدويًا بقسم العمولات':'مرتبطة بقسم العمولات بالمنطق القديم')+' — '+(names.length?('الاسم المطابق: '+names.join(' / ')):'تمت المطابقة');
   }
   function sumLines(lines){return (Array.isArray(lines)?lines:[]).reduce(function(s,x){return s+num(x.value)},0)}
-  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var gross=num(slip.base)+num(slip.housing)+num(slip.transport)+commission+num(slip.incentives)+additions;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,gross:gross,net:net}}
+  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var incentives=num(slip.incentives);var allowances=num(slip.housing)+num(slip.transport);var extraTotal=commission+incentives+additions;var gross=num(slip.base)+allowances+extraTotal;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,incentives:incentives,allowances:allowances,extraTotal:extraTotal,gross:gross,net:net}}
   function identityKeys(obj){
     obj=obj||{};
     var keys=[];
@@ -470,7 +492,7 @@
     var allowedStatuses=['board_approved','employee_objection','employee_approved','accounts_approved','paid'];
     var arr=slips().filter(function(s){
       return allowedStatuses.indexOf(s.status)>-1&&canEmployeeSee(s)
-    }).sort(function(a,b){return String(b.period).localeCompare(String(a.period))});
+    }).sort(sortPayrollSlipsForDisplay);
     if(!arr.length){
       state.salarySlipId='';
       safeRender(area,'<div class="payroll-shell salary-slip-redesign-shell"><div class="payroll-card salary-slip-empty"><h3>📄 كشف الراتب</h3><p>لا يوجد كشف راتب معتمد مبدئيًا لهذا المستخدم حتى الآن.</p></div></div>','payroll empty self slip');
@@ -517,13 +539,13 @@
           +'<section class="salary-slip-kpis">'
             +'<div class="salary-kpi salary-kpi-net"><span>صافي الراتب</span><b>'+money(c.net)+'</b><i>💵</i></div>'
             +'<div class="salary-kpi"><span>الراتب الأساسي</span><b>'+money(s.base)+'</b><i>💼</i></div>'
-            +'<div class="salary-kpi"><span>إجمالي الإضافات</span><b>'+money(c.gross)+'</b><i>⬆️</i></div>'
+            +'<div class="salary-kpi"><span>إجمالي الإضافات</span><b>'+money(c.extraTotal)+'</b><i>⬆️</i></div>'
             +'<div class="salary-kpi salary-kpi-deduct"><span>إجمالي الخصومات</span><b>'+money(c.deductions)+'</b><i>⬇️</i></div>'
           +'</section>'
           +'<section class="salary-slip-details-card">'
             +'<div class="salary-slip-section-title"><h3>تفاصيل بنود الراتب</h3><span>إضافات وخصومات</span></div>'
             +'<div class="salary-slip-two-cols">'
-              +'<div class="salary-slip-col salary-slip-additions"><div class="salary-slip-col-title">الإضافات <span>⬆</span></div>'+detailRows(additions,'لا توجد إضافات')+'<div class="salary-slip-col-total">إجمالي الإضافات <b>'+money(c.gross)+'</b></div></div>'
+              +'<div class="salary-slip-col salary-slip-additions"><div class="salary-slip-col-title">الإضافات <span>⬆</span></div>'+detailRows(additions,'لا توجد إضافات')+'<div class="salary-slip-col-total">إجمالي الاستحقاقات <b>'+money(c.gross)+'</b></div></div>'
               +'<div class="salary-slip-col salary-slip-deductions"><div class="salary-slip-col-title">الخصومات <span>⬇</span></div>'+detailRows(deductions,'لا توجد خصومات')+'<div class="salary-slip-col-total">إجمالي الخصومات <b>'+money(c.deductions)+'</b></div></div>'
             +'</div>'
             +'<div class="salary-slip-net-formula"><span>صافي الراتب</span><b>'+money(c.net)+'</b></div>'
