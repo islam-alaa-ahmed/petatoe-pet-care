@@ -309,6 +309,14 @@
   function slipPersistenceExtra(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip&&slip.employeeId||''),period:String(slip&&slip.period||''),status:String(slip&&slip.status||''),net_amount:num(c.net||0)}}
   function persistOneSlip(slip){var R=payrollRepo();if(!slip||!slip.id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});return R.upsertJsonRow('payroll_slips',slip.id,slip,slipPersistenceExtra(slip)).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Save failed: payroll_slips');return persistMaster().then(function(){return res||{ok:true}})}).catch(function(e){console.warn('PETATOEPayroll single slip persist failed',e);throw e})}
   function removeOneSlip(id){var R=payrollRepo();if(!id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});return R.deleteById('payroll_slips',id).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Delete failed: payroll_slips');return persistMaster().then(function(){return res||{ok:true}})}).catch(function(e){console.warn('PETATOEPayroll single slip delete failed',e);throw e})}
+  function removeSlipGroup(deletedSlip,deletedIds){
+    var R=payrollRepo();
+    deletedIds=(Array.isArray(deletedIds)?deletedIds:[]).map(function(x){return String(x||'')}).filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i});
+    if(!deletedSlip&&!deletedIds.length)return Promise.resolve({ok:false,skipped:true});
+    if(!R||!R.hasClient||!R.hasClient())return persistMaster();
+    var ops=deletedIds.map(function(id){return R.deleteById('payroll_slips',id).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Delete failed: payroll_slips '+id);return res||{ok:true}})});
+    return Promise.all(ops).then(function(){return persistMaster()}).then(function(){return {ok:true,deleted:deletedIds.length}}).catch(function(e){console.warn('PETATOEPayroll slip group delete failed',e);throw e});
+  }
   function employeeMatchKeys(emp){
     emp=emp||{};
     var out=[];
@@ -653,13 +661,9 @@
         status:'draft',
         createdAt:new Date().toISOString()
       };
-      arr.push(slip);
-      setSlipsCache(arr);
-      persistOneSlip(slip).catch(function(e){console.warn('PETATOEPayroll draft slip persist failed',e)})
+      /* Phase 42.7: opening the form must not create/persist a draft. Save only on explicit حفظ/إرسال. */
     }else if(!slip.paymentMethod&&emp.paymentMethod){
-      slip.paymentMethod=emp.paymentMethod;
-      setSlipsCache(arr);
-      persistOneSlip(slip).catch(function(e){console.warn('PETATOEPayroll payment method default persist failed',e)})
+      slip=Object.assign({},slip,{paymentMethod:emp.paymentMethod});
     }
     state.editSlipId=slip.id;
     var target=byId('paySlipFormArea');
@@ -793,7 +797,7 @@
     saveSlip:function(){if(!canPersistSlipForm('draft'))return;var s=upsertSlip(readSlipForm('draft'));if(!s)return;notifyAfterPersist(s._persistPromise,'تم حفظ كشف الراتب كمسودة');delete s._persistPromise;state.editSlipId=s.id;render()},
     sendToBoard:function(){if(!canPersistSlipForm('pending_board'))return;var s=upsertSlip(readSlipForm('pending_board'));if(!s)return;notifyAfterPersist(s._persistPromise,'تم إرسال الكشف للاعتماد المبدئي');delete s._persistPromise;state.editSlipId=s.id;render()},
     editSlip:function(id){state.tab='monthly';render();setTimeout(function(){var s=slips().find(function(x){return x.id===id});if(!s)return;if(byId('payPeriod'))byId('payPeriod').value=s.period;if(byId('payEmployee'))byId('payEmployee').value=s.employeeId;var target=byId('paySlipFormArea');if(target)safeRender(target,slipFormHtml(s),'payroll edit slip form')},0)},
-    deleteSlip:function(id){var s=slips().find(function(x){return x.id===id});if(!s){toastMsg('لم يتم العثور على كشف الراتب');return}if(!confirm('حذف كشف الراتب نهائيًا من الرواتب الشهرية؟'))return;setSlipsCache(slips().filter(function(x){return x.id!==id}));notifyAfterPersist(removeOneSlip(id),'تم حذف كشف الراتب');if(state.editSlipId===id)state.editSlipId='';render();renderSalarySlip();},
+    deleteSlip:function(id){var arr=slips();var s=arr.find(function(x){return String(x.id)===String(id)});if(!s){toastMsg('لم يتم العثور على كشف الراتب');return}if(!confirm('حذف كشف الراتب نهائيًا من الرواتب الشهرية؟'))return;var removed=[];var kept=arr.filter(function(x){var match=sameEmployeeRef(x.employeeId,s.employeeId)&&String(x.period)===String(s.period);if(match)removed.push(x);return !match});setSlipsCache(kept);var removedIds=removed.map(function(x){return x&&x.id});notifyAfterPersist(removeSlipGroup(s,removedIds),'تم حذف كشف الراتب');if(removedIds.map(String).indexOf(String(state.editSlipId))>-1)state.editSlipId='';if(removedIds.map(String).indexOf(String(state.salarySlipId))>-1)state.salarySlipId='';render();renderSalarySlip();},
     boardApprove:function(id){if(!isBoard()){toastMsg('هذه الصلاحية لرئيس مجلس الإدارة أو الإدارة العليا');return}var s=slips().find(function(x){return x.id===id});if(!requireSlipStatus(s,'pending_board','لا يمكن الاعتماد المبدئي إلا لكشف بانتظار اعتماد رئيس مجلس الإدارة'))return;notifyAfterPersist(setStatus(id,'board_approved',{boardApprovedAt:new Date().toISOString(),boardApprovedBy:(currentUser().fullName||currentUser().username)}),'تم الاعتماد المبدئي وظهر الكشف للموظف')},
     rejectSlip:function(id){if(!isBoard()){toastMsg('هذه الصلاحية لرئيس مجلس الإدارة أو الإدارة العليا');return}var s=slips().find(function(x){return x.id===id});if(!requireSlipStatus(s,'pending_board','لا يمكن رفض الكشف إلا وهو بانتظار اعتماد رئيس مجلس الإدارة'))return;notifyAfterPersist(setStatus(id,'rejected',{rejectedAt:new Date().toISOString()}),'تم رفض الكشف')},
     employeeApprove:function(id){var s=slips().find(function(x){return x.id===id});if(!s||!canEmployeeSee(s)){toastMsg('لا يمكنك اعتماد كشف غير خاص بك');return}if(!requireSlipStatus(s,'board_approved','لا يمكن موافقة الموظف إلا بعد الاعتماد المبدئي'))return;notifyAfterPersist(setStatus(id,'employee_approved',{employeeApprovedAt:new Date().toISOString(),employeeApprovedBy:(currentUser().fullName||currentUser().username),employeeNote:''}),'تمت موافقة الموظف')},
