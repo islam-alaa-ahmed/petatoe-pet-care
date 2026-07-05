@@ -536,6 +536,8 @@
     var slip=arr.find(function(s){return s.employeeId===empId&&s.period===period});
     var emp=getEmployee(empId)||{};
     if(!slip){
+      // Phase 43.1: opening the form must not create or persist a draft.
+      // The slip is created only when the user explicitly clicks Save Draft or Send to Board.
       slip={
         id:uid('slip'),
         employeeId:empId,
@@ -550,13 +552,9 @@
         status:'draft',
         createdAt:new Date().toISOString()
       };
-      arr.push(slip);
-      setSlipsCache(arr);
-      persistOneSlip(slip).catch(function(e){console.warn('PETATOEPayroll draft slip persist failed',e)})
     }else if(!slip.paymentMethod&&emp.paymentMethod){
-      slip.paymentMethod=emp.paymentMethod;
-      setSlipsCache(arr);
-      persistOneSlip(slip).catch(function(e){console.warn('PETATOEPayroll payment method default persist failed',e)})
+      // Display employee default payment method without silently mutating a saved slip.
+      slip=Object.assign({},slip,{paymentMethod:emp.paymentMethod});
     }
     state.editSlipId=slip.id;
     var target=byId('paySlipFormArea');
