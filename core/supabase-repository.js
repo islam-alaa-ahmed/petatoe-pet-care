@@ -300,30 +300,10 @@
   }
 
 
-  var SYSTEM_SETTING_LOCAL_PREFIX='PETATOE_SYSTEM_SETTING_LOCAL__';
-  var SYSTEM_SETTING_REMOTE_WRITE_FLAG='PETATOE_ENABLE_SYSTEM_SETTINGS_REMOTE_WRITE';
-  function systemSettingLocalKey(id){return SYSTEM_SETTING_LOCAL_PREFIX+String(id||'').trim();}
-  function readLocalSystemSetting(id){
-    try{
-      var raw=window.localStorage&&window.localStorage.getItem(systemSettingLocalKey(id));
-      if(!raw) return null;
-      return JSON.parse(raw);
-    }catch(_e){return null}
-  }
-  function writeLocalSystemSetting(id,data){
-    try{
-      if(window.localStorage) window.localStorage.setItem(systemSettingLocalKey(id), JSON.stringify(data&&typeof data==='object'?data:{}));
-      return true;
-    }catch(_e){return false}
-  }
-  function remoteSystemSettingWritesEnabled(){
-    try{return window.PETATOE_ENABLE_SYSTEM_SETTINGS_REMOTE_WRITE===true || window.localStorage&&window.localStorage.getItem(SYSTEM_SETTING_REMOTE_WRITE_FLAG)==='true'}catch(_e){return false}
-  }
+  // Phase 42.9D: system settings are Supabase-only. No localStorage fallback for shared/business settings.
 
   async function getSystemSetting(id, def){
     if(!id) return clone(def||{});
-    var local=readLocalSystemSetting(id);
-    if(local && typeof local==='object') return clone(local);
     if(!hasClient()) return clone(def||{});
     var c=client();
     try{
@@ -347,15 +327,8 @@
   async function saveSystemSetting(id, data){
     if(!id) return {ok:false,error:'Missing system setting id'};
     var payloadData=data&&typeof data==='object'?clone(data):{};
-    // system_settings writes are optional UI/system preferences. Supabase RLS currently blocks remote writes,
-    // so keep the app clean by persisting them locally unless remote writes are explicitly enabled.
-    if(!remoteSystemSettingWritesEnabled()){
-      writeLocalSystemSetting(id,payloadData);
-      return {ok:true,data:payloadData,local:true,skippedRemote:true};
-    }
     if(!hasClient()){
-      writeLocalSystemSetting(id,payloadData);
-      return {ok:true,data:payloadData,local:true,error:'Supabase client not ready'};
+      return {ok:false,error:'Supabase client not ready'};
     }
     var c=client();
     try{
@@ -364,16 +337,14 @@
       if(!res.error) return {ok:true,data:res.data};
       var err=resultError(res);
       if(/row-level security|Unauthorized|401/i.test(err||'')){
-        writeLocalSystemSetting(id,payloadData);
-        return {ok:true,data:payloadData,local:true,skippedRemote:true,error:err};
+        return {ok:false,error:err};
       }
       console.warn('PETATOESupabaseRepository saveSystemSetting failed', err);
       return {ok:false,error:err};
     }catch(e){
       var msg=String(e&&e.message?e.message:e);
       if(/row-level security|Unauthorized|401/i.test(msg||'')){
-        writeLocalSystemSetting(id,payloadData);
-        return {ok:true,data:payloadData,local:true,skippedRemote:true,error:msg};
+        return {ok:false,error:msg};
       }
       console.warn('PETATOESupabaseRepository saveSystemSetting crashed', e);
       return {ok:false,error:msg};

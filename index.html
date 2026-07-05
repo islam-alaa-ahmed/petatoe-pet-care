@@ -1598,9 +1598,9 @@ function save(){persistRecords();petatoeScheduleSalesSourceSync('save');populate
 /* PETATOE v3.11.35: tab rendering subscribers moved to components/tab-render-subscribers.js */
 
 
-function initPetImage(){const saved=(window.PETATOEStorage&&window.PETATOEStorage.get)?window.PETATOEStorage.get('petatoe_pet_image',''):'';const img=$('petCardImage');if(img)img.src=saved||DEFAULT_PET_IMAGE}
-function handlePetImageUpload(e){const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){toast('اختار ملف صورة فقط');return}const reader=new FileReader();reader.onload=ev=>{if(window.PETATOEStorage&&window.PETATOEStorage.set)window.PETATOEStorage.set('petatoe_pet_image',ev.target.result);const img=$('petCardImage');if(img)img.src=ev.target.result;toast('تم تغيير صورة PETATOE')};reader.readAsDataURL(file)}
-function resetPetImage(){if(window.PETATOEStorage&&window.PETATOEStorage.remove)window.PETATOEStorage.remove('petatoe_pet_image');const img=$('petCardImage');if(img)img.src=DEFAULT_PET_IMAGE;toast('تم الرجوع للصورة الأصلية')}
+async function initPetImage(){const img=$('petCardImage');let saved='';try{if(window.PETATOESupabaseRepository&&window.PETATOESupabaseRepository.getSystemSetting){const row=await window.PETATOESupabaseRepository.getSystemSetting('company_assets',{petImage:''});saved=row&&row.petImage||''}}catch(e){console.warn('PETATOE pet image load failed',e)}if(img)img.src=saved||DEFAULT_PET_IMAGE}
+function handlePetImageUpload(e){const file=e.target.files&&e.target.files[0];if(!file)return;if(!file.type.startsWith('image/')){toast('اختار ملف صورة فقط');return}const reader=new FileReader();reader.onload=async ev=>{try{if(window.PETATOESupabaseRepository&&window.PETATOESupabaseRepository.saveSystemSetting)await window.PETATOESupabaseRepository.saveSystemSetting('company_assets',{petImage:ev.target.result,updatedAt:new Date().toISOString()})}catch(err){console.warn('PETATOE pet image save failed',err);toast('تعذر حفظ الصورة في Supabase')}const img=$('petCardImage');if(img)img.src=ev.target.result;toast('تم تغيير صورة PETATOE')};reader.readAsDataURL(file)}
+async function resetPetImage(){try{if(window.PETATOESupabaseRepository&&window.PETATOESupabaseRepository.saveSystemSetting)await window.PETATOESupabaseRepository.saveSystemSetting('company_assets',{petImage:'',updatedAt:new Date().toISOString()})}catch(e){console.warn('PETATOE pet image reset failed',e)}const img=$('petCardImage');if(img)img.src=DEFAULT_PET_IMAGE;toast('تم الرجوع للصورة الأصلية')}
 
 function resizeChartsSafe(){setTimeout(()=>{try{Object.values(charts||{}).forEach(c=>c&&typeof c.resize==='function'&&c.resize())}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}},320)}
 function toggleSidebar(){document.body.classList.toggle('sidebar-open');const isOpen=document.body.classList.contains('sidebar-open');$('sidebar')?.classList.toggle('open',isOpen);$('overlay')?.classList.toggle('show',isOpen);resizeChartsSafe()}
@@ -4396,8 +4396,8 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <script src="sales/invoice-print-preview.js"></script>
 <script src="sales/invoice-manual-multi-items.js"></script>
 <script src="obligations/obligations-core.js"></script>
-<script src="payroll/payroll-core.js?v=8.0.3-payroll-phase42"></script>
-<script defer="" src="payroll/payroll-read-facade.js?v=8.0.3-payroll-phase42"></script>
+<script src="payroll/payroll-core.js"></script>
+<script defer="" src="payroll/payroll-read-facade.js"></script>
 <script defer="" src="payroll/payroll-computed-facade.js"></script>
 <script defer="" src="payroll/payroll-view-model-facade.js"></script>
 <script defer="" src="payroll/payroll-render-bridge.js"></script>
@@ -4570,7 +4570,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script defer="" src="components/liquid-glass-ui.js"></script>
 <script defer="" src="components/phase6f-safe-inline-cleanup.js"></script>
 <script defer="" src="inline-extracted/contract-candidates-full-export.js"></script>
-<script>window.PETATOE_RELEASE_VERSION='v8.0.3';window.PETATOE_RELEASE_NAME='PAYROLL_PHASE42_FULL_SLIP_PERSISTENCE_FIX';</script>
+<script>window.PETATOE_RELEASE_VERSION='v8.0.2';window.PETATOE_RELEASE_NAME='GOLD_FINAL_AUDIT_GITHUB_PRODUCTION_CERTIFICATION';</script>
 <script>
 (function(){
   function showPdfEngineMessage(){

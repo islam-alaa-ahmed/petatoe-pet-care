@@ -1,6 +1,6 @@
 /* PETATOE v3.9.4 — API Ready Architecture
    Central client-side storage adapter.
-   Current driver: localStorage/sessionStorage.
+   Current driver: Supabase-only for business data; local storage is allowed only for UI/session preferences.
    Future driver: PHP API + MySQL/SQL Server without changing UI screens.
    v3.9.2: Added payroll module keys to KEY_MAP
    v3.9.3: Moved load position to line 15 (immediately after data-source.js) — before all modules that depend on it. (employees, slips, jobTypes, employeeConfig, commissionSnapshots).
@@ -13,7 +13,7 @@
   if(window.PETATOEStorage && window.PETATOEStorage.__ready){ return; }
 
   var VERSION='3.9.4';
-  var DEFAULT_DRIVER='local';
+  var DEFAULT_DRIVER='supabase';
   // PETATOE v6.1.81 Phase 5-E: conservative raw snapshot limits.
   // These limits protect Restore from accidental oversized/unbounded localStorage writes
   // while keeping large PETATOE sales backup values valid.
@@ -58,6 +58,27 @@
     appointmentsMasterData:{key:'petatoe_appointments_master_data_v1',table:'appointments_master_data',type:'object'}
   };
 
+
+  // Phase 42.9D: business data must not silently fall back to browser storage.
+  // Only device/UI/session preferences may remain local.
+  var LOCAL_ONLY_NAMES={
+    theme:true,
+    currentUser:true,
+    settingsMain:true,
+    settingsSub:true
+  };
+  function isLocalOnlyName(nameOrKey){
+    if(LOCAL_ONLY_NAMES[nameOrKey]) return true;
+    var key=resolveKey(nameOrKey);
+    return key==='petatoe_theme' || key==='petatoe_current_user' || /^petatoe_ui_/i.test(key) || /^PETATOE_UI_/i.test(key) || /^PETATOE_SESSION_/i.test(key);
+  }
+  function blockBusinessLocalAccess(action,nameOrKey,fallback){
+    if(typeof console!=='undefined' && console.warn){
+      console.warn('PETATOEStorage '+action+' blocked for business key; use Supabase repository instead:', nameOrKey);
+    }
+    return fallback;
+  }
+
   function nativeStorage(scope){return scope==='session'?window.sessionStorage:window.localStorage;}
   function resolveKey(nameOrKey){
     if(KEY_MAP[nameOrKey])return KEY_MAP[nameOrKey].key;
@@ -86,35 +107,43 @@
   var Storage={
     version:VERSION,
     driver:DEFAULT_DRIVER,
-    getMode:function(){var api=Api();return api&&api.isApiMode()?'api':'local';},
-    setMode:function(mode){var api=Api();this.driver=(mode==='api'?'api':'local');if(api&&api.setMode)api.setMode(this.driver);return this.driver;},
-    isApiMode:function(){return this.getMode()==='api';},
+    getMode:function(){return 'supabase';},
+    setMode:function(mode){this.driver='supabase';var api=Api();if(api&&api.setMode)api.setMode('api');return this.driver;},
+    isApiMode:function(){return true;},
+    isLocalOnly:isLocalOnlyName,
     map:KEY_MAP,
     key:resolveKey,
     has:function(nameOrKey, opts){
+      if(!isLocalOnlyName(nameOrKey)) return false;
       var st=nativeStorage(opts&&opts.scope);
       return st.getItem(resolveKey(nameOrKey))!==null;
     },
     get:function(nameOrKey, fallback, opts){
+      if(!isLocalOnlyName(nameOrKey)) return blockBusinessLocalAccess('get', nameOrKey, fallback==null?null:fallback);
       try{return normalize(nativeStorage(opts&&opts.scope).getItem(resolveKey(nameOrKey)), fallback==null?null:fallback);}catch(e){return fallback==null?null:fallback;}
     },
     set:function(nameOrKey, value, opts){
+      if(!isLocalOnlyName(nameOrKey)) return blockBusinessLocalAccess('set', nameOrKey, false);
       try{nativeStorage(opts&&opts.scope).setItem(resolveKey(nameOrKey), String(value));return true;}catch(e){console.warn('PETATOEStorage.set failed',nameOrKey,e);return false;}
     },
     remove:function(nameOrKey, opts){
+      if(!isLocalOnlyName(nameOrKey)) return false;
       try{nativeStorage(opts&&opts.scope).removeItem(resolveKey(nameOrKey));return true;}catch(e){return false;}
     },
     readJSON:function(nameOrKey, fallback, opts){
+      if(!isLocalOnlyName(nameOrKey)) return blockBusinessLocalAccess('readJSON', nameOrKey, fallback);
       try{return safeParse(nativeStorage(opts&&opts.scope).getItem(resolveKey(nameOrKey)), fallback);}catch(e){return fallback;}
     },
     writeJSON:function(nameOrKey, value, opts){
+      if(!isLocalOnlyName(nameOrKey)) return blockBusinessLocalAccess('writeJSON', nameOrKey, false);
       try{nativeStorage(opts&&opts.scope).setItem(resolveKey(nameOrKey), JSON.stringify(value));return true;}catch(e){console.warn('PETATOEStorage.writeJSON failed',nameOrKey,e);return false;}
     },
-    getRecords:function(){return window.PETATOEDataSource?window.PETATOEDataSource.getRecordsSync():this.readJSON('records',[]);},
-    saveRecords:function(arr){if(window.PETATOEDataSource)return !!window.PETATOEDataSource.setRecordsSync(arr);return this.writeJSON('records',Array.isArray(arr)?arr:[]);},
+    getRecords:function(){return window.PETATOEDataSource?window.PETATOEDataSource.getRecordsSync():[];},
+    saveRecords:function(arr){if(window.PETATOEDataSource)return !!window.PETATOEDataSource.setRecordsSync(arr);return false;},
     getCurrentUserName:function(fallback){return window.PETATOEDataSource?window.PETATOEDataSource.getCurrentUserName(fallback||'User'):this.get('currentUser',fallback||'User');},
     setCurrentUser:function(value){if(window.PETATOEDataSource)return !!window.PETATOEDataSource.setCurrentUser(value);return this.set('currentUser',value);},
     push:function(nameOrKey, row, maxRows){
+      if(!isLocalOnlyName(nameOrKey)) return [];
       var arr=this.readJSON(nameOrKey,[]);
       if(!Array.isArray(arr))arr=[];
       arr.unshift(row);
@@ -131,7 +160,7 @@
     },
     apiReadJSON:function(nameOrKey, fallback){
       var api=Api();
-      if(!api||!api.isApiMode())return Promise.resolve(this.readJSON(nameOrKey,fallback));
+      if(!api||!api.isApiMode())return Promise.resolve(isLocalOnlyName(nameOrKey)?this.readJSON(nameOrKey,fallback):fallback);
       var meta=KEY_MAP[nameOrKey];
       var endpoint=this.endpointFor(nameOrKey);
       return api.get(endpoint).then(function(res){
@@ -141,7 +170,7 @@
     },
     apiWriteJSON:function(nameOrKey, value){
       var api=Api();
-      if(!api||!api.isApiMode())return Promise.resolve(this.writeJSON(nameOrKey,value));
+      if(!api||!api.isApiMode())return Promise.resolve(isLocalOnlyName(nameOrKey)?this.writeJSON(nameOrKey,value):false);
       return api.put(this.endpointFor(nameOrKey),{data:value,key:resolveKey(nameOrKey),table:this.tableFor(nameOrKey)})
         .then(function(){return true;})
         .catch(function(e){console.warn('PETATOEStorage.apiWriteJSON failed',nameOrKey,e);return false;});
