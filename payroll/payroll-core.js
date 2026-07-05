@@ -216,10 +216,6 @@
     try{if(window.__PETATOE_SETTINGS_API__&&typeof window.__PETATOE_SETTINGS_API__.users==='function')pushUsersIntoMap(map,window.__PETATOE_SETTINGS_API__.users()||[])}catch(e2){console.warn('PETATOEPayroll settings users load failed',e2)}
     PET_USERS_KEYS.forEach(function(key){
       try{var arr=read(key,[]);pushUsersIntoMap(map,arr)}catch(_e){}
-      try{
-        var raw=localStorage.getItem(key)||sessionStorage.getItem(key);
-        if(raw)pushUsersIntoMap(map,JSON.parse(raw));
-      }catch(_e2){}
     });
     var list=Object.keys(map).map(function(k){return map[k]});
     return list.filter(function(u){return String(u.status||'active')!=='deleted'});
@@ -398,8 +394,6 @@
   function readCommissionSnapshots(){
     var sources=[];
     try{if(window.PETATOERepositories&&window.PETATOERepositories.CommissionSnapshots&&typeof window.PETATOERepositories.CommissionSnapshots.get==='function')sources.push(window.PETATOERepositories.CommissionSnapshots.get())}catch(_e){}
-    try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')sources.push(window.PETATOEStorage.readJSON('commissionSnapshots',{}))}catch(_e){}
-    try{if(window.localStorage){var raw=window.localStorage.getItem(COMM_SNAPSHOT_KEY);if(raw)sources.push(JSON.parse(raw))}}catch(_e){}
     sources.push(read(COMM_SNAPSHOT_KEY,{}));
     for(var i=0;i<sources.length;i++){
       var s=normalizeCommissionSnapshotsSource(sources[i]);
