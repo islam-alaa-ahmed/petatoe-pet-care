@@ -653,6 +653,30 @@
     }
   }
 
+  function negativePayrollValues(slip){
+    var bad=[];
+    var labels={base:'الراتب الأساسي',housing:'بدل السكن',transport:'بدل المواصلات',incentives:'الحوافز'};
+    Object.keys(labels).forEach(function(k){if(num(slip&&slip[k])<0)bad.push(labels[k])});
+    (Array.isArray(slip&&slip.additions)?slip.additions:[]).forEach(function(x,i){if(num(x&&x.value)<0)bad.push('الإضافات - بند '+(i+1))});
+    (Array.isArray(slip&&slip.deductions)?slip.deductions:[]).forEach(function(x,i){if(num(x&&x.value)<0)bad.push('الخصومات - بند '+(i+1))});
+    return bad;
+  }
+  function validatePayrollSlipInput(slip){
+    var bad=negativePayrollValues(slip);
+    if(bad.length){toastMsg('لا يمكن إدخال قيم سالبة في: '+bad.join('، '));return false}
+    return true;
+  }
+  function confirmNegativeNetSalary(slip){
+    var c=calcSlip(slip);
+    if(num(c.net)>=0)return true;
+    return confirm('تنبيه: صافي الراتب سالب ('+money(c.net)+').\nيرجى التأكد من صحة الخصومات والاستحقاقات قبل المتابعة.\n\nهل تريد متابعة الحفظ؟');
+  }
+  function validateSlipBeforePersist(slip){
+    if(!validatePayrollSlipInput(slip))return false;
+    if(!confirmNegativeNetSalary(slip))return false;
+    return true;
+  }
+
   function upsertSlip(slip){var arr=slips();var i=arr.findIndex(function(x){return String(x.id)===String(slip.id)});var duplicate=arr.find(function(x){return String(x.id)!==String(slip.id)&&sameSlipMonth(x,slip)});if(duplicate){toastMsg('يوجد كشف راتب لنفس الموظف في نفس الشهر بالفعل');return null}var old=i>-1?arr[i]:{};slip=Object.assign({},old,slip);if(i>-1)arr[i]=slip;else arr.push(slip);setSlipsCache(arr);slip._persistPromise=persistOneSlip(slip);return slip}
   function setStatus(id,st,extra){var arr=slips();var s=arr.find(function(x){return x.id===id});if(!s)return Promise.resolve(false);s.status=st;Object.assign(s,extra||{});s.updatedAt=new Date().toISOString();setSlipsCache(arr);var p=persistOneSlip(s);render();renderSalarySlip();return p;}
 
@@ -752,8 +776,8 @@
     deleteEmployee:function(id){if(!confirm('حذف الموظف من قسم الرواتب؟'))return;saveEmployees(employees().filter(function(e){return e.id!==id}));render()},
     clearEmployeeForm:function(){['peId','peCode','peName','peJob','peUserId','peCommissionEmployeeName','peBase','peHousing','peTransport','pePaymentMethod'].forEach(function(id){if(byId(id))byId(id).value=''});if(byId('peStatus'))PETATOEPayroll.setEmployeeStatus('active')},
     loadSlipForm:loadSlipForm,
-    saveSlip:function(){var form=readSlipForm('draft');var existing=slips().find(function(x){return String(x.id)===String(form.id)||sameSlipMonth(x,form)});if(existing&&String(existing.status||'draft')!=='draft'){toastMsg('لا يمكن حفظ كشف دخل دورة الاعتماد كمسودة. استخدم إلغاء الاعتماد أولاً.');return}var s=upsertSlip(form);if(!s)return;notifyAfterPersist(s._persistPromise,'تم حفظ كشف الراتب كمسودة');delete s._persistPromise;state.editSlipId=s.id;render()},
-    sendToBoard:function(){var form=readSlipForm('pending_board');var existing=slips().find(function(x){return String(x.id)===String(form.id)||sameSlipMonth(x,form)});if(existing&&String(existing.status||'draft')!=='draft'){toastMsg('لا يمكن إرسال الكشف للاعتماد إلا من حالة مسودة');return}var s=upsertSlip(form);if(!s)return;notifyAfterPersist(s._persistPromise,'تم إرسال الكشف للاعتماد المبدئي');delete s._persistPromise;state.editSlipId=s.id;render()},
+    saveSlip:function(){var form=readSlipForm('draft');if(!validateSlipBeforePersist(form))return;var existing=slips().find(function(x){return String(x.id)===String(form.id)||sameSlipMonth(x,form)});if(existing&&String(existing.status||'draft')!=='draft'){toastMsg('لا يمكن حفظ كشف دخل دورة الاعتماد كمسودة. استخدم إلغاء الاعتماد أولاً.');return}var s=upsertSlip(form);if(!s)return;notifyAfterPersist(s._persistPromise,'تم حفظ كشف الراتب كمسودة');delete s._persistPromise;state.editSlipId=s.id;render()},
+    sendToBoard:function(){var form=readSlipForm('pending_board');if(!validateSlipBeforePersist(form))return;var existing=slips().find(function(x){return String(x.id)===String(form.id)||sameSlipMonth(x,form)});if(existing&&String(existing.status||'draft')!=='draft'){toastMsg('لا يمكن إرسال الكشف للاعتماد إلا من حالة مسودة');return}var s=upsertSlip(form);if(!s)return;notifyAfterPersist(s._persistPromise,'تم إرسال الكشف للاعتماد المبدئي');delete s._persistPromise;state.editSlipId=s.id;render()},
     editSlip:function(id){state.tab='monthly';render();setTimeout(function(){var s=slips().find(function(x){return String(x.id)===String(id)});if(!s)return;if(byId('payPeriod'))byId('payPeriod').value=s.period;if(byId('payEmployee'))byId('payEmployee').value=s.employeeId;var target=byId('paySlipFormArea');if(target)safeRender(target,slipFormHtml(s),'payroll edit slip form')},0)},
     deleteSlip:function(id){var s=slips().find(function(x){return String(x.id)===String(id)});if(!s){toastMsg('لم يتم العثور على كشف الراتب');return}if(!confirm('حذف كشف الراتب نهائيًا من الرواتب الشهرية؟'))return;setSlipsCache(slips().filter(function(x){return !sameSlipMonth(x,s)&&String(x.id)!==String(s.id)}));notifyAfterPersist(removeOneSlip(s),'تم حذف كشف الراتب');if(state.editSlipId===id)state.editSlipId='';render();renderSalarySlip();},
     boardApprove:function(id){if(!isBoard()){toastMsg('هذه الصلاحية لرئيس مجلس الإدارة أو الإدارة العليا');return}var s=slips().find(function(x){return x.id===id});if(!s||String(s.status||'draft')!=='pending_board'){toastMsg('لا يمكن الاعتماد إلا لكشف بانتظار اعتماد رئيس مجلس الإدارة');return}notifyAfterPersist(setStatus(id,'board_approved',{boardApprovedAt:new Date().toISOString(),boardApprovedBy:(currentUser().fullName||currentUser().username)}),'تم الاعتماد المبدئي وظهر الكشف للموظف')},
