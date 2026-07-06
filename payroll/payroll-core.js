@@ -51,7 +51,12 @@
     console.warn('PETATOEPayroll ignored non-payroll storage write', key);
     return Promise.resolve({ok:false,skipped:true});
   }
-  function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4},commissionSnapshots:payrollCache[COMM_SNAPSHOT_KEY]||{},payrollSlips:Array.isArray(payrollCache[SLIP_KEY])?cloneVal(payrollCache[SLIP_KEY]):[]}}
+  function sanitizePayrollSlip(slip){
+    var v=cloneVal(slip||{});
+    if(v&&typeof v==='object')delete v._persistPromise;
+    return v;
+  }
+  function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4},commissionSnapshots:payrollCache[COMM_SNAPSHOT_KEY]||{},payrollSlips:(Array.isArray(payrollCache[SLIP_KEY])?payrollCache[SLIP_KEY]:[]).map(sanitizePayrollSlip)}}
   function persistMaster(){
     var R=payrollRepo();
     if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
@@ -118,26 +123,12 @@
     });
     return Promise.all(ops).then(function(){return {ok:true,count:nextRows.length}}).catch(function(e){console.warn('PETATOEPayroll employee persist failed',e);toastMsg('تعذر حفظ الموظف في Supabase');throw e});
   }
-  function mergePayrollSlipSources(fullRows, flatRows){
-    var byId={};
-    (Array.isArray(flatRows)?flatRows:[]).forEach(function(row){
-      if(!row||row.id==null)return;
-      byId[String(row.id)]=row;
-    });
-    (Array.isArray(fullRows)?fullRows:[]).forEach(function(row){
-      if(!row||row.id==null)return;
-      var id=String(row.id);
-      if(byId[id]){byId[id]=Object.assign({},byId[id],row,{id:row.id});}
-      else byId[id]=row;
-    });
-    return Object.keys(byId).map(function(id){return byId[id]});
-  }
   function persistPayrollKey(key,val,prev){
     if(key===EMP_KEY){
       return persistPayrollEmployees(val,prev);
     }
     if(key===SLIP_KEY){
-      return persistArrayTable('payroll_slips',val,prev,function(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip.employeeId||''),period:String(slip.period||''),status:String(slip.status||''),payment_method:String(slip.paymentMethod||''),net_amount:num(c.net||0)};}).then(function(res){return persistMaster().then(function(){return res})});
+      return persistArrayTable('payroll_slips',val,prev,slipPersistenceExtra).then(function(res){return persistMaster().then(function(){return res})});
     }
     if(key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY||key===COMM_SNAPSHOT_KEY){return persistMaster();}
     return Promise.resolve({ok:true,skipped:true});
@@ -151,20 +142,25 @@
     if(payrollLoadStarted)return;
     payrollLoadStarted=true;
     var R=payrollRepo();
-    if(!R||!R.hasClient||!R.hasClient()){console.warn('PETATOEPayroll Supabase repository/client not ready');return;}
+    if(!R||!R.hasClient||!R.hasClient()){
+      payrollLoadStarted=false;
+      console.warn('PETATOEPayroll Supabase repository/client not ready');
+      try{setTimeout(loadPayrollFromSupabase,300)}catch(_e){}
+      return;
+    }
     try{
       var emps=typeof R.listPayrollEmployees==='function'?await R.listPayrollEmployees():await R.listJsonRows('payroll_employees',{order:'created_at'});
       var slipsRows=await R.listJsonRows('payroll_slips',{order:'created_at'});
       var master=await R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{});
       payrollCache[EMP_KEY]=Array.isArray(emps)?emps:[];
-      payrollCache[SLIP_KEY]=mergePayrollSlipSources(master&&master.payrollSlips,slipsRows);
+      payrollCache[SLIP_KEY]=mergePayrollSlipSources(Array.isArray(master.payrollSlips)?master.payrollSlips:[],Array.isArray(slipsRows)?slipsRows:[]);
       payrollCache[JOB_TYPES_KEY]=Array.isArray(master.jobTypes)?master.jobTypes:[];
       payrollCache[EMP_CONFIG_KEY]=employeeConfigNormalize(master.employeeConfig||payrollCache[EMP_CONFIG_KEY]);
       payrollCache[COMM_SNAPSHOT_KEY]=master.commissionSnapshots&&typeof master.commissionSnapshots==='object'?master.commissionSnapshots:{};
       payrollLoaded=true;
       console.log('✅ PETATOE Payroll Supabase storage loaded', {employees:payrollCache[EMP_KEY].length, slips:payrollCache[SLIP_KEY].length});
       refreshPayrollViews();
-    }catch(e){console.warn('PETATOEPayroll Supabase load failed',e)}
+    }catch(e){payrollLoadStarted=false;console.warn('PETATOEPayroll Supabase load failed',e)}
   }
   function uid(p){return (p||'id')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}
   function nowPeriod(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
@@ -183,7 +179,7 @@
   function payrollYears(){return uniqueSorted(slips().map(function(s){return periodYear(s.period)}),true)}
   function payrollMonths(year){return uniqueSorted(slips().filter(function(s){return !year||periodYear(s.period)===String(year)}).map(function(s){return periodMonth(s.period)}),false)}
   function norm(s){return String(s||'').trim().toLowerCase().replace(/\s+/g,' ')}
-  var PET_USERS_KEYS=['app_users','petatoe_users_v139','petatoe_users_v108','petatoe_users_v2'];
+  // Business users are loaded from Identity/Settings facades only; no browser-storage fallback.
   function mergeUser(oldU,newU){
     oldU=oldU||{};newU=newU||{};
     return Object.assign({},oldU,newU,{
@@ -214,13 +210,6 @@
       if(ids&&typeof ids.usersSync==='function')pushUsersIntoMap(map,ids.usersSync()||[]);
     }catch(e){console.warn('PETATOEPayroll identity users load failed',e)}
     try{if(window.__PETATOE_SETTINGS_API__&&typeof window.__PETATOE_SETTINGS_API__.users==='function')pushUsersIntoMap(map,window.__PETATOE_SETTINGS_API__.users()||[])}catch(e2){console.warn('PETATOEPayroll settings users load failed',e2)}
-    PET_USERS_KEYS.forEach(function(key){
-      try{var arr=read(key,[]);pushUsersIntoMap(map,arr)}catch(_e){}
-      try{
-        var raw=localStorage.getItem(key)||sessionStorage.getItem(key);
-        if(raw)pushUsersIntoMap(map,JSON.parse(raw));
-      }catch(_e2){}
-    });
     var list=Object.keys(map).map(function(k){return map[k]});
     return list.filter(function(u){return String(u.status||'active')!=='deleted'});
   }
@@ -306,109 +295,84 @@
   function slips(){var arr=read(SLIP_KEY,[]);return Array.isArray(arr)?arr:[]}
   function saveSlips(arr){return write(SLIP_KEY,arr)}
   function setSlipsCache(arr){payrollCache[SLIP_KEY]=cloneVal(Array.isArray(arr)?arr:[]);return Promise.resolve({ok:true,cached:true})}
-  function slipPersistenceExtra(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip&&slip.employeeId||''),period:String(slip&&slip.period||''),status:String(slip&&slip.status||''),net_amount:num(c.net||0)}}
-  function persistOneSlip(slip){var R=payrollRepo();if(!slip||!slip.id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});return R.upsertJsonRow('payroll_slips',slip.id,slip,slipPersistenceExtra(slip)).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Save failed: payroll_slips');return persistMaster().then(function(){return res||{ok:true}})}).catch(function(e){console.warn('PETATOEPayroll single slip persist failed',e);throw e})}
-  function removeOneSlip(id){var R=payrollRepo();if(!id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});return R.deleteById('payroll_slips',id).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Delete failed: payroll_slips');return persistMaster().then(function(){return res||{ok:true}})}).catch(function(e){console.warn('PETATOEPayroll single slip delete failed',e);throw e})}
-  function removeSlipGroup(deletedSlip,deletedIds){
-    var R=payrollRepo();
-    deletedIds=(Array.isArray(deletedIds)?deletedIds:[]).map(function(x){return String(x||'')}).filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i});
-    if(!deletedSlip&&!deletedIds.length)return Promise.resolve({ok:false,skipped:true});
-    if(!R||!R.hasClient||!R.hasClient())return persistMaster();
-    var ops=deletedIds.map(function(id){return R.deleteById('payroll_slips',id).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Delete failed: payroll_slips '+id);return res||{ok:true}})});
-    return Promise.all(ops).then(function(){return persistMaster()}).then(function(){return {ok:true,deleted:deletedIds.length}}).catch(function(e){console.warn('PETATOEPayroll slip group delete failed',e);throw e});
-  }
-  function employeeMatchKeys(emp){
-    emp=emp||{};
+  function slipPersistenceExtra(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip&&slip.employeeId||slip&&slip.employee_id||''),period:String(slip&&slip.period||''),status:String(slip&&slip.status||''),payment_method:String(slip&&slip.paymentMethod||slip&&slip.payment_method||''),net_amount:num(c.net||0)}}
+  function persistOneSlip(slip){var R=payrollRepo();if(!slip||!slip.id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});var safe=sanitizePayrollSlip(slip);return persistMaster().then(function(){return R.upsertJsonRow('payroll_slips',slip.id,safe,slipPersistenceExtra(safe))}).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Save failed: payroll_slips');return res||{ok:true}}).catch(function(e){console.warn('PETATOEPayroll single slip persist failed',e);throw e})}
+  function employeeRefTokens(obj){
     var out=[];
-    ['id','supabase_id','employee_id','employeeId','app_id','code','userId','userKey'].forEach(function(k){
-      var v=emp[k];
-      if(v!==null&&v!==undefined&&String(v).trim())out.push(String(v).trim());
-    });
-    return out.filter(function(v,i,a){return a.indexOf(v)===i});
-  }
-  function getEmployee(id){
-    id=String(id||'').trim();
-    if(!id)return null;
-    return employees().find(function(e){return employeeMatchKeys(e).indexOf(id)>-1})||null;
-  }
-  function employeeRefKeys(ref){
-    ref=String(ref||'').trim();
-    var emp=ref?getEmployee(ref):null;
-    var keys=emp?employeeMatchKeys(emp).slice():[];
-    if(ref&&keys.indexOf(ref)===-1)keys.push(ref);
-    return keys.map(norm).filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i});
+    function add(v){v=String(v==null?'':v).trim();if(v&&out.indexOf(v)===-1)out.push(v)}
+    if(obj&&typeof obj==='object'){
+      ['id','supabase_id','employee_id','employeeId','code','userId','userKey'].forEach(function(k){add(obj[k])});
+    }else add(obj);
+    return out;
   }
   function sameEmployeeRef(a,b){
-    var ak=employeeRefKeys(a),bk=employeeRefKeys(b);
-    if(!ak.length||!bk.length)return String(a||'')===String(b||'');
-    return ak.some(function(k){return bk.indexOf(k)>-1});
+    var aa=employeeRefTokens(a),bb=employeeRefTokens(b);
+    if(!aa.length||!bb.length)return false;
+    return aa.some(function(x){return bb.some(function(y){return String(x)===String(y)})});
   }
-  function canonicalSlipKey(s){
-    s=s||{};
-    var emp=getEmployee(s.employeeId);
-    var empKey=emp?(emp.id||emp.supabase_id||emp.employee_id||emp.code||s.employeeId):s.employeeId;
-    return String(empKey||'')+'|'+String(s.period||'');
-  }
+  function sameSlipMonth(a,b){return !!(a&&b&&String(a.period||'')===String(b.period||'')&&sameEmployeeRef(a.employeeId||a.employee_id||a,a&&b.employeeId||b.employee_id||b))}
   function slipCompletenessScore(s){
     s=s||{};
-    var c=0;
-    ['base','housing','transport','incentives'].forEach(function(k){if(num(s[k])!==0)c+=2});
-    if(String(s.paymentMethod||'').trim())c+=2;
-    if(Array.isArray(s.additions)&&s.additions.length)c+=s.additions.length*2;
-    if(Array.isArray(s.deductions)&&s.deductions.length)c+=s.deductions.length*2;
-    try{var calc=calcSlip(s);if(calc&&num(calc.net)!==0)c+=3;if(calc&&num(calc.commission)!==0)c+=1}catch(_e){}
-    return c;
+    var score=0;
+    ['base','housing','transport','incentives','paymentMethod','status','period','employeeId'].forEach(function(k){if(s[k]!==undefined&&s[k]!==null&&String(s[k]).trim()!=='')score++});
+    if(Array.isArray(s.additions)&&s.additions.length)score+=2;
+    if(Array.isArray(s.deductions)&&s.deductions.length)score+=2;
+    if(s.createdAt)score++;
+    if(s.updatedAt)score++;
+    return score;
   }
-  function slipTimeScore(s){
+  function slipTimeValue(s){
     s=s||{};
-    var dates=[s.updatedAt,s.createdAt,s.boardApprovedAt,s.employeeApprovedAt,s.accountsApprovedAt,s.paidAt].filter(Boolean);
-    var best=0;
-    dates.forEach(function(d){var t=Date.parse(d);if(isFinite(t)&&t>best)best=t});
-    return best;
+    var t=Date.parse(s.updatedAt||s.updated_at||s.createdAt||s.created_at||0);
+    return isNaN(t)?0:t;
   }
-  function compareSalarySlipPriority(a,b){
-    var p=String(b.period||'').localeCompare(String(a.period||''));
-    if(p)return p;
-    var ca=slipCompletenessScore(a),cb=slipCompletenessScore(b);
-    if(cb!==ca)return cb-ca;
-    var ta=slipTimeScore(a),tb=slipTimeScore(b);
-    if(tb!==ta)return tb-ta;
-    return String(b.id||'').localeCompare(String(a.id||''));
+  function sortPayrollSlipsForDisplay(a,b){
+    var byPeriod=String(b&&b.period||'').localeCompare(String(a&&a.period||''));
+    if(byPeriod)return byPeriod;
+    var byTime=slipTimeValue(b)-slipTimeValue(a);
+    if(byTime)return byTime;
+    return slipCompletenessScore(b)-slipCompletenessScore(a);
   }
-  function canonicalPayrollSlips(rows){
-    var byKey={};
-    (Array.isArray(rows)?rows:[]).forEach(function(s){
-      if(!s)return;
-      var k=canonicalSlipKey(s);
-      if(!byKey[k]||compareSalarySlipPriority(s,byKey[k])<0)byKey[k]=s;
-    });
-    return Object.keys(byKey).map(function(k){return byKey[k]});
+  function normalizeSlipRecord(row){
+    var v=sanitizePayrollSlip(row||{});
+    if(v.employeeId==null&&v.employee_id!=null)v.employeeId=v.employee_id;
+    if(v.paymentMethod==null&&v.payment_method!=null)v.paymentMethod=v.payment_method;
+    return v;
   }
+  function mergePayrollSlipSources(masterRows,indexRows){
+    var out=[];
+    function upsert(row){
+      row=normalizeSlipRecord(row);
+      if(!row||!row.id)return;
+      var i=out.findIndex(function(x){return String(x.id)===String(row.id)||sameSlipMonth(x,row)});
+      if(i>-1)out[i]=Object.assign({},out[i],row,{employeeId:row.employeeId||out[i].employeeId,paymentMethod:row.paymentMethod||out[i].paymentMethod});
+      else out.push(row);
+    }
+    (Array.isArray(indexRows)?indexRows:[]).forEach(upsert);
+    (Array.isArray(masterRows)?masterRows:[]).forEach(upsert);
+    return out;
+  }
+  function removeOneSlip(target){
+    var R=payrollRepo();
+    var targetSlip=(target&&typeof target==='object')?target:(slips().find(function(x){return String(x.id)===String(target)})||{id:target});
+    if(!targetSlip||!targetSlip.id)return Promise.resolve({ok:false,skipped:true});
+    if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
+    function del(row){return R.deleteById('payroll_slips',row.id).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Delete failed: payroll_slips');return res||{ok:true}})}
+    return Promise.resolve(typeof R.listJsonRows==='function'?R.listJsonRows('payroll_slips',{}):[]).then(function(rows){
+      rows=Array.isArray(rows)?rows:[];
+      var targets=rows.filter(function(row){return row&&(String(row.id)===String(targetSlip.id)||sameSlipMonth(row,targetSlip))});
+      if(!targets.some(function(row){return String(row.id)===String(targetSlip.id)}))targets.push(targetSlip);
+      var seen={};targets=targets.filter(function(row){var id=String(row&&row.id||'');if(!id||seen[id])return false;seen[id]=true;return true});
+      return Promise.all(targets.map(del)).then(function(){return persistMaster().then(function(){return {ok:true,count:targets.length}})});
+    }).catch(function(e){console.warn('PETATOEPayroll single slip delete failed',e);throw e})
+  }
+  function getEmployee(id){return employees().find(function(e){return sameEmployeeRef(e,id)})||null}
   function activeEmployees(){return employees().filter(function(e){return e.status!=='stopped'&&e.status!=='resigned'})}
   function statusInfo(st){var map={draft:['مسودة','warn'],pending_board:['بانتظار اعتماد رئيس مجلس الإدارة','warn'],board_approved:['معتمد مبدئيًا - بانتظار موافقة الموظف','ok'],employee_objection:['اعتراض من الموظف','bad'],employee_approved:['موافق عليه من الموظف - جاهز للحسابات','ok'],accounts_approved:['معتمد للصرف','ok'],paid:['تم الصرف','ok'],rejected:['مرفوض','bad']};return map[st]||[st||'مسودة','warn']}
   function statusBadge(st){var x=statusInfo(st);return '<span class="payroll-badge '+x[1]+'">'+esc(x[0])+'</span>'}
-  function isObjectMap(v){return !!(v&&typeof v==='object'&&!Array.isArray(v))}
-  function normalizeCommissionSnapshotsSource(src){
-    src=isObjectMap(src)?src:{};
-    if(isObjectMap(src.snapshots))return src.snapshots;
-    if(isObjectMap(src.monthlySnapshots))return src.monthlySnapshots;
-    if(isObjectMap(src.commissionSnapshots))return src.commissionSnapshots;
-    return src;
-  }
-  function readCommissionSnapshots(){
-    var sources=[];
-    try{if(window.PETATOERepositories&&window.PETATOERepositories.CommissionSnapshots&&typeof window.PETATOERepositories.CommissionSnapshots.get==='function')sources.push(window.PETATOERepositories.CommissionSnapshots.get())}catch(_e){}
-    try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')sources.push(window.PETATOEStorage.readJSON('commissionSnapshots',{}))}catch(_e){}
-    try{if(window.localStorage){var raw=window.localStorage.getItem(COMM_SNAPSHOT_KEY);if(raw)sources.push(JSON.parse(raw))}}catch(_e){}
-    sources.push(read(COMM_SNAPSHOT_KEY,{}));
-    for(var i=0;i<sources.length;i++){
-      var s=normalizeCommissionSnapshotsSource(sources[i]);
-      if(isObjectMap(s)&&Object.keys(s).length)return s;
-    }
-    return {};
-  }
+  function readCommissionSnapshots(){var s=read(COMM_SNAPSHOT_KEY,{});return s&&typeof s==='object'?s:{}}
   function readCommissionStore(){
-    var s=readCommissionSnapshots();
+    var s=read(COMM_SNAPSHOT_KEY,{});
     return s&&typeof s==='object'?s:{};
   }
   function addUniqueCommissionName(out,name){
@@ -471,7 +435,7 @@
     return (detail.mode==='manual'?'مرتبطة يدويًا بقسم العمولات':'مرتبطة بقسم العمولات بالمنطق القديم')+' — '+(names.length?('الاسم المطابق: '+names.join(' / ')):'تمت المطابقة');
   }
   function sumLines(lines){return (Array.isArray(lines)?lines:[]).reduce(function(s,x){return s+num(x.value)},0)}
-  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var gross=num(slip.base)+num(slip.housing)+num(slip.transport)+commission+num(slip.incentives)+additions;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,gross:gross,net:net}}
+  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var incentives=num(slip.incentives);var allowances=num(slip.housing)+num(slip.transport);var extraTotal=commission+incentives+additions;var gross=num(slip.base)+allowances+extraTotal;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,incentives:incentives,allowances:allowances,extraTotal:extraTotal,gross:gross,net:net}}
   function identityKeys(obj){
     obj=obj||{};
     var keys=[];
@@ -531,9 +495,9 @@
     var area=byId('salarySlipArea');
     if(!area)return;
     var allowedStatuses=['board_approved','employee_objection','employee_approved','accounts_approved','paid'];
-    var arr=canonicalPayrollSlips(slips().filter(function(s){
+    var arr=slips().filter(function(s){
       return allowedStatuses.indexOf(s.status)>-1&&canEmployeeSee(s)
-    })).sort(compareSalarySlipPriority);
+    }).sort(sortPayrollSlipsForDisplay);
     if(!arr.length){
       state.salarySlipId='';
       safeRender(area,'<div class="payroll-shell salary-slip-redesign-shell"><div class="payroll-card salary-slip-empty"><h3>📄 كشف الراتب</h3><p>لا يوجد كشف راتب معتمد مبدئيًا لهذا المستخدم حتى الآن.</p></div></div>','payroll empty self slip');
@@ -580,13 +544,13 @@
           +'<section class="salary-slip-kpis">'
             +'<div class="salary-kpi salary-kpi-net"><span>صافي الراتب</span><b>'+money(c.net)+'</b><i>💵</i></div>'
             +'<div class="salary-kpi"><span>الراتب الأساسي</span><b>'+money(s.base)+'</b><i>💼</i></div>'
-            +'<div class="salary-kpi"><span>إجمالي الإضافات</span><b>'+money(c.gross)+'</b><i>⬆️</i></div>'
+            +'<div class="salary-kpi"><span>إجمالي الإضافات</span><b>'+money(c.extraTotal)+'</b><i>⬆️</i></div>'
             +'<div class="salary-kpi salary-kpi-deduct"><span>إجمالي الخصومات</span><b>'+money(c.deductions)+'</b><i>⬇️</i></div>'
           +'</section>'
           +'<section class="salary-slip-details-card">'
             +'<div class="salary-slip-section-title"><h3>تفاصيل بنود الراتب</h3><span>إضافات وخصومات</span></div>'
             +'<div class="salary-slip-two-cols">'
-              +'<div class="salary-slip-col salary-slip-additions"><div class="salary-slip-col-title">الإضافات <span>⬆</span></div>'+detailRows(additions,'لا توجد إضافات')+'<div class="salary-slip-col-total">إجمالي الإضافات <b>'+money(c.gross)+'</b></div></div>'
+              +'<div class="salary-slip-col salary-slip-additions"><div class="salary-slip-col-title">الإضافات <span>⬆</span></div>'+detailRows(additions,'لا توجد إضافات')+'<div class="salary-slip-col-total">إجمالي الاستحقاقات <b>'+money(c.gross)+'</b></div></div>'
               +'<div class="salary-slip-col salary-slip-deductions"><div class="salary-slip-col-title">الخصومات <span>⬇</span></div>'+detailRows(deductions,'لا توجد خصومات')+'<div class="salary-slip-col-total">إجمالي الخصومات <b>'+money(c.deductions)+'</b></div></div>'
             +'</div>'
             +'<div class="salary-slip-net-formula"><span>صافي الراتب</span><b>'+money(c.net)+'</b></div>'
@@ -644,9 +608,11 @@
     var empId=(byId('payEmployee')||{}).value;
     if(!empId){toastMsg('اختر الموظف أولاً');return}
     var arr=slips();
-    var slip=arr.find(function(s){return sameEmployeeRef(s.employeeId,empId)&&String(s.period)===String(period)});
+    var slip=arr.find(function(s){return sameSlipMonth(s,{employeeId:empId,period:period})});
     var emp=getEmployee(empId)||{};
     if(!slip){
+      // Phase 43.1: opening the form must not create or persist a draft.
+      // The slip is created only when the user explicitly clicks Save Draft or Send to Board.
       slip={
         id:uid('slip'),
         employeeId:empId,
@@ -661,8 +627,8 @@
         status:'draft',
         createdAt:new Date().toISOString()
       };
-      /* Phase 42.7: opening the form must not create/persist a draft. Save only on explicit حفظ/إرسال. */
     }else if(!slip.paymentMethod&&emp.paymentMethod){
+      // Display employee default payment method without silently mutating a saved slip.
       slip=Object.assign({},slip,{paymentMethod:emp.paymentMethod});
     }
     state.editSlipId=slip.id;
@@ -692,11 +658,34 @@
     }
   }
 
-  function upsertSlip(slip){var arr=slips();var i=arr.findIndex(function(x){return x.id===slip.id});var duplicate=arr.find(function(x){return String(x.id)!==String(slip.id)&&sameEmployeeRef(x.employeeId,slip.employeeId)&&String(x.period)===String(slip.period)});if(duplicate){toastMsg('يوجد كشف راتب لنفس الموظف في نفس الشهر بالفعل');return null}var old=i>-1?arr[i]:{};slip=Object.assign({},old,slip);if(i>-1)arr[i]=slip;else arr.push(slip);setSlipsCache(arr);slip._persistPromise=persistOneSlip(slip);return slip}
+  function negativePayrollValues(slip){
+    var bad=[];
+    var labels={base:'الراتب الأساسي',housing:'بدل السكن',transport:'بدل المواصلات',incentives:'الحوافز'};
+    Object.keys(labels).forEach(function(k){if(num(slip&&slip[k])<0)bad.push(labels[k])});
+    (Array.isArray(slip&&slip.additions)?slip.additions:[]).forEach(function(x,i){if(num(x&&x.value)<0)bad.push('الإضافات - بند '+(i+1))});
+    (Array.isArray(slip&&slip.deductions)?slip.deductions:[]).forEach(function(x,i){if(num(x&&x.value)<0)bad.push('الخصومات - بند '+(i+1))});
+    return bad;
+  }
+  function validatePayrollSlipInput(slip){
+    var bad=negativePayrollValues(slip);
+    if(bad.length){toastMsg('لا يمكن إدخال قيم سالبة في: '+bad.join('، '));return false}
+    return true;
+  }
+  function confirmNegativeNetSalary(slip){
+    var c=calcSlip(slip);
+    if(num(c.net)>=0)return true;
+    return confirm('تنبيه: صافي الراتب سالب ('+money(c.net)+').\nيرجى التأكد من صحة الخصومات والاستحقاقات قبل المتابعة.\n\nهل تريد متابعة الحفظ؟');
+  }
+  function validateSlipBeforePersist(slip){
+    if(!slip||!String(slip.employeeId||'').trim()){toastMsg('اختر الموظف قبل حفظ كشف الراتب');return false}
+    if(!String(slip.period||'').trim()){toastMsg('اختر شهر كشف الراتب قبل الحفظ');return false}
+    if(!validatePayrollSlipInput(slip))return false;
+    if(!confirmNegativeNetSalary(slip))return false;
+    return true;
+  }
+
+  function upsertSlip(slip){var arr=slips();var i=arr.findIndex(function(x){return String(x.id)===String(slip.id)});var duplicate=arr.find(function(x){return String(x.id)!==String(slip.id)&&sameSlipMonth(x,slip)});if(duplicate){toastMsg('يوجد كشف راتب لنفس الموظف في نفس الشهر بالفعل');return null}var old=i>-1?arr[i]:{};slip=Object.assign({},old,slip);if(i>-1)arr[i]=slip;else arr.push(slip);setSlipsCache(arr);slip._persistPromise=persistOneSlip(slip);return slip}
   function setStatus(id,st,extra){var arr=slips();var s=arr.find(function(x){return x.id===id});if(!s)return Promise.resolve(false);s.status=st;Object.assign(s,extra||{});s.updatedAt=new Date().toISOString();setSlipsCache(arr);var p=persistOneSlip(s);render();renderSalarySlip();return p;}
-  function currentSlipFromForm(){var id=(byId('psId')||{}).value||'';if(!id)return null;return slips().find(function(x){return String(x.id)===String(id)})||null}
-  function requireSlipStatus(s,allowed,msg){allowed=Array.isArray(allowed)?allowed:[allowed];if(!s){toastMsg('لم يتم العثور على كشف الراتب');return false}if(allowed.indexOf(String(s.status||'draft'))===-1){toastMsg(msg||'لا يمكن تنفيذ هذه الخطوة مع الحالة الحالية للكشف');return false}return true}
-  function canPersistSlipForm(targetStatus){var old=currentSlipFromForm();if(!old)return true;var st=String(old.status||'draft');if(targetStatus==='draft'&&st!=='draft'){toastMsg('لا يمكن حفظ كشف دخل دورة الاعتماد كمسودة. استخدم إلغاء الاعتماد أولًا.');return false}if(targetStatus==='pending_board'&&st!=='draft'){toastMsg('لا يمكن إرسال الكشف للاعتماد من الحالة الحالية. استخدم إلغاء الاعتماد أولًا.');return false}return true}
 
   function payrollDelegatedClick(e){
     var btn=e.target&&e.target.closest?e.target.closest('[data-payroll-action]'):null;
@@ -750,7 +739,7 @@
         'export-monthly-report-pdf':function(){P.exportMonthlyReportPdf&&P.exportMonthlyReportPdf()},
         'export-monthly-report-csv':function(){P.exportMonthlyReportCsv&&P.exportMonthlyReportCsv()}
       };
-      if(map[action]){map[action]()}
+      if(map[action]){map[action]();return}
     }catch(err){console.warn('PETATOEPayroll delegated action failed',action,err)}
   }
   function payrollDelegatedChange(e){
@@ -794,14 +783,14 @@
     deleteEmployee:function(id){if(!confirm('حذف الموظف من قسم الرواتب؟'))return;saveEmployees(employees().filter(function(e){return e.id!==id}));render()},
     clearEmployeeForm:function(){['peId','peCode','peName','peJob','peUserId','peCommissionEmployeeName','peBase','peHousing','peTransport','pePaymentMethod'].forEach(function(id){if(byId(id))byId(id).value=''});if(byId('peStatus'))PETATOEPayroll.setEmployeeStatus('active')},
     loadSlipForm:loadSlipForm,
-    saveSlip:function(){if(!canPersistSlipForm('draft'))return;var s=upsertSlip(readSlipForm('draft'));if(!s)return;notifyAfterPersist(s._persistPromise,'تم حفظ كشف الراتب كمسودة');delete s._persistPromise;state.editSlipId=s.id;render()},
-    sendToBoard:function(){if(!canPersistSlipForm('pending_board'))return;var s=upsertSlip(readSlipForm('pending_board'));if(!s)return;notifyAfterPersist(s._persistPromise,'تم إرسال الكشف للاعتماد المبدئي');delete s._persistPromise;state.editSlipId=s.id;render()},
-    editSlip:function(id){state.tab='monthly';render();setTimeout(function(){var s=slips().find(function(x){return x.id===id});if(!s)return;if(byId('payPeriod'))byId('payPeriod').value=s.period;if(byId('payEmployee'))byId('payEmployee').value=s.employeeId;var target=byId('paySlipFormArea');if(target)safeRender(target,slipFormHtml(s),'payroll edit slip form')},0)},
-    deleteSlip:function(id){var arr=slips();var s=arr.find(function(x){return String(x.id)===String(id)});if(!s){toastMsg('لم يتم العثور على كشف الراتب');return}if(!confirm('حذف كشف الراتب نهائيًا من الرواتب الشهرية؟'))return;var removed=[];var kept=arr.filter(function(x){var match=sameEmployeeRef(x.employeeId,s.employeeId)&&String(x.period)===String(s.period);if(match)removed.push(x);return !match});setSlipsCache(kept);var removedIds=removed.map(function(x){return x&&x.id});notifyAfterPersist(removeSlipGroup(s,removedIds),'تم حذف كشف الراتب');if(removedIds.map(String).indexOf(String(state.editSlipId))>-1)state.editSlipId='';if(removedIds.map(String).indexOf(String(state.salarySlipId))>-1)state.salarySlipId='';render();renderSalarySlip();},
-    boardApprove:function(id){if(!isBoard()){toastMsg('هذه الصلاحية لرئيس مجلس الإدارة أو الإدارة العليا');return}var s=slips().find(function(x){return x.id===id});if(!requireSlipStatus(s,'pending_board','لا يمكن الاعتماد المبدئي إلا لكشف بانتظار اعتماد رئيس مجلس الإدارة'))return;notifyAfterPersist(setStatus(id,'board_approved',{boardApprovedAt:new Date().toISOString(),boardApprovedBy:(currentUser().fullName||currentUser().username)}),'تم الاعتماد المبدئي وظهر الكشف للموظف')},
-    rejectSlip:function(id){if(!isBoard()){toastMsg('هذه الصلاحية لرئيس مجلس الإدارة أو الإدارة العليا');return}var s=slips().find(function(x){return x.id===id});if(!requireSlipStatus(s,'pending_board','لا يمكن رفض الكشف إلا وهو بانتظار اعتماد رئيس مجلس الإدارة'))return;notifyAfterPersist(setStatus(id,'rejected',{rejectedAt:new Date().toISOString()}),'تم رفض الكشف')},
-    employeeApprove:function(id){var s=slips().find(function(x){return x.id===id});if(!s||!canEmployeeSee(s)){toastMsg('لا يمكنك اعتماد كشف غير خاص بك');return}if(!requireSlipStatus(s,'board_approved','لا يمكن موافقة الموظف إلا بعد الاعتماد المبدئي'))return;notifyAfterPersist(setStatus(id,'employee_approved',{employeeApprovedAt:new Date().toISOString(),employeeApprovedBy:(currentUser().fullName||currentUser().username),employeeNote:''}),'تمت موافقة الموظف')},
-    employeeObject:function(id){var s=slips().find(function(x){return x.id===id});if(!s||!canEmployeeSee(s)){toastMsg('لا يمكنك الاعتراض على كشف غير خاص بك');return}if(!requireSlipStatus(s,'board_approved','لا يمكن الاعتراض إلا بعد الاعتماد المبدئي'))return;var note=(byId('empNote_'+id)||{}).value||'';if(!note.trim()){toastMsg('اكتب سبب الاعتراض');return}notifyAfterPersist(setStatus(id,'employee_objection',{employeeObjectedAt:new Date().toISOString(),employeeNote:note.trim()}),'تم تسجيل الاعتراض')},
+    saveSlip:function(){var form=readSlipForm('draft');if(!validateSlipBeforePersist(form))return;var existing=slips().find(function(x){return String(x.id)===String(form.id)||sameSlipMonth(x,form)});if(existing&&String(existing.status||'draft')!=='draft'){toastMsg('لا يمكن حفظ كشف دخل دورة الاعتماد كمسودة. استخدم إلغاء الاعتماد أولاً.');return}var s=upsertSlip(form);if(!s)return;notifyAfterPersist(s._persistPromise,'تم حفظ كشف الراتب كمسودة');delete s._persistPromise;state.editSlipId=s.id;render()},
+    sendToBoard:function(){var form=readSlipForm('pending_board');if(!validateSlipBeforePersist(form))return;var existing=slips().find(function(x){return String(x.id)===String(form.id)||sameSlipMonth(x,form)});if(existing&&String(existing.status||'draft')!=='draft'){toastMsg('لا يمكن إرسال الكشف للاعتماد إلا من حالة مسودة');return}var s=upsertSlip(form);if(!s)return;notifyAfterPersist(s._persistPromise,'تم إرسال الكشف للاعتماد المبدئي');delete s._persistPromise;state.editSlipId=s.id;render()},
+    editSlip:function(id){state.tab='monthly';render();setTimeout(function(){var s=slips().find(function(x){return String(x.id)===String(id)});if(!s)return;if(byId('payPeriod'))byId('payPeriod').value=s.period;if(byId('payEmployee'))byId('payEmployee').value=s.employeeId;var target=byId('paySlipFormArea');if(target)safeRender(target,slipFormHtml(s),'payroll edit slip form')},0)},
+    deleteSlip:function(id){var s=slips().find(function(x){return String(x.id)===String(id)});if(!s){toastMsg('لم يتم العثور على كشف الراتب');return}if(String(s.status||'draft')!=='draft'){toastMsg('لا يمكن حذف كشف دخل دورة الاعتماد. استخدم إلغاء الاعتماد أولاً ثم احذف المسودة.');return}if(!confirm('حذف كشف الراتب نهائيًا من الرواتب الشهرية؟'))return;setSlipsCache(slips().filter(function(x){return !sameSlipMonth(x,s)&&String(x.id)!==String(s.id)}));notifyAfterPersist(removeOneSlip(s),'تم حذف كشف الراتب');if(state.editSlipId===id)state.editSlipId='';render();renderSalarySlip();},
+    boardApprove:function(id){if(!isBoard()){toastMsg('هذه الصلاحية لرئيس مجلس الإدارة أو الإدارة العليا');return}var s=slips().find(function(x){return x.id===id});if(!s||String(s.status||'draft')!=='pending_board'){toastMsg('لا يمكن الاعتماد إلا لكشف بانتظار اعتماد رئيس مجلس الإدارة');return}notifyAfterPersist(setStatus(id,'board_approved',{boardApprovedAt:new Date().toISOString(),boardApprovedBy:(currentUser().fullName||currentUser().username)}),'تم الاعتماد المبدئي وظهر الكشف للموظف')},
+    rejectSlip:function(id){if(!isBoard()){toastMsg('هذه الصلاحية لرئيس مجلس الإدارة أو الإدارة العليا');return}var s=slips().find(function(x){return x.id===id});if(!s||String(s.status||'draft')!=='pending_board'){toastMsg('لا يمكن رفض كشف ليس بانتظار اعتماد رئيس مجلس الإدارة');return}notifyAfterPersist(setStatus(id,'rejected',{rejectedAt:new Date().toISOString()}),'تم رفض الكشف')},
+    employeeApprove:function(id){var s=slips().find(function(x){return x.id===id});if(!s||!canEmployeeSee(s)){toastMsg('لا يمكنك اعتماد كشف غير خاص بك');return}if(String(s.status||'draft')!=='board_approved'){toastMsg('لا يمكن موافقة الموظف إلا بعد اعتماد رئيس مجلس الإدارة');return}notifyAfterPersist(setStatus(id,'employee_approved',{employeeApprovedAt:new Date().toISOString(),employeeApprovedBy:(currentUser().fullName||currentUser().username),employeeNote:''}),'تمت موافقة الموظف')},
+    employeeObject:function(id){var s=slips().find(function(x){return x.id===id});if(!s||!canEmployeeSee(s)){toastMsg('لا يمكنك الاعتراض على كشف غير خاص بك');return}if(String(s.status||'draft')!=='board_approved'){toastMsg('لا يمكن الاعتراض إلا على كشف معتمد مبدئيًا من رئيس مجلس الإدارة');return}var note=(byId('empNote_'+id)||{}).value||'';if(!note.trim()){toastMsg('اكتب سبب الاعتراض');return}notifyAfterPersist(setStatus(id,'employee_objection',{employeeObjectedAt:new Date().toISOString(),employeeNote:note.trim()}),'تم تسجيل الاعتراض')},
     cancelApproval:function(id){
       if(!canCancelApproval()){toastMsg('ليست لديك صلاحية إلغاء اعتماد الرواتب');return}
       var arr=slips();

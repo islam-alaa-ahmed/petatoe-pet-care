@@ -46,9 +46,23 @@
 
   function currentUserId(){
     try{
-      var st = window.PETATOEStorage;
-      if(st && typeof st.get === 'function') return st.get('petatoe_current_user_v108', '') || '';
+      if(window.__PETATOE_SETTINGS_API__ && typeof window.__PETATOE_SETTINGS_API__.currentUser === 'function'){
+        var u0=window.__PETATOE_SETTINGS_API__.currentUser()||{};
+        return String(u0.id||u0.userId||u0.uid||u0.username||u0.email||'');
+      }
     }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-history.js",e);}
+    try{
+      if(window.petCurrentUser && typeof window.petCurrentUser === 'function'){
+        var u=window.petCurrentUser()||{};
+        return String(u.id||u.userId||u.uid||u.username||u.email||'');
+      }
+    }catch(e2){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-history.js",e2);}
+    try{
+      if(window.PETATOEAuth && typeof window.PETATOEAuth.currentUser === 'function'){
+        var au=window.PETATOEAuth.currentUser()||{};
+        return String(au.id||au.userId||au.uid||au.username||au.email||'');
+      }
+    }catch(e3){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-history.js",e3);}
     return '';
   }
 

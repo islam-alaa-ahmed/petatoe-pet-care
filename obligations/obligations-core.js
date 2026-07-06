@@ -33,10 +33,32 @@ function obligationReplaceOptions(select, items, selectedValue){
   });
   if(selectedValue!=null)select.value=String(selectedValue);
 }
-function obligationsReadJson(k,d){var S=window.PETATOEStorage;return S&&S.readJSON?S.readJSON(k,d):d}
-function obligationsWriteJson(k,v){try{var S=window.PETATOEStorage;if(S&&S.writeJSON)S.writeJSON(k,v)}catch(e){console.warn(e)}}
-/* PETATOE v6.0.2: local storage bridge for obligations.
-   Root cause: this module was calling generic read/write helpers that are not guaranteed global. */
+var OBL_REMOTE_TABLE='operations_master_data';
+var OBL_REMOTE_ID='obligations_persistent_store_v1';
+var obligationsRemoteCache={};
+var obligationsRemoteLoaded=false;
+var obligationsRemoteLoading=null;
+function obligationsRepo(){return window.PETATOESupabaseRepository||null}
+function obligationsDefaultStore(){var o={};o[OBL_KEY]=[];o[MOVES_KEY]=[];o[EMAIL_KEY]={};return o}
+function obligationsNotifyStorage(){try{window.dispatchEvent(new CustomEvent('petatoe:obligations-storage-change',{detail:{source:'supabase'}}))}catch(_e){}}
+function obligationsLoadRemote(){
+  if(obligationsRemoteLoading)return obligationsRemoteLoading;
+  var R=obligationsRepo();
+  if(!R||typeof R.getSingleton!=='function'){obligationsRemoteLoaded=true;return Promise.resolve(obligationsRemoteCache)}
+  obligationsRemoteLoading=R.getSingleton(OBL_REMOTE_TABLE,OBL_REMOTE_ID,obligationsDefaultStore()).then(function(data){
+    obligationsRemoteCache=data&&typeof data==='object'?data:obligationsDefaultStore();
+    obligationsRemoteLoaded=true; obligationsNotifyStorage(); return obligationsRemoteCache;
+  }).catch(function(e){console.warn('PETATOE obligations Supabase load failed',e); obligationsRemoteLoaded=true; return obligationsRemoteCache;});
+  return obligationsRemoteLoading;
+}
+function obligationsSaveRemote(){
+  var R=obligationsRepo();
+  if(!R||typeof R.saveSingleton!=='function')return Promise.resolve({ok:false,error:'Supabase repository not ready'});
+  return R.saveSingleton(OBL_REMOTE_TABLE,OBL_REMOTE_ID,obligationsRemoteCache).catch(function(e){console.warn('PETATOE obligations Supabase save failed',e);return {ok:false,error:String(e&&e.message||e)}});
+}
+function obligationsReadJson(k,d){if(!obligationsRemoteLoaded)obligationsLoadRemote();return Object.prototype.hasOwnProperty.call(obligationsRemoteCache,k)?obligationsRemoteCache[k]:d}
+function obligationsWriteJson(k,v){try{obligationsRemoteCache[k]=v;obligationsRemoteLoaded=true;obligationsSaveRemote();obligationsNotifyStorage();}catch(e){console.warn(e)}}
+/* Phase 42.9C: obligations business data is Supabase-backed only. */
 function obligationsReadStore(k,d){return obligationsReadJson(k,d)}
 function obligationsWriteStore(k,v){return obligationsWriteJson(k,v)}
 function arr(){var a=obligationsReadStore(OBL_KEY,[]);return Array.isArray(a)?a:[]}
@@ -99,7 +121,7 @@ window.petRequestObligationNotificationPermission=function(){if(!('Notification'
 window.petSaveObligationEmailSettings=function(){var email=(byId('obEmailTo')||{}).value||''; obligationsWriteJson(EMAIL_KEY,{email:email,enabled:!!email,updatedAt:new Date().toISOString()}); toastMsg(email?'تم حفظ إعداد الإيميل':'اكتب إيميل صحيح')};
 window.petOpenDueObligationsEmail=function(){var s=obligationsReadJson(EMAIL_KEY,{}), email=(byId('obEmailTo')||{}).value||s.email||''; var due=arr().filter(function(o){return obligationStatusNorm(o)==='new'&&daysTo(o.dueDate)<=10}); var body=due.map(function(o){return '- '+(o.name||'-')+' | '+petBlock6501_money(o.amount)+' | '+(o.dueDate||'-')}).join('%0D%0A'); window.location.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent('تنبيه الالتزامات المستحقة')+'&body='+body};
 window.petExportObligationsExcel=function(){try{var data=arr().map(function(o){return {'الحالة':STATUS_LABELS[obligationStatusNorm(o)]||obligationStatusNorm(o),'النوع':TYPE_LABELS[o.type]||o.type,'اسم الالتزام':o.name,'القيمة':o.amount,'الاستحقاق':o.dueDate,'التكرار':FREQ_LABELS[o.frequency]||o.frequency,'المسؤول':o.owner,'ملاحظات':o.note}}); if(window.XLSX){var ws=XLSX.utils.json_to_sheet(data),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Obligations');XLSX.writeFile(wb,'PETATOE_obligations.xlsx')}else toastMsg('مكتبة Excel غير محملة')}catch(e){console.error(e);toastMsg('تعذر تصدير Excel')}};
-function boot(){try{bindObligationsDelegates();ensureFilterOptions();ensureHistoryUI();renderObligationsPanel();renderObligationWarehouseLowStock();setTimeout(renderObligationWarehouseLowStock,800);setTimeout(renderObligationWarehouseLowStock,1800);var em=byId('obEmailTo'),s=obligationsReadJson(EMAIL_KEY,{});if(em&&s.email)em.value=s.email}catch(e){console.error('Obligations boot error',e)}}
+function boot(){try{bindObligationsDelegates();obligationsLoadRemote().then(function(){try{ensureFilterOptions();ensureHistoryUI();renderObligationsPanel();renderObligationWarehouseLowStock();setTimeout(renderObligationWarehouseLowStock,800);setTimeout(renderObligationWarehouseLowStock,1800);var em=byId('obEmailTo'),s=obligationsReadJson(EMAIL_KEY,{});if(em&&s.email)em.value=s.email}catch(e){console.error('Obligations boot async error',e)}})}catch(e){console.error('Obligations boot error',e)}}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(boot,120)});else setTimeout(boot,120);
 window.petObligationsBoot=boot;document.addEventListener('petatoe:tabchange',function(e){if(e.detail&&e.detail.tabId==='obligations')setTimeout(boot,150)});document.addEventListener('petatoe:warehouse:movement-saved',function(){setTimeout(renderObligationWarehouseLowStock,150)});document.addEventListener('petatoe:warehouse:ui-rendered',function(){setTimeout(renderObligationWarehouseLowStock,150)});
 })();

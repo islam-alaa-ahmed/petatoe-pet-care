@@ -8,8 +8,11 @@ let commissionStoreCache=null;
 let commissionSnapsCache=null;
 let commissionRemoteLoaded=false;
 let commissionRemoteLoading=false;
+<<<<<<< HEAD
 function petStorageReadJSON(key,fallback){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.readJSON==='function')return window.PETATOEStorage.readJSON(key,fallback);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/commission-inline.js",e);}return fallback}
 function petStorageWriteJSON(key,value){try{if(window.PETATOEStorage&&typeof window.PETATOEStorage.writeJSON==='function')return window.PETATOEStorage.writeJSON(key,value);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/commission-inline.js",e);}return false}
+=======
+>>>>>>> 964a07a27e1f6cfee2dd3acfdd5fdf4de8a75e7b
 const DEFAULT_CONFIG={
   rules:[{from:'2026-01',config:{
     groomer:[{target:40000,rate:3},{target:55000,rate:4},{target:70000,rate:5}],
@@ -86,30 +89,47 @@ async function writeRemoteCommissionPayload(id,data){
 }
 function readStore(){
   if(validCommissionStore(commissionStoreCache))return clone(commissionStoreCache);
+<<<<<<< HEAD
   let local=null;
   try{local=petStorageReadJSON(COMM_KEY,null);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/commission-inline.js",e);}
   commissionStoreCache=mergeCommissionStore(null,local);
+=======
+  commissionStoreCache=mergeCommissionStore(null,null);
+  hydrateCommissionRemoteOnce();
+>>>>>>> 964a07a27e1f6cfee2dd3acfdd5fdf4de8a75e7b
   return clone(commissionStoreCache);
 }
 function writeStore(s){
   commissionStoreCache=mergeCommissionStore(s,null);
+<<<<<<< HEAD
   petStorageWriteJSON(COMM_KEY,commissionStoreCache);
+=======
+>>>>>>> 964a07a27e1f6cfee2dd3acfdd5fdf4de8a75e7b
   writeRemoteCommissionPayload(COMM_REMOTE_STORE_ID,commissionStoreCache);
 }
 function readSnaps(){
   if(validCommissionSnaps(commissionSnapsCache))return clone(commissionSnapsCache);
+<<<<<<< HEAD
   try{commissionSnapsCache=petStorageReadJSON(COMM_SNAPSHOT_KEY,{})||{};}catch(e){commissionSnapsCache={};}
+=======
+  commissionSnapsCache={};
+  hydrateCommissionRemoteOnce();
+>>>>>>> 964a07a27e1f6cfee2dd3acfdd5fdf4de8a75e7b
   return clone(commissionSnapsCache);
 }
 function writeSnaps(s){
   commissionSnapsCache=validCommissionSnaps(s)?clone(s):{};
+<<<<<<< HEAD
   petStorageWriteJSON(COMM_SNAPSHOT_KEY,commissionSnapsCache);
+=======
+>>>>>>> 964a07a27e1f6cfee2dd3acfdd5fdf4de8a75e7b
   writeRemoteCommissionPayload(COMM_REMOTE_SNAPSHOT_ID,commissionSnapsCache);
 }
 async function hydrateCommissionRemoteOnce(){
   if(commissionRemoteLoaded||commissionRemoteLoading)return;
   commissionRemoteLoading=true;
   try{
+<<<<<<< HEAD
     const localStore=petStorageReadJSON(COMM_KEY,null);
     const remoteStore=await readRemoteCommissionPayload(COMM_REMOTE_STORE_ID,null);
     const mergedStore=mergeCommissionStore(remoteStore,localStore);
@@ -120,6 +140,13 @@ async function hydrateCommissionRemoteOnce(){
     const remoteSnaps=await readRemoteCommissionPayload(COMM_REMOTE_SNAPSHOT_ID,null);
     commissionSnapsCache=validCommissionSnaps(remoteSnaps)&&Object.keys(remoteSnaps).length?remoteSnaps:localSnaps;
     petStorageWriteJSON(COMM_SNAPSHOT_KEY,commissionSnapsCache||{});
+=======
+    const remoteStore=await readRemoteCommissionPayload(COMM_REMOTE_STORE_ID,null);
+    commissionStoreCache=mergeCommissionStore(remoteStore,null);
+
+    const remoteSnaps=await readRemoteCommissionPayload(COMM_REMOTE_SNAPSHOT_ID,null);
+    commissionSnapsCache=validCommissionSnaps(remoteSnaps)?remoteSnaps:{};
+>>>>>>> 964a07a27e1f6cfee2dd3acfdd5fdf4de8a75e7b
     commissionRemoteLoaded=true;
     if(document.getElementById('commissions')&&window.renderCommissionSystem)window.renderCommissionSystem();
   }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission remote hydrate',e);}finally{commissionRemoteLoading=false;}
@@ -316,6 +343,7 @@ function commissionCurrentUser(){
   try{
     if(window.currentUser&&(window.currentUser.id||window.currentUser.username||window.currentUser.email)) return window.currentUser;
   }catch(e){}
+<<<<<<< HEAD
   try{
     var st=window.PETATOEStorage;
     var users=(st&&st.readJSON)?st.readJSON('petatoe_users_v108',[]):[];
@@ -323,6 +351,8 @@ function commissionCurrentUser(){
     var user=(Array.isArray(users)?users:[]).find(function(u){return u&&(String(u.id)===String(id)||String(u.username||'').toLowerCase()===String(id).toLowerCase());});
     if(user) return user;
   }catch(e){}
+=======
+>>>>>>> 964a07a27e1f6cfee2dd3acfdd5fdf4de8a75e7b
   return {username:'Guest',fullName:'Guest',role:'guest'};
 }
 function commissionIsAdminUser(u){
@@ -338,11 +368,14 @@ function commissionPayrollEmployees(){
     var f=window.PETATOEPayrollReadFacade;
     if(f&&typeof f.employees==='function'){var a=f.employees()||[];if(a.length)return a;}
   }catch(e){}
+<<<<<<< HEAD
   try{
     var st=window.PETATOEStorage;
     var a=(st&&st.readJSON)?st.readJSON('PETATOE_PAYROLL_EMPLOYEES_V1',[]):[];
     if(Array.isArray(a))return a;
   }catch(e){}
+=======
+>>>>>>> 964a07a27e1f6cfee2dd3acfdd5fdf4de8a75e7b
   return [];
 }
 function commissionUserKeys(u){
