@@ -152,11 +152,16 @@
       var emps=typeof R.listPayrollEmployees==='function'?await R.listPayrollEmployees():await R.listJsonRows('payroll_employees',{order:'created_at'});
       var slipsRows=await R.listJsonRows('payroll_slips',{order:'created_at'});
       var master=await R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{});
+      var remoteCommissionSnaps={};
+      try{
+        remoteCommissionSnaps=await R.getSingleton('payroll_master_data','commission_monthly_snapshots',{});
+      }catch(_commissionReadErr){remoteCommissionSnaps={};}
       payrollCache[EMP_KEY]=Array.isArray(emps)?emps:[];
       payrollCache[SLIP_KEY]=mergePayrollSlipSources(Array.isArray(master.payrollSlips)?master.payrollSlips:[],Array.isArray(slipsRows)?slipsRows:[]);
+      cleanupMergedPayrollDuplicates(mergePayrollSlipSources._lastRemoved||[]);
       payrollCache[JOB_TYPES_KEY]=Array.isArray(master.jobTypes)?master.jobTypes:[];
       payrollCache[EMP_CONFIG_KEY]=employeeConfigNormalize(master.employeeConfig||payrollCache[EMP_CONFIG_KEY]);
-      payrollCache[COMM_SNAPSHOT_KEY]=master.commissionSnapshots&&typeof master.commissionSnapshots==='object'?master.commissionSnapshots:{};
+      payrollCache[COMM_SNAPSHOT_KEY]=Object.assign({},(master.commissionSnapshots&&typeof master.commissionSnapshots==='object'?master.commissionSnapshots:{}),(remoteCommissionSnaps&&typeof remoteCommissionSnaps==='object'?remoteCommissionSnaps:{}));
       payrollLoaded=true;
       console.log('✅ PETATOE Payroll Supabase storage loaded', {employees:payrollCache[EMP_KEY].length, slips:payrollCache[SLIP_KEY].length});
       refreshPayrollViews();
@@ -294,15 +299,29 @@
 
   function slips(){var arr=read(SLIP_KEY,[]);return Array.isArray(arr)?arr:[]}
   function saveSlips(arr){return write(SLIP_KEY,arr)}
-  function setSlipsCache(arr){payrollCache[SLIP_KEY]=cloneVal(Array.isArray(arr)?arr:[]);return Promise.resolve({ok:true,cached:true})}
+  function setSlipsCache(arr){payrollCache[SLIP_KEY]=canonicalPayrollSlips(Array.isArray(arr)?arr:[]).list;return Promise.resolve({ok:true,cached:true})}
   function slipPersistenceExtra(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip&&slip.employeeId||slip&&slip.employee_id||''),period:String(slip&&slip.period||''),status:String(slip&&slip.status||''),payment_method:String(slip&&slip.paymentMethod||slip&&slip.payment_method||''),net_amount:num(c.net||0)}}
   function persistOneSlip(slip){var R=payrollRepo();if(!slip||!slip.id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});var safe=sanitizePayrollSlip(slip);return persistMaster().then(function(){return R.upsertJsonRow('payroll_slips',slip.id,safe,slipPersistenceExtra(safe))}).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Save failed: payroll_slips');return res||{ok:true}}).catch(function(e){console.warn('PETATOEPayroll single slip persist failed',e);throw e})}
-  function employeeRefTokens(obj){
+  function rawEmployeeRefTokens(obj){
     var out=[];
     function add(v){v=String(v==null?'':v).trim();if(v&&out.indexOf(v)===-1)out.push(v)}
     if(obj&&typeof obj==='object'){
       ['id','supabase_id','employee_id','employeeId','code','userId','userKey'].forEach(function(k){add(obj[k])});
     }else add(obj);
+    return out;
+  }
+  function employeeRefTokens(obj){
+    var out=[];
+    function add(v){v=String(v==null?'':v).trim();if(v&&out.indexOf(v)===-1)out.push(v)}
+    rawEmployeeRefTokens(obj).forEach(add);
+    var base=out.slice();
+    try{
+      (read(EMP_KEY,[])||[]).forEach(function(e){
+        var toks=rawEmployeeRefTokens(e);
+        var hit=base.some(function(x){return toks.some(function(y){return String(x)===String(y)})});
+        if(hit)toks.forEach(add);
+      });
+    }catch(_e){}
     return out;
   }
   function sameEmployeeRef(a,b){
@@ -339,18 +358,55 @@
     if(v.paymentMethod==null&&v.payment_method!=null)v.paymentMethod=v.payment_method;
     return v;
   }
-  function mergePayrollSlipSources(masterRows,indexRows){
-    var out=[];
-    function upsert(row){
+  function statusRank(st){var map={draft:1,rejected:1,pending_board:2,board_approved:3,employee_objection:3,employee_approved:4,accounts_approved:5,paid:6};return map[String(st||'draft')]||0}
+  function valuePresent(v){return v!==undefined&&v!==null&&String(v).trim()!==''}
+  function mergePayrollDuplicateSlip(a,b){
+    a=normalizeSlipRecord(a||{});b=normalizeSlipRecord(b||{});
+    var winner=sortPayrollSlipsForDisplay(a,b)<=0?a:b;
+    var loser=winner===a?b:a;
+    var out=Object.assign({},loser,winner);
+    ['base','housing','transport','incentives'].forEach(function(k){if(num(out[k])===0&&num(loser[k])!==0)out[k]=loser[k]});
+    ['paymentMethod','employeeId','period'].forEach(function(k){if(!valuePresent(out[k])&&valuePresent(loser[k]))out[k]=loser[k]});
+    if((!Array.isArray(out.additions)||!out.additions.length)&&Array.isArray(loser.additions)&&loser.additions.length)out.additions=cloneVal(loser.additions);
+    if((!Array.isArray(out.deductions)||!out.deductions.length)&&Array.isArray(loser.deductions)&&loser.deductions.length)out.deductions=cloneVal(loser.deductions);
+    if(statusRank(loser.status)>statusRank(out.status))out.status=loser.status;
+    out.updatedAt=out.updatedAt||out.updated_at||loser.updatedAt||loser.updated_at||new Date().toISOString();
+    return out;
+  }
+  function canonicalPayrollSlips(rows){
+    var out=[],removed=[];
+    (Array.isArray(rows)?rows:[]).forEach(function(row){
       row=normalizeSlipRecord(row);
       if(!row||!row.id)return;
       var i=out.findIndex(function(x){return String(x.id)===String(row.id)||sameSlipMonth(x,row)});
-      if(i>-1)out[i]=Object.assign({},out[i],row,{employeeId:row.employeeId||out[i].employeeId,paymentMethod:row.paymentMethod||out[i].paymentMethod});
-      else out.push(row);
-    }
-    (Array.isArray(indexRows)?indexRows:[]).forEach(upsert);
-    (Array.isArray(masterRows)?masterRows:[]).forEach(upsert);
-    return out;
+      if(i>-1){
+        var before=out[i];
+        var merged=mergePayrollDuplicateSlip(before,row);
+        out[i]=merged;
+        [before,row].forEach(function(r){if(r&&String(r.id)!==String(merged.id))removed.push(r)});
+      }else out.push(row);
+    });
+    out.sort(sortPayrollSlipsForDisplay);
+    return {list:out,removed:removed};
+  }
+  function mergePayrollSlipSources(masterRows,indexRows){
+    var combined=[];
+    (Array.isArray(indexRows)?indexRows:[]).forEach(function(r){combined.push(r)});
+    (Array.isArray(masterRows)?masterRows:[]).forEach(function(r){combined.push(r)});
+    var res=canonicalPayrollSlips(combined);
+    mergePayrollSlipSources._lastRemoved=res.removed||[];
+    return res.list;
+  }
+  function cleanupMergedPayrollDuplicates(removed){
+    removed=Array.isArray(removed)?removed:[];
+    if(!removed.length)return;
+    var R=payrollRepo();
+    if(!R||!R.hasClient||!R.hasClient()||typeof R.deleteById!=='function')return;
+    var seen={};
+    removed.filter(function(r){var id=String(r&&r.id||'');if(!id||seen[id])return false;seen[id]=true;return true;}).forEach(function(r){
+      R.deleteById('payroll_slips',r.id).catch(function(e){console.warn('PETATOEPayroll duplicate cleanup delete failed',e)});
+    });
+    persistMaster().catch(function(e){console.warn('PETATOEPayroll duplicate cleanup master persist failed',e)});
   }
   function removeOneSlip(target){
     var R=payrollRepo();
@@ -684,7 +740,7 @@
     return true;
   }
 
-  function upsertSlip(slip){var arr=slips();var i=arr.findIndex(function(x){return String(x.id)===String(slip.id)});var duplicate=arr.find(function(x){return String(x.id)!==String(slip.id)&&sameSlipMonth(x,slip)});if(duplicate){toastMsg('يوجد كشف راتب لنفس الموظف في نفس الشهر بالفعل');return null}var old=i>-1?arr[i]:{};slip=Object.assign({},old,slip);if(i>-1)arr[i]=slip;else arr.push(slip);setSlipsCache(arr);slip._persistPromise=persistOneSlip(slip);return slip}
+  function upsertSlip(slip){var arr=slips();var i=arr.findIndex(function(x){return String(x.id)===String(slip.id)});var duplicate=arr.find(function(x){return String(x.id)!==String(slip.id)&&sameSlipMonth(x,slip)});if(duplicate){slip=Object.assign({},duplicate,slip,{id:duplicate.id,employeeId:duplicate.employeeId||slip.employeeId});i=arr.findIndex(function(x){return String(x.id)===String(duplicate.id)})}var old=i>-1?arr[i]:{};slip=Object.assign({},old,slip);if(i>-1)arr[i]=slip;else arr.push(slip);var canonical=canonicalPayrollSlips(arr);payrollCache[SLIP_KEY]=canonical.list;cleanupMergedPayrollDuplicates(canonical.removed);slip=payrollCache[SLIP_KEY].find(function(x){return String(x.id)===String(slip.id)||sameSlipMonth(x,slip)})||slip;slip._persistPromise=persistOneSlip(slip);return slip}
   function setStatus(id,st,extra){var arr=slips();var s=arr.find(function(x){return x.id===id});if(!s)return Promise.resolve(false);s.status=st;Object.assign(s,extra||{});s.updatedAt=new Date().toISOString();setSlipsCache(arr);var p=persistOneSlip(s);render();renderSalarySlip();return p;}
 
   function payrollDelegatedClick(e){
