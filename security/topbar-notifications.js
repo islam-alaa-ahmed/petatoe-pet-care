@@ -9,6 +9,7 @@
 
   var VERSION = '6.6.18';
   var refreshTimer = 0;
+  var refreshInterval = 0;
 
   function esc(v){
     return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
@@ -341,7 +342,11 @@
     scheduleRefresh(120);
     setTimeout(function(){ ensureShell(); refresh(); }, 500);
     setTimeout(function(){ ensureShell(); refresh(); }, 1500);
-    setInterval(refresh, 60000);
+    if(refreshInterval){
+      try{ clearInterval(refreshInterval); }catch(_){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/topbar-notifications.js::clear-refresh-interval',_); }
+    }
+    refreshInterval = setInterval(refresh, 60000);
+    window.__PETATOE_TOPBAR_NOTIFICATIONS_INTERVAL__ = refreshInterval;
     document.addEventListener('click', function(e){
       var node = e.target && e.target.closest && e.target.closest('#petTopbarNotifications');
       if(node) return;
@@ -391,5 +396,14 @@
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
 
-  window.PETATOETopbarNotifications = {version:VERSION, refresh:refresh, buildAlerts:buildAlerts, openAppointmentAlerts:openAppointmentAlerts};
+  window.PETATOETopbarNotifications = {
+    version:VERSION,
+    refresh:refresh,
+    buildAlerts:buildAlerts,
+    openAppointmentAlerts:openAppointmentAlerts,
+    cleanup:function(){
+      try{ if(refreshTimer){ clearTimeout(refreshTimer); refreshTimer=0; } }catch(_){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/topbar-notifications.js::cleanup-timeout',_); }
+      try{ if(refreshInterval){ clearInterval(refreshInterval); refreshInterval=0; window.__PETATOE_TOPBAR_NOTIFICATIONS_INTERVAL__=0; } }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/topbar-notifications.js::cleanup-interval',_e); }
+    }
+  };
 })();
