@@ -33,6 +33,7 @@
   var appointmentsRevision = 0;
   var masterDataRevision = 0;
   var writeQueue = Promise.resolve();
+  var lastWriteError = null;
 
   function client(){
     return window.PETATOE_SUPABASE_CLIENT || window.supabase || null;
@@ -89,16 +90,32 @@
     return row && typeof row === 'object' ? row : {};
   }
 
+  async function deleteAppointmentIdsSupabase(c, ids){
+    ids = Array.isArray(ids) ? ids.filter(Boolean) : [];
+    for(var i=0;i<ids.length;i+=200){
+      var chunk = ids.slice(i, i+200);
+      if(!chunk.length) continue;
+      var del = await c.from(TABLE_APPOINTMENTS).delete().in('id', chunk);
+      if(del && del.error) throw del.error;
+    }
+    return true;
+  }
+
   async function replaceAppointmentsSupabase(rows){
     if(!isClientReady()) return false;
     rows = Array.isArray(rows) ? rows : [];
     var c = client();
-    var del = await c.from(TABLE_APPOINTMENTS).delete().not('id', 'is', null);
-    if(del && del.error) throw del.error;
-    if(!rows.length) return true;
+    var existing = await c.from(TABLE_APPOINTMENTS).select('id');
+    if(existing && existing.error) throw existing.error;
+    var oldIds = (Array.isArray(existing && existing.data) ? existing.data : []).map(function(r){ return r && r.id; }).filter(Boolean);
+    if(!rows.length){
+      await deleteAppointmentIdsSupabase(c, oldIds);
+      return true;
+    }
     var payload = rows.map(appointmentPayload);
     var ins = await c.from(TABLE_APPOINTMENTS).insert(payload);
     if(ins && ins.error) throw ins.error;
+    await deleteAppointmentIdsSupabase(c, oldIds);
     return true;
   }
 
@@ -128,7 +145,17 @@
   }
 
   function queueWrite(task){
-    writeQueue = writeQueue.then(task).catch(function(e){ warn(e); });
+    writeQueue = writeQueue.then(function(){
+      return task();
+    }).then(function(){
+      lastWriteError = null;
+      try{ window.dispatchEvent(new CustomEvent('petatoe:operations-sync', { detail:{ ok:true } })); }catch(e){ warn(e); }
+    }).catch(function(e){
+      lastWriteError = e;
+      warn(e);
+      try{ window.dispatchEvent(new CustomEvent('petatoe:operations-sync', { detail:{ ok:false, error:e && (e.message || String(e)) } })); }catch(evtErr){ warn(evtErr); }
+      try{ if(typeof window.toast === 'function') window.toast('فشل مزامنة بيانات التشغيل مع Supabase'); }catch(toastErr){ warn(toastErr); }
+    });
     return true;
   }
 
@@ -355,6 +382,7 @@
     writeAppointments: writeAppointments,
     readMasterData: readMasterData,
     writeMasterData: writeMasterData,
+    getLastWriteError: function(){ return lastWriteError; },
     uniqueSorted: uniqueSorted,
     cloneDefaultMaster: cloneDefaultMaster,
     normalizeMasterData: normalizeMasterData,
