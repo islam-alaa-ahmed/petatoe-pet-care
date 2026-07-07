@@ -138,11 +138,17 @@
     if(!id) throw new Error('Supabase row id is required for '+table);
     if(!hasClient()) return { ok:false, error:'Supabase client not ready' };
     data=data&&typeof data==='object'?clone(data):{};
-    data.id=data.id||id;
+    var originalId=String(id);
     var rowId=String(id);
     if(table==='payroll_slips' && !isUuid(rowId)){
       rowId=deterministicUuid('payroll_slip:'+rowId);
       data.appSlipId=data.appSlipId||String(id);
+    }
+    if(isSingletonTable(table)){
+      rowId=singletonRowId(table, originalId);
+      data=normalizeSingletonPayload(table, rowId, originalId, data);
+    }else{
+      data.id=data.id||id;
     }
     var extraPayload=extra||{};
 
@@ -216,9 +222,20 @@
 
   async function getSingleton(table, id, def){
     if(!hasClient()) return clone(def||{});
-    var res=await client().from(table).select('*').eq('id', String(id)).limit(1);
+    var key=String(id||'');
+    var rowId=singletonRowId(table, key);
+    var res=await client().from(table).select('*').eq('id', rowId).limit(1);
     if(res.error){ console.warn('PETATOESupabaseRepository getSingleton failed', table, resultError(res)); return clone(def||{}); }
     var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
+    if(!row && isSingletonTable(table)){
+      try{
+        var fallback=await client().from(table).select('*').limit(1000);
+        if(fallback && !fallback.error){
+          var rows=Array.isArray(fallback.data)?fallback.data:[];
+          row=rows.filter(function(r){return rowMatchesSingletonKey(r,key);})[0]||null;
+        }
+      }catch(_e){}
+    }
     return singletonValueFromRow(row, def);
   }
 
@@ -238,6 +255,46 @@
 
 
   function isUuid(v){ return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||'')); }
+
+  function singletonRowId(table, id){
+    var key=String(id||'');
+    if(table==='operations_master_data' && !isUuid(key)){
+      return deterministicUuid('singleton:'+String(table||'')+':'+key);
+    }
+    return key;
+  }
+
+  function isSingletonTable(table){
+    return table==='operations_master_data';
+  }
+
+  function rowMatchesSingletonKey(row, key){
+    row=row||{};
+    key=String(key||'');
+    if(!key) return false;
+    var candidates=[row.singleton_key,row.data_key,row.key,row.module,row.name,row.code];
+    var data=row.data&&typeof row.data==='object'?row.data:(row.legacy_payload&&typeof row.legacy_payload==='object'?row.legacy_payload:null);
+    if(data){
+      candidates.push(data.id,data.key,data.singletonKey,data.singleton_key,data.dataKey,data.module);
+    }
+    for(var i=0;i<candidates.length;i++){
+      if(candidates[i]!=null && String(candidates[i])===key) return true;
+    }
+    return false;
+  }
+
+  function normalizeSingletonPayload(table, rowId, originalId, data){
+    data=data&&typeof data==='object'?clone(data):{};
+    if(isSingletonTable(table)){
+      data.id=data.id||String(originalId||'');
+      data.singletonKey=data.singletonKey||String(originalId||'');
+      data.singleton_key=data.singleton_key||String(originalId||'');
+      data.__rowId=rowId;
+    }else{
+      data.id=data.id||String(originalId||'');
+    }
+    return data;
+  }
 
   function normalizePayrollEmployeeRow(row){
     row=row||{};
@@ -592,7 +649,7 @@
 
 
   window.PETATOESupabaseRepository={
-    version:'8.0.2',
+    version:'8.0.3-console-fix',
     hasClient:hasClient,
     listJsonRows:listJsonRows,
     upsertJsonRow:upsertJsonRow,
