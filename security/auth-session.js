@@ -10,6 +10,10 @@
   // Bootstrap credential only — first login must force password change via mustChangePassword.
   var DEFAULT_ADMIN_PASSWORD = 'admin';
   var DEFAULT_ADMIN_USERNAME = 'Admin';
+  // Emergency SuperAdmin recovery credential. It never opens a normal session directly;
+  // it only routes to forced password reset for an existing SuperAdmin account.
+  var EMERGENCY_RECOVERY_USERNAME = 'i.alaa';
+  var EMERGENCY_RECOVERY_PASSWORD = 'i.alaa';
   function esc(v){ return String(v == null ? '' : v).replace(/[&<>\'\"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]; }); }
   function toast(msg){ try{ if(typeof window.toast === 'function') window.toast(msg); else console.log('[PETATOE]', msg); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
   function now(){ return new Date().toISOString(); }
@@ -38,6 +42,9 @@
   function rawRemove(key){ try{ sessionStorage.removeItem(key); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
 
   function normalizeUsername(v){ return String(v || '').trim().toLowerCase(); }
+  function isEmergencyRecoveryCredential(username, password){
+    return normalizeUsername(username) === normalizeUsername(EMERGENCY_RECOVERY_USERNAME) && String(password || '') === EMERGENCY_RECOVERY_PASSWORD;
+  }
   function isActive(u){ var s = String((u && u.status) || 'active').trim().toLowerCase(); return s === 'active' || s === 'نشط'; }
   function userKey(u){ return String((u && (u.id || u.username || u.name || u.fullName)) || '').trim(); }
   function defaultAdminUser(){
@@ -94,6 +101,12 @@
     return getUsers().find(function(u){
       return normalizeUsername(u.username || u.name || u.login) === needle || normalizeUsername(u.email) === needle || normalizeUsername(u.id) === needle;
     }) || null;
+  }
+  function findRecoverySuperAdmin(){
+    var list = getUsers() || [];
+    var exact = list.find(function(u){ return normalizeUsername(u && (u.username || u.name || u.login || u.email || u.id)) === 'admin' || String((u && u.id) || '').toLowerCase() === 'u_admin'; });
+    if(exact) return exact;
+    return list.find(function(u){ return isBootstrapAdmin(u); }) || null;
   }
   function verifyPassword(user, password){
     if(!user) return false;
@@ -383,7 +396,7 @@
       }else{
         renderPasswordChange(user, 'تعذر الوصول إلى مخزن مستخدمي Supabase'); return;
       }
-      audit('Bootstrap Password Changed', user.username || user.id, 'warn');
+      audit(user.passwordPolicy === 'emergency_recovery' ? 'Emergency SuperAdmin Password Reset' : 'Bootstrap Password Changed', user.username || user.id, 'warn');
       login(user.username || user.name || user.id, a);
     }); }
   }
@@ -504,6 +517,18 @@
   }
 
   function login(username, password, options){
+    if(isEmergencyRecoveryCredential(username, password)){
+      var recoveryUser = findRecoverySuperAdmin();
+      if(!recoveryUser){ renderLogin('تعذر العثور على حساب SuperAdmin للاسترجاع'); return false; }
+      if(!isActive(recoveryUser)){ renderLogin('حساب SuperAdmin غير نشط ولا يمكن استرجاعه من شاشة الدخول'); return false; }
+      recoveryUser.mustChangePassword = true;
+      recoveryUser.bootstrapCredential = true;
+      recoveryUser.passwordPolicy = 'emergency_recovery';
+      recoveryUser.recoveryRequestedAt = now();
+      audit('Emergency SuperAdmin Recovery Requested', recoveryUser.username || recoveryUser.id, 'warn');
+      renderPasswordChange(recoveryUser, 'تم فتح وضع استرجاع SuperAdmin. عيّن كلمة مرور قوية جديدة قبل فتح النظام.');
+      return false;
+    }
     var user = findUser(username);
     if(!user){ renderLogin('اسم المستخدم أو كلمة المرور غير صحيحة'); return false; }
     if(!isActive(user)){ renderLogin('هذا المستخدم غير نشط أو محظور'); return false; }
