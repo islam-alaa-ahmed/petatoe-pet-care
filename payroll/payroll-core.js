@@ -7,7 +7,6 @@
   var EMP_KEY='PETATOE_PAYROLL_EMPLOYEES_V1';
   var SLIP_KEY='PETATOE_PAYROLL_SLIPS_V1';
   var COMM_SNAPSHOT_KEY='PETATOE_v3_5_COMMISSION_MONTHLY_SNAPSHOTS';
-  var COMM_REFERENCE_KEY='PETATOE_v3_5_COMMISSION_REFERENCE_DATA';
   var JOB_TYPES_KEY='PETATOE_PAYROLL_JOB_TYPES_V1';
   var EMP_CONFIG_KEY='PETATOE_PAYROLL_EMPLOYEE_CONFIG_V1';
   var state={tab:'employees',configTab:'employees',editEmployeeId:'',editSlipId:'',archiveYear:'',archiveMonth:'',archivePayment:'',reportYear:'',reportMonth:'',reportPayment:'',salarySlipId:''};
@@ -29,12 +28,11 @@
   payrollCache[JOB_TYPES_KEY]=[];
   payrollCache[EMP_CONFIG_KEY]={prefix:'EMP',next:1,digits:4};
   payrollCache[COMM_SNAPSHOT_KEY]={};
-  payrollCache[COMM_REFERENCE_KEY]={};
   var payrollLoadStarted=false;
   var payrollLoaded=false;
 
   function payrollRepo(){return window.PETATOESupabaseRepository||null}
-  function isPayrollKey(key){return key===EMP_KEY||key===SLIP_KEY||key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY||key===COMM_SNAPSHOT_KEY||key===COMM_REFERENCE_KEY}
+  function isPayrollKey(key){return key===EMP_KEY||key===SLIP_KEY||key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY||key===COMM_SNAPSHOT_KEY}
   function cloneVal(v){try{return JSON.parse(JSON.stringify(v));}catch(_e){return v}}
   function read(key,def){
     if(isPayrollKey(key)){
@@ -133,7 +131,6 @@
       return persistArrayTable('payroll_slips',val,prev,slipPersistenceExtra).then(function(res){return persistMaster().then(function(){return res})});
     }
     if(key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY||key===COMM_SNAPSHOT_KEY){return persistMaster();}
-    if(key===COMM_REFERENCE_KEY){return Promise.resolve({ok:true,readOnly:true});}
     return Promise.resolve({ok:true,skipped:true});
   }
   function refreshPayrollViews(){
@@ -155,15 +152,11 @@
       var emps=typeof R.listPayrollEmployees==='function'?await R.listPayrollEmployees():await R.listJsonRows('payroll_employees',{order:'created_at'});
       var slipsRows=await R.listJsonRows('payroll_slips',{order:'created_at'});
       var master=await R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{});
-      var commissionStore=await R.getSingleton('payroll_master_data','commission_reference_data',{});
-      var commissionSnaps=await R.getSingleton('payroll_master_data','commission_monthly_snapshots',{});
       payrollCache[EMP_KEY]=Array.isArray(emps)?emps:[];
       payrollCache[SLIP_KEY]=mergePayrollSlipSources(Array.isArray(master.payrollSlips)?master.payrollSlips:[],Array.isArray(slipsRows)?slipsRows:[]);
       payrollCache[JOB_TYPES_KEY]=Array.isArray(master.jobTypes)?master.jobTypes:[];
       payrollCache[EMP_CONFIG_KEY]=employeeConfigNormalize(master.employeeConfig||payrollCache[EMP_CONFIG_KEY]);
-      payrollCache[COMM_REFERENCE_KEY]=cleanCommissionPayload(commissionStore);
-      var masterSnaps=master.commissionSnapshots&&typeof master.commissionSnapshots==='object'?master.commissionSnapshots:{};
-      payrollCache[COMM_SNAPSHOT_KEY]=meaningfulObject(commissionSnaps)?cleanCommissionPayload(commissionSnaps):cleanCommissionPayload(masterSnaps);
+      payrollCache[COMM_SNAPSHOT_KEY]=master.commissionSnapshots&&typeof master.commissionSnapshots==='object'?master.commissionSnapshots:{};
       payrollLoaded=true;
       console.log('✅ PETATOE Payroll Supabase storage loaded', {employees:payrollCache[EMP_KEY].length, slips:payrollCache[SLIP_KEY].length});
       refreshPayrollViews();
@@ -377,16 +370,10 @@
   function activeEmployees(){return employees().filter(function(e){return e.status!=='stopped'&&e.status!=='resigned'})}
   function statusInfo(st){var map={draft:['مسودة','warn'],pending_board:['بانتظار اعتماد رئيس مجلس الإدارة','warn'],board_approved:['معتمد مبدئيًا - بانتظار موافقة الموظف','ok'],employee_objection:['اعتراض من الموظف','bad'],employee_approved:['موافق عليه من الموظف - جاهز للحسابات','ok'],accounts_approved:['معتمد للصرف','ok'],paid:['تم الصرف','ok'],rejected:['مرفوض','bad']};return map[st]||[st||'مسودة','warn']}
   function statusBadge(st){var x=statusInfo(st);return '<span class="payroll-badge '+x[1]+'">'+esc(x[0])+'</span>'}
-  function cleanCommissionPayload(obj){
-    obj=obj&&typeof obj==='object'?cloneVal(obj):{};
-    ['id','singletonKey','singleton_key','__rowId','dataKey','data_key','module','key'].forEach(function(k){if(Object.prototype.hasOwnProperty.call(obj,k))delete obj[k]});
-    return obj&&typeof obj==='object'?obj:{};
-  }
-  function meaningfulObject(obj){return !!(obj&&typeof obj==='object'&&Object.keys(cleanCommissionPayload(obj)).length)}
-  function readCommissionSnapshots(){var s=read(COMM_SNAPSHOT_KEY,{});return cleanCommissionPayload(s)}
+  function readCommissionSnapshots(){var s=read(COMM_SNAPSHOT_KEY,{});return s&&typeof s==='object'?s:{}}
   function readCommissionStore(){
-    var s=read(COMM_REFERENCE_KEY,{});
-    return cleanCommissionPayload(s);
+    var s=read(COMM_SNAPSHOT_KEY,{});
+    return s&&typeof s==='object'?s:{};
   }
   function addUniqueCommissionName(out,name){
     name=String(name||'').trim();
@@ -423,9 +410,7 @@
   }
   function commissionEmployeeNames(){
     var out=[];
-    /* Commission mapping dropdown must list real Commission module names only.
-       Payroll employee names are intentionally excluded to avoid saving a payroll display name
-       (e.g. Brian Lacia Lucas) that does not exist in locked commission snapshots. */
+    payrollEmployeeNames().forEach(function(name){addUniqueCommissionName(out,name)});
     currentCommissionEmployeeNames().forEach(function(name){addUniqueCommissionName(out,name)});
     snapshotCommissionEmployeeNames().forEach(function(name){addUniqueCommissionName(out,name)});
     return out.sort(function(a,b){return a.localeCompare(b,'ar')});
@@ -437,7 +422,7 @@
   }
   function commissionFor(emp,period){return commissionDetail(emp,period).total}
   function commissionDetail(emp,period){
-    var snap=readCommissionSnapshots()[period];var mappedName=String((emp||{}).commissionEmployeeName||'').trim();var aliases=mappedName?[norm(mappedName)].concat(commissionAliases(emp)):commissionAliases(emp);aliases=aliases.filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i});var matches=[];
+    var snap=readCommissionSnapshots()[period];var mappedName=String((emp||{}).commissionEmployeeName||'').trim();var aliases=mappedName?[norm(mappedName)]:commissionAliases(emp);var matches=[];
     if(!snap)return {total:0,matches:matches,source:'no_snapshot',mappedName:mappedName,mode:mappedName?'manual':'legacy'};
     ['groomer','driver','sales'].forEach(function(k){(snap[k]||[]).forEach(function(r){var person=norm(commissionPersonName(r));if(person&&aliases.indexOf(person)>-1)matches.push({type:k,person:commissionPersonName(r),car:r.car||'',commission:num(r.commission)})})});
     return {total:matches.reduce(function(sum,x){return sum+num(x.commission)},0),matches:matches,source:matches.length?'matched':'not_matched',mappedName:mappedName,mode:mappedName?'manual':'legacy'};
@@ -450,7 +435,7 @@
     return (detail.mode==='manual'?'مرتبطة يدويًا بقسم العمولات':'مرتبطة بقسم العمولات بالمنطق القديم')+' — '+(names.length?('الاسم المطابق: '+names.join(' / ')):'تمت المطابقة');
   }
   function sumLines(lines){return (Array.isArray(lines)?lines:[]).reduce(function(s,x){return s+num(x.value)},0)}
-  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var incentives=num(slip.incentives);var allowances=num(slip.housing)+num(slip.transport);var extraTotal=commission+incentives+additions;var gross=num(slip.base)+allowances+extraTotal;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,incentives:incentives,allowances:allowances,extraTotal:extraTotal,gross:gross,net:net}}
+  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var incentives=num(slip.incentives);var allowances=num(slip.housing)+num(slip.transport);var additionsTotal=commission+additions;var extraTotal=additionsTotal+incentives;var gross=num(slip.base)+allowances+extraTotal;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,incentives:incentives,allowances:allowances,additionsTotal:additionsTotal,extraTotal:extraTotal,gross:gross,net:net}}
   function identityKeys(obj){
     obj=obj||{};
     var keys=[];
@@ -559,7 +544,7 @@
           +'<section class="salary-slip-kpis">'
             +'<div class="salary-kpi salary-kpi-net"><span>صافي الراتب</span><b>'+money(c.net)+'</b><i>💵</i></div>'
             +'<div class="salary-kpi"><span>الراتب الأساسي</span><b>'+money(s.base)+'</b><i>💼</i></div>'
-            +'<div class="salary-kpi"><span>إجمالي الإضافات</span><b>'+money(c.extraTotal)+'</b><i>⬆️</i></div>'
+            +'<div class="salary-kpi"><span>إجمالي الإضافات</span><b>'+money(c.additionsTotal)+'</b><i>⬆️</i></div>'
             +'<div class="salary-kpi salary-kpi-deduct"><span>إجمالي الخصومات</span><b>'+money(c.deductions)+'</b><i>⬇️</i></div>'
           +'</section>'
           +'<section class="salary-slip-details-card">'
