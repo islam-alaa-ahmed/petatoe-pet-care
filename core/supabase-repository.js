@@ -371,8 +371,13 @@
   }
 
 
+  var systemSettingWritesBlocked=false;
+  function isRlsOrUnauthorizedError(err){
+    var msg=String(err||'').toLowerCase();
+    return msg.indexOf('row-level security')>=0 || msg.indexOf('unauthorized')>=0 || msg.indexOf('401')>=0 || msg.indexOf('permission denied')>=0;
+  }
   function remoteSystemSettingWritesEnabled(){
-    return true;
+    return !systemSettingWritesBlocked;
   }
 
   async function getSystemSetting(id, def){
@@ -403,16 +408,29 @@
     if(!hasClient()){
       return {ok:false,error:'Supabase client not ready'};
     }
+    if(!remoteSystemSettingWritesEnabled()){
+      return {ok:false,skipped:true,error:'system_settings writes blocked by RLS/permission policy'};
+    }
     var c=client();
     try{
       var payload={key:String(id),data:payloadData,value:payloadData,updated_at:new Date().toISOString()};
       var res=await c.from('system_settings').upsert(payload,{onConflict:'key'});
       if(!res.error) return {ok:true,data:res.data};
       var err=resultError(res);
+      if(isRlsOrUnauthorizedError(err)){
+        systemSettingWritesBlocked=true;
+        console.warn('PETATOESupabaseRepository saveSystemSetting blocked by Supabase RLS. Run system_settings_rls_fix.sql if system settings must be writable from the app.');
+        return {ok:false,blocked:true,error:err};
+      }
       console.warn('PETATOESupabaseRepository saveSystemSetting failed', err);
       return {ok:false,error:err};
     }catch(e){
       var msg=String(e&&e.message?e.message:e);
+      if(isRlsOrUnauthorizedError(msg)){
+        systemSettingWritesBlocked=true;
+        console.warn('PETATOESupabaseRepository saveSystemSetting blocked by Supabase RLS. Run system_settings_rls_fix.sql if system settings must be writable from the app.');
+        return {ok:false,blocked:true,error:msg};
+      }
       console.warn('PETATOESupabaseRepository saveSystemSetting crashed', e);
       return {ok:false,error:msg};
     }

@@ -21,14 +21,21 @@
     if(!id || id==='customer360')return null;
     return {panel:id, smart:activeSmartTab(), label:panelTitle(id), y:window.scrollY||0, t:Date.now()};
   }
-  function storage(){return window.PETATOEStorage||null}
-  function setContext(ctx){if(ctx){window.__petCustomer360Return=ctx;var st=storage();try{if(st&&st.writeJSON)st.writeJSON('petatoe_customer360_return',ctx,{scope:'session'});}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/customer360-return.js",e);}}}
+  const RETURN_SESSION_KEY='petatoe_ui_customer360_return';
+  function sessionStore(){try{return window.sessionStorage||null}catch(_e){return null}}
+  function setContext(ctx){
+    if(!ctx)return;
+    window.__petCustomer360Return=ctx;
+    try{var ss=sessionStore(); if(ss)ss.setItem(RETURN_SESSION_KEY, JSON.stringify(ctx));}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/customer360-return.js",e);}
+  }
   function getContext(){
     if(window.__petCustomer360Return)return window.__petCustomer360Return;
-    var st=storage();
-    try{return st&&st.readJSON?st.readJSON('petatoe_customer360_return',null,{scope:'session'}):null}catch(e){return null}
+    try{var ss=sessionStore(); var raw=ss?ss.getItem(RETURN_SESSION_KEY):''; return raw?JSON.parse(raw):null}catch(e){return null}
   }
-  function clearContext(){window.__petCustomer360Return=null;var st=storage();try{if(st&&st.remove)st.remove('petatoe_customer360_return',{scope:'session'});}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/customer360-return.js",e);}}
+  function clearContext(){
+    window.__petCustomer360Return=null;
+    try{var ss=sessionStore(); if(ss)ss.removeItem(RETURN_SESSION_KEY);}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/customer360-return.js",e);}
+  }
   function ensureBackControls(){
     var sec=document.getElementById('customer360'); if(!sec)return;
     var actions=sec.querySelector('.section-head > div:last-child');
