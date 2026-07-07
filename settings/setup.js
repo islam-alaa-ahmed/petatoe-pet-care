@@ -53,7 +53,8 @@
     __masterCache=d;__masterCacheAt=now;
     return d;
   }
-  function saveMasterData(d){d=normalizeMasterData(d);__masterCache=d;__masterCacheAt=Date.now();write(INIT_KEY,d)}
+  function notifyReferenceRegistryUpdated(source,rows){try{document.dispatchEvent(new CustomEvent('petatoe:reference-registry-updated',{detail:{source:source||'setup-save',rows:rows||0}}));}catch(_e){}try{window.dispatchEvent(new CustomEvent('petatoe:reference-registry-updated',{detail:{source:source||'setup-save',rows:rows||0}}));}catch(_e2){}try{if(typeof window._invalidateSearchIndex==='function')window._invalidateSearchIndex();}catch(_e3){}try{if(window.PETATOESmartReports&&typeof window.PETATOESmartReports.clearCache==='function')window.PETATOESmartReports.clearCache('reference-registry-updated');}catch(_e4){}}
+  function saveMasterData(d){d=normalizeMasterData(d);__masterCache=d;__masterCacheAt=Date.now();write(INIT_KEY,d);notifyReferenceRegistryUpdated('setup-save',((d.services||[]).length+(d.cars||[]).length+(d.customers||[]).length+(d.vaults||[]).length))}
   function uniqueValues(arr){var m={};return arr.filter(function(v){v=String(v||'').trim();if(!v||m[v])return false;m[v]=1;return true})}
   function normMasterName(v){return String(v==null?'':v).trim().replace(/\s+/g,' ').toLowerCase()}
   function readMasterDeleted(){return read('petatoe_master_setup_deleted_v121',{})||{}}
@@ -177,7 +178,7 @@
     changed=addMasterAuto(d,'vaults','الخزنة الرئيسية للمالك',{code:'MAIN',type:'main',balance:0,notes:'خزنة رئيسية'})||changed;
     if(changed){
       saveMasterData(d);
-      try{document.dispatchEvent(new CustomEvent('petatoe:reference-registry-updated',{detail:{source:source,rows:rows.length}}))}catch(_e){}
+      notifyReferenceRegistryUpdated(source,rows.length)
     }
     return {ok:true,changed:changed,rows:rows.length};
   }

@@ -45,24 +45,18 @@
   }
 
   function currentUserId(){
-    try{
-      if(window.__PETATOE_SETTINGS_API__ && typeof window.__PETATOE_SETTINGS_API__.currentUser === 'function'){
-        var u0=window.__PETATOE_SETTINGS_API__.currentUser()||{};
-        return String(u0.id||u0.userId||u0.uid||u0.username||u0.email||'');
-      }
-    }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-history.js",e);}
-    try{
-      if(window.petCurrentUser && typeof window.petCurrentUser === 'function'){
-        var u=window.petCurrentUser()||{};
-        return String(u.id||u.userId||u.uid||u.username||u.email||'');
-      }
-    }catch(e2){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-history.js",e2);}
-    try{
-      if(window.PETATOEAuth && typeof window.PETATOEAuth.currentUser === 'function'){
-        var au=window.PETATOEAuth.currentUser()||{};
-        return String(au.id||au.userId||au.uid||au.username||au.email||'');
-      }
-    }catch(e3){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-history.js",e3);}
+    var sources=[
+      function(){return window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'?window.PETATOEAuth.currentUser():null},
+      function(){return window.__PETATOE_SETTINGS_API__&&typeof window.__PETATOE_SETTINGS_API__.currentUser==='function'?window.__PETATOE_SETTINGS_API__.currentUser():null},
+      function(){return window.petCurrentUser&&typeof window.petCurrentUser==='function'?window.petCurrentUser():null}
+    ];
+    for(var i=0;i<sources.length;i++){
+      try{
+        var u=sources[i]()||{};
+        var id=String(u.id||u.userId||u.uid||u.supabase_id||u.username||u.email||'');
+        if(id)return id;
+      }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-history.js",e);}
+    }
     return '';
   }
 

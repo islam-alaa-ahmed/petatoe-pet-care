@@ -180,8 +180,8 @@
 
 
 (function(){
-  if(window.__PETATOE_CONTRACT_REASON_DELEGATION__) return;
-  window.__PETATOE_CONTRACT_REASON_DELEGATION__=true;
+  if(window.__PETATOE_CONTRACT_DARK_CLOSE_DELEGATION__) return;
+  window.__PETATOE_CONTRACT_DARK_CLOSE_DELEGATION__=true;
   document.addEventListener('click', function(e){
     var btn=e.target && e.target.closest && e.target.closest('[data-contract-reason-close]');
     if(!btn) return;

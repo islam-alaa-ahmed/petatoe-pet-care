@@ -17,6 +17,8 @@
   function roleNames(){return api().roleNames||{superadmin:'Super Admin',admin:'Admin',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',driver:'Driver',groomer:'Groomer',driver_groomer:'Driver / Groomer',viewer:'Viewer'}}
   function currentUser(){var a=api();return a.currentUser?a.currentUser():{id:'',username:'Guest',fullName:'Guest',role:'guest',status:'inactive'}}
   function isSuperUser(u){var a=api();return a.isSuperUser?a.isSuperUser(u):!!(u&&(u.role==='superadmin'||u.role_code==='superadmin'||u.id==='u_admin'||String(u.username||'').toLowerCase()==='admin'))}
+  function canManageUsers(){var u=currentUser();try{if(isSuperUser(u))return true;}catch(_e){}try{var p=window.PETATOEPermissions;if(p&&typeof p.canSpecial==='function'&&p.canSpecial(u,'manage_users'))return true;}catch(_e2){}try{var p2=window.PETATOEPermissions;if(p2&&typeof p2.can==='function'&&(p2.can(u,'users','add')||p2.can(u,'users','edit')||p2.can(u,'users','delete')))return true;}catch(_e3){}return false}
+  function requireManageUsers(){if(canManageUsers())return true;toast('غير متاح للصلاحية الحالية');audit('Blocked User Management Action','Permission denied','warn');return false}
   function isUuid(v){return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(v||''));}
   function clone(o){try{return JSON.parse(JSON.stringify(o||{}))}catch(_){return o||{}}}
   function normalizeRole(v){v=String(v||'viewer').trim(); if(v==='super_admin')return 'superadmin'; return v||'viewer'}
@@ -172,6 +174,7 @@
   }
 
   window.petV110SaveUser=async function(){
+    if(!requireManageUsers())return;
     var u=users(), id=val('v110UserId',''), rowId=String(val('v110UserRowId','')).trim(), username=String(val('v110Username','')).trim();
     if(!username){toast('اسم الدخول مطلوب');return}
     var x=(rowId?u.find(function(y){return String(y.supabase_id||'')===String(rowId)}):null) || (id?u.find(function(y){return String(y.id||'')===String(id)}):null);
@@ -205,6 +208,7 @@
     var p=byId('v110Password'); if(p)p.value=''; window.scrollTo({top:0,behavior:'smooth'});
   };
   window.petV110DeleteUser=async function(id){
+    if(!requireManageUsers())return;
     var u=users(), target=u.find(function(x){return String(x.id||'')===String(id)}); if(!target)return;
     if(isSuperUser(target)){toast('لا يمكن حذف Super Admin');return}
     if(!confirm('حذف المستخدم؟'))return;
