@@ -435,7 +435,7 @@
     return (detail.mode==='manual'?'مرتبطة يدويًا بقسم العمولات':'مرتبطة بقسم العمولات بالمنطق القديم')+' — '+(names.length?('الاسم المطابق: '+names.join(' / ')):'تمت المطابقة');
   }
   function sumLines(lines){return (Array.isArray(lines)?lines:[]).reduce(function(s,x){return s+num(x.value)},0)}
-  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var incentives=num(slip.incentives);var allowances=num(slip.housing)+num(slip.transport);var additionsTotal=commission+additions;var extraTotal=additionsTotal+incentives;var gross=num(slip.base)+allowances+extraTotal;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,incentives:incentives,allowances:allowances,additionsTotal:additionsTotal,extraTotal:extraTotal,gross:gross,net:net}}
+  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var incentives=num(slip.incentives);var allowances=num(slip.housing)+num(slip.transport);var extraTotal=allowances+commission+incentives+additions;var gross=num(slip.base)+extraTotal;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,incentives:incentives,allowances:allowances,extraTotal:extraTotal,gross:gross,net:net}}
   function identityKeys(obj){
     obj=obj||{};
     var keys=[];
@@ -544,7 +544,7 @@
           +'<section class="salary-slip-kpis">'
             +'<div class="salary-kpi salary-kpi-net"><span>صافي الراتب</span><b>'+money(c.net)+'</b><i>💵</i></div>'
             +'<div class="salary-kpi"><span>الراتب الأساسي</span><b>'+money(s.base)+'</b><i>💼</i></div>'
-            +'<div class="salary-kpi"><span>إجمالي الإضافات</span><b>'+money(c.additionsTotal)+'</b><i>⬆️</i></div>'
+            +'<div class="salary-kpi"><span>إجمالي الإضافات</span><b>'+money(c.extraTotal)+'</b><i>⬆️</i></div>'
             +'<div class="salary-kpi salary-kpi-deduct"><span>إجمالي الخصومات</span><b>'+money(c.deductions)+'</b><i>⬇️</i></div>'
           +'</section>'
           +'<section class="salary-slip-details-card">'
