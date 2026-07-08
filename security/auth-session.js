@@ -212,6 +212,9 @@
       '.pet-auth-actions{display:flex;gap:10px;align-items:center;margin-top:16px}.pet-auth-login{flex:1;border:0;border-radius:999px;padding:13px 18px;font-family:Cairo,system-ui,sans-serif;font-weight:1000;cursor:pointer;color:#fff;background:linear-gradient(135deg,#fb7185,#ec4899);box-shadow:0 16px 36px rgba(236,72,153,.28)}',
       '.pet-auth-policy{margin-top:14px;border-radius:14px;background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.28);color:#fde68a;padding:10px 12px;font-size:12px;line-height:1.7;font-weight:800}',
       '.pet-auth-error{display:none;margin-top:12px;border-radius:14px;background:rgba(239,68,68,.14);border:1px solid rgba(239,68,68,.32);color:#fecaca;padding:10px 12px;font-size:13px;font-weight:800}.pet-auth-error.show{display:block}',
+      '.pet-auth-success{display:none;margin-top:12px;border-radius:14px;background:rgba(34,197,94,.14);border:1px solid rgba(34,197,94,.30);color:#bbf7d0;padding:10px 12px;font-size:13px;font-weight:900}.pet-auth-success.show{display:block}',
+      '.pet-auth-link-row{display:flex;justify-content:center;margin-top:10px}.pet-auth-link{border:0;background:transparent;color:#fbcfe8;font:950 12px Cairo,system-ui,sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:4px}.pet-auth-link:hover{color:#fff}',
+      '.pet-auth-secondary{border:1px solid rgba(255,255,255,.22);border-radius:999px;padding:12px 16px;font-family:Cairo,system-ui,sans-serif;font-weight:1000;cursor:pointer;color:#fff;background:rgba(255,255,255,.10)}',
       '.pet-auth-hint{margin-top:14px;color:rgba(148,163,184,.92);font-size:12px;line-height:1.7}',
       '.pet-auth-check{display:flex;align-items:center;gap:9px;margin:10px 0 0;color:rgba(226,232,240,.86);font-size:12px;font-weight:900;cursor:pointer;user-select:none}.pet-auth-check input{width:16px;height:16px;accent-color:#ec4899}',
       '.pet-auth-biometric{width:100%;border:1px solid rgba(244,114,182,.36);border-radius:999px;padding:12px 16px;margin-top:10px;font-family:Cairo,system-ui,sans-serif;font-weight:1000;cursor:pointer;color:#fff;background:linear-gradient(135deg,rgba(236,72,153,.24),rgba(15,23,42,.42));box-shadow:0 12px 28px rgba(236,72,153,.13)}',
@@ -302,6 +305,94 @@
     }).catch(function(){ renderLogin('تم إلغاء أو فشل التحقق بالبصمة'); });
   }
 
+  function securityEmailEndpoint(){
+    try{
+      var cfg = window.PETATOE_SUPABASE_CONFIG || {};
+      var url = String(cfg.url || '').replace(/\/+$/, '');
+      if(url) return url + '/functions/v1/petatoe-security-email';
+    }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
+    return 'https://ewakcovwyfkjxqwkccun.supabase.co/functions/v1/petatoe-security-email';
+  }
+  async function callSecurityEmail(payload){
+    var cfg = window.PETATOE_SUPABASE_CONFIG || {};
+    var key = String(cfg.publishableKey || '').trim();
+    var headers = {'Content-Type':'application/json'};
+    if(key){ headers.apikey = key; headers.Authorization = 'Bearer ' + key; }
+    var res = await fetch(securityEmailEndpoint(), {method:'POST', headers:headers, body:JSON.stringify(payload || {})});
+    var data = null;
+    try{ data = await res.json(); }catch(_){ data = {ok:false,error:'INVALID_JSON_RESPONSE'}; }
+    if(!res.ok || !data || data.ok === false){
+      var err = (data && (data.error || data.message || data.details)) || ('HTTP_' + res.status);
+      throw new Error(String(err));
+    }
+    return data;
+  }
+  function renderForgotPassword(message, state){
+    ensureStyles();
+    setLoggedInClass(false);
+    state = state || {};
+    var old = document.getElementById('pet-auth-overlay'); if(old) old.remove();
+    var sent = !!state.sent;
+    var overlay = document.createElement('div');
+    overlay.id = 'pet-auth-overlay';
+    overlay.className = 'pet-auth-overlay';
+    overlay.innerHTML = '<div class="pet-auth-brand" aria-label="PETATOE"><img src="img/petatoe-logo-light-transparent.png" alt="PETATOE"><span>Petatoe<small>بيتاتو</small></span></div>' +
+      '<form class="pet-auth-card" id="petForgotPasswordForm" autocomplete="off">' +
+      '<div class="pet-auth-logo">🔐</div><h2>استعادة كلمة المرور</h2>' +
+      '<p>أدخل اسم المستخدم والبريد الإلكتروني المسجل. سيتم إرسال رمز تحقق صالح لمدة 10 دقائق.</p>' +
+      '<div class="pet-auth-field"><label for="petForgotUsername">اسم المستخدم</label><input id="petForgotUsername" name="username" autocomplete="username" value="'+esc(state.username || '')+'" required></div>' +
+      '<div class="pet-auth-field"><label for="petForgotEmail">البريد الإلكتروني</label><input id="petForgotEmail" name="email" type="email" autocomplete="email" value="'+esc(state.email || '')+'" required></div>' +
+      (sent ? '<div class="pet-auth-field"><label for="petForgotOtp">رمز التحقق OTP</label><input id="petForgotOtp" name="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required></div>' +
+      '<div class="pet-auth-field"><label for="petForgotNewPassword">كلمة المرور الجديدة</label><input id="petForgotNewPassword" name="newPassword" type="password" autocomplete="new-password" required></div>' +
+      '<div class="pet-auth-field"><label for="petForgotNewPassword2">تأكيد كلمة المرور</label><input id="petForgotNewPassword2" name="newPassword2" type="password" autocomplete="new-password" required></div>' : '') +
+      '<div class="pet-auth-actions"><button class="pet-auth-login" type="submit">'+(sent ? 'تغيير كلمة المرور' : 'إرسال رمز التحقق')+'</button><button class="pet-auth-secondary" type="button" id="petForgotBackBtn">رجوع</button></div>' +
+      '<div class="pet-auth-link-row">'+(sent ? '<button class="pet-auth-link" type="button" id="petForgotResendBtn">إعادة إرسال الرمز</button>' : '')+'</div>' +
+      '<div class="pet-auth-success'+(state.success ? ' show' : '')+'" id="petAuthSuccess">'+esc(state.success || '')+'</div>' +
+      '<div class="pet-auth-error'+(message ? ' show' : '')+'" id="petAuthError">'+esc(message || '')+'</div>' +
+      '</form>' + authFooterHtml();
+    document.body.appendChild(overlay);
+    var form = document.getElementById('petForgotPasswordForm');
+    var back = document.getElementById('petForgotBackBtn');
+    var resend = document.getElementById('petForgotResendBtn');
+    if(back){ back.addEventListener('click', function(e){ e.preventDefault(); renderLogin(''); }); }
+    async function sendOtp(currentState){
+      var u = document.getElementById('petForgotUsername');
+      var em = document.getElementById('petForgotEmail');
+      var username = u && u.value || '';
+      var email = em && em.value || '';
+      if(!String(username).trim() || !String(email).trim()){ renderForgotPassword('اسم المستخدم والبريد مطلوبان', {username:username,email:email}); return; }
+      try{
+        await callSecurityEmail({action:'send_otp', username:username, email:email, purpose:'password_reset'});
+        renderForgotPassword('', {sent:true, username:username, email:email, success:'تم إرسال رمز التحقق إلى البريد إذا كانت البيانات صحيحة'});
+      }catch(err){ renderForgotPassword('تعذر إرسال رمز التحقق: ' + String(err && err.message || err), {username:username,email:email}); }
+    }
+    if(resend){ resend.addEventListener('click', function(e){ e.preventDefault(); sendOtp(state); }); }
+    if(form){ form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      var username = (document.getElementById('petForgotUsername') || {}).value || '';
+      var email = (document.getElementById('petForgotEmail') || {}).value || '';
+      if(!sent){ sendOtp({username:username,email:email}); return; }
+      var otp = (document.getElementById('petForgotOtp') || {}).value || '';
+      var p1 = (document.getElementById('petForgotNewPassword') || {}).value || '';
+      var p2 = (document.getElementById('petForgotNewPassword2') || {}).value || '';
+      if(String(otp).trim().length < 6){ renderForgotPassword('أدخل رمز تحقق صحيح من 6 أرقام', {sent:true,username:username,email:email}); return; }
+      if(p1 !== p2){ renderForgotPassword('كلمتا المرور غير متطابقتين', {sent:true,username:username,email:email}); return; }
+      if(!strongEnoughPassword(p1)){ renderForgotPassword('كلمة المرور ضعيفة. استخدم 8 أحرف على الأقل مع حروف وأرقام.', {sent:true,username:username,email:email}); return; }
+      try{
+        await callSecurityEmail({action:'reset_password', username:username, email:email, otp:otp, newPassword:p1, purpose:'password_reset'});
+        try{ var ids = identityStore(); if(ids && ids._cache) ids._cache.loading = null; if(ids && typeof ids.load === 'function') await ids.load(); }catch(_e){}
+        renderLogin('تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.');
+      }catch(err){
+        var msg = String(err && err.message || err);
+        if(msg === 'INVALID_OR_EXPIRED_OTP') msg = 'رمز التحقق غير صحيح أو منتهي الصلاحية';
+        if(msg === 'WEAK_PASSWORD') msg = 'كلمة المرور ضعيفة';
+        renderForgotPassword('تعذر تغيير كلمة المرور: ' + msg, {sent:true,username:username,email:email});
+      }
+    }); }
+    var focusEl = document.getElementById(sent ? 'petForgotOtp' : 'petForgotUsername');
+    if(focusEl) setTimeout(function(){ try{ focusEl.focus(); }catch(_){ } }, 40);
+  }
+
   function renderLogin(message){
     ensureStyles();
     setLoggedInClass(false);
@@ -317,6 +408,7 @@
       '<div class="pet-auth-field"><label for="petAuthUsername">اسم المستخدم</label><input id="petAuthUsername" name="username" autocomplete="username" value="'+esc(savedUsername)+'" required></div>' +
       '<div class="pet-auth-field"><label for="petAuthPassword">كلمة المرور</label><input id="petAuthPassword" name="password" type="password" autocomplete="current-password" required></div>' +
       '<label class="pet-auth-check"><input type="checkbox" id="petAuthRemember" '+(remember && remember.enabled ? 'checked' : '')+'> <span>حفظ بيانات الدخول في المتصفح</span></label>' +
+      '<div class="pet-auth-link-row"><button class="pet-auth-link" type="button" id="petForgotPasswordBtn">نسيت كلمة المرور؟</button></div>' +
       biometricEnrollHtml() +
       '<div class="pet-auth-actions"><button class="pet-auth-login" type="submit">دخول</button></div>' +
       biometricButtonHtml() +
@@ -329,6 +421,8 @@
     var bioBtn = document.getElementById('petAuthBiometricBtn');
     if(username) setTimeout(function(){ try{ (savedUsername && password ? password : username).focus(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }, 40);
     if(bioBtn){ bioBtn.addEventListener('click', function(e){ e.preventDefault(); loginWithBiometric(); }); }
+    var forgotBtn = document.getElementById('petForgotPasswordBtn');
+    if(forgotBtn){ forgotBtn.addEventListener('click', function(e){ e.preventDefault(); renderForgotPassword('', {username: username && username.value || ''}); }); }
     if(form){ form.addEventListener('submit', function(e){
       e.preventDefault();
       login(username && username.value, password && password.value, {
