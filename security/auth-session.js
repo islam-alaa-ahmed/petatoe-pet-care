@@ -380,7 +380,7 @@
       if(!strongEnoughPassword(p1)){ renderForgotPassword('كلمة المرور ضعيفة. استخدم 8 أحرف على الأقل مع حروف وأرقام.', {sent:true,username:username,email:email}); return; }
       try{
         await callSecurityEmail({action:'reset_password', username:username, email:email, otp:otp, newPassword:p1, purpose:'password_reset'});
-        try{ var ids = identityStore(); if(ids && ids._cache) ids._cache.loading = null; if(ids && typeof ids.load === 'function') await ids.load(); }catch(_e){}
+        try{ var ids = identityStore(); if(ids && ids._cache){ ids._cache.loading = null; ids._cache.loaded = false; } if(ids && typeof ids.load === 'function') await ids.load(); }catch(_e){}
         renderLogin('تم تغيير كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.');
       }catch(err){
         var msg = String(err && err.message || err);
@@ -423,9 +423,9 @@
     if(bioBtn){ bioBtn.addEventListener('click', function(e){ e.preventDefault(); loginWithBiometric(); }); }
     var forgotBtn = document.getElementById('petForgotPasswordBtn');
     if(forgotBtn){ forgotBtn.addEventListener('click', function(e){ e.preventDefault(); renderForgotPassword('', {username: username && username.value || ''}); }); }
-    if(form){ form.addEventListener('submit', function(e){
+    if(form){ form.addEventListener('submit', async function(e){
       e.preventDefault();
-      login(username && username.value, password && password.value, {
+      await login(username && username.value, password && password.value, {
         remember: !!(document.getElementById('petAuthRemember') && document.getElementById('petAuthRemember').checked),
         enableBiometric: !!(document.getElementById('petAuthEnableBiometric') && document.getElementById('petAuthEnableBiometric').checked),
         form: form
@@ -610,7 +610,7 @@
     return true;
   }
 
-  function login(username, password, options){
+  async function login(username, password, options){
     if(isEmergencyRecoveryCredential(username, password)){
       var recoveryUser = findRecoverySuperAdmin();
       if(!recoveryUser){ renderLogin('تعذر العثور على حساب SuperAdmin للاسترجاع'); return false; }
@@ -623,6 +623,11 @@
       renderPasswordChange(recoveryUser, 'تم فتح وضع استرجاع SuperAdmin. عيّن كلمة مرور قوية جديدة قبل فتح النظام.');
       return false;
     }
+    try{
+      var ids = identityStore();
+      if(ids && ids._cache){ ids._cache.loading = null; ids._cache.loaded = false; }
+      if(ids && typeof ids.load === 'function') await ids.load();
+    }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e); }
     var user = findUser(username);
     if(!user){ renderLogin('اسم المستخدم أو كلمة المرور غير صحيحة'); return false; }
     if(!isActive(user)){ renderLogin('هذا المستخدم غير نشط أو محظور'); return false; }
