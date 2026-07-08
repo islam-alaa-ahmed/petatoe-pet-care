@@ -290,23 +290,21 @@ export default {
         delete updatedLegacy.password;
         delete updatedLegacy.passwordPlain;
 
-        // PETATOE v9 S3.4: update the actual PETATOE production schema only.
-        // The current app_users table has no `data` column; login loads credentials from
-        // legacy_payload.passwordHash. Updating a non-existing data column first can hide
-        // the real persistence result in browser-based deployments. Keep the write narrow,
-        // request the updated row back, and verify the stored hash before consuming the OTP.
-        const updateHeaders = {
-          ...dbHeaders,
-          Prefer: "return=representation",
+        // PETATOE v9 S3.5:
+        // The production app_users table has legacy_payload only; there is no data column.
+        // Update exactly the JSONB payload used by the login normalizer, then re-read and verify it.
+        const updatePayload = {
+          legacy_payload: updatedLegacy,
+          updated_at: nowIso(),
         };
 
-        const updateRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/app_users?id=eq.${user.id}&select=id,username,legacy_payload`, {
+        const updateRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/app_users?id=eq.${user.id}`, {
           method: "PATCH",
-          headers: updateHeaders,
-          body: JSON.stringify({
-            legacy_payload: updatedLegacy,
-            updated_at: nowIso(),
-          }),
+          headers: {
+            ...dbHeaders,
+            Prefer: "return=representation",
+          },
+          body: JSON.stringify(updatePayload),
         });
 
         if (!updateRes.ok) {
@@ -314,11 +312,30 @@ export default {
           return json({ ok: false, error: "PASSWORD_UPDATE_FAILED", details: err }, 500);
         }
 
-        const updatedRows = await updateRes.json().catch(() => []);
-        const updatedRow = Array.isArray(updatedRows) ? updatedRows[0] : null;
-        const storedHash = String(updatedRow?.legacy_payload?.passwordHash?.hash || "");
-        if (!updatedRow || storedHash !== String(passwordHash.hash || "")) {
-          return json({ ok: false, error: "PASSWORD_UPDATE_NOT_PERSISTED" }, 500);
+        const verifyRes = await fetch(
+          `${PETATOE_SUPABASE_URL}/rest/v1/app_users?select=id,username,legacy_payload&id=eq.${user.id}&limit=1`,
+          { headers: dbHeaders },
+        );
+
+        if (!verifyRes.ok) {
+          const err = await verifyRes.text();
+          return json({ ok: false, error: "PASSWORD_UPDATE_VERIFY_LOOKUP_FAILED", details: err }, 500);
+        }
+
+        const verifyRows = await verifyRes.json();
+        const verifyUser = Array.isArray(verifyRows) ? verifyRows[0] : null;
+        const savedHash = String(verifyUser?.legacy_payload?.passwordHash?.hash || "");
+        if (!verifyUser || savedHash !== String(passwordHash.hash || "")) {
+          return json({
+            ok: false,
+            error: "PASSWORD_UPDATE_VERIFY_FAILED",
+            details: {
+              user_id: user.id,
+              username: user.username,
+              expected_hash_prefix: String(passwordHash.hash || "").slice(0, 12),
+              saved_hash_prefix: savedHash.slice(0, 12),
+            },
+          }, 500);
         }
 
         await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens?id=eq.${token.id}`, {
