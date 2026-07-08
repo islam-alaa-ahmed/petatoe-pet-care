@@ -290,17 +290,36 @@ export default {
         delete updatedLegacy.password;
         delete updatedLegacy.passwordPlain;
 
-        const updateRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/app_users?id=eq.${user.id}`, {
+        // PETATOE v9 S3.2: update both modern data and legacy_payload.
+        // The frontend Identity Store prefers app_users.data when it exists,
+        // so updating legacy_payload only can leave login using the old password hash.
+        const updatePayload = {
+          data: updatedLegacy,
+          legacy_payload: updatedLegacy,
+          updated_at: nowIso(),
+        };
+
+        let updateRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/app_users?id=eq.${user.id}`, {
           method: "PATCH",
           headers: dbHeaders,
-          body: JSON.stringify({
-            legacy_payload: updatedLegacy,
-            updated_at: nowIso(),
-          }),
+          body: JSON.stringify(updatePayload),
         });
+
         if (!updateRes.ok) {
-          const err = await updateRes.text();
-          return json({ ok: false, error: "PASSWORD_UPDATE_FAILED", details: err }, 500);
+          const firstErr = await updateRes.text();
+          // Backward-compatible fallback for older schemas without app_users.data.
+          updateRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/app_users?id=eq.${user.id}`, {
+            method: "PATCH",
+            headers: dbHeaders,
+            body: JSON.stringify({
+              legacy_payload: updatedLegacy,
+              updated_at: nowIso(),
+            }),
+          });
+          if (!updateRes.ok) {
+            const err = await updateRes.text();
+            return json({ ok: false, error: "PASSWORD_UPDATE_FAILED", details: err || firstErr }, 500);
+          }
         }
 
         await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens?id=eq.${token.id}`, {
