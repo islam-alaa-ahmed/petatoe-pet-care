@@ -51,6 +51,63 @@ const strongEnoughPassword = (password: string) => {
 
 const safeSuccess = () => json({ ok: true, message: "If the account exists, an OTP has been sent." });
 
+const trustedDeviceHash = async (raw: string, userId: string) => sha256(`${raw}:${userId}:trusted-device:v1`);
+
+const truthy = (v: unknown) => v === true || String(v || "").toLowerCase() === "true" || String(v || "") === "1";
+
+async function findActiveTrustedDevice(dbUrl: string, headers: Record<string, string>, userId: string, rawFingerprint: string) {
+  if (!rawFingerprint) return null;
+  const fingerprintHash = await trustedDeviceHash(rawFingerprint, userId);
+  const now = encodeURIComponent(nowIso());
+  const url = `${dbUrl}/rest/v1/trusted_devices?select=*&user_id=eq.${encodeURIComponent(userId)}&device_fingerprint_hash=eq.${encodeURIComponent(fingerprintHash)}&revoked_at=is.null&trusted_until=gt.${now}&limit=1`;
+  const res = await fetch(url, { headers });
+  if (!res.ok) return null;
+  const rows = await res.json().catch(() => []);
+  const row = Array.isArray(rows) ? rows[0] : null;
+  if (!row) return null;
+  try {
+    await fetch(`${dbUrl}/rest/v1/trusted_devices?id=eq.${row.id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ last_seen_at: nowIso() }),
+    });
+  } catch (_) {
+    // Trusted-device last_seen failures must not block login.
+  }
+  return row;
+}
+
+async function rememberTrustedDevice(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap, req: Request) {
+  const rawFingerprint = String(body.deviceFingerprintHash || body.deviceFingerprint || "").trim();
+  if (!rawFingerprint || !user || !user.id) return false;
+  const fingerprintHash = await trustedDeviceHash(rawFingerprint, String(user.id));
+  const trustedUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+  const payload = {
+    user_id: user.id,
+    device_fingerprint_hash: fingerprintHash,
+    device_name: String(body.deviceName || "Browser Device").slice(0, 120),
+    platform: String(body.platform || "").slice(0, 120),
+    browser: String(body.browser || "").slice(0, 180),
+    trusted_until: trustedUntil,
+    last_seen_at: nowIso(),
+    user_agent: req.headers.get("user-agent") || String(body.userAgent || ""),
+    metadata: {
+      source: "petatoe-mfa-remember-device",
+      language: String(body.language || ""),
+    },
+  };
+
+  const upsertRes = await fetch(`${dbUrl}/rest/v1/trusted_devices?on_conflict=user_id,device_fingerprint_hash`, {
+    method: "POST",
+    headers: {
+      ...headers,
+      Prefer: "resolution=merge-duplicates,return=minimal",
+    },
+    body: JSON.stringify(payload),
+  });
+  return upsertRes.ok;
+}
+
 async function audit(dbUrl: string, headers: HeadersInit, payload: JsonMap) {
   try {
     await fetch(`${dbUrl}/rest/v1/login_history`, {
@@ -84,6 +141,7 @@ export default {
       const username = String(body.username || "").trim();
       const email = String(body.email || "").trim().toLowerCase();
       const purpose = String(body.purpose || "password_reset");
+      const deviceFingerprintHash = String(body.deviceFingerprintHash || body.deviceFingerprint || "").trim();
 
       if (!username || !email) {
         return json({ ok: false, error: "USERNAME_AND_EMAIL_REQUIRED" }, 400);
@@ -332,6 +390,23 @@ export default {
           body: JSON.stringify({ status: "used", used_at: nowIso() }),
         });
 
+        let trustedDeviceSaved = false;
+        if (truthy(body.rememberDevice)) {
+          trustedDeviceSaved = await rememberTrustedDevice(PETATOE_SUPABASE_URL, dbHeaders, user, body, req);
+          if (trustedDeviceSaved) {
+            await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+              user_id: user.id,
+              username_attempted: username,
+              event_type: "trusted_device_added",
+              success: true,
+              trusted_device_used: false,
+              device_fingerprint_hash: deviceFingerprintHash ? await trustedDeviceHash(deviceFingerprintHash, String(user.id)) : undefined,
+              user_agent: req.headers.get("user-agent"),
+              metadata: { expires_in_days: 30 },
+            });
+          }
+        }
+
         await audit(PETATOE_SUPABASE_URL, dbHeaders, {
           user_id: user.id,
           username_attempted: username,
@@ -340,15 +415,31 @@ export default {
           mfa_required: true,
           mfa_passed: true,
           user_agent: req.headers.get("user-agent"),
-          metadata: { purpose: mfaPurpose },
+          metadata: { purpose: mfaPurpose, trusted_device_saved: trustedDeviceSaved },
         });
 
-        return json({ ok: true, action: "mfa_verify", message: "MFA verified successfully." });
+        return json({ ok: true, action: "mfa_verify", trustedDeviceSaved, message: "MFA verified successfully." });
       }
 
       // PETATOE v9 S4.2: MFA OTP sending path is separate from password reset OTP.
       if (action === "mfa_send_otp") {
         const mfaPurpose = "mfa_email_otp";
+        const activeTrustedDevice = await findActiveTrustedDevice(PETATOE_SUPABASE_URL, dbHeaders, String(user.id), deviceFingerprintHash);
+        if (activeTrustedDevice) {
+          await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+            user_id: user.id,
+            username_attempted: username,
+            event_type: "mfa_verify",
+            success: true,
+            mfa_required: true,
+            mfa_passed: true,
+            trusted_device_used: true,
+            device_fingerprint_hash: activeTrustedDevice.device_fingerprint_hash,
+            user_agent: req.headers.get("user-agent"),
+            metadata: { purpose: mfaPurpose, trusted_device_id: activeTrustedDevice.id },
+          });
+          return json({ ok: true, action: "mfa_trusted", trusted: true, message: "Trusted device accepted." });
+        }
         const otp = randomOtp();
         const tokenRaw = crypto.randomUUID();
         const otpHash = await sha256(`${otp}:${user.id}:${mfaPurpose}`);

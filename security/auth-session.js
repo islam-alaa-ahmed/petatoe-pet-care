@@ -158,7 +158,7 @@
       window.currentUser = user;
       window.__PETATOE_ACTIVE_USER__ = user;
       rawSet('currentUser', user.id || user.username || '');
-      rawSet('app_current_user_ref', JSON.stringify({id:user.id||'',supabase_id:user.supabase_id||user.row_id||'',row_id:user.row_id||user.supabase_id||'',username:user.username||user.login||'',email:user.email||'',role:user.role||user.role_code||'',role_code:user.role_code||user.role||'',status:user.status||'active'}));
+      rawSet('app_current_user_ref', JSON.stringify({id:user.id||'',username:user.username||user.login||'',email:user.email||'',role:user.role||'',status:user.status||'active'}));
       try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged',{detail:{user:user,source:'auth-session'}})); }catch(_e){}
       try{ document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:user.id||user.username||''}})); }catch(_e){}
     }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
@@ -231,6 +231,32 @@
   }
   function readRemember(){ return {}; }
   function writeRemember(username, enabled){ return false; }
+  function trustedDeviceClientToken(){
+    var key = 'petatoe_trusted_device_token_v90';
+    try{
+      var existing = localStorage.getItem(key);
+      if(existing && existing.length > 24) return existing;
+      var token = 'pet_td_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2) + '_' + Math.random().toString(36).slice(2);
+      localStorage.setItem(key, token);
+      return token;
+    }catch(_e){
+      return 'pet_td_session_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
+    }
+  }
+  function trustedDevicePayload(){
+    var nav = window.navigator || {};
+    var ua = String(nav.userAgent || '');
+    var platform = String(nav.platform || '');
+    var language = String(nav.language || '');
+    return {
+      deviceFingerprintHash: trustedDeviceClientToken(),
+      deviceName: platform || 'Browser Device',
+      platform: platform,
+      browser: ua.slice(0, 120),
+      userAgent: ua,
+      language: language
+    };
+  }
   function saveBrowserPasswordCredential(form, username, enabled){
     writeRemember(username, !!enabled);
     if(!enabled || !form) return;
@@ -405,6 +431,7 @@
       '<div class="pet-auth-logo">🔐</div><h2>التحقق الثنائي MFA</h2>' +
       '<p>تم إرسال رمز تحقق إلى البريد الإلكتروني المسجل. أدخل الرمز لإكمال تسجيل الدخول.</p>' +
       '<div class="pet-auth-field"><label for="petMfaOtp">رمز التحقق OTP</label><input id="petMfaOtp" name="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required></div>' +
+      '<label class="pet-auth-check"><input type="checkbox" id="petMfaRememberDevice"> <span>تذكر هذا الجهاز لمدة 30 يومًا</span></label>' +
       '<div class="pet-auth-actions"><button class="pet-auth-login" type="submit">تأكيد وفتح النظام</button><button class="pet-auth-secondary" type="button" id="petMfaBackBtn">رجوع</button></div>' +
       '<div class="pet-auth-link-row"><button class="pet-auth-link" type="button" id="petMfaResendBtn">إعادة إرسال الرمز</button></div>' +
       '<div class="pet-auth-success'+(state.success ? ' show' : '')+'" id="petAuthSuccess">'+esc(state.success || '')+'</div>' +
@@ -420,7 +447,8 @@
     async function sendMfaOtp(){
       try{
         if(!email){ renderMfaChallenge(user, options, 'لا يوجد بريد إلكتروني مسجل لهذا المستخدم لإرسال رمز MFA'); return; }
-        await callSecurityEmail({action:'mfa_send_otp', username:username, email:email, purpose:'mfa_email_otp'});
+        var payload = Object.assign({action:'mfa_send_otp', username:username, email:email, purpose:'mfa_email_otp'}, trustedDevicePayload());
+        await callSecurityEmail(payload);
         renderMfaChallenge(user, options, '', {success:'تم إرسال رمز MFA إلى البريد الإلكتروني المسجل'});
       }catch(err){ renderMfaChallenge(user, options, 'تعذر إرسال رمز MFA: ' + String(err && err.message || err)); }
     }
@@ -430,7 +458,8 @@
       var otp = (document.getElementById('petMfaOtp') || {}).value || '';
       if(String(otp).trim().length < 6){ renderMfaChallenge(user, options, 'أدخل رمز تحقق صحيح من 6 أرقام'); return; }
       try{
-        await callSecurityEmail({action:'mfa_verify', username:username, email:email, otp:otp, purpose:'mfa_email_otp'});
+        var rememberDevice = !!(document.getElementById('petMfaRememberDevice') && document.getElementById('petMfaRememberDevice').checked);
+        await callSecurityEmail(Object.assign({action:'mfa_verify', username:username, email:email, otp:otp, purpose:'mfa_email_otp', rememberDevice:rememberDevice}, trustedDevicePayload()));
         try{
           var ids = identityStore();
           if(ids && ids._cache){ ids._cache.loading = null; ids._cache.loaded = false; }
@@ -646,54 +675,6 @@
       if(oldBtn) oldBtn.remove();
     }catch(err){ try{ console.warn('[PETATOE Auth] updateHeader failed', err); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
   }
-  function stabilizePostLoginRoute(user, source){
-    /* PETATOE v9.0 S4.3.1: after MFA, permissions/navigation may apply before the
-       refreshed identity cache is fully visible to the router. A browser refresh works
-       because restore() validates the session and then the router opens a safe screen.
-       Do the same stabilization immediately after successful MFA instead of leaving the
-       temporary no-permission panel active. */
-    if(source !== 'auth-login-mfa') return;
-    function openSafeDashboard(){
-      try{
-        var noPerm = document.getElementById('petatoeNoPermissionPanel');
-        if(noPerm && noPerm.classList) noPerm.classList.remove('active');
-      }catch(_e){}
-      try{
-        if(window.PETATOENavigationPermissions && typeof window.PETATOENavigationPermissions.apply === 'function') window.PETATOENavigationPermissions.apply();
-      }catch(_e){}
-      try{
-        if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function'){
-          window.PETATOERouter.openTab('dashboard', '');
-          return;
-        }
-      }catch(_e){}
-      try{
-        var dash = document.getElementById('dashboard');
-        if(dash){
-          Array.prototype.forEach.call(document.querySelectorAll('.panel.active'), function(p){ p.classList.remove('active'); });
-          dash.classList.add('active');
-        }
-      }catch(_e){}
-    }
-    setTimeout(async function(){
-      try{
-        var ids = identityStore();
-        if(ids && ids._cache){ ids._cache.loading = null; ids._cache.loaded = false; }
-        if(ids && typeof ids.load === 'function') await ids.load();
-        var fresh = findUser(user && (user.username || user.login || user.email || user.id));
-        if(fresh){
-          var merged = Object.assign({}, user || {}, fresh, {loginAt:(user && user.loginAt) || now(), mfaVerified:true});
-          rawSet(AUTH_KEY, JSON.stringify({user:merged, createdAt:now(), version:VERSION, source:'auth-login-mfa-stabilized'}));
-          writeCurrentUser(merged);
-          updateHeader(merged);
-        }
-      }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e); }
-      openSafeDashboard();
-      setTimeout(openSafeDashboard, 450);
-      setTimeout(openSafeDashboard, 1100);
-    }, 80);
-  }
-
   function openSession(user, source, options){
     options = options || {};
     user = user || {};
@@ -731,7 +712,6 @@
     toast(source === 'auth-biometric' ? 'تم تسجيل الدخول بالبصمة' : 'تم تسجيل الدخول: ' + (safeUser.fullName || safeUser.username || 'User'));
     try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged', {detail:{user:safeUser, source:source || 'auth-login'}})); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
     try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
-    stabilizePostLoginRoute(safeUser, source || 'auth-login');
     if(options.enableBiometric){ setTimeout(function(){ registerBiometric(safeUser); }, 350); }
     return true;
   }
@@ -755,7 +735,10 @@
       var email = userLoginEmail(user);
       if(!email){ renderLogin('هذا المستخدم يتطلب MFA ولا يوجد بريد إلكتروني مسجل له'); return false; }
       try{
-        await callSecurityEmail({action:'mfa_send_otp', username:user.username || username, email:email, purpose:'mfa_email_otp'});
+        var mfaResp = await callSecurityEmail(Object.assign({action:'mfa_send_otp', username:user.username || username, email:email, purpose:'mfa_email_otp'}, trustedDevicePayload()));
+        if(mfaResp && mfaResp.trusted){
+          return openSession(user, 'auth-login-trusted-device', Object.assign({}, options || {}, {mfaVerified:true, trustedDevice:true}));
+        }
         renderMfaChallenge(user, options, '', {success:'تم إرسال رمز MFA إلى البريد الإلكتروني المسجل'});
       }catch(err){
         renderLogin('تعذر إرسال رمز MFA: ' + String(err && err.message || err));
