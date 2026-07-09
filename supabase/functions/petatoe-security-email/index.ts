@@ -83,7 +83,8 @@ export default {
       const action = String(body.action || "send_otp").trim();
       const username = String(body.username || "").trim();
       const email = String(body.email || "").trim().toLowerCase();
-      const purpose = String(body.purpose || "password_reset");
+      const requestedPurpose = String(body.purpose || "password_reset");
+      const purpose = (action === "mfa_send_otp" || action === "mfa_verify") ? "mfa_email_otp" : requestedPurpose;
 
       if (!username || !email) {
         return json({ ok: false, error: "USERNAME_AND_EMAIL_REQUIRED" }, 400);
@@ -98,6 +99,8 @@ export default {
         Authorization: `Bearer ${PETATOE_SERVICE_ROLE_KEY}`,
         "Content-Type": "application/json",
       };
+      const isResetAction = action === "reset_password";
+      const isMfaAction = action === "mfa_send_otp" || action === "mfa_verify";
 
       const userRes = await fetch(
         `${PETATOE_SUPABASE_URL}/rest/v1/app_users?select=*&username=eq.${encodeURIComponent(username)}&limit=1`,
@@ -116,12 +119,12 @@ export default {
       if (!user) {
         await audit(PETATOE_SUPABASE_URL, dbHeaders, {
           username_attempted: username,
-          event_type: action === "reset_password" ? "password_reset_completed" : "password_reset_requested",
+          event_type: isResetAction ? "password_reset_completed" : (isMfaAction ? "mfa_challenge" : "password_reset_requested"),
           success: false,
           failure_reason: "user_not_found",
           user_agent: req.headers.get("user-agent"),
         });
-        return action === "reset_password"
+        return isResetAction || action === "mfa_verify"
           ? json({ ok: false, error: "INVALID_OR_EXPIRED_OTP" }, 400)
           : safeSuccess();
       }
@@ -130,14 +133,106 @@ export default {
         await audit(PETATOE_SUPABASE_URL, dbHeaders, {
           user_id: user.id,
           username_attempted: username,
-          event_type: action === "reset_password" ? "password_reset_completed" : "password_reset_requested",
+          event_type: isResetAction ? "password_reset_completed" : (isMfaAction ? "mfa_challenge" : "password_reset_requested"),
           success: false,
           failure_reason: "email_mismatch",
           user_agent: req.headers.get("user-agent"),
         });
-        return action === "reset_password"
+        return isResetAction || action === "mfa_verify"
           ? json({ ok: false, error: "INVALID_OR_EXPIRED_OTP" }, 400)
           : safeSuccess();
+      }
+
+      // PETATOE v9 S4.1: MFA OTP verification foundation.
+      // This backend path is passive until the frontend login flow enables MFA in S4.2.
+      if (action === "mfa_verify") {
+        const otp = String(body.otp || "").trim();
+        if (!otp) return json({ ok: false, error: "OTP_REQUIRED" }, 400);
+
+        const tokenRes = await fetch(
+          `${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens?select=*&user_id=eq.${user.id}&purpose=eq.mfa_email_otp&status=eq.pending&order=created_at.desc&limit=1`,
+          { headers: dbHeaders },
+        );
+        if (!tokenRes.ok) {
+          const err = await tokenRes.text();
+          return json({ ok: false, error: "MFA_TOKEN_LOOKUP_FAILED", details: err }, 500);
+        }
+        const tokens = await tokenRes.json();
+        const token = Array.isArray(tokens) ? tokens[0] : null;
+        if (!token || new Date(String(token.expires_at)).getTime() < Date.now()) {
+          if (token) {
+            await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens?id=eq.${token.id}`, {
+              method: "PATCH",
+              headers: dbHeaders,
+              body: JSON.stringify({ status: "expired" }),
+            });
+          }
+          await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+            user_id: user.id,
+            username_attempted: username,
+            event_type: "mfa_verify",
+            success: false,
+            failure_reason: "invalid_or_expired_otp",
+            user_agent: req.headers.get("user-agent"),
+          });
+          return json({ ok: false, error: "INVALID_OR_EXPIRED_OTP" }, 400);
+        }
+        if (Number(token.attempts || 0) >= Number(token.max_attempts || 5)) {
+          await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens?id=eq.${token.id}`, {
+            method: "PATCH",
+            headers: dbHeaders,
+            body: JSON.stringify({ status: "blocked" }),
+          });
+          return json({ ok: false, error: "INVALID_OR_EXPIRED_OTP" }, 400);
+        }
+
+        const expectedHash = await sha256(`${otp}:${user.id}:mfa_email_otp`);
+        if (expectedHash !== String(token.otp_hash || "")) {
+          await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens?id=eq.${token.id}`, {
+            method: "PATCH",
+            headers: dbHeaders,
+            body: JSON.stringify({ attempts: Number(token.attempts || 0) + 1 }),
+          });
+          await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+            user_id: user.id,
+            username_attempted: username,
+            event_type: "mfa_verify",
+            success: false,
+            failure_reason: "invalid_otp",
+            user_agent: req.headers.get("user-agent"),
+          });
+          return json({ ok: false, error: "INVALID_OR_EXPIRED_OTP" }, 400);
+        }
+
+        await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens?id=eq.${token.id}`, {
+          method: "PATCH",
+          headers: dbHeaders,
+          body: JSON.stringify({ status: "used", used_at: nowIso() }),
+        });
+
+        await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/user_mfa?user_id=eq.${user.id}&method=eq.email`, {
+          method: "PATCH",
+          headers: dbHeaders,
+          body: JSON.stringify({
+            last_verified_at: nowIso(),
+            last_challenge_at: token.created_at || nowIso(),
+            email: userEmail,
+            metadata: { source: "petatoe-security-email", last_action: "mfa_verify" },
+          }),
+        });
+
+        await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+          user_id: user.id,
+          username_attempted: username,
+          event_type: "mfa_verify",
+          success: true,
+          mfa_required: true,
+          mfa_passed: true,
+          user_agent: req.headers.get("user-agent"),
+          metadata: { purpose: "mfa_email_otp" },
+        });
+
+        return json({ ok: true, action: "mfa_verify", message: "MFA verified successfully." });
       }
 
       // PETATOE v9 S3.7: Handle reset_password before send_otp so a password-save request can never fall through to OTP sending.
@@ -272,8 +367,8 @@ export default {
       }
 
 
-      // PETATOE v9 S3.7: OTP sending path is explicit and returns action marker.
-      if (action === "send_otp") {
+      // PETATOE v9 S3.7/S4.1: OTP sending path is explicit and returns action marker.
+      if (action === "send_otp" || action === "mfa_send_otp") {
         const otp = randomOtp();
         const tokenRaw = crypto.randomUUID();
         const otpHash = await sha256(`${otp}:${user.id}:${purpose}`);
@@ -308,6 +403,33 @@ export default {
         if (!insertRes.ok) {
           const err = await insertRes.text();
           return json({ ok: false, error: "TOKEN_INSERT_FAILED", details: err }, 500);
+        }
+
+        if (purpose === "mfa_email_otp") {
+          const mfaPatchRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/user_mfa?user_id=eq.${user.id}&method=eq.email`, {
+            method: "PATCH",
+            headers: dbHeaders,
+            body: JSON.stringify({
+              last_challenge_at: nowIso(),
+              email: userEmail,
+              metadata: { source: "petatoe-security-email", last_action: "mfa_send_otp" },
+            }),
+          });
+          if (!mfaPatchRes.ok) {
+            await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/user_mfa`, {
+              method: "POST",
+              headers: dbHeaders,
+              body: JSON.stringify({
+                user_id: user.id,
+                method: "email",
+                enabled: false,
+                enforced: false,
+                email: userEmail,
+                last_challenge_at: nowIso(),
+                metadata: { source: "petatoe-security-email", last_action: "mfa_send_otp" },
+              }),
+            });
+          }
         }
 
         const subject = purpose === "mfa_email_otp"
@@ -346,13 +468,14 @@ export default {
         await audit(PETATOE_SUPABASE_URL, dbHeaders, {
           user_id: user.id,
           username_attempted: username,
-          event_type: "password_reset_requested",
+          event_type: purpose === "mfa_email_otp" ? "mfa_challenge" : "password_reset_requested",
           success: true,
+          mfa_required: purpose === "mfa_email_otp",
           user_agent: req.headers.get("user-agent"),
-          metadata: { purpose },
+          metadata: { purpose, action },
         });
 
-        return json({ ok: true, action: "send_otp", message: "OTP sent successfully." });
+        return json({ ok: true, action, purpose, message: purpose === "mfa_email_otp" ? "MFA OTP sent successfully." : "OTP sent successfully." });
       }
 
       return json({ ok: false, error: "INVALID_ACTION" }, 400);
