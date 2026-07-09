@@ -431,7 +431,14 @@
       if(String(otp).trim().length < 6){ renderMfaChallenge(user, options, 'أدخل رمز تحقق صحيح من 6 أرقام'); return; }
       try{
         await callSecurityEmail({action:'mfa_verify', username:username, email:email, otp:otp, purpose:'mfa_email_otp'});
-        openSession(user, 'auth-login-mfa', options || {});
+        try{
+          var ids = identityStore();
+          if(ids && ids._cache){ ids._cache.loading = null; ids._cache.loaded = false; }
+          if(ids && typeof ids.load === 'function') await ids.load();
+          var refreshed = findUser(username);
+          if(refreshed) user = refreshed;
+        }catch(_refreshErr){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_refreshErr); }
+        openSession(user, 'auth-login-mfa', Object.assign({}, options || {}, {mfaVerified:true}));
       }catch(err){
         var msg = String(err && err.message || err);
         if(msg === 'INVALID_OR_EXPIRED_OTP') msg = 'رمز MFA غير صحيح أو منتهي الصلاحية';
@@ -641,9 +648,30 @@
   }
   function openSession(user, source, options){
     options = options || {};
+    user = user || {};
     user.lastLogin = now();
     /* Session open must not auto-create/update app_users. The persistent users table is modified only by explicit Settings > Users actions. */
-    var safeUser = {id:user.id, username:user.username, fullName:user.fullName, job:user.job, email:user.email, phone:user.phone, role:user.role, status:user.status || 'active', loginAt:now()};
+    /* PETATOE v9.0 S4.3: keep the canonical identity fields in the session after MFA.
+       Root cause: the MFA success path opened a reduced session object that dropped role_code/supabase_id/full_name.
+       Navigation permissions then could not recognize SuperAdmin/role permissions and opened the no-access panel. */
+    var safeUser = {
+      id:user.id || user.username || '',
+      supabase_id:user.supabase_id || user.row_id || '',
+      row_id:user.row_id || user.supabase_id || '',
+      auth_user_id:user.auth_user_id || '',
+      username:user.username || user.name || user.login || '',
+      login:user.login || user.username || '',
+      fullName:user.fullName || user.full_name || user.username || '',
+      full_name:user.full_name || user.fullName || user.username || '',
+      job:user.job || user.title || '',
+      email:user.email || user.mail || user.userEmail || '',
+      phone:user.phone || '',
+      role:user.role || user.role_code || user.userRole || 'viewer',
+      role_code:user.role_code || user.role || user.userRole || 'viewer',
+      status:user.status || 'active',
+      loginAt:now(),
+      mfaVerified: source === 'auth-login-mfa' || !!options.mfaVerified
+    };
     if(options.remember) saveBrowserPasswordCredential(options.form, user.username || user.id || user.fullName, true);
     else if(options.remember === false) writeRemember('', false);
     rawSet(AUTH_KEY, JSON.stringify({user:safeUser, createdAt:now(), version:VERSION, source:source || 'auth-login'}));
