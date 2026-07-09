@@ -140,88 +140,7 @@ export default {
           : safeSuccess();
       }
 
-      if (action === "send_otp") {
-        const otp = randomOtp();
-        const tokenRaw = crypto.randomUUID();
-        const otpHash = await sha256(`${otp}:${user.id}:${purpose}`);
-        const tokenHash = await sha256(`${tokenRaw}:${user.id}:${purpose}`);
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-
-        await fetch(
-          `${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens?user_id=eq.${user.id}&purpose=eq.${purpose}&status=eq.pending`,
-          {
-            method: "PATCH",
-            headers: dbHeaders,
-            body: JSON.stringify({ status: "revoked" }),
-          },
-        );
-
-        const insertRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens`, {
-          method: "POST",
-          headers: dbHeaders,
-          body: JSON.stringify({
-            user_id: user.id,
-            token_hash: tokenHash,
-            otp_hash: otpHash,
-            purpose,
-            status: "pending",
-            expires_at: expiresAt,
-            max_attempts: 5,
-            user_agent: req.headers.get("user-agent"),
-            metadata: { source: "petatoe-security-email" },
-          }),
-        });
-
-        if (!insertRes.ok) {
-          const err = await insertRes.text();
-          return json({ ok: false, error: "TOKEN_INSERT_FAILED", details: err }, 500);
-        }
-
-        const subject = purpose === "mfa_email_otp"
-          ? "PETATOE MFA Verification Code"
-          : "PETATOE Password Reset Code";
-
-        const html = `
-          <div style="font-family:Arial,sans-serif;line-height:1.6">
-            <h2>PETATOE Security Code</h2>
-            <p>Your verification code is:</p>
-            <div style="font-size:28px;font-weight:bold;letter-spacing:4px">${otp}</div>
-            <p>This code expires in 10 minutes.</p>
-            <p>If you did not request this, please ignore this email.</p>
-          </div>
-        `;
-
-        const mailRes = await fetch("https://api.resend.com/emails", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            from: FROM_EMAIL,
-            to: email,
-            subject,
-            html,
-          }),
-        });
-
-        if (!mailRes.ok) {
-          const err = await mailRes.text();
-          return json({ ok: false, error: "EMAIL_SEND_FAILED", details: err }, 500);
-        }
-
-        await audit(PETATOE_SUPABASE_URL, dbHeaders, {
-          user_id: user.id,
-          username_attempted: username,
-          event_type: "password_reset_requested",
-          success: true,
-          user_agent: req.headers.get("user-agent"),
-          metadata: { purpose },
-        });
-
-        return json({ ok: true, message: "OTP sent successfully." });
-      }
-
+      // PETATOE v9 S3.7: Handle reset_password before send_otp so a password-save request can never fall through to OTP sending.
       if (action === "reset_password") {
         const otp = String(body.otp || "").trim();
         const newPassword = String(body.newPassword || body.password || "");
@@ -349,7 +268,91 @@ export default {
           metadata: { purpose },
         });
 
-        return json({ ok: true, message: "Password reset successfully." });
+        return json({ ok: true, action: "reset_password", message: "Password reset successfully." });
+      }
+
+
+      // PETATOE v9 S3.7: OTP sending path is explicit and returns action marker.
+      if (action === "send_otp") {
+        const otp = randomOtp();
+        const tokenRaw = crypto.randomUUID();
+        const otpHash = await sha256(`${otp}:${user.id}:${purpose}`);
+        const tokenHash = await sha256(`${tokenRaw}:${user.id}:${purpose}`);
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+
+        await fetch(
+          `${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens?user_id=eq.${user.id}&purpose=eq.${purpose}&status=eq.pending`,
+          {
+            method: "PATCH",
+            headers: dbHeaders,
+            body: JSON.stringify({ status: "revoked" }),
+          },
+        );
+
+        const insertRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/password_reset_tokens`, {
+          method: "POST",
+          headers: dbHeaders,
+          body: JSON.stringify({
+            user_id: user.id,
+            token_hash: tokenHash,
+            otp_hash: otpHash,
+            purpose,
+            status: "pending",
+            expires_at: expiresAt,
+            max_attempts: 5,
+            user_agent: req.headers.get("user-agent"),
+            metadata: { source: "petatoe-security-email" },
+          }),
+        });
+
+        if (!insertRes.ok) {
+          const err = await insertRes.text();
+          return json({ ok: false, error: "TOKEN_INSERT_FAILED", details: err }, 500);
+        }
+
+        const subject = purpose === "mfa_email_otp"
+          ? "PETATOE MFA Verification Code"
+          : "PETATOE Password Reset Code";
+
+        const html = `
+          <div style="font-family:Arial,sans-serif;line-height:1.6">
+            <h2>PETATOE Security Code</h2>
+            <p>Your verification code is:</p>
+            <div style="font-size:28px;font-weight:bold;letter-spacing:4px">${otp}</div>
+            <p>This code expires in 10 minutes.</p>
+            <p>If you did not request this, please ignore this email.</p>
+          </div>
+        `;
+
+        const mailRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: FROM_EMAIL,
+            to: email,
+            subject,
+            html,
+          }),
+        });
+
+        if (!mailRes.ok) {
+          const err = await mailRes.text();
+          return json({ ok: false, error: "EMAIL_SEND_FAILED", details: err }, 500);
+        }
+
+        await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+          user_id: user.id,
+          username_attempted: username,
+          event_type: "password_reset_requested",
+          success: true,
+          user_agent: req.headers.get("user-agent"),
+          metadata: { purpose },
+        });
+
+        return json({ ok: true, action: "send_otp", message: "OTP sent successfully." });
       }
 
       return json({ ok: false, error: "INVALID_ACTION" }, 400);
