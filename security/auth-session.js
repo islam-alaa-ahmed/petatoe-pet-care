@@ -257,6 +257,27 @@
       language: language
     };
   }
+
+  function authUserIdentityPayload(user){
+    user = user || sessionUser() || window.currentUser || {};
+    return {
+      username: String(user.username || user.name || user.id || '').trim(),
+      email: String(user.email || user.mail || user.userEmail || '').trim().toLowerCase(),
+      purpose: 'mfa_email_otp'
+    };
+  }
+  async function listTrustedDevices(){
+    var payload = authUserIdentityPayload();
+    if(!payload.username || !payload.email) throw new Error('CURRENT_USER_EMAIL_REQUIRED');
+    return callSecurityEmail(Object.assign({action:'trusted_devices_list'}, payload));
+  }
+  async function revokeTrustedDevice(deviceId){
+    var payload = authUserIdentityPayload();
+    if(!payload.username || !payload.email) throw new Error('CURRENT_USER_EMAIL_REQUIRED');
+    if(!deviceId) throw new Error('DEVICE_ID_REQUIRED');
+    return callSecurityEmail(Object.assign({action:'trusted_device_revoke', deviceId:String(deviceId)}, payload));
+  }
+
   function saveBrowserPasswordCredential(form, username, enabled){
     writeRemember(username, !!enabled);
     if(!enabled || !form) return;
@@ -822,7 +843,7 @@
     return false;
   }
 
-  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric};
+  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice};
   window.petLogout = function(){ logout('manual'); };
 
   document.addEventListener('petatoe:users-changed', function(){ validateSessionUser('users-changed'); });
