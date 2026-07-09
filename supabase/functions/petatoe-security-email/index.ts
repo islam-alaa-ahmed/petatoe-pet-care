@@ -293,39 +293,35 @@ export default {
         // PETATOE v9 S3.5:
         // The production app_users table has legacy_payload only; there is no data column.
         // Update exactly the JSONB payload used by the login normalizer, then re-read and verify it.
-        const updatePayload = {
-          legacy_payload: updatedLegacy,
-          updated_at: nowIso(),
-        };
+        const passwordUpdatedAt = nowIso();
 
-        const updateRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/app_users?id=eq.${user.id}`, {
-          method: "PATCH",
+        // PETATOE v9 S3.6:
+        // Use a database RPC for password persistence. This avoids browser/REST JSONB
+        // payload shape issues and updates the exact legacy_payload.passwordHash path
+        // used by the existing login normalizer.
+        const rpcRes = await fetch(`${PETATOE_SUPABASE_URL}/rest/v1/rpc/petatoe_reset_user_password_legacy`, {
+          method: "POST",
           headers: {
             ...dbHeaders,
             Prefer: "return=representation",
           },
-          body: JSON.stringify(updatePayload),
+          body: JSON.stringify({
+            p_user_id: user.id,
+            p_password_hash: passwordHash,
+            p_password_updated_at: passwordUpdatedAt,
+          }),
         });
 
-        if (!updateRes.ok) {
-          const err = await updateRes.text();
-          return json({ ok: false, error: "PASSWORD_UPDATE_FAILED", details: err }, 500);
+        if (!rpcRes.ok) {
+          const err = await rpcRes.text();
+          return json({ ok: false, error: "PASSWORD_UPDATE_RPC_FAILED", details: err }, 500);
         }
 
-        const verifyRes = await fetch(
-          `${PETATOE_SUPABASE_URL}/rest/v1/app_users?select=id,username,legacy_payload&id=eq.${user.id}&limit=1`,
-          { headers: dbHeaders },
-        );
+        const rpcRows = await rpcRes.json().catch(() => []);
+        const rpcRow = Array.isArray(rpcRows) ? rpcRows[0] : null;
+        const savedHash = String(rpcRow?.saved_hash || "");
 
-        if (!verifyRes.ok) {
-          const err = await verifyRes.text();
-          return json({ ok: false, error: "PASSWORD_UPDATE_VERIFY_LOOKUP_FAILED", details: err }, 500);
-        }
-
-        const verifyRows = await verifyRes.json();
-        const verifyUser = Array.isArray(verifyRows) ? verifyRows[0] : null;
-        const savedHash = String(verifyUser?.legacy_payload?.passwordHash?.hash || "");
-        if (!verifyUser || savedHash !== String(passwordHash.hash || "")) {
+        if (!rpcRow || savedHash !== String(passwordHash.hash || "")) {
           return json({
             ok: false,
             error: "PASSWORD_UPDATE_VERIFY_FAILED",
