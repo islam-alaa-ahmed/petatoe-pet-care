@@ -90,6 +90,10 @@ async function rememberTrustedDevice(dbUrl: string, headers: Record<string, stri
     browser: String(body.browser || "").slice(0, 180),
     trusted_until: trustedUntil,
     last_seen_at: nowIso(),
+    // PETATOE v9 S4.4.3: re-activating the same device after revoke must clear revoked_at.
+    // PostgREST upsert keeps omitted columns unchanged, so without this a revoked row
+    // remains revoked even when trustedDeviceSaved=true.
+    revoked_at: null,
     user_agent: req.headers.get("user-agent") || String(body.userAgent || ""),
     metadata: {
       source: "petatoe-mfa-remember-device",
@@ -329,70 +333,6 @@ export default {
         return json({ ok: true, action: "reset_password", message: "Password reset successfully." });
       }
 
-
-
-      // PETATOE v9 S4.4.2: Trusted Devices management actions.
-      if (action === "trusted_devices_list") {
-        const listRes = await fetch(
-          `${PETATOE_SUPABASE_URL}/rest/v1/trusted_devices?select=id,device_name,platform,browser,trusted_until,last_seen_at,revoked_at,created_at,metadata&user_id=eq.${encodeURIComponent(user.id)}&order=last_seen_at.desc.nullslast,created_at.desc`,
-          { headers: dbHeaders },
-        );
-        if (!listRes.ok) {
-          const err = await listRes.text();
-          return json({ ok: false, action: "trusted_devices_list", error: "TRUSTED_DEVICES_LIST_FAILED", details: err }, 500);
-        }
-        const rows = await listRes.json().catch(() => []);
-        const nowTime = Date.now();
-        const devices = (Array.isArray(rows) ? rows : []).map((row) => {
-          const trustedUntil = row.trusted_until ? new Date(String(row.trusted_until)).getTime() : 0;
-          const revoked = !!row.revoked_at;
-          return {
-            id: row.id,
-            deviceName: row.device_name || "Browser Device",
-            platform: row.platform || "",
-            browser: row.browser || "",
-            trustedUntil: row.trusted_until || null,
-            lastSeenAt: row.last_seen_at || null,
-            createdAt: row.created_at || null,
-            revokedAt: row.revoked_at || null,
-            status: revoked ? "revoked" : (trustedUntil && trustedUntil < nowTime ? "expired" : "active"),
-          };
-        });
-        return json({ ok: true, action: "trusted_devices_list", devices });
-      }
-
-      if (action === "trusted_device_revoke") {
-        const deviceId = String(body.deviceId || body.id || "").trim();
-        if (!deviceId) return json({ ok: false, action: "trusted_device_revoke", error: "DEVICE_ID_REQUIRED" }, 400);
-        const revokeRes = await fetch(
-          `${PETATOE_SUPABASE_URL}/rest/v1/trusted_devices?id=eq.${encodeURIComponent(deviceId)}&user_id=eq.${encodeURIComponent(user.id)}`,
-          {
-            method: "PATCH",
-            headers: {
-              ...dbHeaders,
-              Prefer: "return=representation",
-            },
-            body: JSON.stringify({ revoked_at: nowIso(), metadata: { source: "petatoe-security-center", revoked_by: username } }),
-          },
-        );
-        if (!revokeRes.ok) {
-          const err = await revokeRes.text();
-          return json({ ok: false, action: "trusted_device_revoke", error: "TRUSTED_DEVICE_REVOKE_FAILED", details: err }, 500);
-        }
-        const revokedRows = await revokeRes.json().catch(() => []);
-        if (!Array.isArray(revokedRows) || !revokedRows.length) {
-          return json({ ok: false, action: "trusted_device_revoke", error: "TRUSTED_DEVICE_NOT_FOUND" }, 404);
-        }
-        await audit(PETATOE_SUPABASE_URL, dbHeaders, {
-          user_id: user.id,
-          username_attempted: username,
-          event_type: "trusted_device_revoked",
-          success: true,
-          user_agent: req.headers.get("user-agent"),
-          metadata: { device_id: deviceId },
-        });
-        return json({ ok: true, action: "trusted_device_revoke", message: "Trusted device revoked." });
-      }
 
       // PETATOE v9 S4.2: MFA verification completes login only after a valid email OTP.
       if (action === "mfa_verify") {
