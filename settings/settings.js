@@ -225,3 +225,111 @@
   document.addEventListener('change',function(e){var el=e.target;if(el&&el.matches&&el.matches('[data-v139-select-user]')&&typeof window.petV139SelectUser==='function') window.petV139SelectUser(el.value); if(el&&el.matches&&el.matches('[data-v664-assignment-user]')&&typeof window.petV664SelectAssignmentUser==='function') window.petV664SelectAssignmentUser(el.value); if(el&&el.id==='petV664AllVehicles'&&typeof window.petV664ToggleAllVehicles==='function') window.petV664ToggleAllVehicles(!!el.checked);});
   document.addEventListener('input',function(e){var el=e.target;if(el&&el.matches&&el.matches('[data-v121-search]')&&typeof window.petV121SearchMaster==='function') window.petV121SearchMaster(el.getAttribute('data-v121-search'),el.value);});
 })();
+
+/* PETATOE v9 S4.4.2.1 — Trusted Devices real loader/revoke UI
+   Root cause: S4.4.2 added the UI placeholder and click action mapping, but did not define
+   petV9LoadTrustedDevices / petV9RevokeTrustedDevice, so the box stayed on "loading" forever.
+*/
+(function(){
+  if(window.__PETATOE_V9_TRUSTED_DEVICES_UI__) return;
+  window.__PETATOE_V9_TRUSTED_DEVICES_UI__ = true;
+
+  function byId(id){ return document.getElementById(id); }
+  function esc(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c] || c;
+    });
+  }
+  function fmtDate(v){
+    if(!v) return '—';
+    try{
+      var d = new Date(String(v));
+      if(isNaN(d.getTime())) return '—';
+      return d.toLocaleString('ar-EG', {year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit'});
+    }catch(_){ return '—'; }
+  }
+  function shortDeviceName(device){
+    var name = device && (device.deviceName || device.platform || 'Browser Device');
+    if(String(name).length > 70) name = String(name).slice(0, 70) + '…';
+    return name;
+  }
+  function statusLabel(status){
+    status = String(status || '').toLowerCase();
+    if(status === 'active') return '<span class="pet-v110-pill green">نشط</span>';
+    if(status === 'expired') return '<span class="pet-v110-pill warn">منتهي</span>';
+    if(status === 'revoked') return '<span class="pet-v110-pill danger">ملغي</span>';
+    return '<span class="pet-v110-pill">غير معروف</span>';
+  }
+  function setBox(html){
+    var box = byId('petV9TrustedDevicesBox');
+    if(!box) return;
+    var S = window.PETATOESecurity;
+    if(S && typeof S.setInnerHTML === 'function') S.setInnerHTML(box, html);
+    else box.innerHTML = html;
+  }
+  function errorMessage(error){
+    var msg = String((error && (error.error || error.message || error.details)) || error || 'UNKNOWN_ERROR');
+    if(msg.indexOf('Could not find the table') !== -1 || msg.indexOf('trusted_devices') !== -1){
+      return 'جدول الأجهزة الموثوقة غير جاهز في Supabase. شغّل ملف SQL الخاص بالمرحلة S4.4.2.1 أولاً.';
+    }
+    if(msg === 'CURRENT_USER_EMAIL_REQUIRED') return 'تعذر تحديد بريد المستخدم الحالي. سجّل خروج ثم ادخل مرة أخرى.';
+    return 'تعذر تحميل الأجهزة الموثوقة: ' + msg;
+  }
+
+  window.petV9RenderTrustedDevices = function(devices){
+    devices = Array.isArray(devices) ? devices : [];
+    if(!devices.length){
+      setBox('<div class="pet-v110-note">لا توجد أجهزة موثوقة لهذا المستخدم حتى الآن.</div>');
+      return;
+    }
+    var rows = devices.map(function(d){
+      var active = String(d.status || '').toLowerCase() === 'active';
+      return '<div class="pet-v110-card" style="margin:10px 0;padding:14px">'
+        + '<div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap">'
+        + '<div style="min-width:220px;flex:1">'
+        + '<div style="font-weight:900;color:#e5f3ff;margin-bottom:6px">💻 '+esc(shortDeviceName(d))+'</div>'
+        + '<div style="font-size:12px;color:rgba(226,232,240,.76);line-height:1.8">'
+        + 'المتصفح/النظام: '+esc(d.platform || d.browser || '—')+'<br>'
+        + 'آخر استخدام: '+esc(fmtDate(d.lastSeenAt))+'<br>'
+        + 'موثوق حتى: '+esc(fmtDate(d.trustedUntil))
+        + '</div></div>'
+        + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+statusLabel(d.status)
+        + (active ? '<button class="pet-v110-btn danger" data-v110-action="trusted-device-revoke" data-device-id="'+esc(d.id)+'">إلغاء الثقة</button>' : '')
+        + '</div></div></div>';
+    }).join('');
+    setBox(rows);
+  };
+
+  window.petV9LoadTrustedDevices = async function(){
+    var box = byId('petV9TrustedDevicesBox');
+    if(!box) return;
+    setBox('<div class="pet-v110-note">جاري تحميل الأجهزة الموثوقة...</div>');
+    try{
+      if(!window.PETATOEAuth || typeof window.PETATOEAuth.listTrustedDevices !== 'function'){
+        throw new Error('PETATOE_AUTH_TRUSTED_DEVICES_API_NOT_READY');
+      }
+      var res = await window.PETATOEAuth.listTrustedDevices();
+      if(!res || res.ok === false) throw new Error(errorMessage(res));
+      window.petV9RenderTrustedDevices(res.devices || []);
+    }catch(err){
+      setBox('<div class="pet-v110-note" style="border-color:rgba(248,113,113,.45);color:#fecaca">'+esc(errorMessage(err))+'</div>');
+    }
+  };
+
+  window.petV9RevokeTrustedDevice = async function(deviceId){
+    if(!deviceId) return;
+    if(!confirm('إلغاء الثقة من هذا الجهاز؟ سيُطلب OTP مرة أخرى عند الدخول منه.')) return;
+    setBox('<div class="pet-v110-note">جاري إلغاء الثقة...</div>');
+    try{
+      if(!window.PETATOEAuth || typeof window.PETATOEAuth.revokeTrustedDevice !== 'function'){
+        throw new Error('PETATOE_AUTH_TRUSTED_DEVICES_API_NOT_READY');
+      }
+      var res = await window.PETATOEAuth.revokeTrustedDevice(deviceId);
+      if(!res || res.ok === false) throw new Error(errorMessage(res));
+      if(window.PETATOEUI && typeof window.PETATOEUI.toast === 'function') window.PETATOEUI.toast('تم إلغاء الثقة من الجهاز');
+      await window.petV9LoadTrustedDevices();
+    }catch(err){
+      setBox('<div class="pet-v110-note" style="border-color:rgba(248,113,113,.45);color:#fecaca">'+esc(errorMessage(err))+'</div>');
+    }
+  };
+})();
