@@ -380,6 +380,68 @@
     if(focusEl) setTimeout(function(){ try{ focusEl.focus(); }catch(_){ } }, 40);
   }
 
+
+  function isMfaRequired(user){
+    if(!user) return false;
+    if(isBootstrapAdmin(user)) return true;
+    var flags = [user.mfaEnabled, user.mfa_enabled, user.mfaRequired, user.mfa_required, user.enforceMfa, user.enforce_mfa];
+    if(user.mfa && typeof user.mfa === 'object') flags.push(user.mfa.enabled, user.mfa.enforced, user.mfa.required);
+    return flags.some(function(v){ return v === true || String(v || '').toLowerCase() === 'true' || String(v || '') === '1'; });
+  }
+  function userLoginEmail(user){
+    return String((user && (user.email || user.mail || user.userEmail)) || '').trim().toLowerCase();
+  }
+  function renderMfaChallenge(user, options, message, state){
+    ensureStyles();
+    setLoggedInClass(false);
+    options = options || {};
+    state = state || {};
+    var old = document.getElementById('pet-auth-overlay'); if(old) old.remove();
+    var overlay = document.createElement('div');
+    overlay.id = 'pet-auth-overlay';
+    overlay.className = 'pet-auth-overlay';
+    overlay.innerHTML = '<div class="pet-auth-brand" aria-label="PETATOE"><img src="img/petatoe-logo-light-transparent.png" alt="PETATOE"><span>Petatoe<small>بيتاتو</small></span></div>' +
+      '<form class="pet-auth-card" id="petMfaForm" autocomplete="off">' +
+      '<div class="pet-auth-logo">🔐</div><h2>التحقق الثنائي MFA</h2>' +
+      '<p>تم إرسال رمز تحقق إلى البريد الإلكتروني المسجل. أدخل الرمز لإكمال تسجيل الدخول.</p>' +
+      '<div class="pet-auth-field"><label for="petMfaOtp">رمز التحقق OTP</label><input id="petMfaOtp" name="otp" inputmode="numeric" autocomplete="one-time-code" maxlength="6" required></div>' +
+      '<div class="pet-auth-actions"><button class="pet-auth-login" type="submit">تأكيد وفتح النظام</button><button class="pet-auth-secondary" type="button" id="petMfaBackBtn">رجوع</button></div>' +
+      '<div class="pet-auth-link-row"><button class="pet-auth-link" type="button" id="petMfaResendBtn">إعادة إرسال الرمز</button></div>' +
+      '<div class="pet-auth-success'+(state.success ? ' show' : '')+'" id="petAuthSuccess">'+esc(state.success || '')+'</div>' +
+      '<div class="pet-auth-error'+(message ? ' show' : '')+'" id="petAuthError">'+esc(message || '')+'</div>' +
+      '</form>' + authFooterHtml();
+    document.body.appendChild(overlay);
+    var email = userLoginEmail(user);
+    var username = user && (user.username || user.name || user.id) || '';
+    var back = document.getElementById('petMfaBackBtn');
+    var resend = document.getElementById('petMfaResendBtn');
+    var form = document.getElementById('petMfaForm');
+    if(back){ back.addEventListener('click', function(e){ e.preventDefault(); renderLogin('تم إلغاء التحقق الثنائي'); }); }
+    async function sendMfaOtp(){
+      try{
+        if(!email){ renderMfaChallenge(user, options, 'لا يوجد بريد إلكتروني مسجل لهذا المستخدم لإرسال رمز MFA'); return; }
+        await callSecurityEmail({action:'mfa_send_otp', username:username, email:email, purpose:'mfa_email_otp'});
+        renderMfaChallenge(user, options, '', {success:'تم إرسال رمز MFA إلى البريد الإلكتروني المسجل'});
+      }catch(err){ renderMfaChallenge(user, options, 'تعذر إرسال رمز MFA: ' + String(err && err.message || err)); }
+    }
+    if(resend){ resend.addEventListener('click', function(e){ e.preventDefault(); sendMfaOtp(); }); }
+    if(form){ form.addEventListener('submit', async function(e){
+      e.preventDefault();
+      var otp = (document.getElementById('petMfaOtp') || {}).value || '';
+      if(String(otp).trim().length < 6){ renderMfaChallenge(user, options, 'أدخل رمز تحقق صحيح من 6 أرقام'); return; }
+      try{
+        await callSecurityEmail({action:'mfa_verify', username:username, email:email, otp:otp, purpose:'mfa_email_otp'});
+        openSession(user, 'auth-login-mfa', options || {});
+      }catch(err){
+        var msg = String(err && err.message || err);
+        if(msg === 'INVALID_OR_EXPIRED_OTP') msg = 'رمز MFA غير صحيح أو منتهي الصلاحية';
+        renderMfaChallenge(user, options, 'تعذر إكمال التحقق الثنائي: ' + msg);
+      }
+    }); }
+    var otpEl = document.getElementById('petMfaOtp');
+    if(otpEl) setTimeout(function(){ try{ otpEl.focus(); }catch(_){ } }, 40);
+  }
+
   function renderLogin(message){
     ensureStyles();
     setLoggedInClass(false);
@@ -609,6 +671,18 @@
     if(!verifyPassword(user, password)){ renderLogin('اسم المستخدم أو كلمة المرور غير صحيحة'); return false; }
     if((user.mustChangePassword || user.bootstrapCredential || (isBootstrapAdmin(user) && String(password) === DEFAULT_ADMIN_PASSWORD))){
       renderPasswordChange(user, 'يجب تغيير كلمة المرور الافتراضية قبل فتح النظام');
+      return false;
+    }
+    options = options || {};
+    if(isMfaRequired(user)){
+      var email = userLoginEmail(user);
+      if(!email){ renderLogin('هذا المستخدم يتطلب MFA ولا يوجد بريد إلكتروني مسجل له'); return false; }
+      try{
+        await callSecurityEmail({action:'mfa_send_otp', username:user.username || username, email:email, purpose:'mfa_email_otp'});
+        renderMfaChallenge(user, options, '', {success:'تم إرسال رمز MFA إلى البريد الإلكتروني المسجل'});
+      }catch(err){
+        renderLogin('تعذر إرسال رمز MFA: ' + String(err && err.message || err));
+      }
       return false;
     }
     return openSession(user, 'auth-login', options || {});
