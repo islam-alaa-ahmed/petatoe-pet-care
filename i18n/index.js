@@ -121,9 +121,24 @@
     if(switcher) switcher.classList.toggle('open',!!open);
     if(btn) btn.setAttribute('aria-expanded',open?'true':'false');
   }
+  var applying=false;
+  var reapplyTimer=null;
+  function reapplyLanguage(lang){
+    lang=normalizeLang(lang||currentLang());
+    applyDataAttributes(lang);
+    applyKnownStaticTexts(lang);
+  }
+  function scheduleReapply(lang){
+    lang=normalizeLang(lang||currentLang());
+    if(reapplyTimer) clearTimeout(reapplyTimer);
+    reapplyTimer=setTimeout(function(){reapplyLanguage(lang);},30);
+    setTimeout(function(){reapplyLanguage(lang);},120);
+    setTimeout(function(){reapplyLanguage(lang);},350);
+  }
   function applyLanguage(lang){
     lang=normalizeLang(lang);
     safeStorageSet(lang);
+    applying=true;
     document.documentElement.setAttribute('lang',lang);
     document.documentElement.setAttribute('dir','rtl');
     if(document.body) document.body.setAttribute('data-petatoe-lang',lang);
@@ -133,10 +148,11 @@
       opt.setAttribute('aria-selected',active?'true':'false');
     });
     setMenuState(false);
-    applyDataAttributes(lang);
-    applyKnownStaticTexts(lang);
-    window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
     try{ if(typeof window.renderDashboardAll==='function') window.renderDashboardAll(); }catch(_){}
+    reapplyLanguage(lang);
+    applying=false;
+    scheduleReapply(lang);
+    window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
   }
   function init(){
     var btn=document.getElementById('petLanguageToggle');
@@ -155,6 +171,21 @@
       document.addEventListener('click',function(ev){var sw=document.getElementById('petLanguageSwitcher');if(sw&&!sw.contains(ev.target)) setMenuState(false);});
       document.addEventListener('keydown',function(ev){if(ev.key==='Escape') setMenuState(false);});
     }
+    if(!document.documentElement.dataset.petI18nMutationBound){
+      document.documentElement.dataset.petI18nMutationBound='1';
+      try{
+        var observer=new MutationObserver(function(mutations){
+          if(applying) return;
+          for(var i=0;i<mutations.length;i++){
+            var t=mutations[i].target;
+            if(t&&t.closest&&t.closest('#petLanguageSwitcher')) continue;
+            scheduleReapply(currentLang());
+            break;
+          }
+        });
+        observer.observe(document.body||document.documentElement,{childList:true,subtree:true,characterData:true});
+      }catch(_){}
+    }
     applyLanguage(currentLang());
   }
   window.PETATOE_I18N={
@@ -162,6 +193,7 @@
     setLanguage:applyLanguage,
     translate:translate,
     dictionaries:dictionaries,
+    reapply:function(){scheduleReapply(currentLang());},
     apply:applyLanguage
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
