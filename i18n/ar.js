@@ -31,6 +31,15 @@
       status:{declineRisk:'خطر هبوط',reassuring:'مطمئن',growthCandidate:'مرشحة للنمو',neutral:'محايد',customerAtRisk:'عميل معرض',notSpecified:'غير محدد',targetAchieved:'تم تحقيق الهدف',targetNotAchieved:'لم يكتمل الهدف'},
       risk:{low:'منخفض',medium:'متوسط',high:'مرتفع',critical:'حرج'},
       recovery:{low:'منخفضة',medium:'متوسطة',high:'مرتفعة'},
+
+      calendar:{
+        days:{sunday:'الأحد',monday:'الاثنين',tuesday:'الثلاثاء',wednesday:'الأربعاء',thursday:'الخميس',friday:'الجمعة',saturday:'السبت'},
+        months:{January:'يناير',February:'فبراير',March:'مارس',April:'أبريل',May:'مايو',June:'يونيو',July:'يوليو',August:'أغسطس',September:'سبتمبر',October:'أكتوبر',November:'نوفمبر',December:'ديسمبر'}
+      },
+      heatmap:{withinEachMonth:'داخل كل شهر',lighterLower:'أفتح = الأقل مبيعات',darkerHigher:'أغمق = الأكثر مبيعات',noInvoices:'لا توجد فواتير',noInvoicesAfter:'لا توجد فواتير بعد'},
+      compare:{baseYear:'سنة الأساس',targetYear:'سنة المقارنة',vehicle:'السيارة',comparisonType:'نوع المقارنة',display:'عرض',current:'الحالي',previous:'السابق',difference:'الفرق'},
+      metrics:{gross:'شامل الضريبة',net:'قبل الضريبة',vat:'الضريبة',sales:'المبيعات'},
+      customers:{oneTime:'عملاء مرة واحدة',returning:'العملاء المتكررون',classification:'تصنيف العملاء',newCustomers:'عملاء جدد',customerCount:'عدد العملاء',becameInactive:'عملاء أصبحوا غير نشطين'},
       ai:{
         noForecastData:'لا توجد بيانات كافية لبناء توقع موثوق.',
         modelTrendName:'الاتجاه العام',modelTrendDescription:'يراقب اتجاه الصعود أو الهبوط خلال الشهور الفعلية.',

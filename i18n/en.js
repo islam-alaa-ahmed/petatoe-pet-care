@@ -31,6 +31,15 @@
       status:{declineRisk:'Decline Risk',reassuring:'Stable',growthCandidate:'Growth Candidate',neutral:'Neutral',customerAtRisk:'Customer at Risk',notSpecified:'Not Specified',targetAchieved:'Target Achieved',targetNotAchieved:'Target Not Achieved'},
       risk:{low:'Low',medium:'Medium',high:'High',critical:'Critical'},
       recovery:{low:'Low',medium:'Medium',high:'High'},
+
+      calendar:{
+        days:{sunday:'Sunday',monday:'Monday',tuesday:'Tuesday',wednesday:'Wednesday',thursday:'Thursday',friday:'Friday',saturday:'Saturday'},
+        months:{January:'January',February:'February',March:'March',April:'April',May:'May',June:'June',July:'July',August:'August',September:'September',October:'October',November:'November',December:'December'}
+      },
+      heatmap:{withinEachMonth:'Within each month',lighterLower:'Lighter = Lower Sales',darkerHigher:'Darker = Higher Sales',noInvoices:'No Invoices',noInvoicesAfter:'No invoices after'},
+      compare:{baseYear:'Base Year',targetYear:'Comparison Year',vehicle:'Vehicle',comparisonType:'Comparison Type',display:'Display',current:'Current',previous:'Previous',difference:'Difference'},
+      metrics:{gross:'Including VAT',net:'Before VAT',vat:'VAT',sales:'Sales'},
+      customers:{oneTime:'One-Time Customers',returning:'Returning Customers',classification:'Customer Classification',newCustomers:'New Customers',customerCount:'Customer Count',becameInactive:'Customers Who Became Inactive'},
       ai:{
         noForecastData:'There is not enough data to build a reliable forecast.',
         modelTrendName:'Trend',modelTrendDescription:'Tracks upward or downward movement across actual months.',

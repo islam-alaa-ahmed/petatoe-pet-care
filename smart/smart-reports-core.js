@@ -336,7 +336,7 @@ function renderSmartReports(){
     salesAlerts.push({type:'good',text:`الخدمة الأعلى قيمة هي ${topService[0]} بإجمالي ${money(topService[1])}.`,detail:topServiceDetail});
   }
 
-  const dayNames=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const dayNames=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'].map(k=>smartReportT('calendar.days.'+k,k));
   const heatmapActiveYear=String(window.smartHeatmapYear||smartHeatmapDefaultYear());
   const heatmapActiveVan=String(window.smartHeatmapVan||'').trim();
   let heatData=smartApplyGlobalFilters(smartDataCutoff(smartData(),heatmapActiveYear));
@@ -346,25 +346,25 @@ function renderSmartReports(){
   const heatCutoffDate=String(heatmapActiveYear)==='all'?null:maxInvoiceDateForYear(records,heatmapActiveYear);
   const heatCutoffMonth=heatCutoffDate?heatCutoffDate.getMonth():11;
   const isFutureHeatMonth=(mi)=>String(heatmapActiveYear)!=='all' && heatCutoffDate && mi>heatCutoffMonth;
-  const heatMonthLabel=(m,mi)=> heatmapActiveYear==='all' ? `${MAR[m]}<small>كل السنوات</small>` : `${MAR[m]}<small>${heatmapActiveYear}${isFutureHeatMonth(mi)?' - لا توجد فواتير':''}</small>`;
+  const heatMonthLabel=(m,mi)=> heatmapActiveYear==='all' ? `${smartReportHtml('calendar.months.'+m,MAR[m])}<small>${smartReportHtml('filters.allYears','كل السنوات')}</small>` : `${smartReportHtml('calendar.months.'+m,MAR[m])}<small>${heatmapActiveYear}${isFutureHeatMonth(mi)?' - '+smartReportHtml('heatmap.noInvoices','لا توجد فواتير'):''}</small>`;
 
   // PETATOE v5.1.21: Monthly heatmap palette.
   // Each month has a stable hue. Within the same month, the lowest day is lighter
   // and the highest day is darker using that same hue, so the heatmap remains readable
   // without mixing unrelated colors inside one month.
   const heatMonthPalettes=[
-    {name:'يناير',   light:'#9ed8ff', dark:'#2458d6'},
-    {name:'فبراير', light:'#92c9ff', dark:'#1d74c9'},
-    {name:'مارس',   light:'#78e5df', dark:'#0b9ea6'},
-    {name:'أبريل',  light:'#83e0b1', dark:'#15985a'},
-    {name:'مايو',   light:'#c2e674', dark:'#73a728'},
-    {name:'يونيو',  light:'#ffe174', dark:'#d6a514'},
-    {name:'يوليو',  light:'#ffc06c', dark:'#e56f18'},
-    {name:'أغسطس', light:'#ff9b65', dark:'#d9492c'},
-    {name:'سبتمبر',light:'#ff91ad', dark:'#c43763'},
-    {name:'أكتوبر', light:'#d596f1', dark:'#873ab6'},
-    {name:'نوفمبر', light:'#b798ff', dark:'#5d3fb7'},
-    {name:'ديسمبر',light:'#89aaf7', dark:'#2754b8'}
+    {name:smartReportT('calendar.months.January','يناير'),   light:'#9ed8ff', dark:'#2458d6'},
+    {name:smartReportT('calendar.months.February','فبراير'), light:'#92c9ff', dark:'#1d74c9'},
+    {name:smartReportT('calendar.months.March','مارس'),   light:'#78e5df', dark:'#0b9ea6'},
+    {name:smartReportT('calendar.months.April','أبريل'),  light:'#83e0b1', dark:'#15985a'},
+    {name:smartReportT('calendar.months.May','مايو'),   light:'#c2e674', dark:'#73a728'},
+    {name:smartReportT('calendar.months.June','يونيو'),  light:'#ffe174', dark:'#d6a514'},
+    {name:smartReportT('calendar.months.July','يوليو'),  light:'#ffc06c', dark:'#e56f18'},
+    {name:smartReportT('calendar.months.August','أغسطس'), light:'#ff9b65', dark:'#d9492c'},
+    {name:smartReportT('calendar.months.September','سبتمبر'),light:'#ff91ad', dark:'#c43763'},
+    {name:smartReportT('calendar.months.October','أكتوبر'), light:'#d596f1', dark:'#873ab6'},
+    {name:smartReportT('calendar.months.November','نوفمبر'), light:'#b798ff', dark:'#5d3fb7'},
+    {name:smartReportT('calendar.months.December','ديسمبر'),light:'#89aaf7', dark:'#2754b8'}
   ];
   const hexToRgb=(hex)=>{const h=String(hex||'#000000').replace('#','');const n=parseInt(h.length===3?h.split('').map(c=>c+c).join(''):h,16);return [(n>>16)&255,(n>>8)&255,n&255];};
   const rgbToCss=(rgb,a=1)=>`rgba(${Math.round(rgb[0])},${Math.round(rgb[1])},${Math.round(rgb[2])},${a})`;
@@ -383,8 +383,8 @@ function renderSmartReports(){
     const textDark=t<.18 ? '#0f172a' : '#ffffff';
     return `--hm-bg:${rgbToCss(fill,.82)};--hm-bg2:${rgbToCss(fill,.58)};--hm-border:${rgbToCss(border,.92)};--hm-glow:${rgbToCss(glow,.28)};--hm-text:${textDark};`;
   };
-  const heatLegendHtml=`<div class="heat-month-gradient-legend"><span>داخل كل شهر</span><b>أفتح = الأقل مبيعات</b><div class="heat-month-gradient-strip">${heatMonthPalettes.map((p,i)=>`<i style="--l:${p.light};--d:${p.dark}" title="${p.name}"></i>`).join('')}</div><b>أغمق = الأكثر مبيعات</b></div>`;
-  const heatHtml=`<div class="heatmap-control-row">${heatmapVehicleFilter()}${heatmapYearButtons(heatmapActiveYear)}</div><div class="smart-heatmap-scroll"><div class="heatmap-wrap heatmap-wrap-monthly"><div></div>${MONTHS.map((m,mi)=>`<div class="heatmap-head heatmap-month-${mi}" style="--month-light:${heatMonthPalettes[mi].light};--month-dark:${heatMonthPalettes[mi].dark}">${heatMonthButtonHtml(heatmapActiveYear,m,mi,isFutureHeatMonth(mi))}</div>`).join('')}${dayNames.map((dn,di)=>`<div class="heatmap-day">${dn}</div>${MONTHS.map((m,mi)=>{let disabled=isFutureHeatMonth(mi);let val=disabled?0:(heat[di+'-'+mi]||0);let title=disabled?`${dn} - ${MAR[m]} ${heatmapActiveYear}: لا توجد فواتير بعد ${fmtDateAr(heatCutoffDate)}`:(heatmapActiveYear==='all'?`${dn} - ${MAR[m]} - كل السنوات: ${money(val)}`:`${dn} - ${MAR[m]} ${heatmapActiveYear}: ${money(val)}`);return `<div class="heat-cell heat-month-cell${disabled?' heat-disabled':''}" style="${heatCellStyle(mi,val,disabled)}" title="${title}">${val?shortMoney(val):''}</div>`}).join('')}`).join('')}</div></div>${heatLegendHtml}`;
+  const heatLegendHtml=`<div class="heat-month-gradient-legend"><span>${smartReportHtml('heatmap.withinEachMonth','داخل كل شهر')}</span><b>${smartReportHtml('heatmap.lighterLower','أفتح = الأقل مبيعات')}</b><div class="heat-month-gradient-strip">${heatMonthPalettes.map((p,i)=>`<i style="--l:${p.light};--d:${p.dark}" title="${p.name}"></i>`).join('')}</div><b>${smartReportHtml('heatmap.darkerHigher','أغمق = الأكثر مبيعات')}</b></div>`;
+  const heatHtml=`<div class="heatmap-control-row">${heatmapVehicleFilter()}${heatmapYearButtons(heatmapActiveYear)}</div><div class="smart-heatmap-scroll"><div class="heatmap-wrap heatmap-wrap-monthly"><div></div>${MONTHS.map((m,mi)=>`<div class="heatmap-head heatmap-month-${mi}" style="--month-light:${heatMonthPalettes[mi].light};--month-dark:${heatMonthPalettes[mi].dark}">${heatMonthButtonHtml(heatmapActiveYear,m,mi,isFutureHeatMonth(mi))}</div>`).join('')}${dayNames.map((dn,di)=>`<div class="heatmap-day">${dn}</div>${MONTHS.map((m,mi)=>{let disabled=isFutureHeatMonth(mi);let val=disabled?0:(heat[di+'-'+mi]||0);let title=disabled?`${dn} - ${smartReportT('calendar.months.'+m,MAR[m])} ${heatmapActiveYear}: ${smartReportT('heatmap.noInvoicesAfter','لا توجد فواتير بعد')} ${fmtDateAr(heatCutoffDate)}`:(heatmapActiveYear==='all'?`${dn} - ${smartReportT('calendar.months.'+m,MAR[m])} - ${smartReportT('filters.allYears','كل السنوات')}: ${money(val)}`:`${dn} - ${smartReportT('calendar.months.'+m,MAR[m])} ${heatmapActiveYear}: ${money(val)}`);return `<div class="heat-cell heat-month-cell${disabled?' heat-disabled':''}" style="${heatCellStyle(mi,val,disabled)}" title="${title}">${val?shortMoney(val):''}</div>`}).join('')}`).join('')}</div></div>${heatLegendHtml}`;
 
 
   const customerValueTierHtml=(cls,badgeClass,stats)=>{
@@ -542,14 +542,14 @@ function renderSmartReports(){
     return `<label class="customer-yoy-native-filter"><span>${htmlSafe(label)}</span><select data-customer-compare-filter="${htmlSafe(field)}" data-smart-action="customer-compare-filter">${items.map(it=>`<option value="${htmlSafe(it.value)}" ${String(it.value)===cur?'selected':''}>${htmlSafe(it.text)}</option>`).join('')}</select></label>`;
   };
   const customerCompareFiltersHtml=[
-    customerCompareFilterDropdown('baseYear','سنة الأساس',customerCompareBaseYear,customerCompareYearItems),
-    customerCompareFilterDropdown('targetYear','سنة المقارنة',customerCompareTargetYear,customerCompareYearItems),
-    customerCompareFilterDropdown('car','السيارة',customerCompareCarFilter,customerCompareCarItems),
-    customerCompareFilterDropdown('periodMode','نوع المقارنة',customerComparePeriodMode,customerComparePeriodItems),
-    customerCompareFilterDropdown('top','عرض',customerCompareTopFilter,customerCompareTopItems)
+    customerCompareFilterDropdown('baseYear',smartReportT('compare.baseYear','سنة الأساس'),customerCompareBaseYear,customerCompareYearItems),
+    customerCompareFilterDropdown('targetYear',smartReportT('compare.targetYear','سنة المقارنة'),customerCompareTargetYear,customerCompareYearItems),
+    customerCompareFilterDropdown('car',smartReportT('compare.vehicle','السيارة'),customerCompareCarFilter,customerCompareCarItems),
+    customerCompareFilterDropdown('periodMode',smartReportT('compare.comparisonType','نوع المقارنة'),customerComparePeriodMode,customerComparePeriodItems),
+    customerCompareFilterDropdown('top',smartReportT('compare.display','عرض'),customerCompareTopFilter,customerCompareTopItems)
   ].join('');
-  const customerCompareModeButtons=['gross','net','tax'].map(m=>`<button class="metric-chip ${customerCompareTaxMode===m?'active':''}" data-smart-action="customer-compare-tax" data-tax="${m}">${m==='gross'?'شامل الضريبة':m==='net'?'قبل الضريبة':'الضريبة'}</button>`).join('');
-  const customerCompareMonthNames=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  const customerCompareModeButtons=['gross','net','tax'].map(m=>`<button class="metric-chip ${customerCompareTaxMode===m?'active':''}" data-smart-action="customer-compare-tax" data-tax="${m}">${m==='gross'?smartReportHtml('metrics.gross','شامل الضريبة'):m==='net'?smartReportHtml('metrics.net','قبل الضريبة'):smartReportHtml('metrics.vat','الضريبة')}</button>`).join('');
+  const customerCompareMonthNames=['January','February','March','April','May','June','July','August','September','October','November','December'].map(k=>smartReportT('calendar.months.'+k,k));
   const customerCompareMap={};
   customerCompareSource.forEach(r=>{
     const yy=getYear(r);
@@ -1305,7 +1305,7 @@ function renderSmartReports(){
   const salesIntelMonthlyGross=MONTHS.map(m=>salesIntelMonthlyScopedRows.filter(r=>normalizeMonth(r.month,r.date)===m).reduce((s,r)=>s+parseNum(r.totalInc),0));
   const salesIntelMonthlyNet=MONTHS.map(m=>salesIntelMonthlyScopedRows.filter(r=>normalizeMonth(r.month,r.date)===m).reduce((s,r)=>s+parseNum(r.totalEx),0));
   const salesIntelMonthlyTax=MONTHS.map(m=>salesIntelMonthlyScopedRows.filter(r=>normalizeMonth(r.month,r.date)===m).reduce((s,r)=>s+parseNum(r.tax),0));
-  const salesIntelMonthlyConfig={gross:{label:'شامل الضريبة',data:salesIntelMonthlyGross,color:css('--purple'),bg:'rgba(139,92,246,.16)'},net:{label:'قبل الضريبة',data:salesIntelMonthlyNet,color:css('--blue'),bg:'rgba(59,130,246,.14)'},tax:{label:'الضريبة',data:salesIntelMonthlyTax,color:css('--green'),bg:'rgba(34,197,94,.14)'}}[salesIntelMonthlyMode]||{label:'شامل الضريبة',data:salesIntelMonthlyGross,color:css('--purple'),bg:'rgba(139,92,246,.16)'};
+  const salesIntelMonthlyConfig={gross:{label:smartReportT('metrics.gross','شامل الضريبة'),data:salesIntelMonthlyGross,color:css('--purple'),bg:'rgba(139,92,246,.16)'},net:{label:smartReportT('metrics.net','قبل الضريبة'),data:salesIntelMonthlyNet,color:css('--blue'),bg:'rgba(59,130,246,.14)'},tax:{label:smartReportT('metrics.vat','الضريبة'),data:salesIntelMonthlyTax,color:css('--green'),bg:'rgba(34,197,94,.14)'}}[salesIntelMonthlyMode]||{label:smartReportT('metrics.gross','شامل الضريبة'),data:salesIntelMonthlyGross,color:css('--purple'),bg:'rgba(139,92,246,.16)'};
   chart('salesIntelMonthly',{type:'line',data:{labels:MONTHS.map(m=>MAR[m]),datasets:[{label:salesIntelMonthlyConfig.label,data:salesIntelMonthlyConfig.data,borderColor:salesIntelMonthlyConfig.color,backgroundColor:salesIntelMonthlyConfig.bg,tension:.35,pointRadius:5,pointHoverRadius:7,fill:false}]},options:{...baseOpts(),layout:{padding:{top:30,right:28,left:18,bottom:26}},plugins:{...baseOpts().plugins,legend:{display:false},petatoeLabels:{enabled:true,money:true,font:'900 11px Cairo'}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'900'},autoSkip:false,maxRotation:0,minRotation:0,padding:10},grid:{color:'rgba(148,163,184,.13)'}},y:{ticks:{color:css('--muted')},grid:{color:'rgba(148,163,184,.13)'}}}}});
   chart('salesIntelMonthCompare',{
     type:'bar',
@@ -1341,7 +1341,7 @@ function renderSmartReports(){
             // PETATOE v5.1.38: removed navy label background/shadow blocks behind current/previous labels.
             ctx.fillStyle=css('--comparison-current')||css('--cyan')||'#22d3ee';
             ctx.font='900 10px Cairo';
-            ctx.fillText('الحالي',c.x,yBase);
+            ctx.fillText(smartReportT('compare.current','الحالي'),c.x,yBase);
             ctx.font='800 9px Cairo';
             ctx.fillText(row.currentSubLabel,c.x,yBase+16);
           }
@@ -1349,7 +1349,7 @@ function renderSmartReports(){
             // PETATOE v5.1.38: keep label text only with no dark rounded background.
             ctx.fillStyle=css('--comparison-previous')||css('--gold-bright')||'#facc15';
             ctx.font='900 10px Cairo';
-            ctx.fillText('السابق',p.x,yBase);
+            ctx.fillText(smartReportT('compare.previous','السابق'),p.x,yBase);
             ctx.font='800 9px Cairo';
             ctx.fillText(row.previousSubLabel,p.x,yBase+16);
           }
@@ -1358,9 +1358,9 @@ function renderSmartReports(){
       }
     }],
     data:{labels:salesComparisonRows.map(r=>r.label),datasets:[
-      {label:'الحالي',data:salesComparisonRows.map(r=>r.current),backgroundColor:css('--comparison-current')||css('--cyan'),borderRadius:10},
-      {label:'السابق',data:salesComparisonRows.map(r=>r.previous),backgroundColor:css('--comparison-previous')||css('--gold-bright'),borderRadius:10},
-      {label:'الفرق',data:salesComparisonRows.map(r=>r.diff),backgroundColor:function(ctx){return (ctx.raw||0)<0?(css('--comparison-diff-negative')||'#FF5A7A'):(css('--comparison-diff-positive')||'#A855F7')},borderRadius:10}
+      {label:smartReportT('compare.current','الحالي'),data:salesComparisonRows.map(r=>r.current),backgroundColor:css('--comparison-current')||css('--cyan'),borderRadius:10},
+      {label:smartReportT('compare.previous','السابق'),data:salesComparisonRows.map(r=>r.previous),backgroundColor:css('--comparison-previous')||css('--gold-bright'),borderRadius:10},
+      {label:smartReportT('compare.difference','الفرق'),data:salesComparisonRows.map(r=>r.diff),backgroundColor:function(ctx){return (ctx.raw||0)<0?(css('--comparison-diff-negative')||'#FF5A7A'):(css('--comparison-diff-positive')||'#A855F7')},borderRadius:10}
     ]},
     options:{
       ...baseOpts(),
@@ -1386,17 +1386,17 @@ function renderSmartReports(){
   chart('salesIntelYoY',{type:'bar',data:{labels:MONTHS.map(m=>MAR[m]),datasets:[{label:String(salesPrevYear),data:salesYoYMonths.map(x=>x.prev),backgroundColor:'#94a3b8',borderRadius:8},{label:String(salesCurrentYear),data:salesYoYMonths.map(x=>x.cur),backgroundColor:css('--purple'),borderRadius:8}]},options:{...baseOpts(),layout:{padding:{top:28}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:true,font:'800 10px Cairo'}}}});
   syncSalesYoYControls();
   // PETATOE v5.1.41: Smart Reports > Overview payment method report removed; no chart draw needed.
-  chart('salesIntelNewReturning',{type:'doughnut',data:{labels:['عملاء مرة واحدة','عملاء متكررون'],datasets:[{label:'تصنيف العملاء',data:[salesNewReturning.new,salesNewReturning.returning],backgroundColor:[css('--blue'),css('--gold')||'#FFD54A'],borderWidth:0}]},options:{...baseOpts('bottom'),cutout:'58%',plugins:{...baseOpts('bottom').plugins,tooltip:{enabled:false},legend:{position:'bottom',labels:{color:'#fff',font:{family:'Cairo',weight:'900'},generateLabels:function(chart){return [{text:'عملاء مرة واحدة',fillStyle:css('--blue')||'#18E7F9',strokeStyle:css('--blue')||'#18E7F9',fontColor:'#fff',hidden:false,index:0},{text:'عملاء متكررون',fillStyle:css('--gold')||'#FFD54A',strokeStyle:css('--gold')||'#FFD54A',fontColor:'#fff',hidden:false,index:1}];}}},petatoeLabels:{enabled:true,money:false,color:'#fff',font:'900 11px Cairo'}}}});
+  chart('salesIntelNewReturning',{type:'doughnut',data:{labels:[smartReportT('customers.oneTime','عملاء مرة واحدة'),smartReportT('customers.returning','عملاء متكررون')],datasets:[{label:smartReportT('customers.classification','تصنيف العملاء'),data:[salesNewReturning.new,salesNewReturning.returning],backgroundColor:[css('--blue'),css('--gold')||'#FFD54A'],borderWidth:0}]},options:{...baseOpts('bottom'),cutout:'58%',plugins:{...baseOpts('bottom').plugins,tooltip:{enabled:false},legend:{position:'bottom',labels:{color:'#fff',font:{family:'Cairo',weight:'900'},generateLabels:function(chart){return [{text:smartReportT('customers.oneTime','عملاء مرة واحدة'),fillStyle:css('--blue')||'#18E7F9',strokeStyle:css('--blue')||'#18E7F9',fontColor:'#fff',hidden:false,index:0},{text:smartReportT('customers.returning','عملاء متكررون'),fillStyle:css('--gold')||'#FFD54A',strokeStyle:css('--gold')||'#FFD54A',fontColor:'#fff',hidden:false,index:1}];}}},petatoeLabels:{enabled:true,money:false,color:'#fff',font:'900 11px Cairo'}}}});
   
-  document.getElementById('newReturningSummary')&&smartSafeHTML(document.getElementById('newReturningSummary'),`<button type="button" class="liquid-mini-card cyan petatoe-clickable-card smart-new-returning-card" data-client-kind="returning" data-smart-action="new-returning-list" data-kind="returning"><b>العملاء المتكررون</b><span>${salesNewReturning.returning}</span></button><button type="button" class="liquid-mini-card gold petatoe-clickable-card smart-new-returning-card" data-client-kind="oneTime" data-smart-action="new-returning-list" data-kind="oneTime"><b>عملاء مرة واحدة</b><span>${salesNewReturning.new}</span></button>`,'smart new returning summary');
+  document.getElementById('newReturningSummary')&&smartSafeHTML(document.getElementById('newReturningSummary'),`<button type="button" class="liquid-mini-card cyan petatoe-clickable-card smart-new-returning-card" data-client-kind="returning" data-smart-action="new-returning-list" data-kind="returning"><b>${smartReportHtml('customers.returning','العملاء المتكررون')}</b><span>${salesNewReturning.returning}</span></button><button type="button" class="liquid-mini-card gold petatoe-clickable-card smart-new-returning-card" data-client-kind="oneTime" data-smart-action="new-returning-list" data-kind="oneTime"><b>${smartReportHtml('customers.oneTime','عملاء مرة واحدة')}</b><span>${salesNewReturning.new}</span></button>`,'smart new returning summary');
   // PETATOE v6.4.148: Smart Customers charts are rendered lazily only when the Customers tab opens.
   // This follows the Advanced Center pattern and avoids drawing customer charts during Smart Reports startup.
   if(preservedSmartTab==='customers'){
-    chart('newCustomersWeeklyChart',{type:'bar',data:{labels:newCustWeekRows.map(x=>x.label),datasets:[{label:'عملاء جدد',data:newCustWeekRows.map(x=>x.count),backgroundColor:css('--purple'),borderRadius:10}]},options:{...baseOpts(),layout:{padding:{top:24}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}}}});
-    chart('newCustomersTopValueChart',{type:'bar',data:{labels:newCustomerRows.slice(0,10).map(x=>x.name),datasets:[{label:'المبيعات',data:newCustomerRows.slice(0,10).map(x=>x.totalValue),backgroundColor:css('--blue'),borderRadius:10}]},options:{...baseOpts(),indexAxis:'y',layout:{padding:{left:12,right:12}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,fullMoney:true,font:'900 10px Cairo'}}}});
-    chart('newCustomersTrendChart',{type:'line',data:{labels:newCustTrendRows.map(x=>x.label),datasets:[{label:'عملاء جدد',data:newCustTrendRows.map(x=>x.count),borderColor:css('--green'),backgroundColor:'rgba(34,197,94,.16)',tension:.35,pointRadius:4,fill:true}]},options:{...baseOpts(),layout:{padding:{top:24}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}}}});
-    chart('inactiveAgingChart',{type:'bar',data:{labels:inactiveBuckets.map(x=>x.label),datasets:[{label:'عدد العملاء',data:inactiveBuckets.map(x=>x.count),backgroundColor:css('--orange'),borderRadius:10}]},options:{...baseOpts(),layout:{padding:{top:26}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}}}});
-    chart('inactiveLostTrendChart',{type:'line',data:{labels:inactiveTrendRows.map(x=>x.label),datasets:[{label:'عملاء أصبحوا غير نشطين',data:inactiveTrendRows.map(x=>x.count),borderColor:css('--red'),backgroundColor:'rgba(239,68,68,.16)',tension:.35,pointRadius:4,fill:true,clip:false}]},options:{...baseOpts(),layout:{padding:{top:28,right:54,left:54,bottom:34}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo',offset:12}},scales:{x:{offset:true,ticks:{color:css('--text'),font:{family:'Cairo',weight:'900'},autoSkip:false,maxRotation:0,minRotation:0,padding:14},grid:{color:'rgba(148,163,184,.12)'}},y:{ticks:{color:css('--muted'),font:{family:'Cairo',weight:'800'}},grid:{color:'rgba(148,163,184,.13)'}}}}});
+    chart('newCustomersWeeklyChart',{type:'bar',data:{labels:newCustWeekRows.map(x=>x.label),datasets:[{label:smartReportT('customers.newCustomers','عملاء جدد'),data:newCustWeekRows.map(x=>x.count),backgroundColor:css('--purple'),borderRadius:10}]},options:{...baseOpts(),layout:{padding:{top:24}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}}}});
+    chart('newCustomersTopValueChart',{type:'bar',data:{labels:newCustomerRows.slice(0,10).map(x=>x.name),datasets:[{label:smartReportT('metrics.sales','المبيعات'),data:newCustomerRows.slice(0,10).map(x=>x.totalValue),backgroundColor:css('--blue'),borderRadius:10}]},options:{...baseOpts(),indexAxis:'y',layout:{padding:{left:12,right:12}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,fullMoney:true,font:'900 10px Cairo'}}}});
+    chart('newCustomersTrendChart',{type:'line',data:{labels:newCustTrendRows.map(x=>x.label),datasets:[{label:smartReportT('customers.newCustomers','عملاء جدد'),data:newCustTrendRows.map(x=>x.count),borderColor:css('--green'),backgroundColor:'rgba(34,197,94,.16)',tension:.35,pointRadius:4,fill:true}]},options:{...baseOpts(),layout:{padding:{top:24}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}}}});
+    chart('inactiveAgingChart',{type:'bar',data:{labels:inactiveBuckets.map(x=>x.label),datasets:[{label:smartReportT('customers.customerCount','عدد العملاء'),data:inactiveBuckets.map(x=>x.count),backgroundColor:css('--orange'),borderRadius:10}]},options:{...baseOpts(),layout:{padding:{top:26}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}}}});
+    chart('inactiveLostTrendChart',{type:'line',data:{labels:inactiveTrendRows.map(x=>x.label),datasets:[{label:smartReportT('customers.becameInactive','عملاء أصبحوا غير نشطين'),data:inactiveTrendRows.map(x=>x.count),borderColor:css('--red'),backgroundColor:'rgba(239,68,68,.16)',tension:.35,pointRadius:4,fill:true,clip:false}]},options:{...baseOpts(),layout:{padding:{top:28,right:54,left:54,bottom:34}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo',offset:12}},scales:{x:{offset:true,ticks:{color:css('--text'),font:{family:'Cairo',weight:'900'},autoSkip:false,maxRotation:0,minRotation:0,padding:14},grid:{color:'rgba(148,163,184,.12)'}},y:{ticks:{color:css('--muted'),font:{family:'Cairo',weight:'800'}},grid:{color:'rgba(148,163,184,.13)'}}}}});
     window.__petatoeSmartCustomersRendered=true;
   }
 
