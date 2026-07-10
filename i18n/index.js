@@ -337,7 +337,17 @@
     window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
   }
   function bindLanguageOptions(){
-    bindLanguageOptions();
+    document.querySelectorAll('.pet-language-option[data-pet-lang]').forEach(function(opt){
+      if(opt.dataset.petI18nOptionBound==='1') return;
+      opt.dataset.petI18nOptionBound='1';
+      opt.addEventListener('click',function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        var lang=normalizeLang(opt.getAttribute('data-pet-lang'));
+        if(lang===currentLang()){ setMenuState(false); return; }
+        applyLanguage(lang,{renderDashboard:false});
+      });
+    });
   }
   function init(){
     var btn=document.getElementById('petLanguageToggle');
