@@ -10,51 +10,6 @@
     topbar:{reports:'📑 Reports',pdf:'📊 PDF Report',searchTitle:'Search',searchOpen:'Open search',launcherTitle:'Open main menu',notifications:'Notifications',loading:'Loading'},
     globalSearch:{placeholder:'🔍 Search customer, service, vehicle, or invoice...', shortcut:'ESC to close | Enter to open | Ctrl+K or / to search'},
     dashboard:{title:'Dashboard',subtitle:'PETATOE sales dashboard in Saudi Riyal',monthlySales:'📊 Monthly Sales',topServices:'📦 Top Selling Services',topClients:'🏆 Top Spending Customers',paymentSales:'💳 Sales by Payment Method',vansComparison:'🚐 Vehicle Comparison',quickInsights:'⚡ Quick Insights',totalSales:'Total Sales',salesBeforeVat:'Sales Before VAT',vat:'VAT',operationsCount:'Operations Count',customersCount:'Customers Count',averageInvoice:'Average Invoice',allYearsMetric:'• Total metric for all years',noChange:'• No change',newMetric:'▲ New 100%',increase:'increase',decrease:'decrease',comparedSamePeriod:'compared with the same period',period:'Period',invoiceCount:'Invoice Count',bestMonth:'Best Month',averageBeforeVat:'Average Before VAT',totalVat:'Total VAT',includingVat:'Including VAT',beforeVat:'Before VAT',operatingDays:'Operating Days',dailyAverageOperations:'Daily Average Operations',totalCustomers:'Total Customers',averageOperationsPerCustomer:'Average Operations per Customer',topPaymentMethod:'Top Payment Method',bestService:'Best Service',bestPerforming:'Best Performing',mostRequestedService:'Most Requested Service',total:'Total',vehicle:'Vehicle',best:'🏆 Best',noData:'No data available',operationUnit:'operation',averageLabel:'Average',totalSalesDesc:'Shows total sales value for the selected period or year on the main dashboard.',salesBeforeVatDesc:'Total sales value before VAT as recorded in the imported Excel file or manual data entry.',vatDesc:'Total VAT value from the original data column without report-side recalculation.',operationsCountDesc:'Total number of sales rows or operations after applying the main dashboard filters.',customersCountDesc:'Unique customers within the selected period after applying filters.',averageInvoiceDesc:'Average invoice value equals total sales divided by unique invoice count.'},
-    smartReportsSource:{
-      empty:{
-        noData:'Not enough data to display Smart Reports. Upload an Excel file or select another year.',
-        noCriticalServices:'No critical services',
-        noClearServiceDecline:'No clear decline was detected in current services',
-        noExceptionalGrowth:'No exceptional growth detected',
-        balancedActivity:'Activity is distributed evenly',
-        noCustomerRisks:'No clear customer risks',
-        noDormantMajorCustomers:'No major customers have been inactive for an extended period',
-        noCustomerData:'No customer data to display.',
-        noYearComparisonData:'Not enough data to compare the selected years.',
-        noGrowthData:'No growth data for the selected period.',
-        noDeclineData:'No decline data for the selected period.',
-        noMonthlyComparisonData:'No monthly comparison data.',
-        noContractCandidateData:'Not enough customer data in the selected period to identify contract candidates.'
-      },
-      filters:{allYears:'All Years',year:'Year'},
-      labels:{estimatedError:'Estimated Error',estimatedDecline:'Estimated Decline',estimatedGrowth:'Estimated Growth',daysAbsent:'days inactive'},
-      status:{declineRisk:'Decline Risk',reassuring:'Stable',growthCandidate:'Growth Candidate',neutral:'Neutral',customerAtRisk:'Customer at Risk',notSpecified:'Not Specified',targetAchieved:'Target Achieved',targetNotAchieved:'Target Not Achieved'},
-      risk:{low:'Low',medium:'Medium',high:'High',critical:'Critical'},
-      recovery:{low:'Low',medium:'Medium',high:'High'},
-
-      calendar:{
-        days:{sunday:'Sunday',monday:'Monday',tuesday:'Tuesday',wednesday:'Wednesday',thursday:'Thursday',friday:'Friday',saturday:'Saturday'},
-        months:{January:'January',February:'February',March:'March',April:'April',May:'May',June:'June',July:'July',August:'August',September:'September',October:'October',November:'November',December:'December'}
-      },
-      heatmap:{withinEachMonth:'Within each month',lighterLower:'Lighter = Lower Sales',darkerHigher:'Darker = Higher Sales',noInvoices:'No Invoices',noInvoicesAfter:'No invoices after'},
-      compare:{baseYear:'Base Year',targetYear:'Comparison Year',vehicle:'Vehicle',comparisonType:'Comparison Type',display:'Display',current:'Current',previous:'Previous',difference:'Difference'},
-      metrics:{gross:'Including VAT',net:'Before VAT',vat:'VAT',sales:'Sales'},
-      customers:{oneTime:'One-Time Customers',returning:'Returning Customers',classification:'Customer Classification',newCustomers:'New Customers',customerCount:'Customer Count',becameInactive:'Customers Who Became Inactive'},
-      ai:{
-        noForecastData:'There is not enough data to build a reliable forecast.',
-        modelTrendName:'Trend',modelTrendDescription:'Tracks upward or downward movement across actual months.',
-        modelMovingAverage3Name:'Moving Average 3',modelMovingAverage3Description:'Uses the latest three actual months to reduce noise.',
-        modelMovingAverage6Name:'Moving Average 6',modelMovingAverage6Description:'Uses a longer and steadier average when data fluctuates.',
-        selectedModelReason:'The {model} model was selected because it produced the lowest backtest error on the current data.',
-        trendUp:'The latest trend is rising compared with the previous period.',trendDown:'The latest trend is declining compared with the previous period, so the caution level was increased.',trendStable:'The current data is relatively stable.',
-        heroTitle:'🤖 AI Forecasting in Smart Reports',heroDescription:'Advanced forecasting using multiple statistical models, automatic best-model selection, and clear analysis of upcoming risks and opportunities.',
-        nextMonthForecast:'Next Month Forecast',basedOnModel:'Based on {model}',nextQuarterForecast:'Next Quarter Forecast',firstThreeFutureMonths:'First 3 future months',yearEndForecast:'Year-End Forecast',actualPlusForecast:'Actual + Forecast',confidenceScore:'Confidence Score',backtestConfidence:'Backtest Confidence',riskIndex:'Risk Index',riskFollowUp:'Higher values require closer follow-up',
-        whatIfTitle:'🧮 What-If Analysis',whatIfDescription:'Adjust the scenarios to see their immediate effect on next month’s forecast.',salesChange:'Sales Change',customerChange:'Customer Count Change',averageInvoiceChange:'Average Invoice Change',adjustedNextMonth:'Adjusted Next Month Forecast',differenceFromBase:'Difference from Base Forecast',executiveIntelligence:'Executive Business Intelligence'
-      },
-      export:{printedAt:'Printed',footer:'PETATOE Analytics System v2.2 — Automated Report — All values are in Saudi Riyal (SAR)',printZoneError:'Unable to prepare the print area',copySuccess:'✅ Data copied to the clipboard',copyError:'❌ Copy failed — please try again',allYears:'All Years',dashboardTitle:'Dashboard',dashboardSubtitle:'Overall Sales Summary',year:'Year',totalSales:'Total Sales',invoiceCount:'Invoice Count',averageInvoice:'Average Invoice',customerCount:'Customer Count',vehicleCount:'Vehicle Count',vehiclePerformance:'Vehicle Performance',vehicle:'Vehicle',salesSar:'Sales (SAR)',operationCount:'Operation Count',contribution:'Contribution %',topCustomers:'Top 10 Customers',customer:'Customer',topServices:'Top 10 Services',service:'Service',monthlySummary:'Monthly Summary',month:'Month',vehicles:'Vehicles',customers:'Customers',services:'Services',excel:'Excel',lostCustomers:'Lost Customers',lastYearOnly:'Present Last Year, Absent This Year',allCustomersDetailed:'All Customers — Detailed Comparison'},
-      interactions:{linkedReport:'Linked Report',openedFromRecommendations:'Opened {report} from the recommendations screen.',backToRecommendations:'Back to Recommendations Report',searchStart:'Start typing to search customers, services, vehicles, and invoices...',searchMinChars:'Start typing — at least 2 characters',searchNoData:'No uploaded data yet',searchNoResults:'No results for "{query}"',customers:'Customers',services:'Services',vehicles:'Vehicles',invoices:'Invoices',transactions:'transactions',operations:'operations',invoiceNumber:'Invoice No. {number}',noItems:'There are currently no items in this section.'},
-      summary:{strongSpend:'Strong spending + regular activity',goodActivity:'Good activity + recurring supply opportunity',followUp:'Follow-up opportunity before contracting',recommendationCount:'Section recommendations:',basedOn:'Based on:',operation:'operation'}
-    },
     actions:{refresh:'🔄 Refresh',exportPagePdf:'🖨️ Export Page PDF',reset:'Reset 🔄'},
     filters:{allYears:'All Years',allMonths:'All Months',allVehicles:'All Vehicles',allPayments:'All Payment Methods'},
     payroll:{manage:'Payroll Management',manageSub:'Create payroll statements and approvals',slip:'Payroll Statement',slipSub:'Show the current user payroll statement only'},
@@ -1123,6 +1078,39 @@
           "h225f809b": "You have",
           "h26dfdeb1": "notification requiring attention",
           "hdb1e65ef": "No current notifications"
-    }
+    },
+    elc:{
+      'title': 'Localization Center',
+      'subtitle': 'View language coverage, approved translations, and missing entries — read only.',
+      'languages': 'Languages',
+      'readOnly': 'Read-only mode',
+      'translationExplorer': 'Translation Explorer',
+      'searchPlaceholder': 'Search by key or text...',
+      'allLanguages': 'All languages',
+      'allStatuses': 'All statuses',
+      'approved': 'Approved',
+      'missing': 'Missing',
+      'pending': 'Pending review',
+      'key': 'Key',
+      'module': 'Module',
+      'language': 'Language',
+      'translation': 'Translation',
+      'status': 'Status',
+      'totalKeys': 'Total Keys',
+      'systemDictionary': 'System dictionary',
+      'enabledLanguages': 'Enabled Languages',
+      'registered': 'registered',
+      'approvedValues': 'Approved Translations',
+      'readyForRuntime': 'Ready for runtime',
+      'pendingQueue': 'Pending Queue',
+      'needsReview': 'Needs review',
+      'enabled': 'Enabled',
+      'disabled': 'Disabled',
+      'noLanguages': 'No languages found',
+      'results': 'results',
+      'noResults': 'No matching results',
+      'supabaseUnavailable': 'Supabase client is unavailable',
+      'loadFailed': 'Unable to load Localization Center data'
+}
   };
 })();

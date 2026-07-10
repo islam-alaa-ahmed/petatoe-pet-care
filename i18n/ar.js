@@ -10,51 +10,6 @@
     topbar:{reports:'📑 التقارير',pdf:'📊 تقرير PDF',searchTitle:'بحث',searchOpen:'فتح البحث',launcherTitle:'فتح القائمة الرئيسية',notifications:'الإشعارات',loading:'جارٍ التحميل'},
     globalSearch:{placeholder:'🔍 ابحث عن عميل، خدمة، سيارة، فاتورة...', shortcut:'ESC للإغلاق | Enter للانتقال | Ctrl+K أو / للفتح'},
     dashboard:{title:'Dashboard',subtitle:'لوحة متابعة مبيعات PETATOE بالريال السعودي',monthlySales:'📊 المبيعات الشهرية',topServices:'📦 أعلى الخدمات مبيعاً',topClients:'🏆 أعلى العملاء إنفاقاً',paymentSales:'💳 المبيعات حسب طريقة الدفع',vansComparison:'🚐 مقارنة السيارات',quickInsights:'⚡ مؤشرات سريعة',totalSales:'إجمالي المبيعات',salesBeforeVat:'المبيعات قبل الضريبة',vat:'الضريبة',operationsCount:'عدد العمليات',customersCount:'عدد العملاء',averageInvoice:'متوسط الفاتورة',allYearsMetric:'• مؤشر إجمالي لكل السنوات',noChange:'• لا يوجد تغير',newMetric:'▲ جديد 100%',increase:'زيادة',decrease:'انخفاض',comparedSamePeriod:'مقارنة بنفس المدة',period:'الفترة',invoiceCount:'عدد الفواتير',bestMonth:'أفضل شهر',averageBeforeVat:'متوسط قبل الضريبة',totalVat:'إجمالي الضريبة',includingVat:'شامل الضريبة',beforeVat:'قبل الضريبة',operatingDays:'أيام التشغيل',dailyAverageOperations:'متوسط عمليات يومي',totalCustomers:'إجمالي العملاء',averageOperationsPerCustomer:'متوسط عمليات/عميل',topPaymentMethod:'أفضل طريقة دفع',bestService:'أفضل خدمة',bestPerforming:'الأفضل أداءً',mostRequestedService:'أكثر خدمة طلباً',total:'الإجمالي',vehicle:'سيارة',best:'🏆 الأفضل',noData:'لا توجد بيانات',operationUnit:'عملية',averageLabel:'متوسط',totalSalesDesc:'يعرض إجمالي قيمة المبيعات للفترة أو السنة المختارة من الشاشة الرئيسية.',salesBeforeVatDesc:'إجمالي قيمة المبيعات قبل الضريبة كما هي مسجلة في بيانات الإدخال أو ملف Excel.',vatDesc:'إجمالي قيمة الضريبة من العمود الأصلي في البيانات بدون أي معادلات داخل التقرير.',operationsCountDesc:'إجمالي عدد سطور/عمليات البيع المسجلة بعد تطبيق فلاتر الشاشة الرئيسية.',customersCountDesc:'عدد العملاء الفريدين داخل الفترة المختارة بعد تطبيق الفلاتر.',averageInvoiceDesc:'متوسط قيمة الفاتورة = إجمالي المبيعات مقسوم على عدد الفواتير الفريدة.'},
-    smartReportsSource:{
-      empty:{
-        noData:'لا توجد بيانات كافية لعرض التقارير الذكية. ارفع ملف Excel أو اختر سنة أخرى.',
-        noCriticalServices:'لا توجد خدمات حرجة',
-        noClearServiceDecline:'لم يظهر هبوط واضح في الخدمات الحالية',
-        noExceptionalGrowth:'لا يوجد نمو استثنائي',
-        balancedActivity:'النشاط موزع بشكل متوازن',
-        noCustomerRisks:'لا توجد مخاطر عملاء واضحة',
-        noDormantMajorCustomers:'لا يوجد عملاء كبار متوقفون لفترة طويلة',
-        noCustomerData:'لا توجد بيانات عملاء للعرض.',
-        noYearComparisonData:'لا توجد بيانات كافية للمقارنة بين السنتين المختارتين.',
-        noGrowthData:'لا توجد بيانات نمو في الفترة المختارة.',
-        noDeclineData:'لا توجد بيانات تراجع في الفترة المختارة.',
-        noMonthlyComparisonData:'لا توجد بيانات شهرية للمقارنة.',
-        noContractCandidateData:'لا توجد بيانات عملاء كافية داخل الفترة المختارة لاحتساب مرشحين للتعاقد.'
-      },
-      filters:{allYears:'كل السنوات',year:'السنة'},
-      labels:{estimatedError:'خطأ تقديري',estimatedDecline:'تراجع تقديري',estimatedGrowth:'نمو تقديري',daysAbsent:'يوم غياب'},
-      status:{declineRisk:'خطر هبوط',reassuring:'مطمئن',growthCandidate:'مرشحة للنمو',neutral:'محايد',customerAtRisk:'عميل معرض',notSpecified:'غير محدد',targetAchieved:'تم تحقيق الهدف',targetNotAchieved:'لم يكتمل الهدف'},
-      risk:{low:'منخفض',medium:'متوسط',high:'مرتفع',critical:'حرج'},
-      recovery:{low:'منخفضة',medium:'متوسطة',high:'مرتفعة'},
-
-      calendar:{
-        days:{sunday:'الأحد',monday:'الاثنين',tuesday:'الثلاثاء',wednesday:'الأربعاء',thursday:'الخميس',friday:'الجمعة',saturday:'السبت'},
-        months:{January:'يناير',February:'فبراير',March:'مارس',April:'أبريل',May:'مايو',June:'يونيو',July:'يوليو',August:'أغسطس',September:'سبتمبر',October:'أكتوبر',November:'نوفمبر',December:'ديسمبر'}
-      },
-      heatmap:{withinEachMonth:'داخل كل شهر',lighterLower:'أفتح = الأقل مبيعات',darkerHigher:'أغمق = الأكثر مبيعات',noInvoices:'لا توجد فواتير',noInvoicesAfter:'لا توجد فواتير بعد'},
-      compare:{baseYear:'سنة الأساس',targetYear:'سنة المقارنة',vehicle:'السيارة',comparisonType:'نوع المقارنة',display:'عرض',current:'الحالي',previous:'السابق',difference:'الفرق'},
-      metrics:{gross:'شامل الضريبة',net:'قبل الضريبة',vat:'الضريبة',sales:'المبيعات'},
-      customers:{oneTime:'عملاء مرة واحدة',returning:'العملاء المتكررون',classification:'تصنيف العملاء',newCustomers:'عملاء جدد',customerCount:'عدد العملاء',becameInactive:'عملاء أصبحوا غير نشطين'},
-      ai:{
-        noForecastData:'لا توجد بيانات كافية لبناء توقع موثوق.',
-        modelTrendName:'الاتجاه العام',modelTrendDescription:'يراقب اتجاه الصعود أو الهبوط خلال الشهور الفعلية.',
-        modelMovingAverage3Name:'المتوسط المتحرك 3',modelMovingAverage3Description:'يعتمد على متوسط آخر 3 شهور فعلية لتقليل الضوضاء.',
-        modelMovingAverage6Name:'المتوسط المتحرك 6',modelMovingAverage6Description:'يعتمد على متوسط أطول وأكثر هدوءًا عند تذبذب البيانات.',
-        selectedModelReason:'تم اختيار نموذج {model} لأنه أقل خطأ في الاختبار الخلفي داخل البيانات الحالية.',
-        trendUp:'الاتجاه الأخير صاعد مقارنة بالفترة السابقة.',trendDown:'الاتجاه الأخير هابط مقارنة بالفترة السابقة، لذلك تم رفع درجة الحذر.',trendStable:'البيانات الحالية مستقرة نسبيًا.',
-        heroTitle:'🤖 AI Forecasting داخل التقارير الذكية',heroDescription:'توقعات مطورة باستخدام نماذج إحصائية متعددة، اختيار تلقائي لأفضل نموذج، وشرح ذكي لمخاطر وفرص الفترة القادمة.',
-        nextMonthForecast:'توقع الشهر القادم',basedOnModel:'حسب نموذج {model}',nextQuarterForecast:'توقع الربع القادم',firstThreeFutureMonths:'أول 3 شهور مستقبلية',yearEndForecast:'توقع نهاية السنة',actualPlusForecast:'فعلي + متوقع',confidenceScore:'درجة الثقة',backtestConfidence:'ثقة الاختبار الخلفي',riskIndex:'مؤشر المخاطر',riskFollowUp:'كلما زاد احتاج متابعة',
-        whatIfTitle:'🧮 تحليل السيناريوهات',whatIfDescription:'حرّك السيناريوهات وشاهد تأثيرها فورًا على توقع الشهر القادم.',salesChange:'تغيير المبيعات',customerChange:'تغيير عدد العملاء',averageInvoiceChange:'تغيير متوسط الفاتورة',adjustedNextMonth:'التوقع المعدل للشهر القادم',differenceFromBase:'الفرق عن التوقع الأساسي',executiveIntelligence:'ذكاء الأعمال التنفيذي'
-      },
-      export:{printedAt:'طُبع',footer:'PETATOE Analytics System v2.2 — تقرير تلقائي — جميع القيم بالريال السعودي (SAR)',printZoneError:'تعذر تجهيز منطقة الطباعة',copySuccess:'✅ تم نسخ البيانات إلى الحافظة',copyError:'❌ فشل النسخ — حاول مرة أخرى',allYears:'كل السنوات',dashboardTitle:'لوحة التحكم',dashboardSubtitle:'ملخص المبيعات الكلي',year:'السنة',totalSales:'إجمالي المبيعات',invoiceCount:'عدد الفواتير',averageInvoice:'متوسط الفاتورة',customerCount:'عدد العملاء',vehicleCount:'عدد السيارات',vehiclePerformance:'أداء السيارات',vehicle:'السيارة',salesSar:'المبيعات (SAR)',operationCount:'عدد العمليات',contribution:'المساهمة %',topCustomers:'أفضل 10 عملاء',customer:'العميل',topServices:'أفضل 10 خدمات',service:'الخدمة',monthlySummary:'ملخص شهري',month:'الشهر',vehicles:'السيارات',customers:'العملاء',services:'الخدمات',excel:'Excel',lostCustomers:'العملاء المفقودون',lastYearOnly:'ظهروا في العام الماضي ولم يظهروا هذا العام',allCustomersDetailed:'كل العملاء - مقارنة تفصيلية'},
-      interactions:{linkedReport:'التقرير المرتبط',openedFromRecommendations:'تم فتح {report} من شاشة التوصيات.',backToRecommendations:'رجوع لتقرير التوصيات',searchStart:'ابدأ الكتابة للبحث في العملاء والخدمات والسيارات والفواتير...',searchMinChars:'ابدأ الكتابة للبحث — حرفان على الأقل',searchNoData:'لا توجد بيانات مرفوعة بعد',searchNoResults:'لا توجد نتائج لـ "{query}"',customers:'العملاء',services:'الخدمات',vehicles:'السيارات',invoices:'الفواتير',transactions:'معاملة',operations:'عملية',invoiceNumber:'فاتورة رقم {number}',noItems:'لا توجد عناصر في هذا القسم حاليًا.'},
-      summary:{strongSpend:'إنفاق قوي + نشاط منتظم',goodActivity:'نشاط جيد + فرصة توريد دوري',followUp:'فرصة متابعة قبل التعاقد',recommendationCount:'عدد توصيات القسم:',basedOn:'مبنية على:',operation:'عملية'}
-    },
     actions:{refresh:'🔄 تحديث',exportPagePdf:'🖨️ تصدير الصفحة PDF',reset:'Reset 🔄'},
     filters:{allYears:'كل السنوات',allMonths:'كل الشهور',allVehicles:'كل السيارات',allPayments:'كل طرق الدفع'},
     payroll:{manage:'إدارة الرواتب',manageSub:'إنشاء كشوف الرواتب والاعتمادات',slip:'كشف الراتب',slipSub:'عرض كشف راتب المستخدم الحالي فقط'},
@@ -1123,6 +1078,39 @@
           "h225f809b": "لديك",
           "h26dfdeb1": "إشعار يحتاج متابعة",
           "hdb1e65ef": "لا توجد إشعارات حالية"
-    }
+    },
+    elc:{
+      'title': 'مركز الترجمة',
+      'subtitle': 'عرض حالة اللغات والترجمات المعتمدة والناقصة — للقراءة فقط.',
+      'languages': 'اللغات',
+      'readOnly': 'وضع القراءة فقط',
+      'translationExplorer': 'مستكشف الترجمات',
+      'searchPlaceholder': 'ابحث بالمفتاح أو النص...',
+      'allLanguages': 'كل اللغات',
+      'allStatuses': 'كل الحالات',
+      'approved': 'معتمد',
+      'missing': 'ناقص',
+      'pending': 'قيد المراجعة',
+      'key': 'المفتاح',
+      'module': 'الوحدة',
+      'language': 'اللغة',
+      'translation': 'الترجمة',
+      'status': 'الحالة',
+      'totalKeys': 'إجمالي المفاتيح',
+      'systemDictionary': 'قاموس النظام',
+      'enabledLanguages': 'اللغات المفعلة',
+      'registered': 'مسجلة',
+      'approvedValues': 'الترجمات المعتمدة',
+      'readyForRuntime': 'جاهزة للتشغيل',
+      'pendingQueue': 'قائمة الانتظار',
+      'needsReview': 'تحتاج مراجعة',
+      'enabled': 'مفعلة',
+      'disabled': 'غير مفعلة',
+      'noLanguages': 'لا توجد لغات',
+      'results': 'نتيجة',
+      'noResults': 'لا توجد نتائج مطابقة',
+      'supabaseUnavailable': 'عميل Supabase غير متاح',
+      'loadFailed': 'تعذر تحميل بيانات مركز الترجمة'
+}
   };
 })();
