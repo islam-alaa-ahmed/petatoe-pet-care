@@ -213,7 +213,7 @@
 (function(){
   if(window.__PETATOE_SETTINGS_XSS_DELEGATION__) return;
   window.__PETATOE_SETTINGS_XSS_DELEGATION__=true;
-  var actions={'export-quality':'petV110ExportQuality','save-security':'petV110SaveSecurity','export-audit':'petV110ExportAudit','clear-audit':'petV110ClearAudit','rebuild-indexes':'petV110RebuildIndexes','clean-cache':'petV110CleanCache','repair-storage':'petV110RepairStorage','backup':'petV110Backup','data-only':'petV110DataOnly','pick-restore':'petV110PickRestore','save-system':'petV110SaveSystem','clear-demo':'petV110ClearDemo','clear-section':'petV110ClearSection','save-user':'petV110SaveUser','clear-user':'petV110ClearUserForm','save-user-permissions':'petV139SaveUserPermissions','grant-read-only':'petV139GrantReadOnly','grant-driver-groomer':'petV139GrantDriverGroomer','grant-operational':'petV139GrantOperational','reset-user-permissions':'petV139ResetUserPermissions','save-vehicle-assignment':'petV664SaveVehicleAssignment','clear-vehicle-assignment':'petV664ClearVehicleAssignment','copy-vehicle-assignment':'petV664CopyVehicleAssignment','trusted-devices-refresh':'petV9LoadTrustedDevices','trusted-device-revoke':'petV9RevokeTrustedDevice','active-sessions-refresh':'petV9LoadActiveSessions'};
+  var actions={'export-quality':'petV110ExportQuality','save-security':'petV110SaveSecurity','export-audit':'petV110ExportAudit','clear-audit':'petV110ClearAudit','rebuild-indexes':'petV110RebuildIndexes','clean-cache':'petV110CleanCache','repair-storage':'petV110RepairStorage','backup':'petV110Backup','data-only':'petV110DataOnly','pick-restore':'petV110PickRestore','save-system':'petV110SaveSystem','clear-demo':'petV110ClearDemo','clear-section':'petV110ClearSection','save-user':'petV110SaveUser','clear-user':'petV110ClearUserForm','save-user-permissions':'petV139SaveUserPermissions','grant-read-only':'petV139GrantReadOnly','grant-driver-groomer':'petV139GrantDriverGroomer','grant-operational':'petV139GrantOperational','reset-user-permissions':'petV139ResetUserPermissions','save-vehicle-assignment':'petV664SaveVehicleAssignment','clear-vehicle-assignment':'petV664ClearVehicleAssignment','copy-vehicle-assignment':'petV664CopyVehicleAssignment','trusted-devices-refresh':'petV9LoadTrustedDevices','trusted-device-revoke':'petV9RevokeTrustedDevice','active-sessions-refresh':'petV9LoadActiveSessions','active-session-revoke':'petV9RevokeActiveSession'};
   document.addEventListener('click',function(e){
     var btn=e.target&&e.target.closest&&e.target.closest('[data-v110-action],[data-v121-action]'); if(!btn) return;
     var a=btn.getAttribute('data-v110-action');
@@ -365,6 +365,10 @@
     }
     var rows = sessions.map(function(s){
       var active = String(s.status || '').toLowerCase() === 'active';
+      var canRevoke = active && !s.isCurrent && s.id;
+      var actions = s.isCurrent
+        ? '<span class="pet-v110-note" style="padding:8px 10px">هذه هي الجلسة الحالية</span>'
+        : (canRevoke ? '<button class="pet-v110-btn danger" data-v110-action="active-session-revoke" data-device-id="'+esc(s.id)+'">إنهاء الجلسة</button>' : '');
       return '<div class="pet-v110-card" style="margin:10px 0;padding:14px">'
         + '<div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap">'
         + '<div style="min-width:240px;flex:1">'
@@ -376,7 +380,7 @@
         + 'تنتهي: '+esc(fmtDate(s.expiresAt))
         + (s.logoutReason ? '<br>سبب الإنهاء: '+esc(s.logoutReason) : '')
         + '</div></div>'
-        + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+sessionStatusLabel(s.status, !!s.isCurrent)
+        + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+sessionStatusLabel(s.status, !!s.isCurrent)+actions
         + '</div></div></div>';
     }).join('');
     setSessionsBox(rows);
@@ -392,6 +396,23 @@
       var res = await window.PETATOEAuth.listActiveSessions();
       if(!res || res.ok === false) throw new Error(sessionErrorMessage(res));
       window.petV9RenderActiveSessions(res.sessions || []);
+    }catch(err){
+      setSessionsBox('<div class="pet-v110-note" style="border-color:rgba(248,113,113,.45);color:#fecaca">'+esc(sessionErrorMessage(err))+'</div>');
+    }
+  };
+
+  window.petV9RevokeActiveSession = async function(sessionId){
+    sessionId = String(sessionId || '').trim();
+    if(!sessionId) return;
+    if(!confirm('إنهاء هذه الجلسة؟ سيتم إجبار هذا الجهاز على تسجيل الدخول مرة أخرى.')) return;
+    try{
+      if(!window.PETATOEAuth || typeof window.PETATOEAuth.revokeActiveSession !== 'function'){
+        throw new Error('PETATOE_AUTH_SESSIONS_API_NOT_READY');
+      }
+      var res = await window.PETATOEAuth.revokeActiveSession(sessionId);
+      if(!res || res.ok === false) throw new Error(sessionErrorMessage(res));
+      if(window.PETATOEUI && typeof window.PETATOEUI.toast === 'function') window.PETATOEUI.toast('تم إنهاء الجلسة');
+      await window.petV9LoadActiveSessions();
     }catch(err){
       setSessionsBox('<div class="pet-v110-note" style="border-color:rgba(248,113,113,.45);color:#fecaca">'+esc(sessionErrorMessage(err))+'</div>');
     }

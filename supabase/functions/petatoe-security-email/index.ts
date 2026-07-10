@@ -166,6 +166,34 @@ async function endEnterpriseSession(dbUrl: string, headers: Record<string, strin
   return { ok: true, action: "session_end" };
 }
 
+async function revokeEnterpriseSession(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap) {
+  const sessionId = String(body.sessionId || body.id || "").trim();
+  if (!sessionId || !user || !user.id) return { ok: false, error: "SESSION_ID_REQUIRED" };
+  const rawSessionToken = String(body.sessionClientToken || body.sessionToken || "").trim();
+  const currentHash = rawSessionToken ? await sessionTokenHash(rawSessionToken, String(user.id)) : "";
+
+  const lookupRes = await fetch(
+    `${dbUrl}/rest/v1/user_sessions?select=id,session_token_hash,revoked_at&user_id=eq.${encodeURIComponent(String(user.id))}&id=eq.${encodeURIComponent(sessionId)}&limit=1`,
+    { headers },
+  );
+  if (!lookupRes.ok) return { ok: false, error: "SESSION_LOOKUP_FAILED", details: await lookupRes.text() };
+  const rows = await lookupRes.json().catch(() => []);
+  const row = Array.isArray(rows) ? rows[0] : null;
+  if (!row) return { ok: false, error: "SESSION_NOT_FOUND" };
+  if (currentHash && String(row.session_token_hash || "") === currentHash) {
+    return { ok: false, error: "CURRENT_SESSION_NOT_REVOCABLE" };
+  }
+  if (row.revoked_at) return { ok: true, action: "session_revoke", alreadyRevoked: true };
+
+  const res = await fetch(`${dbUrl}/rest/v1/user_sessions?id=eq.${encodeURIComponent(sessionId)}&user_id=eq.${encodeURIComponent(String(user.id))}`, {
+    method: "PATCH",
+    headers: { ...headers, Prefer: "return=representation" },
+    body: JSON.stringify({ revoked_at: nowIso(), logout_reason: String(body.logoutReason || "revoked_by_user").slice(0, 80) }),
+  });
+  if (!res.ok) return { ok: false, error: "SESSION_REVOKE_FAILED", details: await res.text() };
+  return { ok: true, action: "session_revoke", sessionId };
+}
+
 async function touchEnterpriseSession(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap) {
   const rawSessionToken = String(body.sessionClientToken || body.sessionToken || "").trim();
   if (!rawSessionToken || !user || !user.id) return { ok: false, error: "SESSION_TOKEN_REQUIRED" };
@@ -332,6 +360,20 @@ export default {
       if (action === "session_touch") {
         const sessionResult = await touchEnterpriseSession(PETATOE_SUPABASE_URL, dbHeaders, user, body);
         if (!sessionResult.ok) return json(sessionResult, 500);
+        return json(sessionResult);
+      }
+
+      if (action === "session_revoke") {
+        const sessionResult = await revokeEnterpriseSession(PETATOE_SUPABASE_URL, dbHeaders, user, body);
+        if (!sessionResult.ok) return json(sessionResult, sessionResult.error === "CURRENT_SESSION_NOT_REVOCABLE" ? 400 : 500);
+        await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+          user_id: user.id,
+          username_attempted: username,
+          event_type: "session_revoked",
+          success: true,
+          user_agent: req.headers.get("user-agent"),
+          metadata: { sessionId: String(body.sessionId || "") },
+        });
         return json(sessionResult);
       }
 
