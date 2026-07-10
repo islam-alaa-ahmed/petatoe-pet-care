@@ -194,6 +194,23 @@ async function revokeEnterpriseSession(dbUrl: string, headers: Record<string, st
   return { ok: true, action: "session_revoke", sessionId };
 }
 
+
+async function revokeAllEnterpriseSessions(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap) {
+  if (!user || !user.id) return { ok: false, error: "USER_REQUIRED" };
+  const keepCurrent = body.keepCurrent !== false;
+  const rawSessionToken = String(body.sessionClientToken || body.sessionToken || "").trim();
+  const currentHash = rawSessionToken ? await sessionTokenHash(rawSessionToken, String(user.id)) : "";
+  const excludeCurrent = keepCurrent && currentHash ? `&session_token_hash=neq.${encodeURIComponent(currentHash)}` : "";
+  const res = await fetch(`${dbUrl}/rest/v1/user_sessions?user_id=eq.${encodeURIComponent(String(user.id))}&revoked_at=is.null${excludeCurrent}`, {
+    method: "PATCH",
+    headers: { ...headers, Prefer: "return=representation" },
+    body: JSON.stringify({ revoked_at: nowIso(), logout_reason: String(body.logoutReason || "revoked_all_by_user").slice(0, 80) }),
+  });
+  if (!res.ok) return { ok: false, error: "SESSION_REVOKE_ALL_FAILED", details: await res.text() };
+  const rows = await res.json().catch(() => []);
+  return { ok: true, action: "session_revoke_all", revokedCount: Array.isArray(rows) ? rows.length : 0, keepCurrent };
+}
+
 async function touchEnterpriseSession(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap) {
   const rawSessionToken = String(body.sessionClientToken || body.sessionToken || "").trim();
   if (!rawSessionToken || !user || !user.id) return { ok: false, error: "SESSION_TOKEN_REQUIRED" };
@@ -373,6 +390,20 @@ export default {
           success: true,
           user_agent: req.headers.get("user-agent"),
           metadata: { sessionId: String(body.sessionId || "") },
+        });
+        return json(sessionResult);
+      }
+
+      if (action === "session_revoke_all") {
+        const sessionResult = await revokeAllEnterpriseSessions(PETATOE_SUPABASE_URL, dbHeaders, user, body);
+        if (!sessionResult.ok) return json(sessionResult, 500);
+        await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+          user_id: user.id,
+          username_attempted: username,
+          event_type: "sessions_revoked_all",
+          success: true,
+          user_agent: req.headers.get("user-agent"),
+          metadata: { revokedCount: sessionResult.revokedCount || 0, keepCurrent: sessionResult.keepCurrent !== false },
         });
         return json(sessionResult);
       }
