@@ -333,6 +333,7 @@
     translateRuntime:translateRuntimeValue,
     t:function(key,params,lang){var v=translate(key,lang);return typeof v==='string'?interpolate(v,params):v;},
     dictionaries:dictionaries,
+    format:window.PETATOE_FORMATTER||null,
     reapply:function(){scheduleReapply(currentLang());},
     apply:applyLanguage
   };
