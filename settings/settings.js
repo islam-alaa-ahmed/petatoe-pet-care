@@ -213,7 +213,7 @@
 (function(){
   if(window.__PETATOE_SETTINGS_XSS_DELEGATION__) return;
   window.__PETATOE_SETTINGS_XSS_DELEGATION__=true;
-  var actions={'export-quality':'petV110ExportQuality','save-security':'petV110SaveSecurity','export-audit':'petV110ExportAudit','clear-audit':'petV110ClearAudit','rebuild-indexes':'petV110RebuildIndexes','clean-cache':'petV110CleanCache','repair-storage':'petV110RepairStorage','backup':'petV110Backup','data-only':'petV110DataOnly','pick-restore':'petV110PickRestore','save-system':'petV110SaveSystem','clear-demo':'petV110ClearDemo','clear-section':'petV110ClearSection','save-user':'petV110SaveUser','clear-user':'petV110ClearUserForm','save-user-permissions':'petV139SaveUserPermissions','grant-read-only':'petV139GrantReadOnly','grant-driver-groomer':'petV139GrantDriverGroomer','grant-operational':'petV139GrantOperational','reset-user-permissions':'petV139ResetUserPermissions','save-vehicle-assignment':'petV664SaveVehicleAssignment','clear-vehicle-assignment':'petV664ClearVehicleAssignment','copy-vehicle-assignment':'petV664CopyVehicleAssignment','trusted-devices-refresh':'petV9LoadTrustedDevices','trusted-device-revoke':'petV9RevokeTrustedDevice','active-sessions-refresh':'petV9LoadActiveSessions','active-session-revoke':'petV9RevokeActiveSession','active-sessions-revoke-all':'petV9RevokeAllActiveSessions','security-activity-refresh':'petV9LoadSecurityActivity'};
+  var actions={'export-quality':'petV110ExportQuality','save-security':'petV110SaveSecurity','export-audit':'petV110ExportAudit','clear-audit':'petV110ClearAudit','rebuild-indexes':'petV110RebuildIndexes','clean-cache':'petV110CleanCache','repair-storage':'petV110RepairStorage','backup':'petV110Backup','data-only':'petV110DataOnly','pick-restore':'petV110PickRestore','save-system':'petV110SaveSystem','clear-demo':'petV110ClearDemo','clear-section':'petV110ClearSection','save-user':'petV110SaveUser','clear-user':'petV110ClearUserForm','save-user-permissions':'petV139SaveUserPermissions','grant-read-only':'petV139GrantReadOnly','grant-driver-groomer':'petV139GrantDriverGroomer','grant-operational':'petV139GrantOperational','reset-user-permissions':'petV139ResetUserPermissions','save-vehicle-assignment':'petV664SaveVehicleAssignment','clear-vehicle-assignment':'petV664ClearVehicleAssignment','copy-vehicle-assignment':'petV664CopyVehicleAssignment','trusted-devices-refresh':'petV9LoadTrustedDevices','trusted-device-revoke':'petV9RevokeTrustedDevice','active-sessions-refresh':'petV9LoadActiveSessions','active-session-revoke':'petV9RevokeActiveSession','active-sessions-revoke-all':'petV9RevokeAllActiveSessions','security-activity-refresh':'petV9LoadSecurityActivity','trusted-devices-toggle':'petV9ToggleTrustedDevicesList','active-sessions-toggle':'petV9ToggleActiveSessionsList','security-activity-toggle':'petV9ToggleSecurityActivityList'};
   document.addEventListener('click',function(e){
     var btn=e.target&&e.target.closest&&e.target.closest('[data-v110-action],[data-v121-action]'); if(!btn) return;
     var a=btn.getAttribute('data-v110-action');
@@ -275,14 +275,25 @@
     if(msg === 'CURRENT_USER_EMAIL_REQUIRED') return 'تعذر تحديد بريد المستخدم الحالي. سجّل خروج ثم ادخل مرة أخرى.';
     return 'تعذر تحميل الأجهزة الموثوقة: ' + msg;
   }
+  var SECURITY_LIST_LIMIT = 4;
+  var trustedDevicesExpanded = false;
+  var trustedDevicesCache = [];
+  function listToggleButton(action,total,expanded){
+    if(total <= SECURITY_LIST_LIMIT) return '';
+    var remaining = Math.max(0, total - SECURITY_LIST_LIMIT);
+    var label = expanded ? 'إخفاء' : ('عرض المزيد (+' + remaining + ')');
+    return '<div class="pet-v110-actions" style="justify-content:center;margin-top:10px"><button class="pet-v110-btn blue" data-v110-action="'+esc(action)+'">'+esc(label)+'</button></div>';
+  }
 
   window.petV9RenderTrustedDevices = function(devices){
     devices = Array.isArray(devices) ? devices : [];
+    trustedDevicesCache = devices.slice();
     if(!devices.length){
       setBox('<div class="pet-v110-note">لا توجد أجهزة موثوقة لهذا المستخدم حتى الآن.</div>');
       return;
     }
-    var rows = devices.map(function(d){
+    var visibleDevices = trustedDevicesExpanded ? devices : devices.slice(0, SECURITY_LIST_LIMIT);
+    var rows = visibleDevices.map(function(d){
       var active = String(d.status || '').toLowerCase() === 'active';
       return '<div class="pet-v110-card" style="margin:10px 0;padding:14px">'
         + '<div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap">'
@@ -296,8 +307,13 @@
         + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+statusLabel(d.status)
         + (active ? '<button class="pet-v110-btn danger" data-v110-action="trusted-device-revoke" data-device-id="'+esc(d.id)+'">إلغاء الثقة</button>' : '')
         + '</div></div></div>';
-    }).join('');
+    }).join('') + listToggleButton('trusted-devices-toggle', devices.length, trustedDevicesExpanded);
     setBox(rows);
+  };
+
+  window.petV9ToggleTrustedDevicesList = function(){
+    trustedDevicesExpanded = !trustedDevicesExpanded;
+    window.petV9RenderTrustedDevices(trustedDevicesCache || []);
   };
 
   window.petV9LoadTrustedDevices = async function(){
@@ -357,13 +373,17 @@
     if(msg === 'CURRENT_USER_EMAIL_REQUIRED') return 'تعذر تحديد بريد المستخدم الحالي. سجّل خروج ثم ادخل مرة أخرى.';
     return 'تعذر تحميل الجلسات النشطة: ' + msg;
   }
+  var activeSessionsExpanded = false;
+  var activeSessionsCache = [];
   window.petV9RenderActiveSessions = function(sessions){
     sessions = Array.isArray(sessions) ? sessions : [];
+    activeSessionsCache = sessions.slice();
     if(!sessions.length){
       setSessionsBox('<div class="pet-v110-note">لا توجد جلسات نشطة مسجلة لهذا المستخدم حتى الآن.</div>');
       return;
     }
-    var rows = sessions.map(function(s){
+    var visibleSessions = activeSessionsExpanded ? sessions : sessions.slice(0, SECURITY_LIST_LIMIT);
+    var rows = visibleSessions.map(function(s){
       var active = String(s.status || '').toLowerCase() === 'active';
       var canRevoke = active && !s.isCurrent && s.id;
       var actions = s.isCurrent
@@ -382,8 +402,12 @@
         + '</div></div>'
         + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+sessionStatusLabel(s.status, !!s.isCurrent)+actions
         + '</div></div></div>';
-    }).join('');
+    }).join('') + listToggleButton('active-sessions-toggle', sessions.length, activeSessionsExpanded);
     setSessionsBox(rows);
+  };
+  window.petV9ToggleActiveSessionsList = function(){
+    activeSessionsExpanded = !activeSessionsExpanded;
+    window.petV9RenderActiveSessions(activeSessionsCache || []);
   };
   window.petV9LoadActiveSessions = async function(){
     var box = byId('petV9ActiveSessionsBox');
@@ -466,21 +490,36 @@
     }
     return 'تعذر تحميل سجل الأمان: ' + msg;
   }
+  var SECURITY_ACTIVITY_LIMIT = 4;
+  var securityActivityExpanded = false;
+  var securityActivityCache = [];
+  function activityToggleButton(total){
+    if(total <= SECURITY_ACTIVITY_LIMIT) return '';
+    var remaining = Math.max(0, total - SECURITY_ACTIVITY_LIMIT);
+    var label = securityActivityExpanded ? 'إخفاء' : ('عرض المزيد (+' + remaining + ')');
+    return '<div class="pet-v110-actions" style="justify-content:center;margin-top:10px"><button class="pet-v110-btn blue" data-v110-action="security-activity-toggle">'+esc(label)+'</button></div>';
+  }
   window.petV9RenderSecurityActivity = function(events){
     events = Array.isArray(events) ? events : [];
+    securityActivityCache = events.slice();
     if(!events.length){
       setActivityBox('<div class="pet-v110-note">لا توجد أحداث أمنية مسجلة لهذا المستخدم حتى الآن.</div>');
       return;
     }
-    var rows = events.map(function(e){
+    var visibleEvents = securityActivityExpanded ? events : events.slice(0, SECURITY_ACTIVITY_LIMIT);
+    var rows = visibleEvents.map(function(e){
       var reason = e.failureReason ? '<div class="pet-v110-note" style="margin-top:6px">السبب: '+esc(e.failureReason)+'</div>' : '';
       return '<div class="pet-v110-card" style="margin:8px 0;padding:10px;border-radius:14px">'
         + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+activityLabel(e.eventType, e.success)+'<span class="pet-v110-badge info">'+esc(fmtDate(e.createdAt))+'</span>'+(e.success===false?'<span class="pet-v110-badge danger">فشل</span>':'<span class="pet-v110-badge ok">نجاح</span>')+'</div>'
         + '<div class="pet-v110-note" style="margin-top:8px">المستخدم: '+esc(e.usernameAttempted || '—')+' — MFA: '+(e.mfaRequired?'مطلوب':'غير مطلوب')+' — جهاز موثوق: '+(e.trustedDeviceUsed?'نعم':'لا')+'</div>'
         + reason
         + '</div>';
-    }).join('');
+    }).join('') + activityToggleButton(events.length);
     setActivityBox(rows);
+  };
+  window.petV9ToggleSecurityActivityList = function(){
+    securityActivityExpanded = !securityActivityExpanded;
+    window.petV9RenderSecurityActivity(securityActivityCache || []);
   };
   window.petV9LoadSecurityActivity = async function(){
     var box=byId('petV9SecurityActivityBox');
