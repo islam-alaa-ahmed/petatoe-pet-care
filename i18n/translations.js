@@ -10,7 +10,7 @@
   var dictionary={
     ar:{
       app:{name:'PETATOE',subtitle:'Analytics System'},
-      language:{toggleTitle:'تغيير اللغة',current:'AR',next:'EN'},
+      language:{toggleTitle:'تغيير اللغة',current:'AR',next:'EN',menuLabel:'اختيار اللغة'},
       topbar:{reports:'📑 التقارير',pdf:'📊 تقرير PDF',searchTitle:'بحث',launcherTitle:'فتح القائمة الرئيسية'},
       dashboard:{title:'Dashboard',subtitle:'لوحة متابعة مبيعات PETATOE بالريال السعودي'},
       actions:{refresh:'🔄 تحديث',exportPagePdf:'🖨️ تصدير الصفحة PDF',reset:'Reset 🔄'},
@@ -19,7 +19,7 @@
     },
     en:{
       app:{name:'PETATOE',subtitle:'Analytics System'},
-      language:{toggleTitle:'Switch language',current:'EN',next:'AR'},
+      language:{toggleTitle:'Switch language',current:'EN',next:'AR',menuLabel:'Choose language'},
       topbar:{reports:'📑 Reports',pdf:'📊 PDF Report',searchTitle:'Search',launcherTitle:'Open main menu'},
       dashboard:{title:'Dashboard',subtitle:'PETATOE sales dashboard in Saudi Riyal'},
       actions:{refresh:'🔄 Refresh',exportPagePdf:'🖨️ Export Page PDF',reset:'Reset 🔄'},
@@ -65,8 +65,9 @@
     setText('.pet-topbar-compact-actions .reports-btn:not(#headerPdfBtn)',t.topbar.reports);
     setText('#headerPdfBtn',t.topbar.pdf);
     setText('#petLanguageCurrent',t.language.current);
-    setText('#petLanguageNext',t.language.next);
     setTitle('#petLanguageToggle',t.language.toggleTitle);
+    var langMenu=document.getElementById('petLanguageMenu');
+    if(langMenu) langMenu.setAttribute('aria-label',t.language.menuLabel||t.language.toggleTitle);
     setText('#home .section-head h2',t.dashboard.title);
     setText('#home .section-head p',t.dashboard.subtitle);
     setText('#safeDashboardPdfBtn',t.actions.exportPagePdf);
@@ -104,22 +105,61 @@
     lang=normalizeLang(lang);
     safeStorageSet(lang);
     document.documentElement.setAttribute('lang',lang);
-    document.documentElement.setAttribute('dir',lang==='ar'?'rtl':'ltr');
+    /* Keep visual layout stable: language changes text only, not topbar/sidebar direction. */
+    document.documentElement.setAttribute('dir','rtl');
     document.body&&document.body.setAttribute('data-petatoe-lang',lang);
     var btn=document.getElementById('petLanguageToggle');
-    if(btn) btn.setAttribute('aria-pressed',lang==='en'?'true':'false');
+    if(btn){
+      btn.setAttribute('aria-pressed',lang==='en'?'true':'false');
+      btn.setAttribute('aria-expanded','false');
+    }
+    var switcher=document.getElementById('petLanguageSwitcher');
+    if(switcher) switcher.classList.remove('open');
+    document.querySelectorAll('.pet-language-option[data-pet-lang]').forEach(function(opt){
+      var active=normalizeLang(opt.getAttribute('data-pet-lang'))===lang;
+      opt.classList.toggle('active',active);
+      opt.setAttribute('aria-selected',active?'true':'false');
+    });
     applyKnownStaticTexts(lang);
     applyDataI18n(lang);
     window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
   }
   function toggleLanguage(){
-    applyLanguage(currentLang()==='ar'?'en':'ar');
+    var switcher=document.getElementById('petLanguageSwitcher');
+    var btn=document.getElementById('petLanguageToggle');
+    if(!switcher){applyLanguage(currentLang()==='ar'?'en':'ar');return;}
+    var open=!switcher.classList.contains('open');
+    switcher.classList.toggle('open',open);
+    if(btn) btn.setAttribute('aria-expanded',open?'true':'false');
+  }
+  function closeLanguageMenu(){
+    var switcher=document.getElementById('petLanguageSwitcher');
+    var btn=document.getElementById('petLanguageToggle');
+    if(switcher) switcher.classList.remove('open');
+    if(btn) btn.setAttribute('aria-expanded','false');
   }
   function init(){
     var btn=document.getElementById('petLanguageToggle');
     if(btn&&!btn.dataset.petI18nBound){
       btn.dataset.petI18nBound='1';
-      btn.addEventListener('click',function(ev){ev.preventDefault();toggleLanguage();});
+      btn.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();toggleLanguage();});
+    }
+    document.querySelectorAll('.pet-language-option[data-pet-lang]').forEach(function(opt){
+      if(!opt.dataset.petI18nBound){
+        opt.dataset.petI18nBound='1';
+        opt.addEventListener('click',function(ev){
+          ev.preventDefault();ev.stopPropagation();
+          applyLanguage(opt.getAttribute('data-pet-lang'));
+        });
+      }
+    });
+    if(!document.documentElement.dataset.petI18nOutsideBound){
+      document.documentElement.dataset.petI18nOutsideBound='1';
+      document.addEventListener('click',function(ev){
+        var sw=document.getElementById('petLanguageSwitcher');
+        if(sw&&!sw.contains(ev.target)) closeLanguageMenu();
+      });
+      document.addEventListener('keydown',function(ev){if(ev.key==='Escape') closeLanguageMenu();});
     }
     applyLanguage(currentLang());
   }
