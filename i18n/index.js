@@ -301,9 +301,12 @@
     setMenuState(false);
     applying=false;
     if(options.renderDashboard){try{ if(typeof window.renderDashboardAll==='function') window.renderDashboardAll(); }catch(_){}}
-    reapplyLanguage(lang);
-    setNavigationReady(true);
-    finishInitialPaint();
+    try{
+      reapplyLanguage(lang);
+    }finally{
+      setNavigationReady(true);
+      finishInitialPaint();
+    }
     scheduleReapply(lang,160);
     window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
   }
@@ -341,7 +344,13 @@
     applyLanguage(currentLang(),{renderDashboard:false});
   }
 
-  document.addEventListener('petatoe:navbuilt',function(){setNavigationReady(false);reapplyLanguage(currentLang());setNavigationReady(true);});
+  document.addEventListener('petatoe:navbuilt',function(){
+    try{
+      reapplyLanguage(currentLang());
+    }finally{
+      setNavigationReady(true);
+    }
+  });
   document.addEventListener('petatoe:tabchange',function(){scheduleReapply(currentLang(),90);});
   window.PETATOE_I18N={
     getLanguage:currentLang,

@@ -8,13 +8,9 @@ html:not([data-pet-i18n-booting="true"]) body{
   opacity:1;
   transition:opacity .12s ease-out;
 }
-/* Do not expose freshly rebuilt Arabic navigation while English is active. */
-html[lang="en"][data-pet-i18n-nav-ready="false"] #nav{
-  visibility:hidden!important;
-}
-html[lang="en"][data-pet-i18n-nav-ready="true"] #nav{
-  visibility:visible;
-}
+/* Navigation is never hidden independently from the page.
+   The first-paint body guard already prevents locale flash; hiding #nav here
+   could leave the sidebar permanently blank when nav was built before i18n listeners. */
 @media (prefers-reduced-motion: reduce){
   html:not([data-pet-i18n-booting="true"]) body{transition:none;}
 }

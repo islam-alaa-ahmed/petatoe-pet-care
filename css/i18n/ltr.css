@@ -196,3 +196,43 @@ html[dir="ltr"] .menu-item{
     right:auto!important;
   }
 }
+
+
+/* Phase 4D: keep the topbar user menu inside the viewport in LTR. */
+html[dir="ltr"] .top-right .user.pet-auth-user-menu .pet-auth-user-dropdown{
+  left:auto!important;
+  right:0!important;
+  direction:ltr!important;
+  text-align:left!important;
+  max-width:min(320px,calc(100vw - 24px))!important;
+  box-sizing:border-box!important;
+}
+html[dir="ltr"] .top-right .user.pet-auth-user-menu .pet-auth-user-dropdown:before{
+  left:auto!important;
+  right:28px!important;
+  border-left:0!important;
+  border-top:1px solid rgba(255,255,255,.16)!important;
+  border-right:1px solid rgba(255,255,255,.16)!important;
+}
+html[dir="ltr"] .pet-auth-user-dropdown .pet-auth-dropdown-title,
+html[dir="ltr"] .pet-auth-dropdown-item{
+  direction:ltr!important;
+  text-align:left!important;
+}
+html[dir="ltr"] .pet-auth-dropdown-item{
+  flex-direction:row!important;
+}
+@media (max-width:760px){
+  html[dir="ltr"] .top-right .user.pet-auth-user-menu .pet-auth-user-dropdown{
+    position:fixed!important;
+    top:84px!important;
+    left:12px!important;
+    right:12px!important;
+    width:auto!important;
+    min-width:0!important;
+    max-width:none!important;
+  }
+  html[dir="ltr"] .top-right .user.pet-auth-user-menu .pet-auth-user-dropdown:before{
+    display:none!important;
+  }
+}
