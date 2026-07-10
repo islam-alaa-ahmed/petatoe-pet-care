@@ -112,6 +112,73 @@ async function rememberTrustedDevice(dbUrl: string, headers: Record<string, stri
   return upsertRes.ok;
 }
 
+
+const sessionTokenHash = async (raw: string, userId: string) => sha256(`${raw}:${userId}:enterprise-session:v1`);
+
+async function startEnterpriseSession(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap, req: Request) {
+  const rawSessionToken = String(body.sessionClientToken || body.sessionToken || "").trim();
+  if (!rawSessionToken || !user || !user.id) return { ok: false, error: "SESSION_TOKEN_REQUIRED" };
+  const tokenHash = await sessionTokenHash(rawSessionToken, String(user.id));
+  const fingerprintRaw = String(body.deviceFingerprintHash || body.deviceFingerprint || "").trim();
+  const fingerprintHash = fingerprintRaw ? await trustedDeviceHash(fingerprintRaw, String(user.id)) : null;
+  const now = nowIso();
+  const expiresAt = new Date(Date.now() + 12 * 60 * 60 * 1000).toISOString();
+  const payload = {
+    user_id: user.id,
+    session_token_hash: tokenHash,
+    device_fingerprint_hash: fingerprintHash,
+    device_name: String(body.deviceName || "Browser Device").slice(0, 120),
+    platform: String(body.platform || "").slice(0, 120),
+    browser: String(body.browser || "").slice(0, 180),
+    ip_hash: req.headers.get("x-forwarded-for") ? await sha256(String(req.headers.get("x-forwarded-for") || "").split(",")[0].trim()) : null,
+    user_agent: req.headers.get("user-agent") || String(body.userAgent || ""),
+    login_source: String(body.source || "auth-login").slice(0, 80),
+    last_activity_at: now,
+    expires_at: expiresAt,
+    revoked_at: null,
+    logout_reason: null,
+    metadata: {
+      source: "petatoe-enterprise-session",
+      language: String(body.language || ""),
+    },
+  };
+  const res = await fetch(`${dbUrl}/rest/v1/user_sessions?on_conflict=session_token_hash`, {
+    method: "POST",
+    headers: { ...headers, Prefer: "resolution=merge-duplicates,return=representation" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) return { ok: false, error: "SESSION_START_FAILED", details: await res.text() };
+  const rows = await res.json().catch(() => []);
+  const row = Array.isArray(rows) ? rows[0] : null;
+  return { ok: true, sessionId: row?.id || null, expiresAt, action: "session_start" };
+}
+
+async function endEnterpriseSession(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap) {
+  const rawSessionToken = String(body.sessionClientToken || body.sessionToken || "").trim();
+  if (!rawSessionToken || !user || !user.id) return { ok: false, error: "SESSION_TOKEN_REQUIRED" };
+  const tokenHash = await sessionTokenHash(rawSessionToken, String(user.id));
+  const res = await fetch(`${dbUrl}/rest/v1/user_sessions?session_token_hash=eq.${encodeURIComponent(tokenHash)}&user_id=eq.${encodeURIComponent(String(user.id))}`, {
+    method: "PATCH",
+    headers: { ...headers, Prefer: "return=representation" },
+    body: JSON.stringify({ revoked_at: nowIso(), logout_reason: String(body.logoutReason || "manual").slice(0, 80) }),
+  });
+  if (!res.ok) return { ok: false, error: "SESSION_END_FAILED", details: await res.text() };
+  return { ok: true, action: "session_end" };
+}
+
+async function touchEnterpriseSession(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap) {
+  const rawSessionToken = String(body.sessionClientToken || body.sessionToken || "").trim();
+  if (!rawSessionToken || !user || !user.id) return { ok: false, error: "SESSION_TOKEN_REQUIRED" };
+  const tokenHash = await sessionTokenHash(rawSessionToken, String(user.id));
+  const res = await fetch(`${dbUrl}/rest/v1/user_sessions?session_token_hash=eq.${encodeURIComponent(tokenHash)}&user_id=eq.${encodeURIComponent(String(user.id))}&revoked_at=is.null`, {
+    method: "PATCH",
+    headers,
+    body: JSON.stringify({ last_activity_at: nowIso() }),
+  });
+  if (!res.ok) return { ok: false, error: "SESSION_TOUCH_FAILED", details: await res.text() };
+  return { ok: true, action: "session_touch" };
+}
+
 async function audit(dbUrl: string, headers: HeadersInit, payload: JsonMap) {
   try {
     await fetch(`${dbUrl}/rest/v1/login_history`, {
@@ -200,6 +267,40 @@ export default {
         return (action === "reset_password" || action === "mfa_verify")
           ? json({ ok: false, error: "INVALID_OR_EXPIRED_OTP" }, 400)
           : safeSuccess();
+      }
+
+      if (action === "session_start") {
+        const sessionResult = await startEnterpriseSession(PETATOE_SUPABASE_URL, dbHeaders, user, body, req);
+        if (!sessionResult.ok) return json(sessionResult, 500);
+        await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+          user_id: user.id,
+          username_attempted: username,
+          event_type: "session_started",
+          success: true,
+          user_agent: req.headers.get("user-agent"),
+          metadata: { source: String(body.source || "auth-login") },
+        });
+        return json(sessionResult);
+      }
+
+      if (action === "session_end") {
+        const sessionResult = await endEnterpriseSession(PETATOE_SUPABASE_URL, dbHeaders, user, body);
+        if (!sessionResult.ok) return json(sessionResult, 500);
+        await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+          user_id: user.id,
+          username_attempted: username,
+          event_type: "session_ended",
+          success: true,
+          user_agent: req.headers.get("user-agent"),
+          metadata: { reason: String(body.logoutReason || "manual") },
+        });
+        return json(sessionResult);
+      }
+
+      if (action === "session_touch") {
+        const sessionResult = await touchEnterpriseSession(PETATOE_SUPABASE_URL, dbHeaders, user, body);
+        if (!sessionResult.ok) return json(sessionResult, 500);
+        return json(sessionResult);
       }
 
       // PETATOE v9 S3.7: Handle reset_password before send_otp so a password-save request can never fall through to OTP sending.

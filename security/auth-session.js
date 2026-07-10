@@ -258,6 +258,55 @@
     };
   }
 
+
+  function sessionClientToken(reset){
+    var key = 'petatoe_enterprise_session_token_v90';
+    try{
+      if(reset) sessionStorage.removeItem(key);
+      var existing = sessionStorage.getItem(key);
+      if(existing && existing.length > 24) return existing;
+      var token = 'pet_sess_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2) + '_' + Math.random().toString(36).slice(2);
+      sessionStorage.setItem(key, token);
+      return token;
+    }catch(_e){
+      return 'pet_sess_memory_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2);
+    }
+  }
+
+  function sessionDevicePayload(reset){
+    var base = trustedDevicePayload();
+    return Object.assign({}, base, { sessionClientToken: sessionClientToken(!!reset) });
+  }
+
+  function remoteSessionPayload(user, reset){
+    user = user || sessionUser() || window.currentUser || {};
+    return Object.assign({
+      username: String(user.username || user.name || user.id || '').trim(),
+      email: String(user.email || user.mail || user.userEmail || '').trim().toLowerCase(),
+      purpose: 'mfa_email_otp'
+    }, sessionDevicePayload(!!reset));
+  }
+
+  function startRemoteSession(user, source){
+    try{
+      var payload = remoteSessionPayload(user, true);
+      if(!payload.username || !payload.email) return;
+      callSecurityEmail(Object.assign({ action:'session_start', source:source || 'auth-login' }, payload)).catch(function(err){
+        window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',err);
+      });
+    }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e); }
+  }
+
+  function endRemoteSession(user, reason){
+    try{
+      var payload = remoteSessionPayload(user, false);
+      if(!payload.username || !payload.email || !payload.sessionClientToken) return;
+      callSecurityEmail(Object.assign({ action:'session_end', logoutReason:reason || 'manual' }, payload)).catch(function(err){
+        window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',err);
+      });
+    }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e); }
+  }
+
   function authUserIdentityPayload(user){
     user = user || sessionUser() || window.currentUser || {};
     return {
@@ -782,6 +831,7 @@
     try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged', {detail:{user:safeUser, source:source || 'auth-login'}})); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
     try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
     stabilizePostLoginRoute(safeUser, source || 'auth-login');
+    startRemoteSession(safeUser, source || 'auth-login');
     if(options.enableBiometric){ setTimeout(function(){ registerBiometric(safeUser); }, 350); }
     return true;
   }
@@ -819,6 +869,7 @@
   }
   function logout(reason){
     var user = sessionUser();
+    endRemoteSession(user, reason || 'manual');
     rawRemove(AUTH_KEY);
     clearCurrentUser();
     audit('User Logout', (user && (user.username || user.id)) || reason || 'manual', 'info');
