@@ -21,6 +21,25 @@
   function currentLang(){return normalizeLang(safeStorageGet()||document.documentElement.getAttribute('lang')||DEFAULT_LANG);}
   function getDict(lang){return dictionaries[normalizeLang(lang)]||dictionaries[DEFAULT_LANG]||{};}
   function translate(key,lang){return getPath(getDict(lang||currentLang()),key);}
+  function normalizeTextValue(value){return String(value||'').replace(/\s+/g,' ').trim();}
+  function hashText(value){
+    var str=normalizeTextValue(value);
+    var h=0x811c9dc5;
+    for(var i=0;i<str.length;i++){
+      h^=str.charCodeAt(i);
+      h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24);
+    }
+    return 'h'+('00000000'+(h>>>0).toString(16)).slice(-8);
+  }
+  function legacyHashText(value){
+    /* SHA-1 keys generated at build time are exposed through a browser-safe lookup map below. */
+    var str=normalizeTextValue(value);
+    return window.PETATOE_I18N_SHA1_KEYS&&window.PETATOE_I18N_SHA1_KEYS[str];
+  }
+  function phraseKeyFor(value){return legacyHashText(value)||hashText(value);}
+  function translatePhraseByKey(key,lang){return getPath(getDict(lang||currentLang()),'autoPhrases.'+key);}
+  var autoTextNodeKeys=new WeakMap();
+  var autoAttrKeys=new WeakMap();
   function setText(selector,key,lang){
     var el=document.querySelector(selector), value=translate(key,lang);
     if(el&&typeof value==='string') el.textContent=value;
@@ -40,6 +59,59 @@
     var el=document.querySelector(selector), value=translate(key,lang);
     if(el&&typeof value==='string') el.textContent=value;
   }
+
+  function shouldSkipAutoI18n(node){
+    if(!node) return true;
+    var el=node.nodeType===1?node:node.parentElement;
+    if(!el) return true;
+    return !!(el.closest('script,style,noscript,code,pre,#petLanguageSwitcher')||el.closest('[data-i18n-skip="true"]'));
+  }
+  function translateAutoTextNodes(lang){
+    lang=normalizeLang(lang||currentLang());
+    if(!document.body) return;
+    var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(node){
+      if(shouldSkipAutoI18n(node)) return NodeFilter.FILTER_REJECT;
+      var txt=normalizeTextValue(node.nodeValue);
+      if(!txt) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }});
+    var nodes=[]; while(walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(function(node){
+      var existingKey=autoTextNodeKeys.get(node);
+      var key=existingKey||phraseKeyFor(node.nodeValue);
+      var value=translatePhraseByKey(key,lang);
+      if(typeof value==='string'){
+        autoTextNodeKeys.set(node,key);
+        node.nodeValue=node.nodeValue.replace(/\S[\s\S]*\S|\S/,value);
+      }
+    });
+  }
+  function translateAutoAttributes(lang){
+    lang=normalizeLang(lang||currentLang());
+    if(!document.body) return;
+    var attrs=['placeholder','title','aria-label','value'];
+    document.querySelectorAll('input,textarea,button,select,option,[title],[aria-label]').forEach(function(el){
+      if(shouldSkipAutoI18n(el)) return;
+      attrs.forEach(function(attr){
+        if(!el.hasAttribute||!el.hasAttribute(attr)) return;
+        if(attr==='value'&&!(el.tagName==='INPUT'&&(el.type==='button'||el.type==='submit'||el.type==='reset'))) return;
+        var current=el.getAttribute(attr);
+        var bucket=autoAttrKeys.get(el)||{};
+        var key=bucket[attr]||phraseKeyFor(current);
+        var value=translatePhraseByKey(key,lang);
+        if(typeof value==='string'){
+          bucket[attr]=key;
+          autoAttrKeys.set(el,bucket);
+          el.setAttribute(attr,value);
+        }
+      });
+    });
+  }
+  function translateAutoStaticPhrases(lang){
+    translateAutoAttributes(lang);
+    translateAutoTextNodes(lang);
+  }
+
   function applyDataAttributes(lang){
     document.querySelectorAll('[data-i18n]').forEach(function(el){
       var value=translate(el.getAttribute('data-i18n'),lang);
@@ -125,8 +197,11 @@
   var reapplyTimer=null;
   function reapplyLanguage(lang){
     lang=normalizeLang(lang||currentLang());
+    applying=true;
     applyDataAttributes(lang);
     applyKnownStaticTexts(lang);
+    translateAutoStaticPhrases(lang);
+    applying=false;
   }
   function scheduleReapply(lang){
     lang=normalizeLang(lang||currentLang());
