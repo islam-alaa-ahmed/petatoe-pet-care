@@ -122,10 +122,11 @@
     if(!el) return true;
     return !!(el.closest('script,style,noscript,code,pre,#petLanguageSwitcher')||el.closest('[data-i18n-skip="true"]'));
   }
-  function translateAutoTextNodes(lang){
+  function translateAutoTextNodes(lang,root){
     lang=normalizeLang(lang||currentLang());
-    if(!document.body) return;
-    var walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:function(node){
+    root=root&&root.nodeType?root:document.body;
+    if(!root) return;
+    var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:function(node){
       if(shouldSkipAutoI18n(node)) return NodeFilter.FILTER_REJECT;
       var txt=normalizeTextValue(node.nodeValue);
       if(!txt) return NodeFilter.FILTER_REJECT;
@@ -142,11 +143,15 @@
       }
     });
   }
-  function translateAutoAttributes(lang){
+  function translateAutoAttributes(lang,root){
     lang=normalizeLang(lang||currentLang());
-    if(!document.body) return;
+    root=root&&root.nodeType?root:document.body;
+    if(!root) return;
     var attrs=['placeholder','title','aria-label','value'];
-    document.querySelectorAll('input,textarea,button,select,option,[title],[aria-label]').forEach(function(el){
+    var elements=[];
+    if(root.nodeType===1&&root.matches&&root.matches('input,textarea,button,select,option,[title],[aria-label]')) elements.push(root);
+    if(root.querySelectorAll) elements=elements.concat(Array.prototype.slice.call(root.querySelectorAll('input,textarea,button,select,option,[title],[aria-label]')));
+    elements.forEach(function(el){
       if(shouldSkipAutoI18n(el)) return;
       attrs.forEach(function(attr){
         if(!el.hasAttribute||!el.hasAttribute(attr)) return;
@@ -163,24 +168,31 @@
       });
     });
   }
-  function translateAutoStaticPhrases(lang){
-    translateAutoAttributes(lang);
-    translateAutoTextNodes(lang);
+  function translateAutoStaticPhrases(lang,root){
+    translateAutoAttributes(lang,root);
+    translateAutoTextNodes(lang,root);
   }
 
-  function applyDataAttributes(lang){
-    document.querySelectorAll('[data-i18n]').forEach(function(el){
+  function selectWithin(root,selector){
+    root=root&&root.nodeType?root:document;
+    var out=[];
+    if(root.nodeType===1&&root.matches&&root.matches(selector)) out.push(root);
+    if(root.querySelectorAll) out=out.concat(Array.prototype.slice.call(root.querySelectorAll(selector)));
+    return out;
+  }
+  function applyDataAttributes(lang,root){
+    selectWithin(root,'[data-i18n]').forEach(function(el){
       var value=translate(el.getAttribute('data-i18n'),lang);
       if(typeof value==='string') el.textContent=value;
     });
-    document.querySelectorAll('[data-i18n-title]').forEach(function(el){
+    selectWithin(root,'[data-i18n-title]').forEach(function(el){
       var value=translate(el.getAttribute('data-i18n-title'),lang);
       if(typeof value==='string'){
         el.setAttribute('title',value);
         el.setAttribute('aria-label',value);
       }
     });
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(function(el){
+    selectWithin(root,'[data-i18n-placeholder]').forEach(function(el){
       var value=translate(el.getAttribute('data-i18n-placeholder'),lang);
       if(typeof value==='string') el.setAttribute('placeholder',value);
     });
@@ -265,6 +277,19 @@
     translateAutoStaticPhrases(lang);
     applying=false;
   }
+  function translateAddedSubtree(root,lang){
+    if(!root||!root.nodeType) return;
+    lang=normalizeLang(lang||currentLang());
+    patchRuntimeTextAPIs();
+    applying=true;
+    try{
+      applyDataAttributes(lang,root);
+      translateAutoStaticPhrases(lang,root);
+      if(root.nodeType===1&&(root.id==='nav'||root.closest&&root.closest('#nav'))) setSidebarTexts(lang);
+    }finally{
+      applying=false;
+    }
+  }
   function scheduleReapply(lang,delay){
     lang=normalizeLang(lang||currentLang());
     if(reapplyTimer) clearTimeout(reapplyTimer);
@@ -307,7 +332,6 @@
       setNavigationReady(true);
       finishInitialPaint();
     }
-    scheduleReapply(lang,160);
     window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
   }
   function init(){
@@ -319,7 +343,7 @@
     document.querySelectorAll('.pet-language-option[data-pet-lang]').forEach(function(opt){
       if(!opt.dataset.petI18nBound){
         opt.dataset.petI18nBound='1';
-        opt.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();applyLanguage(opt.getAttribute('data-pet-lang'),{renderDashboard:true});});
+        opt.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();applyLanguage(opt.getAttribute('data-pet-lang'),{renderDashboard:false});});
       }
     });
     if(!document.documentElement.dataset.petI18nOutsideBound){
@@ -330,13 +354,24 @@
     if(!document.documentElement.dataset.petI18nMutationBound){
       document.documentElement.dataset.petI18nMutationBound='1';
       try{
+        var pendingRoots=[];
+        var pendingFrame=0;
+        function flushAddedRoots(){
+          pendingFrame=0;
+          if(applying||!pendingRoots.length) return;
+          var roots=pendingRoots.splice(0,pendingRoots.length);
+          roots.forEach(function(root){
+            if(root&&root.nodeType===1&&!root.closest('#petLanguageSwitcher')) translateAddedSubtree(root,currentLang());
+          });
+        }
         var observer=new MutationObserver(function(mutations){
           if(applying) return;
-          for(var i=0;i<mutations.length;i++){
-            var t=mutations[i].target;
-            if(t&&t.closest&&t.closest('#petLanguageSwitcher')) continue;
-            if(isInsideI18nScope(t)){scheduleReapply(currentLang(),120);break;}
-          }
+          mutations.forEach(function(mutation){
+            Array.prototype.forEach.call(mutation.addedNodes||[],function(node){
+              if(node&&node.nodeType===1) pendingRoots.push(node);
+            });
+          });
+          if(pendingRoots.length&&!pendingFrame) pendingFrame=requestAnimationFrame(flushAddedRoots);
         });
         observer.observe(document.body||document.documentElement,{childList:true,subtree:true});
       }catch(_){}

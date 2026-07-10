@@ -1,16 +1,15 @@
-/* PETATOE v9 i18n first-paint guard */
+/* PETATOE v9 i18n first-paint guard — Phase 5.1
+   Keep the document measurable while preventing a stale-language flash. */
 html[data-pet-i18n-booting="true"] body{
-  visibility:hidden!important;
   opacity:0!important;
+  pointer-events:none!important;
 }
 html:not([data-pet-i18n-booting="true"]) body{
-  visibility:visible;
   opacity:1;
-  transition:opacity .12s ease-out;
+  pointer-events:auto;
+  transition:opacity .10s ease-out;
 }
-/* Navigation is never hidden independently from the page.
-   The first-paint body guard already prevents locale flash; hiding #nav here
-   could leave the sidebar permanently blank when nav was built before i18n listeners. */
+/* Navigation is never hidden independently from the page. */
 @media (prefers-reduced-motion: reduce){
   html:not([data-pet-i18n-booting="true"]) body{transition:none;}
 }

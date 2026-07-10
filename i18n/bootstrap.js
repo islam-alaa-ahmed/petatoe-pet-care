@@ -21,5 +21,5 @@
   window.__PETATOE_INITIAL_LANGUAGE__=lang;
   window.__PETATOE_I18N_BOOT_FAILSAFE__=setTimeout(function(){
     root.removeAttribute('data-pet-i18n-booting');
-  },5000);
+  },1500);
 })();
