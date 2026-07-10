@@ -397,7 +397,8 @@
     format:window.PETATOE_FORMATTER||null,
     direction:window.PETATOE_DIRECTION||null,
     reapply:function(){scheduleReapply(currentLang());},
-    apply:applyLanguage
+    apply:applyLanguage,
+    applySubtree:function(root){translateAddedSubtree(root,currentLang());}
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
 })();

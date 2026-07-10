@@ -998,24 +998,24 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 </div>
 </div>
 <div class="panel active" id="dashboard">
-<div class="section-head"><div><h2>Dashboard</h2><p>لوحة متابعة مبيعات PETATOE بالريال السعودي</p></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="pet-page-pdf-btn pet-dashboard-pdf-btn" id="safeDashboardPdfBtn" type="button">🖨️ تصدير الصفحة PDF</button><button class="btn btn-primary" data-pet-action="dashboard-refresh">🔄 تحديث</button></div></div>
-<div class="filters"><select data-pet-filter="dashboard" id="fYear"><option value="">كل السنوات</option></select><select data-pet-filter="dashboard" id="fMonth"><option value="">كل الشهور</option></select><select data-pet-filter="dashboard" id="fVan"><option value="">كل السيارات</option></select><select data-pet-filter="dashboard" id="fPay"><option value="">كل طرق الدفع</option></select><button class="btn btn-ghost" data-pet-action="dashboard-reset">🔄 Reset</button></div>
+<div class="section-head"><div><h2 data-i18n="dashboard.title">Dashboard</h2><p data-i18n="dashboard.subtitle">لوحة متابعة مبيعات PETATOE بالريال السعودي</p></div><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="pet-page-pdf-btn pet-dashboard-pdf-btn" id="safeDashboardPdfBtn" type="button" data-i18n="actions.exportPagePdf">🖨️ تصدير الصفحة PDF</button><button class="btn btn-primary" data-pet-action="dashboard-refresh" data-i18n="actions.refresh">🔄 تحديث</button></div></div>
+<div class="filters"><select data-pet-filter="dashboard" id="fYear"><option value="">كل السنوات</option></select><select data-pet-filter="dashboard" id="fMonth"><option value="">كل الشهور</option></select><select data-pet-filter="dashboard" id="fVan"><option value="">كل السيارات</option></select><select data-pet-filter="dashboard" id="fPay"><option value="">كل طرق الدفع</option></select><button class="btn btn-ghost" data-pet-action="dashboard-reset" data-i18n="actions.reset">🔄 Reset</button></div>
 <div class="payroll-home-access" data-payroll-home-access="1">
 <button class="payroll-home-card" onclick="PETATOEInlineHandlers.moduleCall('router','openTab','payroll')" type="button">
 <span class="payroll-home-icon">💼</span>
-<span><b>إدارة الرواتب</b><small>إنشاء كشوف الرواتب والاعتمادات</small></span>
+<span><b data-i18n="payroll.manage">إدارة الرواتب</b><small data-i18n="payroll.manageSub">إنشاء كشوف الرواتب والاعتمادات</small></span>
 </button>
 <button class="payroll-home-card" onclick="PETATOEInlineHandlers.moduleCall('router','openTab','salarySlip')" type="button">
 <span class="payroll-home-icon">📄</span>
-<span><b>كشف الراتب</b><small>عرض كشف راتب المستخدم الحالي فقط</small></span>
+<span><b data-i18n="payroll.slip">كشف الراتب</b><small data-i18n="payroll.slipSub">عرض كشف راتب المستخدم الحالي فقط</small></span>
 </button>
 </div>
 <div class="ytd-banner" id="ytdBanner" style="display:none"></div>
 <div class="kpis" id="kpis"></div>
-<div class="grid dashboard-main-grid"><div class="card monthly-wide-card"><div class="card-title"><b>📊 المبيعات الشهرية</b><select data-pet-filter="dashboard" id="chartType"><option value="bar">Bar</option><option value="line">Line</option></select></div><div class="chart monthly-wide-chart"><canvas id="monthlyChart"></canvas></div></div></div>
-<div class="dashboard-rankings-stack"><div class="card dashboard-ranking-card dashboard-services-card"><div class="card-title"><b>📦 أعلى الخدمات مبيعاً</b></div><div class="chart dashboard-ranking-chart"><canvas id="servicesChart"></canvas></div></div><div class="card dashboard-ranking-card dashboard-clients-card"><div class="card-title"><b>🏆 أعلى العملاء إنفاقاً</b></div><div class="chart dashboard-ranking-chart"><canvas id="clientsChart"></canvas></div></div></div>
-<div class="grid dashboard-main-grid" style="margin-top:16px"><div class="card payment-below-card"><div class="card-title"><b>💳 المبيعات حسب طريقة الدفع</b><span class="pill">SAR</span></div><div class="payment-below-layout"><div class="chart sm"><canvas id="payChart"></canvas></div><div class="value-list" id="payValues"></div></div></div></div>
-<div class="grid" style="margin-top:16px"><div class="card"><div class="card-title"><b>🚐 مقارنة السيارات</b></div><div class="grid-3" id="vanCards"></div></div><div class="card"><div class="card-title"><b>⚡ مؤشرات سريعة</b></div><div class="insights" id="insights"></div></div></div>
+<div class="grid dashboard-main-grid"><div class="card monthly-wide-card"><div class="card-title"><b data-i18n="dashboard.monthlySales">📊 المبيعات الشهرية</b><select data-pet-filter="dashboard" id="chartType"><option value="bar">Bar</option><option value="line">Line</option></select></div><div class="chart monthly-wide-chart"><canvas id="monthlyChart"></canvas></div></div></div>
+<div class="dashboard-rankings-stack"><div class="card dashboard-ranking-card dashboard-services-card"><div class="card-title"><b data-i18n="dashboard.topServices">📦 أعلى الخدمات مبيعاً</b></div><div class="chart dashboard-ranking-chart"><canvas id="servicesChart"></canvas></div></div><div class="card dashboard-ranking-card dashboard-clients-card"><div class="card-title"><b data-i18n="dashboard.topClients">🏆 أعلى العملاء إنفاقاً</b></div><div class="chart dashboard-ranking-chart"><canvas id="clientsChart"></canvas></div></div></div>
+<div class="grid dashboard-main-grid" style="margin-top:16px"><div class="card payment-below-card"><div class="card-title"><b data-i18n="dashboard.paymentSales">💳 المبيعات حسب طريقة الدفع</b><span class="pill">SAR</span></div><div class="payment-below-layout"><div class="chart sm"><canvas id="payChart"></canvas></div><div class="value-list" id="payValues"></div></div></div></div>
+<div class="grid" style="margin-top:16px"><div class="card"><div class="card-title"><b data-i18n="dashboard.vansComparison">🚐 مقارنة السيارات</b></div><div class="grid-3" id="vanCards"></div></div><div class="card"><div class="card-title"><b data-i18n="dashboard.quickInsights">⚡ مؤشرات سريعة</b></div><div class="insights" id="insights"></div></div></div>
 </div>
 <div class="panel" id="sales"><div class="section-head"><div><h2 data-i18n="sales.title">Sales Analytics</h2><p data-i18n="sales.subtitle">تحليل تفصيلي للمبيعات الشهرية والربعية</p></div><div style="display:flex;gap:8px"><button class="exp-btn exp-btn-pdf" id="safeExportSalesPdfBtn" data-i18n="exports.pdf">🖨️ PDF</button><button class="exp-btn exp-btn-excel" id="safeExportSalesExcelBtn" data-i18n="exports.excel">⬇️ Excel</button></div></div><div class="card"><div class="chart-head"><div><b><span data-i18n="sales.monthlyTrend">Monthly Trend</span> <span id="salesYearTitle"></span> 🗓️</b><br/><small data-i18n="sales.monthlyTrendNote">الشكل المعتمد: قيم واضحة فوق الأعمدة بدون تداخل</small></div><div class="year-strip" id="salesYearBtns"></div></div><div class="chart xl"><canvas id="salesTrendChart"></canvas></div></div><div class="card" style="margin-top:16px"><div class="chart-head"><div><b data-i18n="sales.quarterlyComparison">Quarterly Comparison (آخر سنتين متاحتين) 🗓️</b><br/><small data-i18n="sales.quarterlyNote">كل ربع من السنة السابقة بجانب آخر سنة متاحة، والقيم فوق كل عمود</small></div></div><div class="chart xl"><canvas id="quarterChart"></canvas></div></div><div class="card" style="margin-top:16px"><div class="card-title"><b data-i18n="sales.quarterDetails">📊 تفاصيل الأرباع</b></div><div class="table-wrap compact-table"><table id="quarterTable"></table></div></div></div>
 <div class="panel" id="vans"><div class="section-head"><div><h2 data-i18n="vans.title">Vans Performance</h2><p data-i18n="vans.subtitle">تقارير السيارات بقيم واضحة وفلاتر سنة / كل السنوات</p></div><div style="display:flex;gap:8px"><button class="exp-btn exp-btn-pdf" id="safeExportVansPdfBtn" data-i18n="exports.pdf">🖨️ PDF</button><button class="exp-btn exp-btn-excel" id="safeExportVansExcelBtn" data-i18n="exports.excel">⬇️ Excel</button></div></div><div class="grid-2"><div class="card"><div class="chart-head"><div><b data-i18n="vans.salesDistribution">🥧 توزيع مبيعات السيارات</b><br/><small id="vansDistSub"></small></div><div class="year-strip" id="vanPieBtns"></div></div><div class="grid" style="grid-template-columns:.75fr 1fr;align-items:center"><div class="value-list" id="vanPieValues"></div><div class="chart"><canvas id="vansPieChart"></canvas></div></div></div><div class="card"><div class="chart-head"><div><b data-i18n="vans.monthlyPerformance">📈 أداء السيارات الشهري</b><br/><small data-i18n="vans.pointValuesNote">القيم منفصلة فوق النقاط بدون تداخل</small></div><div class="year-strip" id="vanLineBtns"></div></div><div class="chart"><canvas id="vansCompareChart"></canvas></div></div></div><div class="card" style="margin-top:16px"><div class="chart-head"><div><b data-i18n="vans.monthlySales">🚐 مبيعات السيارات شهرياً</b><br/><small data-i18n="vans.groupedBarsNote">أعمدة مجمعة مع إجمالي المبيعات لكل شهر</small></div><div class="year-strip" id="vanBarBtns"></div></div><div class="chart xl"><canvas id="vansMonthlyBars"></canvas></div><div class="sar-note" data-i18n="vans.sarNote">جميع القيم بالريال السعودي وتشمل ضريبة القيمة المضافة</div></div><div class="card" style="margin-top:16px"><div class="card-title"><b data-i18n="vans.details">تفاصيل السيارات</b></div><div class="table-wrap compact-table"><table id="vansTable"></table></div></div></div>
@@ -3926,7 +3926,7 @@ function petatoeUpdateWhatIf(){
 <script src="smart/smart-services.js"></script>
 <script src="smart/smart-vehicles.js"></script>
 <script src="smart/smart-customers.js"></script>
-<script src="smart/smart-reports-core.js"></script>
+<script src="smart/smart-reports-core.js?v=9.0.0-phase5.3a"></script>
 <script src="smart/smart-router.js"></script>
 <script src="smart/smart-reports-interactions-real.js"></script>
 <script src="smart/smart-reports-export-engine.js"></script>
@@ -4597,11 +4597,11 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 })();
 </script>
 
-<script src="i18n/ar.js?v=9.0.0-phase5.2"></script>
-<script src="i18n/en.js?v=9.0.0-phase5.2"></script>
+<script src="i18n/ar.js?v=9.0.0-phase5.3a"></script>
+<script src="i18n/en.js?v=9.0.0-phase5.3a"></script>
 <script src="i18n/formatter.js?v=9.0.0-phase5.1"></script>
 <script src="i18n/direction.js?v=9.0.0-phase5.1"></script>
-<script src="i18n/index.js?v=9.0.0-phase5.2"></script>
+<script src="i18n/index.js?v=9.0.0-phase5.3a"></script>
 <script src="i18n/audit.js?v=9.0.0-phase5.1"></script>
 <script src="i18n/coverage.js?v=9.0.0-phase5.1"></script>
 <script src="diagnostics/diagnostics-core.js"></script>
