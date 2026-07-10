@@ -1110,7 +1110,30 @@
       'results': 'نتيجة',
       'noResults': 'لا توجد نتائج مطابقة',
       'supabaseUnavailable': 'عميل Supabase غير متاح',
-      'loadFailed': 'تعذر تحميل بيانات مركز الترجمة'
+      'loadFailed': 'تعذر تحميل بيانات مركز الترجمة',
+      'subtitleManage': 'إدارة الترجمات ومراجعتها واعتمادها مع سجل كامل للتغييرات.',
+      'draft': 'مسودة',
+      'rejected': 'مرفوض',
+      'actions': 'الإجراءات',
+      'superAdminAccess': 'صلاحية اعتماد كاملة',
+      'editorAccess': 'صلاحية تحرير ومراجعة',
+      'open': 'فتح',
+      'editTranslation': 'تعديل الترجمة',
+      'sourceText': 'النص المصدر',
+      'rejectionReason': 'سبب الرفض',
+      'saveDraft': 'حفظ كمسودة',
+      'submitReview': 'إرسال للمراجعة',
+      'approve': 'اعتماد',
+      'reject': 'رفض',
+      'history': 'سجل التغييرات',
+      'version': 'الإصدار',
+      'noHistory': 'لا يوجد سجل تغييرات',
+      'translationRequired': 'الترجمة مطلوبة',
+      'status_approved': 'معتمد',
+      'status_pending': 'قيد المراجعة',
+      'status_rejected': 'مرفوض',
+      'status_draft': 'مسودة',
+      'status_missing': 'ناقص'
 }
   };
 })();

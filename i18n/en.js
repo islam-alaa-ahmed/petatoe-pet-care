@@ -1110,7 +1110,30 @@
       'results': 'results',
       'noResults': 'No matching results',
       'supabaseUnavailable': 'Supabase client is unavailable',
-      'loadFailed': 'Unable to load Localization Center data'
+      'loadFailed': 'Unable to load Localization Center data',
+      'subtitleManage': 'Manage, review, and approve translations with a complete change history.',
+      'draft': 'Draft',
+      'rejected': 'Rejected',
+      'actions': 'Actions',
+      'superAdminAccess': 'Full approval access',
+      'editorAccess': 'Edit and review access',
+      'open': 'Open',
+      'editTranslation': 'Edit Translation',
+      'sourceText': 'Source Text',
+      'rejectionReason': 'Rejection Reason',
+      'saveDraft': 'Save Draft',
+      'submitReview': 'Submit for Review',
+      'approve': 'Approve',
+      'reject': 'Reject',
+      'history': 'Change History',
+      'version': 'Version',
+      'noHistory': 'No change history',
+      'translationRequired': 'Translation text is required',
+      'status_approved': 'Approved',
+      'status_pending': 'Pending review',
+      'status_rejected': 'Rejected',
+      'status_draft': 'Draft',
+      'status_missing': 'Missing'
 }
   };
 })();
