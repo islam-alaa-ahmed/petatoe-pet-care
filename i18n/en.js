@@ -10,6 +10,26 @@
     topbar:{reports:'📑 Reports',pdf:'📊 PDF Report',searchTitle:'Search',searchOpen:'Open search',launcherTitle:'Open main menu',notifications:'Notifications',loading:'Loading'},
     globalSearch:{placeholder:'🔍 Search customer, service, vehicle, or invoice...', shortcut:'ESC to close | Enter to open | Ctrl+K or / to search'},
     dashboard:{title:'Dashboard',subtitle:'PETATOE sales dashboard in Saudi Riyal',monthlySales:'📊 Monthly Sales',topServices:'📦 Top Selling Services',topClients:'🏆 Top Spending Customers',paymentSales:'💳 Sales by Payment Method',vansComparison:'🚐 Vehicle Comparison',quickInsights:'⚡ Quick Insights',totalSales:'Total Sales',salesBeforeVat:'Sales Before VAT',vat:'VAT',operationsCount:'Operations Count',customersCount:'Customers Count',averageInvoice:'Average Invoice',allYearsMetric:'• Total metric for all years',noChange:'• No change',newMetric:'▲ New 100%',increase:'increase',decrease:'decrease',comparedSamePeriod:'compared with the same period',period:'Period',invoiceCount:'Invoice Count',bestMonth:'Best Month',averageBeforeVat:'Average Before VAT',totalVat:'Total VAT',includingVat:'Including VAT',beforeVat:'Before VAT',operatingDays:'Operating Days',dailyAverageOperations:'Daily Average Operations',totalCustomers:'Total Customers',averageOperationsPerCustomer:'Average Operations per Customer',topPaymentMethod:'Top Payment Method',bestService:'Best Service',bestPerforming:'Best Performing',mostRequestedService:'Most Requested Service',total:'Total',vehicle:'Vehicle',best:'🏆 Best',noData:'No data available',operationUnit:'operation',averageLabel:'Average',totalSalesDesc:'Shows total sales value for the selected period or year on the main dashboard.',salesBeforeVatDesc:'Total sales value before VAT as recorded in the imported Excel file or manual data entry.',vatDesc:'Total VAT value from the original data column without report-side recalculation.',operationsCountDesc:'Total number of sales rows or operations after applying the main dashboard filters.',customersCountDesc:'Unique customers within the selected period after applying filters.',averageInvoiceDesc:'Average invoice value equals total sales divided by unique invoice count.'},
+    smartReportsSource:{
+      empty:{
+        noData:'Not enough data to display Smart Reports. Upload an Excel file or select another year.',
+        noCriticalServices:'No critical services',
+        noClearServiceDecline:'No clear decline was detected in current services',
+        noExceptionalGrowth:'No exceptional growth detected',
+        balancedActivity:'Activity is distributed evenly',
+        noCustomerRisks:'No clear customer risks',
+        noDormantMajorCustomers:'No major customers have been inactive for an extended period',
+        noCustomerData:'No customer data to display.',
+        noYearComparisonData:'Not enough data to compare the selected years.',
+        noGrowthData:'No growth data for the selected period.',
+        noDeclineData:'No decline data for the selected period.',
+        noMonthlyComparisonData:'No monthly comparison data.',
+        noContractCandidateData:'Not enough customer data in the selected period to identify contract candidates.'
+      },
+      filters:{allYears:'All Years',year:'Year'},
+      labels:{estimatedError:'Estimated Error',estimatedDecline:'Estimated Decline',estimatedGrowth:'Estimated Growth',daysAbsent:'days inactive'},
+      status:{declineRisk:'Decline Risk',reassuring:'Reassuring',growthCandidate:'Growth Candidate',neutral:'Neutral',customerAtRisk:'Customer at Risk',notSpecified:'Not Specified',targetAchieved:'Target Achieved',targetNotAchieved:'Target Not Achieved'}
+    },
     actions:{refresh:'🔄 Refresh',exportPagePdf:'🖨️ Export Page PDF',reset:'Reset 🔄'},
     filters:{allYears:'All Years',allMonths:'All Months',allVehicles:'All Vehicles',allPayments:'All Payment Methods'},
     payroll:{manage:'Payroll Management',manageSub:'Create payroll statements and approvals',slip:'Payroll Statement',slipSub:'Show the current user payroll statement only'},

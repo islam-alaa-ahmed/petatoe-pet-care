@@ -7,6 +7,21 @@
 
 
 
+function smartReportT(key, fallback, params){
+  try{
+    if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.t==='function'){
+      const value=window.PETATOE_I18N.t('smartReportsSource.'+key,params||{});
+      if(typeof value==='string'&&value.trim()) return value;
+    }
+  }catch(_){ }
+  let out=String(fallback==null?'':fallback);
+  Object.keys(params||{}).forEach(k=>{out=out.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
+  return out;
+}
+function smartReportHtml(key, fallback, params){
+  return htmlSafe(smartReportT(key,fallback,params));
+}
+
 function smartSafeHTML(target, html, reason){
   const el=(typeof target==='string')?$(target):target;
   if(!el)return false;
@@ -34,7 +49,7 @@ function renderSmartReports(){
   data=smartApplyGlobalFilters(data);
   try{ if(window.PETATOESmartDataEngine) window.PETATOESmartDataEngine.buildSmartData(records||[]); }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-reports-core.js', e, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
   if(!data.length){try{ if(window.__PETATOE_SMART_PERF__){ window.__PETATOE_SMART_PERF__.push({name:'SmartReports.fullRender.beforeDOM', ms:+(((window.performance&&performance.now)?performance.now():Date.now())-__smartRenderPerfStart).toFixed(2), at:Date.now(), records:data.length}); } }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-reports-core.js', e, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-  smartSafeHTML('smartReportsArea','<div class="smart-empty">لا توجد بيانات كافية لعرض التقارير الذكية. ارفع ملف Excel أو اختر سنة أخرى.</div>','smart empty state');return;}
+  smartSafeHTML('smartReportsArea',`<div class="smart-empty">${smartReportHtml('empty.noData','لا توجد بيانات كافية لعرض التقارير الذكية. ارفع ملف Excel أو اختر سنة أخرى.')}</div>`,'smart empty state');return;}
 
   const total=data.reduce((s,r)=>s+parseNum(r.totalInc),0), count=data.length, avg=safeDiv(total,count);
   const smartEngineData=(window.PETATOESmartDataEngine&&window.PETATOESmartDataEngine.buildSmartData)?window.PETATOESmartDataEngine.buildSmartData(data):null;
@@ -73,11 +88,11 @@ function renderSmartReports(){
     window.smartOverviewCardsYear=smartOverviewDefaultYear;
   }
   const overviewCardsSelected=String(window.smartOverviewCardsYear)==='all'?'all':Number(window.smartOverviewCardsYear);
-  const overviewCardsYearLabel=overviewCardsSelected==='all'?'كل السنوات':String(overviewCardsSelected);
+  const overviewCardsYearLabel=overviewCardsSelected==='all'?smartReportT('filters.allYears','كل السنوات'):String(overviewCardsSelected);
   const overviewCardsData=overviewCardsSelected==='all'?data.slice():byYear(data,overviewCardsSelected);
-  const overviewCardsYearOptions=[`<button type="button" class="smart-overview-card-year-btn ${overviewCardsSelected==='all'?'active':''}" data-smart-action="overview-year" data-year="all">كل السنوات</button>`]
+  const overviewCardsYearOptions=[`<button type="button" class="smart-overview-card-year-btn ${overviewCardsSelected==='all'?'active':''}" data-smart-action="overview-year" data-year="all">${smartReportHtml('filters.allYears','كل السنوات')}</button>`]
     .concat(smartOverviewCardYears.map(yy=>`<button type="button" class="smart-overview-card-year-btn ${overviewCardsSelected===yy?'active':''}" data-smart-action="overview-year" data-year="${yy}">${yy}</button>`)).join('');
-  const overviewCardsYearFilter=`<div class="smart-overview-card-year-filter"><span>السنة</span><div class="smart-overview-card-year-list">${overviewCardsYearOptions}</div></div>`;
+  const overviewCardsYearFilter=`<div class="smart-overview-card-year-filter"><span>${smartReportHtml('filters.year','السنة')}</span><div class="smart-overview-card-year-list">${overviewCardsYearOptions}</div></div>`;
   const cardTotal=overviewCardsData.reduce((s,r)=>s+parseNum(r.totalInc),0), cardCount=overviewCardsData.length, cardAvg=safeDiv(cardTotal,cardCount);
   const cardClients=[...new Set(overviewCardsData.map(r=>r.client).filter(Boolean))];
   const cardInvoices=[...new Set(overviewCardsData.map(r=>r.invoice).filter(Boolean))];
@@ -109,10 +124,10 @@ function renderSmartReports(){
   const forecast=monthly.map(x=> x.idx<=lastActual ? x.sales : runRate);
   const aiForecast=buildPetatoeAIForecast(monthly,data,lastActual);
   window.petatoeAIForecastState=aiForecast;
-  const aiModelCards=(aiForecast.models||[]).map((m,i)=>`<div class="ai-model-card ${i===0?'active':''}"><b>${i===0?'✅ ':''}${m.name}</b><span>${m.desc}</span><span>خطأ تقديري: ${Math.round((m.error||0)*100)}%</span></div>`).join('');
-  const aiServiceRiskRows=(aiForecast.serviceRisk||[]).map(x=>`<div class="ai-risk-row"><div><strong>${htmlSafe(x.name)}</strong><small>تراجع تقديري ${fmt(Math.abs(x.change))}%</small></div><span class="risk-pill bad">خطر هبوط</span></div>`).join('')||'<div class="ai-risk-row"><div><strong>لا توجد خدمات حرجة</strong><small>لم يظهر هبوط واضح في الخدمات الحالية</small></div><span class="risk-pill good">مطمئن</span></div>';
-  const aiServiceGrowthRows=(aiForecast.serviceGrowth||[]).map(x=>`<div class="ai-risk-row"><div><strong>${htmlSafe(x.name)}</strong><small>نمو تقديري ${fmt(x.change)}%</small></div><span class="risk-pill good">مرشحة للنمو</span></div>`).join('')||'<div class="ai-risk-row"><div><strong>لا يوجد نمو استثنائي</strong><small>النشاط موزع بشكل متوازن</small></div><span class="risk-pill info">محايد</span></div>';
-  const aiCustomerRiskRows=(aiForecast.customerRisk||[]).map(x=>`<div class="ai-risk-row" data-name="${htmlSafe(x.name)}" data-smart-action="open-customer360"><div><strong>${htmlSafe(x.name)}</strong><small>${fmt0(x.days)} يوم غياب — ${money(x.total)}</small></div><span class="risk-pill bad">عميل معرض</span></div>`).join('')||'<div class="ai-risk-row"><div><strong>لا توجد مخاطر عملاء واضحة</strong><small>لا يوجد عملاء كبار متوقفون لفترة طويلة</small></div><span class="risk-pill good">مطمئن</span></div>';
+  const aiModelCards=(aiForecast.models||[]).map((m,i)=>`<div class="ai-model-card ${i===0?'active':''}"><b>${i===0?'✅ ':''}${m.name}</b><span>${m.desc}</span><span>${smartReportHtml('labels.estimatedError','خطأ تقديري')}: ${Math.round((m.error||0)*100)}%</span></div>`).join('');
+  const aiServiceRiskRows=(aiForecast.serviceRisk||[]).map(x=>`<div class="ai-risk-row"><div><strong>${htmlSafe(x.name)}</strong><small>${smartReportHtml('labels.estimatedDecline','تراجع تقديري')} ${fmt(Math.abs(x.change))}%</small></div><span class="risk-pill bad">${smartReportHtml('status.declineRisk','خطر هبوط')}</span></div>`).join('')||`<div class="ai-risk-row"><div><strong>${smartReportHtml('empty.noCriticalServices','لا توجد خدمات حرجة')}</strong><small>${smartReportHtml('empty.noClearServiceDecline','لم يظهر هبوط واضح في الخدمات الحالية')}</small></div><span class="risk-pill good">${smartReportHtml('status.reassuring','مطمئن')}</span></div>`;
+  const aiServiceGrowthRows=(aiForecast.serviceGrowth||[]).map(x=>`<div class="ai-risk-row"><div><strong>${htmlSafe(x.name)}</strong><small>${smartReportHtml('labels.estimatedGrowth','نمو تقديري')} ${fmt(x.change)}%</small></div><span class="risk-pill good">${smartReportHtml('status.growthCandidate','مرشحة للنمو')}</span></div>`).join('')||`<div class="ai-risk-row"><div><strong>${smartReportHtml('empty.noExceptionalGrowth','لا يوجد نمو استثنائي')}</strong><small>${smartReportHtml('empty.balancedActivity','النشاط موزع بشكل متوازن')}</small></div><span class="risk-pill info">${smartReportHtml('status.neutral','محايد')}</span></div>`;
+  const aiCustomerRiskRows=(aiForecast.customerRisk||[]).map(x=>`<div class="ai-risk-row" data-name="${htmlSafe(x.name)}" data-smart-action="open-customer360"><div><strong>${htmlSafe(x.name)}</strong><small>${fmt0(x.days)} ${smartReportHtml('labels.daysAbsent','يوم غياب')} — ${money(x.total)}</small></div><span class="risk-pill bad">${smartReportHtml('status.customerAtRisk','عميل معرض')}</span></div>`).join('')||`<div class="ai-risk-row"><div><strong>${smartReportHtml('empty.noCustomerRisks','لا توجد مخاطر عملاء واضحة')}</strong><small>${smartReportHtml('empty.noDormantMajorCustomers','لا يوجد عملاء كبار متوقفون لفترة طويلة')}</small></div><span class="risk-pill good">${smartReportHtml('status.reassuring','مطمئن')}</span></div>`;
   const analysisNow=String(y)==='all'
     ? (data.map(r=>smartDateValue(r)).filter(Boolean).sort((a,b)=>b-a)[0] || new Date())
     : (maxInvoiceDateForYear(records,y) || data.map(r=>smartDateValue(r)).filter(Boolean).sort((a,b)=>b-a)[0] || new Date());
@@ -292,7 +307,7 @@ function renderSmartReports(){
   const salesTargetNeedleY=(150 - 86*Math.sin(salesTargetNeedleAngle)).toFixed(1);
   const salesTargetRemaining=Math.max(0,salesTarget-salesTargetActual);
   const salesTargetOver=Math.max(0,salesTargetActual-salesTarget);
-  const salesTargetStatus=!salesTarget?'غير محدد':(salesTargetActual>=salesTarget?'تم تحقيق الهدف':'لم يكتمل الهدف');
+  const salesTargetStatus=!salesTarget?smartReportT('status.notSpecified','غير محدد'):(salesTargetActual>=salesTarget?smartReportT('status.targetAchieved','تم تحقيق الهدف'):smartReportT('status.targetNotAchieved','لم يكتمل الهدف'));
   const salesTargetYearButtons=salesTargetYears.map(yy=>`<button type="button" class="sales-target-year-btn ${Number(window.smartTargetYear)===Number(yy)?'active':''}" data-smart-action="target-year" data-year="${Number(yy)}">${yy}</button>`).join('');
   const salesTargetMonthButtons=MONTHS.map((m,idx)=>{const key=`${window.smartTargetYear}-${String(idx+1).padStart(2,'0')}`;const hasData=targetMonthsWithData.includes(idx);return `<button type="button" class="sales-target-month-btn ${salesTargetPeriod===key?'active':''} ${hasData?'has-data':'no-data'}" data-smart-action="target-period" data-period="${key}">${MAR[m]} ${window.smartTargetYear}</button>`;}).join('');
   const salesForecastNext=runRate;
@@ -437,7 +452,7 @@ function renderSmartReports(){
   const customerInsightLimit=Math.max(10, window.customerInsightTableLimit || 10);
   const customerInsightRows=allCustomerValueRows.slice(0,customerInsightLimit).map(x=>
     `<tr><td>${htmlSafe(x.name)}</td><td>${money(x.val)}</td><td>${x.visitsHtml}</td><td>${money(x.avgInvoice)}</td><td>${x.lastDate?fmtDateAr(x.lastDate):'—'}</td><td>${money(x.lastInvoiceValue)}</td><td>${x.visitMonthsHtml}</td><td>${fmt0(x.daysSince)}</td><td>${x.tierHtml}</td></tr>`
-  ).join('') || '<tr><td colspan="9">لا توجد بيانات عملاء للعرض.</td></tr>';
+  ).join('') || `<tr><td colspan="9">${smartReportHtml('empty.noCustomerData','لا توجد بيانات عملاء للعرض.')}</td></tr>`;
   const customerInsightMoreButton=allCustomerValueRows.length>customerInsightLimit
     ? `<div class="new-cust-table-footer"><button class="new-cust-more-btn" data-smart-action="customer-insight-more" data-limit="${customerInsightLimit+10}">اضغط لعرض المزيد ⌄</button><span>عرض ${fmt0(Math.min(customerInsightLimit,allCustomerValueRows.length))} من أصل ${fmt0(allCustomerValueRows.length)} عميل</span></div>`
     : `<div class="new-cust-table-footer"><span>تم عرض ${fmt0(allCustomerValueRows.length)} من أصل ${fmt0(allCustomerValueRows.length)} عميل</span></div>`;
@@ -583,7 +598,7 @@ function renderSmartReports(){
   const customerCompareRankHtml=function(x){return x.rankShift>0?`<span class="metric-up">⬆️ صعد ${fmt0(x.rankShift)} مركز</span>`:x.rankShift<0?`<span class="metric-down">⬇️ هبط ${fmt0(Math.abs(x.rankShift))} مركز</span>`:'—'};
   const customerCompareMore=function(key,arr,label){const lim=customerCompareLimitOf(key);return arr.length>lim?`<div class="new-cust-table-footer"><button class="new-cust-more-btn" data-smart-action="customer-compare-more" data-key="${key}">اضغط لعرض المزيد ⌄</button><span>عرض ${fmt0(Math.min(lim,arr.length))} من أصل ${fmt0(arr.length)} ${label}</span></div>`:`<div class="new-cust-table-footer"><span>تم عرض ${fmt0(arr.length)} من أصل ${fmt0(arr.length)} ${label}</span></div>`};
   const customerCompareMainLimit=customerCompareLimitOf('customerCompareTableLimit');
-  const customerCompareMainTable=customerCompareMainRows.slice(0,customerCompareMainLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${money(x.base)}</td><td>${money(x.target)}</td><td class="${x.diff>=0?'metric-up':'metric-down'}">${x.diff>=0?'+':''}${money(x.diff)}</td><td>${customerComparePctHtml(x)}</td><td>${fmt0(x.baseInv)}</td><td>${fmt0(x.targetInv)}</td><td>${x.lastDate?fmtDateAr(x.lastDate):'—'}</td><td>${customerCompareRankHtml(x)}</td><td><span class="smart-tag ${x.cls}">${x.status}</span></td></tr>`).join('') || '<tr><td colspan="11">لا توجد بيانات كافية للمقارنة بين السنتين المختارتين.</td></tr>';
+  const customerCompareMainTable=customerCompareMainRows.slice(0,customerCompareMainLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${money(x.base)}</td><td>${money(x.target)}</td><td class="${x.diff>=0?'metric-up':'metric-down'}">${x.diff>=0?'+':''}${money(x.diff)}</td><td>${customerComparePctHtml(x)}</td><td>${fmt0(x.baseInv)}</td><td>${fmt0(x.targetInv)}</td><td>${x.lastDate?fmtDateAr(x.lastDate):'—'}</td><td>${customerCompareRankHtml(x)}</td><td><span class="smart-tag ${x.cls}">${x.status}</span></td></tr>`).join('') || `<tr><td colspan="11">${smartReportHtml('empty.noYearComparisonData','لا توجد بيانات كافية للمقارنة بين السنتين المختارتين.')}</td></tr>`;
   const customerCompareAllDetailedTableHtml=(function(){
     const shouldVirtualize=!!(window.PETATOETables && typeof window.PETATOETables.render==='function' && customerCompareMainRows.length>0 && customerCompareMainLimit>=customerCompareMainRows.length);
     if(!shouldVirtualize){
@@ -613,8 +628,8 @@ function renderSmartReports(){
       ]
     });
   })();
-  const customerCompareGrowthTable=customerCompareGrowthRows.slice(0,customerCompareLimitOf('customerCompareGrowthLimit')).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${money(x.base)}</td><td>${money(x.target)}</td><td class="metric-up">+${money(x.diff)}</td><td>${customerComparePctHtml(x)}</td></tr>`).join('') || '<tr><td colspan="6">لا توجد بيانات نمو في الفترة المختارة.</td></tr>';
-  const customerCompareDeclineTable=customerCompareDeclineRows.slice(0,customerCompareLimitOf('customerCompareDeclineLimit')).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${money(x.base)}</td><td>${money(x.target)}</td><td class="metric-down">${money(x.diff)}</td><td>${customerComparePctHtml(x)}</td></tr>`).join('') || '<tr><td colspan="6">لا توجد بيانات تراجع في الفترة المختارة.</td></tr>';
+  const customerCompareGrowthTable=customerCompareGrowthRows.slice(0,customerCompareLimitOf('customerCompareGrowthLimit')).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${money(x.base)}</td><td>${money(x.target)}</td><td class="metric-up">+${money(x.diff)}</td><td>${customerComparePctHtml(x)}</td></tr>`).join('') || `<tr><td colspan="6">${smartReportHtml('empty.noGrowthData','لا توجد بيانات نمو في الفترة المختارة.')}</td></tr>`;
+  const customerCompareDeclineTable=customerCompareDeclineRows.slice(0,customerCompareLimitOf('customerCompareDeclineLimit')).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${money(x.base)}</td><td>${money(x.target)}</td><td class="metric-down">${money(x.diff)}</td><td>${customerComparePctHtml(x)}</td></tr>`).join('') || `<tr><td colspan="6">${smartReportHtml('empty.noDeclineData','لا توجد بيانات تراجع في الفترة المختارة.')}</td></tr>`;
   const customerCompareLostValueTotal=customerCompareLostRows.reduce((s,x)=>s+(x.base||0),0);
   const customerCompareLostInvoicesTotal=customerCompareLostRows.reduce((s,x)=>s+(x.baseInv||0),0);
   const customerCompareLostPct=safeDiv(customerCompareLostRows.length, Math.max(1, customerCompareRows.filter(x=>x.base>0).length))*100;
@@ -688,7 +703,7 @@ function renderSmartReports(){
     {label:'فرق المبيعات',render:(x)=>money(x.diff)}
   ],customerCompareRankFallbackTable);
   const customerCompareHeatCell=function(v){const cls=v>0?'hot':(v<0?'cold':'flat');return `<td><span class="customer-yoy-heat-cell ${cls}" title="${money(v)}">${v>0?'🟩':v<0?'🟥':'⬜'}</span></td>`};
-  const customerCompareHeatTable=customerCompareHeatRows.slice(0,customerCompareLimitOf('customerCompareHeatLimit')).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td>${customerCompareMonthNames.map((m,mi)=>customerCompareHeatCell((x.monthsTarget[mi]||0)-(x.monthsBase[mi]||0))).join('')}</tr>`).join('') || '<tr><td colspan="14">لا توجد بيانات شهرية للمقارنة.</td></tr>';
+  const customerCompareHeatTable=customerCompareHeatRows.slice(0,customerCompareLimitOf('customerCompareHeatLimit')).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td>${customerCompareMonthNames.map((m,mi)=>customerCompareHeatCell((x.monthsTarget[mi]||0)-(x.monthsBase[mi]||0))).join('')}</tr>`).join('') || `<tr><td colspan="14">${smartReportHtml('empty.noMonthlyComparisonData','لا توجد بيانات شهرية للمقارنة.')}</td></tr>`;
   const customerCompareTornadoMax=Math.max(1,...customerCompareGrowthRows.slice(0,10).map(x=>Math.abs(x.diff)),...customerCompareDeclineRows.slice(0,10).map(x=>Math.abs(x.diff)));
   const customerCompareTornadoItems=[...customerCompareDeclineRows.slice(0,10).map(x=>({...x,side:'decline'})),...customerCompareGrowthRows.slice(0,10).map(x=>({...x,side:'growth'}))].sort((a,b)=>Math.abs(b.diff)-Math.abs(a.diff)).slice(0,20);
   const customerCompareTornadoHtml=customerCompareTornadoItems.map(x=>`<div class="customer-yoy-tornado-row"><div class="customer-yoy-tornado-name">${htmlSafe(x.name)}</div><div class="customer-yoy-tornado-track ${x.side}"><span style="width:${Math.max(4,Math.abs(x.diff)/customerCompareTornadoMax*100)}%"></span></div><b class="${x.diff>=0?'metric-up':'metric-down'}">${x.diff>=0?'+':''}${money(x.diff)}</b></div>`).join('') || '<div class="smart-empty">لا توجد فروقات كافية للرسم.</div>';
@@ -931,7 +946,7 @@ function renderSmartReports(){
       <td class="contract-reason-cell">${contractReasonHtml(x,i)}</td>
       <td>${x.tierHtml||'<span class="smart-tag info">—</span>'}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="11">لا توجد بيانات عملاء كافية داخل الفترة المختارة لاحتساب مرشحين للتعاقد.</td></tr>';
+  }).join('') || `<tr><td colspan="11">${smartReportHtml('empty.noContractCandidateData','لا توجد بيانات عملاء كافية داخل الفترة المختارة لاحتساب مرشحين للتعاقد.')}</td></tr>`;
   const contractCandidateMoreButton=allContractCandidates.length>contractCandidateLimit
     ? `<div class="new-cust-table-footer"><button class="new-cust-more-btn" data-smart-action="contract-candidate-more" data-limit="${Math.min(100, contractCandidateLimit+10)}">اضغط لعرض المزيد ⌄</button><span>عرض ${fmt0(Math.min(contractCandidateLimit,allContractCandidates.length))} من أصل ${fmt0(allContractCandidates.length)} عميل مرشح</span></div>`
     : `<div class="new-cust-table-footer"><span>تم عرض ${fmt0(allContractCandidates.length)} من أصل ${fmt0(allContractCandidates.length)} عميل مرشح</span></div>`;

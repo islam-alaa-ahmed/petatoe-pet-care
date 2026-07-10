@@ -10,6 +10,26 @@
     topbar:{reports:'📑 التقارير',pdf:'📊 تقرير PDF',searchTitle:'بحث',searchOpen:'فتح البحث',launcherTitle:'فتح القائمة الرئيسية',notifications:'الإشعارات',loading:'جارٍ التحميل'},
     globalSearch:{placeholder:'🔍 ابحث عن عميل، خدمة، سيارة، فاتورة...', shortcut:'ESC للإغلاق | Enter للانتقال | Ctrl+K أو / للفتح'},
     dashboard:{title:'Dashboard',subtitle:'لوحة متابعة مبيعات PETATOE بالريال السعودي',monthlySales:'📊 المبيعات الشهرية',topServices:'📦 أعلى الخدمات مبيعاً',topClients:'🏆 أعلى العملاء إنفاقاً',paymentSales:'💳 المبيعات حسب طريقة الدفع',vansComparison:'🚐 مقارنة السيارات',quickInsights:'⚡ مؤشرات سريعة',totalSales:'إجمالي المبيعات',salesBeforeVat:'المبيعات قبل الضريبة',vat:'الضريبة',operationsCount:'عدد العمليات',customersCount:'عدد العملاء',averageInvoice:'متوسط الفاتورة',allYearsMetric:'• مؤشر إجمالي لكل السنوات',noChange:'• لا يوجد تغير',newMetric:'▲ جديد 100%',increase:'زيادة',decrease:'انخفاض',comparedSamePeriod:'مقارنة بنفس المدة',period:'الفترة',invoiceCount:'عدد الفواتير',bestMonth:'أفضل شهر',averageBeforeVat:'متوسط قبل الضريبة',totalVat:'إجمالي الضريبة',includingVat:'شامل الضريبة',beforeVat:'قبل الضريبة',operatingDays:'أيام التشغيل',dailyAverageOperations:'متوسط عمليات يومي',totalCustomers:'إجمالي العملاء',averageOperationsPerCustomer:'متوسط عمليات/عميل',topPaymentMethod:'أفضل طريقة دفع',bestService:'أفضل خدمة',bestPerforming:'الأفضل أداءً',mostRequestedService:'أكثر خدمة طلباً',total:'الإجمالي',vehicle:'سيارة',best:'🏆 الأفضل',noData:'لا توجد بيانات',operationUnit:'عملية',averageLabel:'متوسط',totalSalesDesc:'يعرض إجمالي قيمة المبيعات للفترة أو السنة المختارة من الشاشة الرئيسية.',salesBeforeVatDesc:'إجمالي قيمة المبيعات قبل الضريبة كما هي مسجلة في بيانات الإدخال أو ملف Excel.',vatDesc:'إجمالي قيمة الضريبة من العمود الأصلي في البيانات بدون أي معادلات داخل التقرير.',operationsCountDesc:'إجمالي عدد سطور/عمليات البيع المسجلة بعد تطبيق فلاتر الشاشة الرئيسية.',customersCountDesc:'عدد العملاء الفريدين داخل الفترة المختارة بعد تطبيق الفلاتر.',averageInvoiceDesc:'متوسط قيمة الفاتورة = إجمالي المبيعات مقسوم على عدد الفواتير الفريدة.'},
+    smartReportsSource:{
+      empty:{
+        noData:'لا توجد بيانات كافية لعرض التقارير الذكية. ارفع ملف Excel أو اختر سنة أخرى.',
+        noCriticalServices:'لا توجد خدمات حرجة',
+        noClearServiceDecline:'لم يظهر هبوط واضح في الخدمات الحالية',
+        noExceptionalGrowth:'لا يوجد نمو استثنائي',
+        balancedActivity:'النشاط موزع بشكل متوازن',
+        noCustomerRisks:'لا توجد مخاطر عملاء واضحة',
+        noDormantMajorCustomers:'لا يوجد عملاء كبار متوقفون لفترة طويلة',
+        noCustomerData:'لا توجد بيانات عملاء للعرض.',
+        noYearComparisonData:'لا توجد بيانات كافية للمقارنة بين السنتين المختارتين.',
+        noGrowthData:'لا توجد بيانات نمو في الفترة المختارة.',
+        noDeclineData:'لا توجد بيانات تراجع في الفترة المختارة.',
+        noMonthlyComparisonData:'لا توجد بيانات شهرية للمقارنة.',
+        noContractCandidateData:'لا توجد بيانات عملاء كافية داخل الفترة المختارة لاحتساب مرشحين للتعاقد.'
+      },
+      filters:{allYears:'كل السنوات',year:'السنة'},
+      labels:{estimatedError:'خطأ تقديري',estimatedDecline:'تراجع تقديري',estimatedGrowth:'نمو تقديري',daysAbsent:'يوم غياب'},
+      status:{declineRisk:'خطر هبوط',reassuring:'مطمئن',growthCandidate:'مرشحة للنمو',neutral:'محايد',customerAtRisk:'عميل معرض',notSpecified:'غير محدد',targetAchieved:'تم تحقيق الهدف',targetNotAchieved:'لم يكتمل الهدف'}
+    },
     actions:{refresh:'🔄 تحديث',exportPagePdf:'🖨️ تصدير الصفحة PDF',reset:'Reset 🔄'},
     filters:{allYears:'كل السنوات',allMonths:'كل الشهور',allVehicles:'كل السيارات',allPayments:'كل طرق الدفع'},
     payroll:{manage:'إدارة الرواتب',manageSub:'إنشاء كشوف الرواتب والاعتمادات',slip:'كشف الراتب',slipSub:'عرض كشف راتب المستخدم الحالي فقط'},
