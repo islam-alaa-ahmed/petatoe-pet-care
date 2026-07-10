@@ -371,6 +371,16 @@
     return callSecurityEmail(Object.assign({action:'session_revoke_all', keepCurrent: keepCurrent !== false, logoutReason:'revoked_all_by_user'}, payload));
   }
 
+  async function listSecurityActivity(){
+    var user = sessionUser() || window.currentUser || {};
+    var payload = remoteSessionPayload(user, false);
+    if(!payload.username || !payload.email){
+      payload = authUserIdentityPayload(user);
+    }
+    if(!payload.username || !payload.email) throw new Error('CURRENT_USER_EMAIL_REQUIRED');
+    return callSecurityEmail(Object.assign({action:'security_activity_list'}, payload));
+  }
+
   async function forceRevokeUserSessions(targetUser, reason){
     var current = sessionUser() || window.currentUser || {};
     var payload = remoteSessionPayload(current, false);
@@ -1096,7 +1106,7 @@
     return false;
   }
 
-  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions, revokeActiveSession:revokeActiveSession, revokeAllActiveSessions:revokeAllActiveSessions, recordActivity:recordUserActivity, forceRevokeUserSessions:forceRevokeUserSessions, startIdleTimeout:startIdleTimeout, stopIdleTimeout:stopIdleTimeout};
+  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions, revokeActiveSession:revokeActiveSession, revokeAllActiveSessions:revokeAllActiveSessions, recordActivity:recordUserActivity, listSecurityActivity:listSecurityActivity, forceRevokeUserSessions:forceRevokeUserSessions, startIdleTimeout:startIdleTimeout, stopIdleTimeout:stopIdleTimeout};
   window.petLogout = function(){ logout('manual'); };
 
   document.addEventListener('petatoe:users-changed', function(){ validateSessionUser('users-changed'); });
