@@ -414,6 +414,31 @@ export default {
         return json(sessionResult);
       }
 
+      if (action === "security_activity_list") {
+        const activityRes = await fetch(
+          `${PETATOE_SUPABASE_URL}/rest/v1/login_history?select=id,event_type,success,failure_reason,mfa_required,mfa_passed,trusted_device_used,username_attempted,created_at,metadata&user_id=eq.${encodeURIComponent(String(user.id))}&order=created_at.desc&limit=50`,
+          { headers: dbHeaders },
+        );
+        if (!activityRes.ok) {
+          return json({ ok: false, action: "security_activity_list", error: "SECURITY_ACTIVITY_LIST_FAILED", details: await activityRes.text() }, 500);
+        }
+        const rows = await activityRes.json().catch(() => []);
+        const events = (Array.isArray(rows) ? rows : []).map((row) => ({
+          id: row.id,
+          eventType: row.event_type || "security_event",
+          success: row.success !== false,
+          failureReason: row.failure_reason || "",
+          mfaRequired: !!row.mfa_required,
+          mfaPassed: !!row.mfa_passed,
+          trustedDeviceUsed: !!row.trusted_device_used,
+          usernameAttempted: row.username_attempted || username,
+          createdAt: row.created_at || null,
+          metadata: row.metadata || {},
+        }));
+        return json({ ok: true, action: "security_activity_list", events });
+      }
+
+
       if (action === "user_sessions_force_revoke") {
         const requesterRole = String(user.role_code || user.legacy_payload?.role_code || user.legacy_payload?.role || "").toLowerCase();
         if (!["superadmin", "super_admin", "admin"].includes(requesterRole)) {
