@@ -1,0 +1,20 @@
+/* PETATOE v9 i18n first-paint guard */
+html[data-pet-i18n-booting="true"] body{
+  visibility:hidden!important;
+  opacity:0!important;
+}
+html:not([data-pet-i18n-booting="true"]) body{
+  visibility:visible;
+  opacity:1;
+  transition:opacity .12s ease-out;
+}
+/* Do not expose freshly rebuilt Arabic navigation while English is active. */
+html[lang="en"][data-pet-i18n-nav-ready="false"] #nav{
+  visibility:hidden!important;
+}
+html[lang="en"][data-pet-i18n-nav-ready="true"] #nav{
+  visibility:visible;
+}
+@media (prefers-reduced-motion: reduce){
+  html:not([data-pet-i18n-booting="true"]) body{transition:none;}
+}

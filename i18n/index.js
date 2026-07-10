@@ -18,7 +18,7 @@
   }
   function safeStorageGet(){try{return localStorage.getItem(STORAGE_KEY);}catch(_){return null;}}
   function safeStorageSet(lang){try{localStorage.setItem(STORAGE_KEY,lang);}catch(_){}}
-  function currentLang(){return normalizeLang(safeStorageGet()||document.documentElement.getAttribute('lang')||DEFAULT_LANG);}
+  function currentLang(){return normalizeLang(safeStorageGet()||window.__PETATOE_INITIAL_LANGUAGE__||document.documentElement.getAttribute('lang')||DEFAULT_LANG);}
   function getDict(lang){return dictionaries[normalizeLang(lang)]||dictionaries[DEFAULT_LANG]||{};}
   function translate(key,lang){return getPath(getDict(lang||currentLang()),key);}
   function normalizeTextValue(value){return String(value||'').replace(/\s+/g,' ').trim();}
@@ -270,10 +270,19 @@
     if(reapplyTimer) clearTimeout(reapplyTimer);
     reapplyTimer=setTimeout(function(){reapplyTimer=null;reapplyLanguage(lang);},typeof delay==='number'?delay:80);
   }
+  function setNavigationReady(ready){
+    document.documentElement.setAttribute('data-pet-i18n-nav-ready',ready?'true':'false');
+  }
+  function finishInitialPaint(){
+    if(window.__PETATOE_I18N_BOOT_FAILSAFE__){clearTimeout(window.__PETATOE_I18N_BOOT_FAILSAFE__);window.__PETATOE_I18N_BOOT_FAILSAFE__=null;}
+    document.documentElement.removeAttribute('data-pet-i18n-booting');
+    document.documentElement.setAttribute('data-pet-i18n-ready','true');
+  }
   function applyLanguage(lang,options){
     lang=normalizeLang(lang);
     options=options||{};
     safeStorageSet(lang);
+    setNavigationReady(false);
     applying=true;
     if(window.PETATOE_DIRECTION&&typeof window.PETATOE_DIRECTION.apply==='function'){
       window.PETATOE_DIRECTION.apply(lang,{silent:true});
@@ -293,6 +302,8 @@
     applying=false;
     if(options.renderDashboard){try{ if(typeof window.renderDashboardAll==='function') window.renderDashboardAll(); }catch(_){}}
     reapplyLanguage(lang);
+    setNavigationReady(true);
+    finishInitialPaint();
     scheduleReapply(lang,160);
     window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
   }
@@ -330,7 +341,7 @@
     applyLanguage(currentLang(),{renderDashboard:false});
   }
 
-  document.addEventListener('petatoe:navbuilt',function(){scheduleReapply(currentLang(),60);});
+  document.addEventListener('petatoe:navbuilt',function(){setNavigationReady(false);reapplyLanguage(currentLang());setNavigationReady(true);});
   document.addEventListener('petatoe:tabchange',function(){scheduleReapply(currentLang(),90);});
   window.PETATOE_I18N={
     getLanguage:currentLang,
