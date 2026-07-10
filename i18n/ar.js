@@ -28,7 +28,20 @@
       },
       filters:{allYears:'كل السنوات',year:'السنة'},
       labels:{estimatedError:'خطأ تقديري',estimatedDecline:'تراجع تقديري',estimatedGrowth:'نمو تقديري',daysAbsent:'يوم غياب'},
-      status:{declineRisk:'خطر هبوط',reassuring:'مطمئن',growthCandidate:'مرشحة للنمو',neutral:'محايد',customerAtRisk:'عميل معرض',notSpecified:'غير محدد',targetAchieved:'تم تحقيق الهدف',targetNotAchieved:'لم يكتمل الهدف'}
+      status:{declineRisk:'خطر هبوط',reassuring:'مطمئن',growthCandidate:'مرشحة للنمو',neutral:'محايد',customerAtRisk:'عميل معرض',notSpecified:'غير محدد',targetAchieved:'تم تحقيق الهدف',targetNotAchieved:'لم يكتمل الهدف'},
+      risk:{low:'منخفض',medium:'متوسط',high:'مرتفع',critical:'حرج'},
+      recovery:{low:'منخفضة',medium:'متوسطة',high:'مرتفعة'},
+      ai:{
+        noForecastData:'لا توجد بيانات كافية لبناء توقع موثوق.',
+        modelTrendName:'الاتجاه العام',modelTrendDescription:'يراقب اتجاه الصعود أو الهبوط خلال الشهور الفعلية.',
+        modelMovingAverage3Name:'المتوسط المتحرك 3',modelMovingAverage3Description:'يعتمد على متوسط آخر 3 شهور فعلية لتقليل الضوضاء.',
+        modelMovingAverage6Name:'المتوسط المتحرك 6',modelMovingAverage6Description:'يعتمد على متوسط أطول وأكثر هدوءًا عند تذبذب البيانات.',
+        selectedModelReason:'تم اختيار نموذج {model} لأنه أقل خطأ في الاختبار الخلفي داخل البيانات الحالية.',
+        trendUp:'الاتجاه الأخير صاعد مقارنة بالفترة السابقة.',trendDown:'الاتجاه الأخير هابط مقارنة بالفترة السابقة، لذلك تم رفع درجة الحذر.',trendStable:'البيانات الحالية مستقرة نسبيًا.',
+        heroTitle:'🤖 AI Forecasting داخل التقارير الذكية',heroDescription:'توقعات مطورة باستخدام نماذج إحصائية متعددة، اختيار تلقائي لأفضل نموذج، وشرح ذكي لمخاطر وفرص الفترة القادمة.',
+        nextMonthForecast:'توقع الشهر القادم',basedOnModel:'حسب نموذج {model}',nextQuarterForecast:'توقع الربع القادم',firstThreeFutureMonths:'أول 3 شهور مستقبلية',yearEndForecast:'توقع نهاية السنة',actualPlusForecast:'فعلي + متوقع',confidenceScore:'درجة الثقة',backtestConfidence:'ثقة الاختبار الخلفي',riskIndex:'مؤشر المخاطر',riskFollowUp:'كلما زاد احتاج متابعة',
+        whatIfTitle:'🧮 تحليل السيناريوهات',whatIfDescription:'حرّك السيناريوهات وشاهد تأثيرها فورًا على توقع الشهر القادم.',salesChange:'تغيير المبيعات',customerChange:'تغيير عدد العملاء',averageInvoiceChange:'تغيير متوسط الفاتورة',adjustedNextMonth:'التوقع المعدل للشهر القادم',differenceFromBase:'الفرق عن التوقع الأساسي',executiveIntelligence:'ذكاء الأعمال التنفيذي'
+      }
     },
     actions:{refresh:'🔄 تحديث',exportPagePdf:'🖨️ تصدير الصفحة PDF',reset:'Reset 🔄'},
     filters:{allYears:'كل السنوات',allMonths:'كل الشهور',allVehicles:'كل السيارات',allPayments:'كل طرق الدفع'},

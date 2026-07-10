@@ -124,7 +124,7 @@ function renderSmartReports(){
   const forecast=monthly.map(x=> x.idx<=lastActual ? x.sales : runRate);
   const aiForecast=buildPetatoeAIForecast(monthly,data,lastActual);
   window.petatoeAIForecastState=aiForecast;
-  const aiModelCards=(aiForecast.models||[]).map((m,i)=>`<div class="ai-model-card ${i===0?'active':''}"><b>${i===0?'✅ ':''}${m.name}</b><span>${m.desc}</span><span>${smartReportHtml('labels.estimatedError','خطأ تقديري')}: ${Math.round((m.error||0)*100)}%</span></div>`).join('');
+  const aiModelCards=(aiForecast.models||[]).map((m,i)=>`<div class="ai-model-card ${i===0?'active':''}"><b>${i===0?'✅ ':''}${htmlSafe(m.displayName||m.name)}</b><span>${htmlSafe(m.desc)}</span><span>${smartReportHtml('labels.estimatedError','خطأ تقديري')}: ${Math.round((m.error||0)*100)}%</span></div>`).join('');
   const aiServiceRiskRows=(aiForecast.serviceRisk||[]).map(x=>`<div class="ai-risk-row"><div><strong>${htmlSafe(x.name)}</strong><small>${smartReportHtml('labels.estimatedDecline','تراجع تقديري')} ${fmt(Math.abs(x.change))}%</small></div><span class="risk-pill bad">${smartReportHtml('status.declineRisk','خطر هبوط')}</span></div>`).join('')||`<div class="ai-risk-row"><div><strong>${smartReportHtml('empty.noCriticalServices','لا توجد خدمات حرجة')}</strong><small>${smartReportHtml('empty.noClearServiceDecline','لم يظهر هبوط واضح في الخدمات الحالية')}</small></div><span class="risk-pill good">${smartReportHtml('status.reassuring','مطمئن')}</span></div>`;
   const aiServiceGrowthRows=(aiForecast.serviceGrowth||[]).map(x=>`<div class="ai-risk-row"><div><strong>${htmlSafe(x.name)}</strong><small>${smartReportHtml('labels.estimatedGrowth','نمو تقديري')} ${fmt(x.change)}%</small></div><span class="risk-pill good">${smartReportHtml('status.growthCandidate','مرشحة للنمو')}</span></div>`).join('')||`<div class="ai-risk-row"><div><strong>${smartReportHtml('empty.noExceptionalGrowth','لا يوجد نمو استثنائي')}</strong><small>${smartReportHtml('empty.balancedActivity','النشاط موزع بشكل متوازن')}</small></div><span class="risk-pill info">${smartReportHtml('status.neutral','محايد')}</span></div>`;
   const aiCustomerRiskRows=(aiForecast.customerRisk||[]).map(x=>`<div class="ai-risk-row" data-name="${htmlSafe(x.name)}" data-smart-action="open-customer360"><div><strong>${htmlSafe(x.name)}</strong><small>${fmt0(x.days)} ${smartReportHtml('labels.daysAbsent','يوم غياب')} — ${money(x.total)}</small></div><span class="risk-pill bad">${smartReportHtml('status.customerAtRisk','عميل معرض')}</span></div>`).join('')||`<div class="ai-risk-row"><div><strong>${smartReportHtml('empty.noCustomerRisks','لا توجد مخاطر عملاء واضحة')}</strong><small>${smartReportHtml('empty.noDormantMajorCustomers','لا يوجد عملاء كبار متوقفون لفترة طويلة')}</small></div><span class="risk-pill good">${smartReportHtml('status.reassuring','مطمئن')}</span></div>`;
@@ -439,14 +439,16 @@ function renderSmartReports(){
     const monthlyAvg=safeDiv(val,Math.max(1,visitMonths.length));
     const missedMonths=Math.max(0,Math.floor(daysSince/30));
     const lostRevenue=monthlyAvg*missedMonths;
-    let risk='منخفض', riskCls='info';
-    if(daysSince>120){risk='حرج';riskCls='bad';}
-    else if(daysSince>90){risk='مرتفع';riskCls='warn';}
-    else if(daysSince>60){risk='متوسط';riskCls='warn';}
-    let recovery='متوسطة';
-    if((cls==='VIP'||val>=5000) && daysSince<=180) recovery='مرتفعة';
-    else if(daysSince>180 || val<1000) recovery='منخفضة';
-    return {name,val,visits,avgInvoice,lastDate,lastInvoiceValue,lastInvoiceNo:(lastActive?lastActive.invoice:'—'),visitMonths,visitMonthsHtml,daysSince,tierHtml,visitsHtml,cls,badgeClass,monthlyAvg,lostRevenue,risk,riskCls,recovery,visitModel};
+    let riskKey='low', riskCls='info';
+    if(daysSince>120){riskKey='critical';riskCls='bad';}
+    else if(daysSince>90){riskKey='high';riskCls='warn';}
+    else if(daysSince>60){riskKey='medium';riskCls='warn';}
+    let recoveryKey='medium';
+    if((cls==='VIP'||val>=5000) && daysSince<=180) recoveryKey='high';
+    else if(daysSince>180 || val<1000) recoveryKey='low';
+    const risk=smartReportT('risk.'+riskKey,({low:'منخفض',medium:'متوسط',high:'مرتفع',critical:'حرج'})[riskKey]);
+    const recovery=smartReportT('recovery.'+recoveryKey,({low:'منخفضة',medium:'متوسطة',high:'مرتفعة'})[recoveryKey]);
+    return {name,val,visits,avgInvoice,lastDate,lastInvoiceValue,lastInvoiceNo:(lastActive?lastActive.invoice:'—'),visitMonths,visitMonthsHtml,daysSince,tierHtml,visitsHtml,cls,badgeClass,monthlyAvg,lostRevenue,risk,riskKey,riskCls,recovery,recoveryKey,visitModel};
   }).filter(x=>x.val>0 || x.visits>0).sort((a,b)=>b.val-a.val);
 
   const customerInsightLimit=Math.max(10, window.customerInsightTableLimit || 10);
@@ -792,8 +794,8 @@ function renderSmartReports(){
   };
   const inactiveRecoveryTooltipHtml=(x)=>{
     const tips=[];
-    if(x.recovery==='مرتفعة'){tips.push('ابدأ بتواصل مباشر وسريع لأن قيمة العميل عالية واحتمال استرجاعه أفضل.');tips.push('اعرض خصم عودة محدود المدة أو خدمة إضافية مجانية مرتبطة بآخر خدمة اشتراها.');}
-    else if(x.recovery==='متوسطة'){tips.push('استخدم رسالة متابعة ودية مع عرض متوسط القيمة يناسب تاريخ إنفاق العميل.');tips.push('اقترح إعادة حجز أو تذكير بالخدمة السابقة بدل عرض خصم كبير من البداية.');}
+    if(x.recoveryKey==='high'){tips.push('ابدأ بتواصل مباشر وسريع لأن قيمة العميل عالية واحتمال استرجاعه أفضل.');tips.push('اعرض خصم عودة محدود المدة أو خدمة إضافية مجانية مرتبطة بآخر خدمة اشتراها.');}
+    else if(x.recoveryKey==='medium'){tips.push('استخدم رسالة متابعة ودية مع عرض متوسط القيمة يناسب تاريخ إنفاق العميل.');tips.push('اقترح إعادة حجز أو تذكير بالخدمة السابقة بدل عرض خصم كبير من البداية.');}
     else{tips.push('استخدم حملة جماعية منخفضة التكلفة مثل رسالة واتساب أو SMS بدل متابعة فردية مكلفة.');tips.push('اختبر عرض بسيط لاستعادة النشاط قبل تخصيص خصم كبير.');}
     if(x.daysSince>120) tips.push('العميل غائب أكثر من 120 يوم، لذلك يفضل التواصل برسالة إعادة تنشيط واضحة وليست تذكير عادي.');
     if(x.cls==='At Risk') tips.push('ابدأ بسؤال قصير عن سبب التوقف لتحويل العميل من At Risk إلى Active.');
@@ -1255,16 +1257,16 @@ function renderSmartReports(){
     </div>
 
     <div class="smart-tab-section" data-smart-section="forecast">
-      <div class="ai-forecast-hero"><div><h3>🤖 AI Forecasting داخل التقارير الذكية</h3><p>توقعات مطورة باستخدام نماذج إحصائية متعددة، اختيار تلقائي لأفضل نموذج، وشرح ذكي لمخاطر وفرص الفترة القادمة.</p></div><span class="ai-badge">AI-like Predictive Engine</span></div>
+      <div class="ai-forecast-hero"><div><h3>${smartReportHtml('ai.heroTitle','🤖 AI Forecasting داخل التقارير الذكية')}</h3><p>${smartReportHtml('ai.heroDescription','توقعات مطورة باستخدام نماذج إحصائية متعددة، اختيار تلقائي لأفضل نموذج، وشرح ذكي لمخاطر وفرص الفترة القادمة.')}</p></div><span class="ai-badge">AI-like Predictive Engine</span></div>
       <div class="ai-forecast-kpis">
-        <div class="ai-forecast-kpi" style="--accent:var(--purple)"><span>توقع الشهر القادم</span><b>${money(aiForecast.next)}</b><small>حسب نموذج ${aiForecast.best}</small></div>
-        <div class="ai-forecast-kpi" style="--accent:var(--green)"><span>توقع الربع القادم</span><b>${money(aiForecast.quarter)}</b><small>أول 3 شهور مستقبلية</small></div>
-        <div class="ai-forecast-kpi" style="--accent:var(--blue)"><span>توقع نهاية السنة</span><b>${money(aiForecast.yearEnd)}</b><small>فعلي + متوقع</small></div>
-        <div class="ai-forecast-kpi" style="--accent:var(--cyan)"><span>درجة الثقة</span><b>${fmt0(aiForecast.confidence)}%</b><small>Backtest Confidence</small></div>
-        <div class="ai-forecast-kpi" style="--accent:var(--red)"><span>مؤشر المخاطر</span><b>${fmt0(aiForecast.riskIndex)}%</b><small>كلما زاد احتاج متابعة</small></div>
+        <div class="ai-forecast-kpi" style="--accent:var(--purple)"><span>${smartReportHtml('ai.nextMonthForecast','توقع الشهر القادم')}</span><b>${money(aiForecast.next)}</b><small>${smartReportHtml('ai.basedOnModel','حسب نموذج {model}',{model:aiForecast.best})}</small></div>
+        <div class="ai-forecast-kpi" style="--accent:var(--green)"><span>${smartReportHtml('ai.nextQuarterForecast','توقع الربع القادم')}</span><b>${money(aiForecast.quarter)}</b><small>${smartReportHtml('ai.firstThreeFutureMonths','أول 3 شهور مستقبلية')}</small></div>
+        <div class="ai-forecast-kpi" style="--accent:var(--blue)"><span>${smartReportHtml('ai.yearEndForecast','توقع نهاية السنة')}</span><b>${money(aiForecast.yearEnd)}</b><small>${smartReportHtml('ai.actualPlusForecast','فعلي + متوقع')}</small></div>
+        <div class="ai-forecast-kpi" style="--accent:var(--cyan)"><span>${smartReportHtml('ai.confidenceScore','درجة الثقة')}</span><b>${fmt0(aiForecast.confidence)}%</b><small>${smartReportHtml('ai.backtestConfidence','Backtest Confidence')}</small></div>
+        <div class="ai-forecast-kpi" style="--accent:var(--red)"><span>${smartReportHtml('ai.riskIndex','مؤشر المخاطر')}</span><b>${fmt0(aiForecast.riskIndex)}%</b><small>${smartReportHtml('ai.riskFollowUp','كلما زاد احتاج متابعة')}</small></div>
       </div>
-      <div class="smart-panel" style="margin-top:16px"><h3>🧮 What If Analysis</h3><p>حرّك السيناريوهات وشوف تأثيرها فورًا على توقع الشهر القادم.</p><div class="ai-whatif-box"><div class="ai-whatif-controls"><div><label>زيادة المبيعات <b id="whatIfSalesVal">0%</b></label><input id="whatIfSales" type="range" min="-30" max="50" value="0" data-smart-action="what-if-input"></div><div><label>زيادة عدد العملاء <b id="whatIfCustomersVal">0%</b></label><input id="whatIfCustomers" type="range" min="-30" max="50" value="0" data-smart-action="what-if-input"></div><div><label>زيادة متوسط الفاتورة <b id="whatIfAvgVal">0%</b></label><input id="whatIfAvg" type="range" min="-30" max="50" value="0" data-smart-action="what-if-input"></div></div><div class="ai-whatif-result" id="aiWhatIfResult">التوقع المعدل للشهر القادم: <b>${money(aiForecast.next)}</b></div></div></div>
-      <div class="merged-ai-divider"><span>ذكاء الأعمال التنفيذي</span></div>
+      <div class="smart-panel" style="margin-top:16px"><h3>${smartReportHtml('ai.whatIfTitle','🧮 What If Analysis')}</h3><p>${smartReportHtml('ai.whatIfDescription','حرّك السيناريوهات وشوف تأثيرها فورًا على توقع الشهر القادم.')}</p><div class="ai-whatif-box"><div class="ai-whatif-controls"><div><label>${smartReportHtml('ai.salesChange','تغيير المبيعات')} <b id="whatIfSalesVal">0%</b></label><input id="whatIfSales" type="range" min="-30" max="50" value="0" data-smart-action="what-if-input"></div><div><label>${smartReportHtml('ai.customerChange','تغيير عدد العملاء')} <b id="whatIfCustomersVal">0%</b></label><input id="whatIfCustomers" type="range" min="-30" max="50" value="0" data-smart-action="what-if-input"></div><div><label>${smartReportHtml('ai.averageInvoiceChange','تغيير متوسط الفاتورة')} <b id="whatIfAvgVal">0%</b></label><input id="whatIfAvg" type="range" min="-30" max="50" value="0" data-smart-action="what-if-input"></div></div><div class="ai-whatif-result" id="aiWhatIfResult">${smartReportHtml('ai.adjustedNextMonth','التوقع المعدل للشهر القادم')}: <b>${money(aiForecast.next)}</b></div></div></div>
+      <div class="merged-ai-divider"><span>${smartReportHtml('ai.executiveIntelligence','ذكاء الأعمال التنفيذي')}</span></div>
       <div id="biArea" class="merged-bi-area"></div>
     </div>
 

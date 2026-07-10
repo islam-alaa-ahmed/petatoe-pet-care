@@ -28,7 +28,20 @@
       },
       filters:{allYears:'All Years',year:'Year'},
       labels:{estimatedError:'Estimated Error',estimatedDecline:'Estimated Decline',estimatedGrowth:'Estimated Growth',daysAbsent:'days inactive'},
-      status:{declineRisk:'Decline Risk',reassuring:'Reassuring',growthCandidate:'Growth Candidate',neutral:'Neutral',customerAtRisk:'Customer at Risk',notSpecified:'Not Specified',targetAchieved:'Target Achieved',targetNotAchieved:'Target Not Achieved'}
+      status:{declineRisk:'Decline Risk',reassuring:'Stable',growthCandidate:'Growth Candidate',neutral:'Neutral',customerAtRisk:'Customer at Risk',notSpecified:'Not Specified',targetAchieved:'Target Achieved',targetNotAchieved:'Target Not Achieved'},
+      risk:{low:'Low',medium:'Medium',high:'High',critical:'Critical'},
+      recovery:{low:'Low',medium:'Medium',high:'High'},
+      ai:{
+        noForecastData:'There is not enough data to build a reliable forecast.',
+        modelTrendName:'Trend',modelTrendDescription:'Tracks upward or downward movement across actual months.',
+        modelMovingAverage3Name:'Moving Average 3',modelMovingAverage3Description:'Uses the latest three actual months to reduce noise.',
+        modelMovingAverage6Name:'Moving Average 6',modelMovingAverage6Description:'Uses a longer and steadier average when data fluctuates.',
+        selectedModelReason:'The {model} model was selected because it produced the lowest backtest error on the current data.',
+        trendUp:'The latest trend is rising compared with the previous period.',trendDown:'The latest trend is declining compared with the previous period, so the caution level was increased.',trendStable:'The current data is relatively stable.',
+        heroTitle:'🤖 AI Forecasting in Smart Reports',heroDescription:'Advanced forecasting using multiple statistical models, automatic best-model selection, and clear analysis of upcoming risks and opportunities.',
+        nextMonthForecast:'Next Month Forecast',basedOnModel:'Based on {model}',nextQuarterForecast:'Next Quarter Forecast',firstThreeFutureMonths:'First 3 future months',yearEndForecast:'Year-End Forecast',actualPlusForecast:'Actual + Forecast',confidenceScore:'Confidence Score',backtestConfidence:'Backtest Confidence',riskIndex:'Risk Index',riskFollowUp:'Higher values require closer follow-up',
+        whatIfTitle:'🧮 What-If Analysis',whatIfDescription:'Adjust the scenarios to see their immediate effect on next month’s forecast.',salesChange:'Sales Change',customerChange:'Customer Count Change',averageInvoiceChange:'Average Invoice Change',adjustedNextMonth:'Adjusted Next Month Forecast',differenceFromBase:'Difference from Base Forecast',executiveIntelligence:'Executive Business Intelligence'
+      }
     },
     actions:{refresh:'🔄 Refresh',exportPagePdf:'🖨️ Export Page PDF',reset:'Reset 🔄'},
     filters:{allYears:'All Years',allMonths:'All Months',allVehicles:'All Vehicles',allPayments:'All Payment Methods'},
