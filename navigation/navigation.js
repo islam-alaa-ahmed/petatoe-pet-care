@@ -118,7 +118,9 @@
     var operations=navCan('dashboardOperations')||navCan('vehicleOperations');
     if(management) return {tab:'dashboard',screen:'dashboardManagement',label:'🏠 الرئيسية'};
     if(operations) return {tab:'vehicleOperations',screen:'dashboardOperations',label:'🏠 الرئيسية التشغيلية'};
-    return null;
+    // PETATOE v9 Phase 3H: keep the core Home entry in the DOM while identity/permissions are still hydrating.
+    // The permission layer still owns final visibility after readiness, but the menu builder must not permanently omit Home.
+    return {tab:'dashboard',screen:'dashboardManagement',label:'🏠 الرئيسية'};
   }
 
   function itemButton(it){

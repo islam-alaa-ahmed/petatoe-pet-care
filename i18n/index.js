@@ -235,9 +235,9 @@
       var value=key&&translate(key,lang);
       if(value) el.textContent=value;
     });
-    var groupKeyMap={operations:'sidebar.transactions',analytics:'sidebar.analytics',management:'sidebar.management',system:'sidebar.system'};
-    document.querySelectorAll('#nav [data-nav-group]').forEach(function(el){
-      var key=groupKeyMap[el.getAttribute('data-nav-group')];
+    var groupKeyMap={operationManagement:'sidebar.operations',operations:'sidebar.transactions',analytics:'sidebar.analytics',management:'sidebar.management',settings:'sidebar.system',system:'sidebar.system'};
+    document.querySelectorAll('#nav [data-nav-group],#nav [data-v142-toggle]').forEach(function(el){
+      var key=groupKeyMap[el.getAttribute('data-nav-group')||el.getAttribute('data-v142-toggle')];
       var value=key&&translate(key,lang);
       var target=el.querySelector('span')||el;
       if(value&&!target.hasAttribute('data-i18n')) target.textContent=value;
@@ -251,6 +251,11 @@
   }
   var applying=false;
   var reapplyTimer=null;
+  function isInsideI18nScope(node){
+    var el=node&&node.nodeType===1?node:(node&&node.parentElement);
+    if(!el||!el.closest) return false;
+    return !!el.closest('[data-i18n],[data-i18n-title],[data-i18n-placeholder],#nav,#dashboard,.toast,#toast');
+  }
   function reapplyLanguage(lang){
     lang=normalizeLang(lang||currentLang());
     patchRuntimeTextAPIs();
@@ -260,15 +265,14 @@
     translateAutoStaticPhrases(lang);
     applying=false;
   }
-  function scheduleReapply(lang){
+  function scheduleReapply(lang,delay){
     lang=normalizeLang(lang||currentLang());
     if(reapplyTimer) clearTimeout(reapplyTimer);
-    reapplyTimer=setTimeout(function(){reapplyLanguage(lang);},30);
-    setTimeout(function(){reapplyLanguage(lang);},120);
-    setTimeout(function(){reapplyLanguage(lang);},350);
+    reapplyTimer=setTimeout(function(){reapplyTimer=null;reapplyLanguage(lang);},typeof delay==='number'?delay:80);
   }
-  function applyLanguage(lang){
+  function applyLanguage(lang,options){
     lang=normalizeLang(lang);
+    options=options||{};
     safeStorageSet(lang);
     applying=true;
     document.documentElement.setAttribute('lang',lang);
@@ -280,10 +284,10 @@
       opt.setAttribute('aria-selected',active?'true':'false');
     });
     setMenuState(false);
-    try{ if(typeof window.renderDashboardAll==='function') window.renderDashboardAll(); }catch(_){}
-    reapplyLanguage(lang);
     applying=false;
-    scheduleReapply(lang);
+    if(options.renderDashboard){try{ if(typeof window.renderDashboardAll==='function') window.renderDashboardAll(); }catch(_){}}
+    reapplyLanguage(lang);
+    scheduleReapply(lang,160);
     window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
   }
   function init(){
@@ -295,7 +299,7 @@
     document.querySelectorAll('.pet-language-option[data-pet-lang]').forEach(function(opt){
       if(!opt.dataset.petI18nBound){
         opt.dataset.petI18nBound='1';
-        opt.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();applyLanguage(opt.getAttribute('data-pet-lang'));});
+        opt.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();applyLanguage(opt.getAttribute('data-pet-lang'),{renderDashboard:true});});
       }
     });
     if(!document.documentElement.dataset.petI18nOutsideBound){
@@ -311,15 +315,17 @@
           for(var i=0;i<mutations.length;i++){
             var t=mutations[i].target;
             if(t&&t.closest&&t.closest('#petLanguageSwitcher')) continue;
-            scheduleReapply(currentLang());
-            break;
+            if(isInsideI18nScope(t)){scheduleReapply(currentLang(),120);break;}
           }
         });
-        observer.observe(document.body||document.documentElement,{childList:true,subtree:true,characterData:true});
+        observer.observe(document.body||document.documentElement,{childList:true,subtree:true});
       }catch(_){}
     }
-    applyLanguage(currentLang());
+    applyLanguage(currentLang(),{renderDashboard:false});
   }
+
+  document.addEventListener('petatoe:navbuilt',function(){scheduleReapply(currentLang(),60);});
+  document.addEventListener('petatoe:tabchange',function(){scheduleReapply(currentLang(),90);});
   window.PETATOE_I18N={
     getLanguage:currentLang,
     setLanguage:applyLanguage,
