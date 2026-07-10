@@ -327,6 +327,13 @@
     return callSecurityEmail(Object.assign({action:'trusted_device_revoke', deviceId:String(deviceId)}, payload));
   }
 
+  async function listActiveSessions(){
+    var user = sessionUser() || window.currentUser || {};
+    var payload = remoteSessionPayload(user, false);
+    if(!payload.username || !payload.email) throw new Error('CURRENT_USER_EMAIL_REQUIRED');
+    return callSecurityEmail(Object.assign({action:'active_sessions_list'}, payload));
+  }
+
   function saveBrowserPasswordCredential(form, username, enabled){
     writeRemember(username, !!enabled);
     if(!enabled || !form) return;
@@ -894,7 +901,7 @@
     return false;
   }
 
-  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice};
+  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions};
   window.petLogout = function(){ logout('manual'); };
 
   document.addEventListener('petatoe:users-changed', function(){ validateSessionUser('users-changed'); });

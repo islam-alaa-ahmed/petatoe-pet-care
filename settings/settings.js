@@ -99,7 +99,7 @@
   function qualityBody(q){var rows=q.rows.slice(0,120).map(function(x){return '<tr><td>'+esc(x.type)+'</td><td>'+esc(x.ref)+'</td><td>'+esc(x.client||'')+'</td><td>'+esc(x.item||'')+'</td><td>'+esc(x.vehicle||'')+'</td><td>'+esc(x.value||'')+'</td><td>'+esc(x.prev||'')+'</td><td>'+x.index+'</td></tr>'}).join('')||'<tr><td colspan="8">لا توجد مشاكل ظاهرة</td></tr>';return '<div class="pet-v110-grid three">'+card('🔁 الفواتير/البنود المكررة','الحكم بالتكرار عند تطابق رقم الفاتورة + العميل + الصنف/الخدمة + السيارة + قيمة الصنف.', '<b class="pet-v110-badge '+(q.dup?'warn':'ok')+'">'+q.dup+'</b>')+card('📉 القيم السالبة','كشف أي إجماليات سالبة.', '<b class="pet-v110-badge '+(q.neg?'bad':'ok')+'">'+q.neg+'</b>')+card('🚚 فواتير بدون سيارة','كشف السجلات التي لا تحتوي على سيارة.', '<b class="pet-v110-badge '+(q.noVehicle?'warn':'ok')+'">'+q.noVehicle+'</b>')+'</div><div class="pet-v110-card"><h3>🧪 تفاصيل الفحص</h3><div class="pet-v110-note">شرط التكرار الحالي: رقم الفاتورة + اسم العميل + الصنف/الخدمة + السيارة + قيمة الصنف. تكرار رقم الفاتورة وحده لا يُعتبر مشكلة.</div><div class="pet-v110-actions"><button class="pet-v110-btn blue" data-v110-action="export-quality">تصدير نتيجة الفحص</button></div><div class="pet-v110-table"><table><thead><tr><th>نوع المشكلة</th><th>رقم الفاتورة/المرجع</th><th>العميل</th><th>الصنف/الخدمة</th><th>السيارة</th><th>قيمة الصنف</th><th>السطر السابق</th><th>رقم السطر</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>'}
   function systemSettingsBody(){var s=system();return '<div class="pet-v110-card"><h3>⚙️ إعدادات النظام</h3><p>اسم الشركة، العملة، الهدف الشهري، اللغة، والدارك مود.</p><div class="pet-v110-actions"><input id="v110Company" class="pet-v110-input" placeholder="اسم الشركة" value="'+esc(s.companyName)+'"><input id="v110Currency" class="pet-v110-input" placeholder="العملة" value="'+esc(s.currency)+'"><input id="v110Target" class="pet-v110-input" type="number" placeholder="الهدف الشهري" value="'+esc(s.monthlyTarget)+'"><input id="v110Vat" class="pet-v110-input" type="number" placeholder="الضريبة %" value="'+esc(s.vatRate)+'"><select id="v110Lang" class="pet-v110-select"><option value="ar" '+(s.language==='ar'?'selected':'')+'>العربية</option><option value="en" '+(s.language==='en'?'selected':'')+'>English</option></select><select id="v110Theme" class="pet-v110-select"><option value="dark" '+(s.theme==='dark'?'selected':'')+'>Dark</option><option value="light" '+(s.theme==='light'?'selected':'')+'>Light</option></select><button class="pet-v110-btn primary" data-v110-action="save-system">حفظ الإعدادات</button></div></div>'}
   function dataBody(){return '<div class="pet-v110-grid three">'+card('🧹 مسح بيانات تجريبية','حذف السجلات التي تحتوي على Test / Demo / تجريبي.', '<button class="pet-v110-btn danger" data-v110-action="clear-demo">مسح التجريبي</button>')+card('🗑️ تصفير قسم معين','تصفير بيانات قسم محدد من مصدر Supabase عند الحاجة.', '<div class="pet-v110-actions"><select id="v110ClearSection" class="pet-v110-select"><option value="">اختر القسم</option><option value="treasury">الخزنة</option><option value="obligations">الالتزامات</option><option value="vehicles">السيارات</option></select><button class="pet-v110-btn danger" data-v110-action="clear-section">تصفير</button></div>')+card('📥 استيراد بيانات','استيراد ملف JSON للبيانات فقط أو نسخة كاملة.', '<button class="pet-v110-btn blue" data-v110-action="pick-restore">استيراد JSON</button>')+'</div>'}
-  function securitySettingsBody(){var s=security();return '<div class="pet-v110-grid">'+card('🛡️ قفل العمليات الحساسة','إعدادات الأمان العامة.', '<div class="pet-v110-actions"><label class="pet-v110-check"><input id="v110LockDelete" type="checkbox" '+(s.lockDelete?'checked':'')+'> قفل الحذف</label><label class="pet-v110-check"><input id="v110EditReason" type="checkbox" '+(s.requireEditReason?'checked':'')+'> سبب إلزامي للتعديل</label><label class="pet-v110-check"><input id="v110DeleteReason" type="checkbox" '+(s.requireDeleteReason?'checked':'')+'> سبب إلزامي للحذف</label><label class="pet-v110-check"><input id="v110Audit" type="checkbox" '+(s.enableAudit?'checked':'')+'> تفعيل Audit Trail</label><label class="pet-v110-check"><input id="v110ProtectReports" type="checkbox" '+(s.protectReports?'checked':'')+'> حماية التقارير</label><input id="v110SensitiveAmount" class="pet-v110-input" type="number" value="'+esc(s.sensitiveAmount)+'" placeholder="حد العملية الحساسة"><button class="pet-v110-btn primary" data-v110-action="save-security">حفظ الأمان</button></div>')+card('📋 سجل Audit Trail','تصدير أو مسح سجل النشاط.', '<div class="pet-v110-actions"><button class="pet-v110-btn blue" data-v110-action="export-audit">تصدير السجل</button><button class="pet-v110-btn danger" data-v110-action="clear-audit">مسح السجل</button></div>')+card('💻 الأجهزة الموثوقة','الأجهزة التي يمكنها تخطي MFA مؤقتًا لهذا المستخدم.', '<div class="pet-v110-actions"><button class="pet-v110-btn blue" data-v110-action="trusted-devices-refresh">تحديث الأجهزة</button></div><div id="petV9TrustedDevicesBox" class="pet-v110-note">جاري تحميل الأجهزة الموثوقة...</div>')+'</div>'}
+  function securitySettingsBody(){var s=security();return '<div class="pet-v110-grid">'+card('🛡️ قفل العمليات الحساسة','إعدادات الأمان العامة.', '<div class="pet-v110-actions"><label class="pet-v110-check"><input id="v110LockDelete" type="checkbox" '+(s.lockDelete?'checked':'')+'> قفل الحذف</label><label class="pet-v110-check"><input id="v110EditReason" type="checkbox" '+(s.requireEditReason?'checked':'')+'> سبب إلزامي للتعديل</label><label class="pet-v110-check"><input id="v110DeleteReason" type="checkbox" '+(s.requireDeleteReason?'checked':'')+'> سبب إلزامي للحذف</label><label class="pet-v110-check"><input id="v110Audit" type="checkbox" '+(s.enableAudit?'checked':'')+'> تفعيل Audit Trail</label><label class="pet-v110-check"><input id="v110ProtectReports" type="checkbox" '+(s.protectReports?'checked':'')+'> حماية التقارير</label><input id="v110SensitiveAmount" class="pet-v110-input" type="number" value="'+esc(s.sensitiveAmount)+'" placeholder="حد العملية الحساسة"><button class="pet-v110-btn primary" data-v110-action="save-security">حفظ الأمان</button></div>')+card('📋 سجل Audit Trail','تصدير أو مسح سجل النشاط.', '<div class="pet-v110-actions"><button class="pet-v110-btn blue" data-v110-action="export-audit">تصدير السجل</button><button class="pet-v110-btn danger" data-v110-action="clear-audit">مسح السجل</button></div>')+card('💻 الأجهزة الموثوقة','الأجهزة التي يمكنها تخطي MFA مؤقتًا لهذا المستخدم.', '<div class="pet-v110-actions"><button class="pet-v110-btn blue" data-v110-action="trusted-devices-refresh">تحديث الأجهزة</button></div><div id="petV9TrustedDevicesBox" class="pet-v110-note">جاري تحميل الأجهزة الموثوقة...</div>')+card('🧭 الجلسات النشطة','جلسات الدخول الحالية لهذا المستخدم عبر الأجهزة والمتصفحات.', '<div class="pet-v110-actions"><button class="pet-v110-btn blue" data-v110-action="active-sessions-refresh">تحديث الجلسات</button></div><div id="petV9ActiveSessionsBox" class="pet-v110-note">جاري تحميل الجلسات النشطة...</div>')+'</div>'}
   function maintenanceBody(){return '<div class="pet-v110-grid three">'+card('🔄 إعادة بناء الفهارس','إعادة بناء فهارس البحث والكاش الداخلي.', '<button class="pet-v110-btn primary" data-v110-action="rebuild-indexes">إعادة بناء</button>')+card('🧼 تنظيف الكاش','تنظيف كاش الجلسة المؤقت وإخفاء اللودر العالق.', '<button class="pet-v110-btn blue" data-v110-action="clean-cache">تنظيف الكاش</button>')+card('🛠️ فحص التخزين التشغيلي','فحص حالة التخزين التشغيلي والتأكد من جاهزية الواجهات.', '<button class="pet-v110-btn green" data-v110-action="repair-storage">فحص وإصلاح</button>')+'</div>'}
 
   function setupBody(){
@@ -164,7 +164,7 @@
     el.setAttribute('data-v110-main',main);
     el.setAttribute('data-v110-sub',sub||'');
     (window.PETATOESecurity||{setInnerHTML:function(el,h){el.replaceChildren(document.createRange().createContextualFragment(String(h==null?'':h)));}}).setInnerHTML(el, '<div class="pet-v110-wrap"><div class="pet-v110-hero"><div><h3>⚙️ مركز الإعدادات والصلاحيات</h3><p>القائمة الرئيسية: النظام، الإعدادات، الصلاحيات، المستخدمين — بدون التأثير على التقارير القديمة.</p></div></div>'+mainTabs(main)+(main==='permissions'?'':kpis(q))+body+'</div>');
-    if(main==='settings' && sub==='security') setTimeout(function(){ if(typeof window.petV9LoadTrustedDevices==='function') window.petV9LoadTrustedDevices(); }, 120);
+    if(main==='settings' && sub==='security') setTimeout(function(){ if(typeof window.petV9LoadTrustedDevices==='function') window.petV9LoadTrustedDevices(); if(typeof window.petV9LoadActiveSessions==='function') window.petV9LoadActiveSessions(); }, 120);
   }
   window.petSettingsV110Open=function(main,sub){setText(MAIN_KEY,main||'system');if(sub)setText(SUB_KEY,sub);render(main,sub)};
   window.petV110ExportQuality=function(){download({type:'PETATOE_DATA_QUALITY',createdAt:new Date().toISOString(),quality:quality(true)},'PETATOE_data_quality.json')};
@@ -213,7 +213,7 @@
 (function(){
   if(window.__PETATOE_SETTINGS_XSS_DELEGATION__) return;
   window.__PETATOE_SETTINGS_XSS_DELEGATION__=true;
-  var actions={'export-quality':'petV110ExportQuality','save-security':'petV110SaveSecurity','export-audit':'petV110ExportAudit','clear-audit':'petV110ClearAudit','rebuild-indexes':'petV110RebuildIndexes','clean-cache':'petV110CleanCache','repair-storage':'petV110RepairStorage','backup':'petV110Backup','data-only':'petV110DataOnly','pick-restore':'petV110PickRestore','save-system':'petV110SaveSystem','clear-demo':'petV110ClearDemo','clear-section':'petV110ClearSection','save-user':'petV110SaveUser','clear-user':'petV110ClearUserForm','save-user-permissions':'petV139SaveUserPermissions','grant-read-only':'petV139GrantReadOnly','grant-driver-groomer':'petV139GrantDriverGroomer','grant-operational':'petV139GrantOperational','reset-user-permissions':'petV139ResetUserPermissions','save-vehicle-assignment':'petV664SaveVehicleAssignment','clear-vehicle-assignment':'petV664ClearVehicleAssignment','copy-vehicle-assignment':'petV664CopyVehicleAssignment','trusted-devices-refresh':'petV9LoadTrustedDevices','trusted-device-revoke':'petV9RevokeTrustedDevice'};
+  var actions={'export-quality':'petV110ExportQuality','save-security':'petV110SaveSecurity','export-audit':'petV110ExportAudit','clear-audit':'petV110ClearAudit','rebuild-indexes':'petV110RebuildIndexes','clean-cache':'petV110CleanCache','repair-storage':'petV110RepairStorage','backup':'petV110Backup','data-only':'petV110DataOnly','pick-restore':'petV110PickRestore','save-system':'petV110SaveSystem','clear-demo':'petV110ClearDemo','clear-section':'petV110ClearSection','save-user':'petV110SaveUser','clear-user':'petV110ClearUserForm','save-user-permissions':'petV139SaveUserPermissions','grant-read-only':'petV139GrantReadOnly','grant-driver-groomer':'petV139GrantDriverGroomer','grant-operational':'petV139GrantOperational','reset-user-permissions':'petV139ResetUserPermissions','save-vehicle-assignment':'petV664SaveVehicleAssignment','clear-vehicle-assignment':'petV664ClearVehicleAssignment','copy-vehicle-assignment':'petV664CopyVehicleAssignment','trusted-devices-refresh':'petV9LoadTrustedDevices','trusted-device-revoke':'petV9RevokeTrustedDevice','active-sessions-refresh':'petV9LoadActiveSessions'};
   document.addEventListener('click',function(e){
     var btn=e.target&&e.target.closest&&e.target.closest('[data-v110-action],[data-v121-action]'); if(!btn) return;
     var a=btn.getAttribute('data-v110-action');
@@ -330,6 +330,70 @@
       await window.petV9LoadTrustedDevices();
     }catch(err){
       setBox('<div class="pet-v110-note" style="border-color:rgba(248,113,113,.45);color:#fecaca">'+esc(errorMessage(err))+'</div>');
+    }
+  };
+
+
+  function sessionStatusLabel(status, isCurrent){
+    status = String(status || '').toLowerCase();
+    if(isCurrent) return '<span class="pet-v110-pill green">الجلسة الحالية</span>';
+    if(status === 'active') return '<span class="pet-v110-pill green">نشطة</span>';
+    if(status === 'expired') return '<span class="pet-v110-pill warn">منتهية</span>';
+    if(status === 'revoked') return '<span class="pet-v110-pill danger">منهية</span>';
+    return '<span class="pet-v110-pill">غير معروفة</span>';
+  }
+  function setSessionsBox(html){
+    var box = byId('petV9ActiveSessionsBox');
+    if(!box) return;
+    var S = window.PETATOESecurity;
+    if(S && typeof S.setInnerHTML === 'function') S.setInnerHTML(box, html);
+    else box.innerHTML = html;
+  }
+  function sessionErrorMessage(error){
+    var msg = String((error && (error.error || error.message || error.details)) || error || 'UNKNOWN_ERROR');
+    if(msg.indexOf('Could not find the table') !== -1 || msg.indexOf('user_sessions') !== -1){
+      return 'جدول الجلسات غير جاهز في Supabase. شغّل ملف SQL الخاص بالمرحلة S4.5.1 أولاً.';
+    }
+    if(msg === 'CURRENT_USER_EMAIL_REQUIRED') return 'تعذر تحديد بريد المستخدم الحالي. سجّل خروج ثم ادخل مرة أخرى.';
+    return 'تعذر تحميل الجلسات النشطة: ' + msg;
+  }
+  window.petV9RenderActiveSessions = function(sessions){
+    sessions = Array.isArray(sessions) ? sessions : [];
+    if(!sessions.length){
+      setSessionsBox('<div class="pet-v110-note">لا توجد جلسات نشطة مسجلة لهذا المستخدم حتى الآن.</div>');
+      return;
+    }
+    var rows = sessions.map(function(s){
+      var active = String(s.status || '').toLowerCase() === 'active';
+      return '<div class="pet-v110-card" style="margin:10px 0;padding:14px">'
+        + '<div style="display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap">'
+        + '<div style="min-width:240px;flex:1">'
+        + '<div style="font-weight:900;color:#e5f3ff;margin-bottom:6px">🧭 '+esc(shortDeviceName({deviceName:s.deviceName, platform:s.platform}))+'</div>'
+        + '<div style="font-size:12px;color:rgba(226,232,240,.76);line-height:1.8">'
+        + 'المتصفح/النظام: '+esc(s.platform || s.browser || '—')+'<br>'
+        + 'بدأت: '+esc(fmtDate(s.startedAt))+'<br>'
+        + 'آخر نشاط: '+esc(fmtDate(s.lastActivityAt))+'<br>'
+        + 'تنتهي: '+esc(fmtDate(s.expiresAt))
+        + (s.logoutReason ? '<br>سبب الإنهاء: '+esc(s.logoutReason) : '')
+        + '</div></div>'
+        + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+sessionStatusLabel(s.status, !!s.isCurrent)
+        + '</div></div></div>';
+    }).join('');
+    setSessionsBox(rows);
+  };
+  window.petV9LoadActiveSessions = async function(){
+    var box = byId('petV9ActiveSessionsBox');
+    if(!box) return;
+    setSessionsBox('<div class="pet-v110-note">جاري تحميل الجلسات النشطة...</div>');
+    try{
+      if(!window.PETATOEAuth || typeof window.PETATOEAuth.listActiveSessions !== 'function'){
+        throw new Error('PETATOE_AUTH_SESSIONS_API_NOT_READY');
+      }
+      var res = await window.PETATOEAuth.listActiveSessions();
+      if(!res || res.ok === false) throw new Error(sessionErrorMessage(res));
+      window.petV9RenderActiveSessions(res.sessions || []);
+    }catch(err){
+      setSessionsBox('<div class="pet-v110-note" style="border-color:rgba(248,113,113,.45);color:#fecaca">'+esc(sessionErrorMessage(err))+'</div>');
     }
   };
 })();

@@ -179,6 +179,38 @@ async function touchEnterpriseSession(dbUrl: string, headers: Record<string, str
   return { ok: true, action: "session_touch" };
 }
 
+
+async function listActiveSessions(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap) {
+  const rawSessionToken = String(body.sessionClientToken || body.sessionToken || "").trim();
+  const currentHash = rawSessionToken && user && user.id ? await sessionTokenHash(rawSessionToken, String(user.id)) : "";
+  const res = await fetch(
+    `${dbUrl}/rest/v1/user_sessions?select=id,session_token_hash,device_name,platform,browser,login_source,last_activity_at,expires_at,revoked_at,logout_reason,created_at,metadata&user_id=eq.${encodeURIComponent(String(user.id))}&order=last_activity_at.desc.nullslast,created_at.desc&limit=25`,
+    { headers },
+  );
+  if (!res.ok) return { ok: false, error: "ACTIVE_SESSIONS_LIST_FAILED", details: await res.text() };
+  const rows = await res.json().catch(() => []);
+  const nowTime = Date.now();
+  const sessions = (Array.isArray(rows) ? rows : []).map((row) => {
+    const expires = row.expires_at ? new Date(String(row.expires_at)).getTime() : 0;
+    const revoked = !!row.revoked_at;
+    return {
+      id: row.id,
+      deviceName: row.device_name || "Browser Device",
+      platform: row.platform || "",
+      browser: row.browser || "",
+      loginSource: row.login_source || "",
+      startedAt: row.created_at || null,
+      lastActivityAt: row.last_activity_at || null,
+      expiresAt: row.expires_at || null,
+      revokedAt: row.revoked_at || null,
+      logoutReason: row.logout_reason || null,
+      isCurrent: !!currentHash && String(row.session_token_hash || "") === currentHash,
+      status: revoked ? "revoked" : (expires && expires < nowTime ? "expired" : "active"),
+    };
+  });
+  return { ok: true, action: "active_sessions_list", sessions };
+}
+
 async function audit(dbUrl: string, headers: HeadersInit, payload: JsonMap) {
   try {
     await fetch(`${dbUrl}/rest/v1/login_history`, {
@@ -299,6 +331,12 @@ export default {
 
       if (action === "session_touch") {
         const sessionResult = await touchEnterpriseSession(PETATOE_SUPABASE_URL, dbHeaders, user, body);
+        if (!sessionResult.ok) return json(sessionResult, 500);
+        return json(sessionResult);
+      }
+
+      if (action === "active_sessions_list") {
+        const sessionResult = await listActiveSessions(PETATOE_SUPABASE_URL, dbHeaders, user, body);
         if (!sessionResult.ok) return json(sessionResult, 500);
         return json(sessionResult);
       }
