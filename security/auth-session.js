@@ -127,9 +127,31 @@
     try{ if(ids && typeof ids.usersSync==='function') return ids.usersSync()||[]; }catch(_e){}
     return getUsers();
   }
+  async function validateRemoteEnterpriseSession(user, reason){
+    try{
+      var payload = remoteSessionPayload(user || sessionUser() || window.currentUser || {}, false);
+      if(!payload.username || !payload.email || !payload.sessionClientToken) return {ok:true,skipped:true};
+      await callSecurityEmail(Object.assign({action:'session_touch', source:reason || 'session-validate'}, payload));
+      return {ok:true};
+    }catch(err){
+      var msg = String(err && err.message || err);
+      if(msg === 'SESSION_TOUCH_FAILED' || msg === 'SESSION_TOKEN_REQUIRED' || msg === 'HTTP_401'){
+        rawRemove(AUTH_KEY);
+        clearCurrentUser();
+        setLoggedInClass(false);
+        try{document.dispatchEvent(new CustomEvent('petatoe:userchanged',{detail:{user:null,source:reason||'session-revoked'}}));}catch(_e){}
+        renderLogin('تم إنهاء الجلسة أمنيًا. برجاء تسجيل الدخول مرة أخرى.');
+        return {ok:false,reason:'remote-revoked'};
+      }
+      return {ok:true,warning:msg};
+    }
+  }
+
   async function validateSessionUser(reason){
     var su=sessionUser();
     if(!su||!su.id)return {ok:false,reason:'no-session'};
+    var remote = await validateRemoteEnterpriseSession(su, reason || 'session-validate');
+    if(remote && remote.ok === false) return remote;
     var list=await loadFreshUsers();
     var fresh=(list||[]).find(function(u){return sameUserRef(u,su);});
     if(!fresh||!isActive(fresh)){
@@ -349,6 +371,17 @@
     return callSecurityEmail(Object.assign({action:'session_revoke_all', keepCurrent: keepCurrent !== false, logoutReason:'revoked_all_by_user'}, payload));
   }
 
+  async function forceRevokeUserSessions(targetUser, reason){
+    var current = sessionUser() || window.currentUser || {};
+    var payload = remoteSessionPayload(current, false);
+    var target = targetUser || {};
+    var targetUserId = String(target.supabase_id || target.row_id || target.id || '').trim();
+    var targetUsername = String(target.username || target.name || '').trim();
+    if(!payload.username || !payload.email) throw new Error('CURRENT_USER_EMAIL_REQUIRED');
+    if(!targetUserId && !targetUsername) throw new Error('TARGET_USER_REQUIRED');
+    return callSecurityEmail(Object.assign({action:'user_sessions_force_revoke', targetUserId:targetUserId, targetUsername:targetUsername, logoutReason:reason || 'admin_force_revoke'}, payload));
+  }
+
   /* PETATOE v9.0 S4.5.5 — Enterprise Idle Timeout
      Root scope: frontend inactivity enforcement + remote session last_activity touch.
      Default policy: 30 minutes idle timeout with a 60-second warning. */
@@ -379,6 +412,8 @@
       var payload = remoteSessionPayload(user, false);
       if(!payload.username || !payload.email || !payload.sessionClientToken) return;
       callSecurityEmail(Object.assign({action:'session_touch', source:reason || 'idle-activity'}, payload)).catch(function(err){
+        var msg = String(err && err.message || err);
+        if(msg === 'SESSION_TOUCH_FAILED' || msg === 'SESSION_TOKEN_REQUIRED' || msg === 'HTTP_401'){ logout('remote_session_revoked'); return; }
         window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',err);
       });
     }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e); }
@@ -804,6 +839,12 @@
         renderPasswordChange(user, 'تعذر الوصول إلى مخزن مستخدمي Supabase'); return;
       }
       audit(user.passwordPolicy === 'emergency_recovery' ? 'Emergency SuperAdmin Password Reset' : 'Bootstrap Password Changed', user.username || user.id, 'warn');
+      try{
+        var revokePayload = remoteSessionPayload(user, true);
+        if(revokePayload.username && revokePayload.email){
+          await callSecurityEmail(Object.assign({action:'session_revoke_all', keepCurrent:false, logoutReason:'password_changed'}, revokePayload));
+        }
+      }catch(_revokeErr){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_revokeErr); }
       login(user.username || user.name || user.id, a);
     }); }
   }
@@ -1055,7 +1096,7 @@
     return false;
   }
 
-  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions, revokeActiveSession:revokeActiveSession, revokeAllActiveSessions:revokeAllActiveSessions, recordActivity:recordUserActivity, startIdleTimeout:startIdleTimeout, stopIdleTimeout:stopIdleTimeout};
+  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions, revokeActiveSession:revokeActiveSession, revokeAllActiveSessions:revokeAllActiveSessions, recordActivity:recordUserActivity, forceRevokeUserSessions:forceRevokeUserSessions, startIdleTimeout:startIdleTimeout, stopIdleTimeout:stopIdleTimeout};
   window.petLogout = function(){ logout('manual'); };
 
   document.addEventListener('petatoe:users-changed', function(){ validateSessionUser('users-changed'); });

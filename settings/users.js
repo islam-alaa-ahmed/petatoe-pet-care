@@ -192,6 +192,14 @@
       var res=await persistUserToSupabase(x,{rowId:rowId,editMode:!isNew});
       if(!res.ok){toast('فشل حفظ المستخدم: '+(res.error||'خطأ غير معروف'));return;}
       replaceCacheUser(res.user||x);
+      if(!isNew && String(x.status || '').toLowerCase() !== 'active' && window.PETATOEAuth && typeof window.PETATOEAuth.forceRevokeUserSessions === 'function'){
+        try{
+          await window.PETATOEAuth.forceRevokeUserSessions(res.user || x, 'user_status_' + String(x.status || 'inactive'));
+          audit('User Sessions Revoked', username + ' status=' + String(x.status || ''), 'warn');
+        }catch(_sessionErr){
+          audit('User Session Revoke Failed', username + ': ' + String(_sessionErr && _sessionErr.message || _sessionErr), 'warn');
+        }
+      }
       audit(isNew?'User Created':'User Updated',username,'warn');
       toast('تم حفظ المستخدم');
       window.petV110ClearUserForm&&window.petV110ClearUserForm();

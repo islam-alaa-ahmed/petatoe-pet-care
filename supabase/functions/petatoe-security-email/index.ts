@@ -376,7 +376,7 @@ export default {
 
       if (action === "session_touch") {
         const sessionResult = await touchEnterpriseSession(PETATOE_SUPABASE_URL, dbHeaders, user, body);
-        if (!sessionResult.ok) return json(sessionResult, 500);
+        if (!sessionResult.ok) return json(sessionResult, sessionResult.error === "SESSION_TOUCH_FAILED" ? 401 : 500);
         return json(sessionResult);
       }
 
@@ -412,6 +412,40 @@ export default {
         const sessionResult = await listActiveSessions(PETATOE_SUPABASE_URL, dbHeaders, user, body);
         if (!sessionResult.ok) return json(sessionResult, 500);
         return json(sessionResult);
+      }
+
+      if (action === "user_sessions_force_revoke") {
+        const requesterRole = String(user.role_code || user.legacy_payload?.role_code || user.legacy_payload?.role || "").toLowerCase();
+        if (!["superadmin", "super_admin", "admin"].includes(requesterRole)) {
+          return json({ ok: false, action: "user_sessions_force_revoke", error: "FORBIDDEN" }, 403);
+        }
+        const targetUserId = String(body.targetUserId || body.userId || "").trim();
+        const targetUsername = String(body.targetUsername || "").trim();
+        if (!targetUserId && !targetUsername) return json({ ok: false, action: "user_sessions_force_revoke", error: "TARGET_USER_REQUIRED" }, 400);
+
+        const targetUrl = targetUserId
+          ? `${PETATOE_SUPABASE_URL}/rest/v1/app_users?select=*&id=eq.${encodeURIComponent(targetUserId)}&limit=1`
+          : `${PETATOE_SUPABASE_URL}/rest/v1/app_users?select=*&username=eq.${encodeURIComponent(targetUsername)}&limit=1`;
+        const targetRes = await fetch(targetUrl, { headers: dbHeaders });
+        if (!targetRes.ok) return json({ ok: false, action: "user_sessions_force_revoke", error: "TARGET_LOOKUP_FAILED", details: await targetRes.text() }, 500);
+        const targetRows = await targetRes.json().catch(() => []);
+        const targetUser = Array.isArray(targetRows) ? targetRows[0] : null;
+        if (!targetUser || !targetUser.id) return json({ ok: false, action: "user_sessions_force_revoke", error: "TARGET_USER_NOT_FOUND" }, 404);
+
+        const revokeResult = await revokeAllEnterpriseSessions(PETATOE_SUPABASE_URL, dbHeaders, targetUser, {
+          keepCurrent: false,
+          logoutReason: String(body.logoutReason || "admin_force_revoke").slice(0, 80),
+        });
+        if (!revokeResult.ok) return json(revokeResult, 500);
+        await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+          user_id: user.id,
+          username_attempted: username,
+          event_type: "sessions_force_revoked",
+          success: true,
+          user_agent: req.headers.get("user-agent"),
+          metadata: { targetUserId: targetUser.id, targetUsername: targetUser.username, revokedCount: revokeResult.revokedCount || 0, reason: body.logoutReason || "admin_force_revoke" },
+        });
+        return json({ ok: true, action: "user_sessions_force_revoke", targetUserId: targetUser.id, revokedCount: revokeResult.revokedCount || 0 });
       }
 
       // PETATOE v9 S3.7: Handle reset_password before send_otp so a password-save request can never fall through to OTP sending.
@@ -533,16 +567,21 @@ export default {
           body: JSON.stringify({ status: "used", used_at: nowIso() }),
         });
 
+        const revokeAfterPasswordReset = await revokeAllEnterpriseSessions(PETATOE_SUPABASE_URL, dbHeaders, user, {
+          keepCurrent: false,
+          logoutReason: "password_reset"
+        });
+
         await audit(PETATOE_SUPABASE_URL, dbHeaders, {
           user_id: user.id,
           username_attempted: username,
           event_type: "password_reset_completed",
           success: true,
           user_agent: req.headers.get("user-agent"),
-          metadata: { purpose },
+          metadata: { purpose, sessionsRevoked: revokeAfterPasswordReset.revokedCount || 0 },
         });
 
-        return json({ ok: true, action: "reset_password", message: "Password reset successfully." });
+        return json({ ok: true, action: "reset_password", message: "Password reset successfully.", sessionsRevoked: revokeAfterPasswordReset.revokedCount || 0 });
       }
 
 
