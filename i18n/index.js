@@ -3,13 +3,15 @@
 (function(){
   'use strict';
   var STORAGE_KEY='petatoe.ui.language';
-  var DEFAULT_LANG='ar';
-  var SUPPORTED_LANGS=['ar','en'];
+  var LOCALIZATION_REGISTRY=window.PETATOE_LOCALIZATION_REGISTRY||null;
+  var DEFAULT_LANG=LOCALIZATION_REGISTRY?LOCALIZATION_REGISTRY.defaultLanguage:'ar';
+  function supportedLanguages(){return LOCALIZATION_REGISTRY?LOCALIZATION_REGISTRY.enabledCodes():['ar','en'];}
   var dictionaries=window.PETATOE_I18N_DICTIONARIES||{};
 
   function normalizeLang(lang){
     lang=String(lang||'').toLowerCase();
-    return SUPPORTED_LANGS.indexOf(lang)>=0?lang:DEFAULT_LANG;
+    var supported=supportedLanguages();
+    return supported.indexOf(lang)>=0?lang:DEFAULT_LANG;
   }
   function getPath(obj,path){
     return String(path||'').split('.').reduce(function(acc,key){
@@ -334,18 +336,16 @@
     }
     window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
   }
+  function bindLanguageOptions(){
+    bindLanguageOptions();
+  }
   function init(){
     var btn=document.getElementById('petLanguageToggle');
     if(btn&&!btn.dataset.petI18nBound){
       btn.dataset.petI18nBound='1';
       btn.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();var sw=document.getElementById('petLanguageSwitcher');setMenuState(!(sw&&sw.classList.contains('open')));});
     }
-    document.querySelectorAll('.pet-language-option[data-pet-lang]').forEach(function(opt){
-      if(!opt.dataset.petI18nBound){
-        opt.dataset.petI18nBound='1';
-        opt.addEventListener('click',function(ev){ev.preventDefault();ev.stopPropagation();applyLanguage(opt.getAttribute('data-pet-lang'),{renderDashboard:false});});
-      }
-    });
+    bindLanguageOptions();
     if(!document.documentElement.dataset.petI18nOutsideBound){
       document.documentElement.dataset.petI18nOutsideBound='1';
       document.addEventListener('click',function(ev){var sw=document.getElementById('petLanguageSwitcher');if(sw&&!sw.contains(ev.target)) setMenuState(false);});
@@ -387,6 +387,7 @@
     }
   });
   document.addEventListener('petatoe:tabchange',function(){scheduleReapply(currentLang(),90);});
+  window.addEventListener('petatoe:localization-ready',function(){bindLanguageOptions();scheduleReapply(currentLang(),0);});
   window.PETATOE_I18N={
     getLanguage:currentLang,
     setLanguage:applyLanguage,
@@ -398,7 +399,10 @@
     direction:window.PETATOE_DIRECTION||null,
     reapply:function(){scheduleReapply(currentLang());},
     apply:applyLanguage,
-    applySubtree:function(root){translateAddedSubtree(root,currentLang());}
+    applySubtree:function(root){translateAddedSubtree(root,currentLang());},
+    refreshLanguageOptions:bindLanguageOptions,
+    supportedLanguages:supportedLanguages,
+    registry:LOCALIZATION_REGISTRY
   };
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
 })();
