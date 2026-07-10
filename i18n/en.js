@@ -13,7 +13,7 @@
     actions:{refresh:'🔄 Refresh',exportPagePdf:'🖨️ Export Page PDF',reset:'Reset 🔄'},
     filters:{allYears:'All Years',allMonths:'All Months',allVehicles:'All Vehicles',allPayments:'All Payment Methods'},
     payroll:{manage:'Payroll Management',manageSub:'Create payroll statements and approvals',slip:'Payroll Statement',slipSub:'Show the current user payroll statement only'},
-    sidebar:{operations:'⚙️ Operations Management',home:'🏠 Home',children:'👨‍👩‍👧 Children Expenses',transactions:'⭐ Transactions',analytics:'📈 Analytics',management:'🏢 Management',settings:'⚙️ Settings and Permissions',tagline:'.Care. Love. PETATOE'},
+    sidebar:{appointments:'📅 Appointments Management',operations:'⚙️ Operations Management',home:'🏠 Home',children:'👨‍👩‍👧 Children Expenses',transactions:'⭐ Transactions',dataEntry:'➕ Data Entry',excelUpload:'📤 Excel Upload',records:'📋 Records',auditLog:'🧾 Audit Log',analytics:'📈 Analytics',smartReports:'🧠 Smart Reports',customer360:'👤 Customer 360',commissions:'💰 Commissions System',commissionStatement:'📄 Commission Statement',management:'🏢 Management',executive:'👑 Executive Management',obligations:'💳 Obligations',payroll:'💼 Payroll Management',salarySlip:'📄 Payroll Statement',fleet:'🚚 Fleet Management',treasury:'🏦 Treasury',warehouses:'📦 Warehouses',system:'⚙️ System',settings:'⚙️ Settings',tagline:'Care. Love. PETATOE.',petCareText:'🐾 We care for your pets',changeImage:'📷 Change Image',originalImage:'↩️ Original'},
     charts:{bar:'Bar',line:'Line'}
   };
 })();

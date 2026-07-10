@@ -90,21 +90,30 @@
     setText('#dashboard .dashboard-clients-card .card-title b','dashboard.topClients',lang);
     setText('#dashboard .payment-below-card .card-title b','dashboard.paymentSales',lang);
     var homeCards2=document.querySelectorAll('#dashboard .grid[style*="margin-top:16px"] .card-title b');
-    if(homeCards2[1]) homeCards2[1].textContent=translate('vansComparison',lang)||homeCards2[1].textContent;
+    if(homeCards2[1]) homeCards2[1].textContent=translate('dashboard.vansComparison',lang)||homeCards2[1].textContent;
     setSidebarTexts(lang);
   }
   function setSidebarTexts(lang){
-    var labels=[
-      ['operations','sidebar.operations'],['الرئيسية','sidebar.home'],['مصروفات الأبناء','sidebar.children'],['العمليات','sidebar.transactions'],['التحليلات','sidebar.analytics'],['الإدارة','sidebar.management'],['الإعدادات والصلاحيات','sidebar.settings']
-    ];
-    document.querySelectorAll('.sidebar button,.side-menu button,.nav button,.menu button,.sidebar .nav-item').forEach(function(el){
-      labels.forEach(function(pair){
-        if((el.textContent||'').indexOf(pair[0])>-1){
-          var value=translate(pair[1],lang); if(value) el.textContent=value;
-        }
-      });
+    var tabKeyMap={
+      appointments:'sidebar.appointments',dashboard:'sidebar.home',childrenExpenses:'sidebar.children',
+      entry:'sidebar.dataEntry',import:'sidebar.excelUpload',records:'sidebar.records',logs:'sidebar.auditLog',
+      smart:'sidebar.smartReports',customer360:'sidebar.customer360',commissions:'sidebar.commissions',commissionStatement:'sidebar.commissionStatement',
+      executive:'sidebar.executive',obligations:'sidebar.obligations',payroll:'sidebar.payroll',salarySlip:'sidebar.salarySlip',
+      fleet:'sidebar.fleet',treasury:'sidebar.treasury',warehouses:'sidebar.warehouses',settings:'sidebar.settings'
+    };
+    document.querySelectorAll('#nav [data-tab]').forEach(function(el){
+      if(el.hasAttribute('data-i18n')) return;
+      var key=tabKeyMap[el.getAttribute('data-tab')];
+      var value=key&&translate(key,lang);
+      if(value) el.textContent=value;
     });
-    setText('#petCardTagline','sidebar.tagline',lang);
+    var groupKeyMap={operations:'sidebar.transactions',analytics:'sidebar.analytics',management:'sidebar.management',system:'sidebar.system'};
+    document.querySelectorAll('#nav [data-nav-group]').forEach(function(el){
+      var key=groupKeyMap[el.getAttribute('data-nav-group')];
+      var value=key&&translate(key,lang);
+      var target=el.querySelector('span')||el;
+      if(value&&!target.hasAttribute('data-i18n')) target.textContent=value;
+    });
   }
   function setMenuState(open){
     var switcher=document.getElementById('petLanguageSwitcher');
