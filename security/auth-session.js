@@ -349,6 +349,142 @@
     return callSecurityEmail(Object.assign({action:'session_revoke_all', keepCurrent: keepCurrent !== false, logoutReason:'revoked_all_by_user'}, payload));
   }
 
+  /* PETATOE v9.0 S4.5.5 — Enterprise Idle Timeout
+     Root scope: frontend inactivity enforcement + remote session last_activity touch.
+     Default policy: 30 minutes idle timeout with a 60-second warning. */
+  var IDLE_TIMEOUT_MS = 30 * 60 * 1000;
+  var IDLE_WARNING_MS = 60 * 1000;
+  var IDLE_TOUCH_THROTTLE_MS = 5 * 60 * 1000;
+  var IDLE_ACTIVITY_KEY = 'petatoe_enterprise_last_activity_v90';
+  var IDLE_LOGOUT_KEY = 'petatoe_enterprise_idle_logout_v90';
+  var idleTimer = null;
+  var idleWarningTimer = null;
+  var idleTouchTimer = null;
+  var idleLastLocalTouch = 0;
+
+  function idleNow(){ return Date.now ? Date.now() : new Date().getTime(); }
+  function idleReadLastActivity(){
+    try{ return Number(localStorage.getItem(IDLE_ACTIVITY_KEY) || '0') || 0; }catch(_e){ return 0; }
+  }
+  function idleWriteLastActivity(ts){
+    try{ localStorage.setItem(IDLE_ACTIVITY_KEY, String(ts || idleNow())); }catch(_e){}
+  }
+  function idleWarningEl(){ return document.getElementById('petEnterpriseIdleWarning'); }
+  function hideIdleWarning(){
+    try{ var el = idleWarningEl(); if(el) el.remove(); }catch(_e){}
+  }
+  function touchRemoteSession(reason){
+    try{
+      var user = sessionUser() || window.currentUser || {};
+      var payload = remoteSessionPayload(user, false);
+      if(!payload.username || !payload.email || !payload.sessionClientToken) return;
+      callSecurityEmail(Object.assign({action:'session_touch', source:reason || 'idle-activity'}, payload)).catch(function(err){
+        window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',err);
+      });
+    }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e); }
+  }
+  function maybeTouchRemoteSession(reason){
+    var n = idleNow();
+    if(n - idleLastLocalTouch < IDLE_TOUCH_THROTTLE_MS) return;
+    idleLastLocalTouch = n;
+    touchRemoteSession(reason || 'idle-activity');
+  }
+  function showIdleWarning(remainingMs){
+    if(!sessionUser()) return;
+    var existing = idleWarningEl();
+    if(existing) existing.remove();
+    var el = document.createElement('div');
+    el.id = 'petEnterpriseIdleWarning';
+    el.dir = 'rtl';
+    el.style.cssText = 'position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;background:rgba(2,8,23,.55);backdrop-filter:blur(8px);font-family:Cairo,Tahoma,Arial,sans-serif;';
+    var secs = Math.max(1, Math.ceil((remainingMs || IDLE_WARNING_MS) / 1000));
+    el.innerHTML = '<div style="width:min(460px,calc(100vw - 32px));border:1px solid rgba(255,255,255,.18);border-radius:24px;background:linear-gradient(145deg,rgba(23,35,56,.96),rgba(11,18,32,.96));box-shadow:0 24px 80px rgba(0,0,0,.45);padding:24px;color:#eef6ff;text-align:center">' +
+      '<div style="font-size:34px;margin-bottom:8px">⏱️</div>' +
+      '<h3 style="margin:0 0 10px;font-size:22px">تنبيه انتهاء الجلسة</h3>' +
+      '<p style="margin:0 0 18px;color:#b9c7d8;line-height:1.8">ستنتهي جلستك خلال <b id="petIdleCountdown">' + secs + '</b> ثانية بسبب عدم النشاط.</p>' +
+      '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">' +
+      '<button id="petIdleContinueBtn" type="button" style="border:0;border-radius:16px;padding:12px 20px;background:#22c55e;color:white;font-weight:800;cursor:pointer">متابعة الجلسة</button>' +
+      '<button id="petIdleLogoutBtn" type="button" style="border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:12px 20px;background:rgba(255,255,255,.08);color:white;font-weight:800;cursor:pointer">تسجيل الخروج الآن</button>' +
+      '</div></div>';
+    document.body.appendChild(el);
+    var countdown = el.querySelector('#petIdleCountdown');
+    var started = idleNow();
+    var tick = setInterval(function(){
+      if(!document.body.contains(el)){ clearInterval(tick); return; }
+      var left = Math.max(0, secs - Math.floor((idleNow() - started) / 1000));
+      if(countdown) countdown.textContent = String(left);
+    }, 1000);
+    var cont = el.querySelector('#petIdleContinueBtn');
+    if(cont) cont.addEventListener('click', function(){
+      clearInterval(tick);
+      recordUserActivity('idle-continue');
+      hideIdleWarning();
+    });
+    var out = el.querySelector('#petIdleLogoutBtn');
+    if(out) out.addEventListener('click', function(){
+      clearInterval(tick);
+      triggerIdleLogout('idle_manual_logout');
+    });
+  }
+  function clearIdleTimers(){
+    if(idleTimer){ clearTimeout(idleTimer); idleTimer = null; }
+    if(idleWarningTimer){ clearTimeout(idleWarningTimer); idleWarningTimer = null; }
+  }
+  function scheduleIdleTimers(){
+    clearIdleTimers();
+    if(!sessionUser()) return;
+    var last = idleReadLastActivity() || idleNow();
+    var elapsed = idleNow() - last;
+    var warnIn = Math.max(0, IDLE_TIMEOUT_MS - IDLE_WARNING_MS - elapsed);
+    var logoutIn = Math.max(0, IDLE_TIMEOUT_MS - elapsed);
+    idleWarningTimer = setTimeout(function(){
+      var freshElapsed = idleNow() - (idleReadLastActivity() || idleNow());
+      if(freshElapsed >= IDLE_TIMEOUT_MS - IDLE_WARNING_MS) showIdleWarning(IDLE_TIMEOUT_MS - freshElapsed);
+      scheduleIdleTimers();
+    }, warnIn);
+    idleTimer = setTimeout(function(){
+      var freshElapsed = idleNow() - (idleReadLastActivity() || idleNow());
+      if(freshElapsed >= IDLE_TIMEOUT_MS) triggerIdleLogout('idle_timeout');
+      else scheduleIdleTimers();
+    }, logoutIn);
+  }
+  function recordUserActivity(reason){
+    if(!sessionUser()) return;
+    hideIdleWarning();
+    idleWriteLastActivity(idleNow());
+    maybeTouchRemoteSession(reason || 'activity');
+    scheduleIdleTimers();
+  }
+  function triggerIdleLogout(reason){
+    hideIdleWarning();
+    clearIdleTimers();
+    try{ localStorage.setItem(IDLE_LOGOUT_KEY, String(idleNow()) + ':' + String(reason || 'idle_timeout')); }catch(_e){}
+    logout(reason || 'idle_timeout');
+  }
+  function startIdleTimeout(){
+    if(!sessionUser()) return;
+    if(!idleReadLastActivity()) idleWriteLastActivity(idleNow());
+    scheduleIdleTimers();
+    maybeTouchRemoteSession('idle-start');
+  }
+  function stopIdleTimeout(){
+    clearIdleTimers();
+    hideIdleWarning();
+    if(idleTouchTimer){ clearTimeout(idleTouchTimer); idleTouchTimer = null; }
+  }
+  ['mousemove','mousedown','keydown','scroll','touchstart','click'].forEach(function(evt){
+    try{ window.addEventListener(evt, function(){
+      if(idleTouchTimer) return;
+      idleTouchTimer = setTimeout(function(){ idleTouchTimer = null; recordUserActivity(evt); }, 750);
+    }, {passive:true}); }catch(_e){}
+  });
+  try{
+    window.addEventListener('storage', function(ev){
+      if(ev && ev.key === IDLE_ACTIVITY_KEY && sessionUser()) scheduleIdleTimers();
+      if(ev && ev.key === IDLE_LOGOUT_KEY && sessionUser()) logout('idle_timeout_multitab');
+    });
+  }catch(_e){}
+
   function saveBrowserPasswordCredential(form, username, enabled){
     writeRemember(username, !!enabled);
     if(!enabled || !form) return;
@@ -854,6 +990,7 @@
     try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
     stabilizePostLoginRoute(safeUser, source || 'auth-login');
     startRemoteSession(safeUser, source || 'auth-login');
+    startIdleTimeout();
     if(options.enableBiometric){ setTimeout(function(){ registerBiometric(safeUser); }, 350); }
     return true;
   }
@@ -891,6 +1028,7 @@
   }
   function logout(reason){
     var user = sessionUser();
+    stopIdleTimeout();
     endRemoteSession(user, reason || 'manual');
     rawRemove(AUTH_KEY);
     clearCurrentUser();
@@ -907,6 +1045,7 @@
       if(valid && valid.ok){
         setLoggedInClass(true);
         var old = document.getElementById('pet-auth-overlay'); if(old) old.remove();
+        startIdleTimeout();
         return true;
       }
       return false;
@@ -916,7 +1055,7 @@
     return false;
   }
 
-  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions, revokeActiveSession:revokeActiveSession, revokeAllActiveSessions:revokeAllActiveSessions};
+  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions, revokeActiveSession:revokeActiveSession, revokeAllActiveSessions:revokeAllActiveSessions, recordActivity:recordUserActivity, startIdleTimeout:startIdleTimeout, stopIdleTimeout:stopIdleTimeout};
   window.petLogout = function(){ logout('manual'); };
 
   document.addEventListener('petatoe:users-changed', function(){ validateSessionUser('users-changed'); });
