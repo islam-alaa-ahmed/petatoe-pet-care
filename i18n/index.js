@@ -71,24 +71,25 @@
     setText('.pet-language-option[data-pet-lang="en"]','language.english',lang);
     setPlaceholder('#globalSearchInput','globalSearch.placeholder',lang);
     setText('#globalSearchShortcut','globalSearch.shortcut',lang);
-    setText('#home .section-head h2','dashboard.title',lang);
-    setText('#home .section-head p','dashboard.subtitle',lang);
+    setText('#dashboard .section-head h2','dashboard.title',lang);
+    setText('#dashboard .section-head p','dashboard.subtitle',lang);
     setText('#safeDashboardPdfBtn','actions.exportPagePdf',lang);
-    var refresh=document.querySelector('#home .section-head [data-pet-action="dashboard-refresh"]');
+    var refresh=document.querySelector('#dashboard .section-head [data-pet-action="dashboard-refresh"]');
     var refreshValue=translate('actions.refresh',lang); if(refresh&&refreshValue) refresh.textContent=refreshValue;
-    var selects=[['#yearFilter','filters.allYears'],['#monthFilter','filters.allMonths'],['#vanFilter','filters.allVehicles'],['#payFilter','filters.allPayments']];
+    var reset=document.querySelector('#dashboard [data-pet-action="dashboard-reset"]'); var resetValue=translate('actions.reset',lang); if(reset&&resetValue) reset.textContent=resetValue;
+    var selects=[['#fYear','filters.allYears'],['#fMonth','filters.allMonths'],['#fVan','filters.allVehicles'],['#fPay','filters.allPayments']];
     selects.forEach(function(pair){
       var sel=document.querySelector(pair[0]); var value=translate(pair[1],lang);
       if(sel&&value&&sel.options&&sel.options[0]) sel.options[0].textContent=value;
     });
-    var homeCards=document.querySelectorAll('#home .payroll-home-card');
+    var homeCards=document.querySelectorAll('#dashboard .payroll-home-card');
     if(homeCards[0]){var b=homeCards[0].querySelector('b'), s=homeCards[0].querySelector('small'); if(b)b.textContent=translate('payroll.manage',lang)||b.textContent; if(s)s.textContent=translate('payroll.manageSub',lang)||s.textContent;}
     if(homeCards[1]){var b2=homeCards[1].querySelector('b'), s2=homeCards[1].querySelector('small'); if(b2)b2.textContent=translate('payroll.slip',lang)||b2.textContent; if(s2)s2.textContent=translate('payroll.slipSub',lang)||s2.textContent;}
-    setText('#home .monthly-wide-card .card-title b','dashboard.monthlySales',lang);
-    setText('#home .dashboard-services-card .card-title b','dashboard.topServices',lang);
-    setText('#home .dashboard-clients-card .card-title b','dashboard.topClients',lang);
-    setText('#home .payment-below-card .card-title b','dashboard.paymentSales',lang);
-    var homeCards2=document.querySelectorAll('#home .grid[style*="margin-top:16px"] .card-title b');
+    setText('#dashboard .monthly-wide-card .card-title b','dashboard.monthlySales',lang);
+    setText('#dashboard .dashboard-services-card .card-title b','dashboard.topServices',lang);
+    setText('#dashboard .dashboard-clients-card .card-title b','dashboard.topClients',lang);
+    setText('#dashboard .payment-below-card .card-title b','dashboard.paymentSales',lang);
+    var homeCards2=document.querySelectorAll('#dashboard .grid[style*="margin-top:16px"] .card-title b');
     if(homeCards2[1]) homeCards2[1].textContent=translate('vansComparison',lang)||homeCards2[1].textContent;
     setSidebarTexts(lang);
   }
@@ -126,6 +127,7 @@
     applyDataAttributes(lang);
     applyKnownStaticTexts(lang);
     window.dispatchEvent(new CustomEvent('petatoe:language-changed',{detail:{language:lang}}));
+    try{ if(typeof window.renderDashboardAll==='function') window.renderDashboardAll(); }catch(_){}
   }
   function init(){
     var btn=document.getElementById('petLanguageToggle');
