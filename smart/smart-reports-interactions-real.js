@@ -1,6 +1,18 @@
 /* PETATOE v6.4.51 Phase G1 - Smart Reports Interactions / Search / Bootstrap Real Extraction.
    Extracted from smart-reports-core.js without changing runtime behavior. */
 
+function smartInteractionT(key, fallback, params){
+  try{
+    if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.t==='function'){
+      const value=window.PETATOE_I18N.t('smartReportsSource.interactions.'+key,params||{});
+      if(typeof value==='string'&&value.trim()) return value;
+    }
+  }catch(_){ }
+  let out=String(fallback==null?'':fallback);
+  Object.keys(params||{}).forEach(k=>{out=out.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
+  return out;
+}
+
 // Recommendation report navigation: keeps all report calculations unchanged and only controls tab routing/back button.
 function petatoeResolveSmartRecTarget(rec){
   const valid=['overview','sales','vehicles','customers','services','advanced','forecast','recommendations'];
@@ -36,11 +48,11 @@ function petatoeEnsureSmartRecBackNote(){
 function petatoeRenderSmartRecBackButton(activeTab){
   const note=petatoeEnsureSmartRecBackNote();
   const show=!!window.petatoeSmartRecReturnActive && activeTab!=='recommendations';
-  const label=window.petatoeSmartRecReturnLabel||'التقرير المرتبط';
+  const label=window.petatoeSmartRecReturnLabel||smartInteractionT('linkedReport','التقرير المرتبط');
   if(note){
     note.classList.toggle('show',show);
     if(show){
-      window.PETATOESafeRender.setHTML(note,`<span>📌 تم فتح <b>${htmlSafe(label)}</b> من شاشة التوصيات.</span><div class="smart-rec-return-actions"><button class="smart-rec-back-btn" data-smart-action="back-smart-recommendations">↩️ رجوع لتقرير التوصيات</button></div>`);
+      window.PETATOESafeRender.setHTML(note,`<span>📌 ${smartInteractionT('openedFromRecommendations','تم فتح {report} من شاشة التوصيات.',{report:'<b>'+htmlSafe(label)+'</b>'})}</span><div class="smart-rec-return-actions"><button class="smart-rec-back-btn" data-smart-action="back-smart-recommendations">↩️ ${smartInteractionT('backToRecommendations','رجوع لتقرير التوصيات')}</button></div>`);
     }
   }
   try{petatoeRenderSmartRecFloatingBack(activeTab)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
@@ -85,7 +97,7 @@ function petatoeEnsureSmartRecFloatingBack(){
 function petatoeRenderSmartRecFloatingBack(activeTab){
   const btn=petatoeEnsureSmartRecFloatingBack();
   const show=!!window.petatoeSmartRecReturnActive && activeTab!=='recommendations';
-  const label=window.petatoeSmartRecReturnLabel||'التقرير المرتبط';
+  const label=window.petatoeSmartRecReturnLabel||smartInteractionT('linkedReport','التقرير المرتبط');
   btn.classList.toggle('show',show);
   if(show){
     window.PETATOESafeRender.setHTML(btn,`<span class="smart-rec-floating-ico">↩️</span><span class="smart-rec-floating-text"><b>رجوع للتوصيات</b><small>${htmlSafe(label)}</small></span>`);
@@ -142,7 +154,7 @@ function petatoeShowCeoKpiTooltip(ev,type){
   const labels={growth:'فرص النمو',high:'أولوية عالية',urgent:'تدخل عاجل'};
   const items=petatoeCeoKpiItems(type).slice(0,12);
   const el=petatoeCeoTooltipEl();
-  const rows=items.length?items.map((r,i)=>`<div class="ceo-tip-row"><span>${i+1}</span><b>${htmlSafe(r.title||'')}</b><small>${htmlSafe(r.report||'')}</small></div>`).join(''):'<div class="ceo-tip-empty">لا توجد عناصر في هذا القسم حاليًا.</div>';
+  const rows=items.length?items.map((r,i)=>`<div class="ceo-tip-row"><span>${i+1}</span><b>${htmlSafe(r.title||'')}</b><small>${htmlSafe(r.report||'')}</small></div>`).join(''):'<div class="ceo-tip-empty">'+smartInteractionT('noItems','لا توجد عناصر في هذا القسم حاليًا.')+'</div>';
   window.PETATOESafeRender.setHTML(el,`<div class="ceo-tip-head"><strong>${labels[type]||'تفاصيل'}</strong><em>${items.length} عنصر</em></div><div class="ceo-tip-body">${rows}</div>`);
   el.classList.add('show');
   const anchor=ev.currentTarget||ev.target;
@@ -196,7 +208,7 @@ function openGlobalSearch(){
   if(!ov||!inp)return;
   ov.classList.add('show');
   inp.value='';
-  window.PETATOESafeRender.setHTML(document.getElementById('globalSearchResults'),'<div class="gsearch-empty">ابدأ الكتابة للبحث في العملاء والخدمات والسيارات والفواتير...</div>');
+  window.PETATOESafeRender.setHTML(document.getElementById('globalSearchResults'),'<div class="gsearch-empty">'+smartInteractionT('searchStart','ابدأ الكتابة للبحث في العملاء والخدمات والسيارات والفواتير...')+'</div>');
   setTimeout(()=>inp.focus(),80);
 }
 function closeGlobalSearch(){
@@ -250,8 +262,8 @@ function _execSearch(q){
   const el=document.getElementById('globalSearchResults');
   if(!el)return;
   q=(q||'').trim().toLowerCase();
-  if(!q||q.length<2){smartSafeHtml(el, '<div class="gsearch-empty">ابدأ الكتابة للبحث — 2 أحرف على الأقل</div>', 'smart global search min chars render');return;}
-  if(!records||!records.length){smartSafeHtml(el, '<div class="gsearch-empty">لا توجد بيانات مرفوعة بعد</div>', 'smart global search no data render');return;}
+  if(!q||q.length<2){smartSafeHtml(el, '<div class="gsearch-empty">'+smartInteractionT('searchMinChars','ابدأ الكتابة للبحث — حرفان على الأقل')+'</div>', 'smart global search min chars render');return;}
+  if(!records||!records.length){smartSafeHtml(el, '<div class="gsearch-empty">'+smartInteractionT('searchNoData','لا توجد بيانات مرفوعة بعد')+'</div>', 'smart global search no data render');return;}
 
   // O(k) where k = number of unique keys, not O(n²)
   const idx=_buildSearchIndex();
@@ -261,32 +273,32 @@ function _execSearch(q){
   const vans=Object.entries(idx.vans).filter(([k])=>k.toLowerCase().includes(q)).map(([name,v])=>({name,...v}));
 
   if(!clients.length&&!services.length&&!invoices.length&&!vans.length){
-    smartSafeHtml(el, '<div class="gsearch-empty">لا توجد نتائج لـ "'+htmlSafe(q)+'"</div>', 'smart global search no results render');return;
+    smartSafeHtml(el, '<div class="gsearch-empty">'+smartInteractionT('searchNoResults','لا توجد نتائج لـ "{query}"',{query:htmlSafe(q)})+'</div>', 'smart global search no results render');return;
   }
 
   let html='';
   if(clients.length){
-    html+='<div class="gsearch-section">👥 العملاء</div>';
+    html+='<div class="gsearch-section">👥 '+smartInteractionT('customers','العملاء')+'</div>';
     clients.sort((a,b)=>b.total-a.total).slice(0,6).forEach(x=>{
-      html+=`<div class="gsearch-row" data-smart-action="global-search-tab" data-tab="customers"><span class="g-ico">👤</span><div class="g-main"><div class="g-title">${htmlSafe(x.name)}</div><div class="g-sub">${fmt0(x.count)} معاملة</div></div><span class="g-badge">${money(x.total)}</span></div>`;
+      html+=`<div class="gsearch-row" data-smart-action="global-search-tab" data-tab="customers"><span class="g-ico">👤</span><div class="g-main"><div class="g-title">${htmlSafe(x.name)}</div><div class="g-sub">${fmt0(x.count)} ${smartInteractionT('transactions','معاملة')}</div></div><span class="g-badge">${money(x.total)}</span></div>`;
     });
   }
   if(services.length){
-    html+='<div class="gsearch-section">🔧 الخدمات</div>';
+    html+='<div class="gsearch-section">🔧 '+smartInteractionT('services','الخدمات')+'</div>';
     services.sort((a,b)=>b.total-a.total).slice(0,5).forEach(x=>{
-      html+=`<div class="gsearch-row" data-smart-action="global-search-tab" data-tab="services"><span class="g-ico">🔧</span><div class="g-main"><div class="g-title">${htmlSafe(x.name)}</div><div class="g-sub">${fmt0(x.count)} عملية</div></div><span class="g-badge">${money(x.total)}</span></div>`;
+      html+=`<div class="gsearch-row" data-smart-action="global-search-tab" data-tab="services"><span class="g-ico">🔧</span><div class="g-main"><div class="g-title">${htmlSafe(x.name)}</div><div class="g-sub">${fmt0(x.count)} ${smartInteractionT('operations','عملية')}</div></div><span class="g-badge">${money(x.total)}</span></div>`;
     });
   }
   if(vans.length){
-    html+='<div class="gsearch-section">🚐 السيارات</div>';
+    html+='<div class="gsearch-section">🚐 '+smartInteractionT('vehicles','السيارات')+'</div>';
     vans.sort((a,b)=>b.total-a.total).slice(0,4).forEach(x=>{
-      html+=`<div class="gsearch-row" data-smart-action="global-search-tab" data-tab="vehicles"><span class="g-ico">🚐</span><div class="g-main"><div class="g-title">${htmlSafe(x.name)}</div><div class="g-sub">${fmt0(x.count)} عملية</div></div><span class="g-badge">${money(x.total)}</span></div>`;
+      html+=`<div class="gsearch-row" data-smart-action="global-search-tab" data-tab="vehicles"><span class="g-ico">🚐</span><div class="g-main"><div class="g-title">${htmlSafe(x.name)}</div><div class="g-sub">${fmt0(x.count)} ${smartInteractionT('operations','عملية')}</div></div><span class="g-badge">${money(x.total)}</span></div>`;
     });
   }
   if(invoices.length){
-    html+='<div class="gsearch-section">🧾 الفواتير</div>';
+    html+='<div class="gsearch-section">🧾 '+smartInteractionT('invoices','الفواتير')+'</div>';
     invoices.sort((a,b)=>b.total-a.total).slice(0,5).forEach(x=>{
-      html+=`<div class="gsearch-row" data-smart-action="global-search-invoice" data-invoice="${htmlSafe(x.inv)}"><span class="g-ico">🧾</span><div class="g-main"><div class="g-title">فاتورة رقم ${htmlSafe(x.inv)}</div><div class="g-sub">${htmlSafe(x.client)} — ${htmlSafe(x.date||'')}</div></div><span class="g-badge">${money(x.total)}</span></div>`;
+      html+=`<div class="gsearch-row" data-smart-action="global-search-invoice" data-invoice="${htmlSafe(x.inv)}"><span class="g-ico">🧾</span><div class="g-main"><div class="g-title">${smartInteractionT('invoiceNumber','فاتورة رقم {number}',{number:htmlSafe(x.inv)})}</div><div class="g-sub">${htmlSafe(x.client)} — ${htmlSafe(x.date||'')}</div></div><span class="g-badge">${money(x.total)}</span></div>`;
     });
   }
   smartSafeHtml(el, html, 'smart global search results render');

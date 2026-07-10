@@ -1,10 +1,22 @@
 /* PETATOE v6.4.48 - Smart Reports Real Extraction: export and print engine.
    Extracted from smart-reports-core.js without behavior changes. */
 
+function smartExportT(key, fallback, params){
+  try{
+    if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.t==='function'){
+      const value=window.PETATOE_I18N.t('smartReportsSource.export.'+key,params||{});
+      if(typeof value==='string'&&value.trim()) return value;
+    }
+  }catch(_){ }
+  let out=String(fallback==null?'':fallback);
+  Object.keys(params||{}).forEach(k=>{out=out.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
+  return out;
+}
+
 function _expNow(){
   const d=new Date();
-  return d.toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})
-        +' — '+d.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit'});
+  return d.toLocaleDateString((document.documentElement.lang||'ar').startsWith('en')?'en-SA':'ar-SA',{year:'numeric',month:'long',day:'numeric'})
+        +' — '+d.toLocaleTimeString((document.documentElement.lang||'ar').startsWith('en')?'en-SA':'ar-SA',{hour:'2-digit',minute:'2-digit'});
 }
 function _pzHeader(title,subtitle){
   return `<div class="pz-header">
@@ -13,7 +25,7 @@ function _pzHeader(title,subtitle){
       <div class="pz-title">PETATOE Analytics — ${title}</div>
       <div style="font-size:12px;color:#6d28d9;margin-top:2px">${subtitle||''}</div>
     </div>
-    <div class="pz-meta">طُبع: ${_expNow()}<br>PETATOE v2.2</div>
+    <div class="pz-meta">${smartExportT('printedAt','طُبع')}: ${_expNow()}<br>PETATOE v2.2</div>
   </div>`;
 }
 function _pzKpis(pairs){
@@ -24,7 +36,7 @@ function _pzTable(headers, rows){
     <tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c??''}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 }
 function _pzFooter(){
-  return `<div class="pz-footer">PETATOE Analytics System v2.2 — تقرير تلقائي — جميع القيم بالريال السعودي (SAR)</div>`;
+  return `<div class="pz-footer">${smartExportT('footer','PETATOE Analytics System v2.2 — تقرير تلقائي — جميع القيم بالريال السعودي (SAR)')}</div>`;
 }
 function _pzSafeRender(target, markup, reason){
   try{ if(window.PETATOESafeRender && typeof window.PETATOESafeRender.htmlTrusted==='function') return window.PETATOESafeRender.htmlTrusted(target, String(markup==null?'':markup), reason||'smart print trusted template'); }catch(e){ if(window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch) window.PETATOEUtils.warnSilentCatch('smart export safe render fallback', e); }
@@ -40,7 +52,7 @@ function _pzClear(target){
 }
 function _printZone(html){
   const pz=document.getElementById('printZone');
-  if(!pz){toast('تعذر تجهيز منطقة الطباعة');return;}
+  if(!pz){toast(smartExportT('printZoneError','تعذر تجهيز منطقة الطباعة'));return;}
   const theme=(document.documentElement.getAttribute('data-theme')||'dark').toLowerCase()==='light'?'light':'dark';
   _pzSafeRender(pz,'<div class="pz-sheet pz-theme-'+theme+'" data-print-theme="'+theme+'">'+(html||'')+'</div>','smart reports print zone');
   document.body.classList.add('petatoe-simple-print','pet-print-theme-'+theme);
@@ -68,8 +80,8 @@ function _toExcel(sheetName, headers, rows, filename){
 function _copyTableText(headers, rows){
   const lines=[headers.join('\t'),...rows.map(r=>r.join('\t'))];
   navigator.clipboard.writeText(lines.join('\n'))
-    .then(()=>toast('✅ تم نسخ البيانات إلى الحافظة'))
-    .catch(()=>toast('❌ فشل النسخ — حاول مرة أخرى'));
+    .then(()=>toast(smartExportT('copySuccess','✅ تم نسخ البيانات إلى الحافظة')))
+    .catch(()=>toast(smartExportT('copyError','❌ فشل النسخ — حاول مرة أخرى')));
 }
 
 /* ---- Generic export toolbar builder ---- */
@@ -81,28 +93,28 @@ function exportToolbar(reportId, pdfFn, excelFn, copyFn){ return ``; }
 function exportDashPdf(){
   const data=filtered();
   const y=selectedDashboardYear();
-  const label=y==='all'?'كل السنوات':y;
+  const label=y==='all'?smartExportT('allYears','كل السنوات'):y;
   const total=data.reduce((s,r)=>s+parseNum(r.totalInc),0);
   const avg=data.length?total/data.length:0;
   const vans=Object.entries(groupSum(data,'van')).sort((a,b)=>b[1]-a[1]);
   const clients=Object.entries(groupSum(data,'client')).sort((a,b)=>b[1]-a[1]);
   const svcs=Object.entries(groupSum(data,'item')).sort((a,b)=>b[1]-a[1]);
   _printZone(
-    _pzHeader('لوحة التحكم','ملخص المبيعات الكلي')+
+    _pzHeader(smartExportT('dashboardTitle','لوحة التحكم'),smartExportT('dashboardSubtitle','ملخص المبيعات الكلي'))+
     _pzKpis([
-      ['السنة',label],['إجمالي المبيعات',money(total)],
-      ['عدد الفواتير',fmt0(data.length)],['متوسط الفاتورة',money(avg)],
-      ['عدد العملاء',fmt0(new Set(data.map(r=>r.client)).size)],
-      ['عدد السيارات',fmt0(new Set(data.map(r=>r.van)).size)]
+      [smartExportT('year','السنة'),label],[smartExportT('totalSales','إجمالي المبيعات'),money(total)],
+      [smartExportT('invoiceCount','عدد الفواتير'),fmt0(data.length)],[smartExportT('averageInvoice','متوسط الفاتورة'),money(avg)],
+      [smartExportT('customerCount','عدد العملاء'),fmt0(new Set(data.map(r=>r.client)).size)],
+      [smartExportT('vehicleCount','عدد السيارات'),fmt0(new Set(data.map(r=>r.van)).size)]
     ])+
-    '<div class="pz-section">أداء السيارات</div>'+
-    _pzTable(['السيارة','المبيعات (SAR)','عدد العمليات','المساهمة %'],
+    '<div class="pz-section">'+smartExportT('vehiclePerformance','أداء السيارات')+'</div>'+
+    _pzTable([smartExportT('vehicle','السيارة'),smartExportT('salesSar','المبيعات (SAR)'),smartExportT('operationCount','عدد العمليات'),smartExportT('contribution','المساهمة %')],
       vans.map(([v,s])=>[v,fmt(s),fmt0(data.filter(r=>r.van===v).length),(total?s/total*100:0).toFixed(2)+'%'])
     )+
-    '<div class="pz-section">أفضل 10 عملاء</div>'+
-    _pzTable(['العميل','المبيعات (SAR)'],clients.slice(0,10).map(([c,s])=>[c,fmt(s)]))+
-    '<div class="pz-section">أفضل 10 خدمات</div>'+
-    _pzTable(['الخدمة','المبيعات (SAR)'],svcs.slice(0,10).map(([s,v])=>[s,fmt(v)]))+
+    '<div class="pz-section">'+smartExportT('topCustomers','أفضل 10 عملاء')+'</div>'+
+    _pzTable([smartExportT('customer','العميل'),smartExportT('salesSar','المبيعات (SAR)')],clients.slice(0,10).map(([c,s])=>[c,fmt(s)]))+
+    '<div class="pz-section">'+smartExportT('topServices','أفضل 10 خدمات')+'</div>'+
+    _pzTable([smartExportT('service','الخدمة'),smartExportT('salesSar','المبيعات (SAR)')],svcs.slice(0,10).map(([s,v])=>[s,fmt(v)]))+
     _pzFooter()
   );
 }
@@ -115,10 +127,10 @@ function exportDashExcel(){
   const months=monthAgg(data,y);
   const wb=XLSX.utils.book_new();
   const addSh=(name,hdr,rows)=>{const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);ws['!cols']=hdr.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,name)};
-  addSh('ملخص شهري',['الشهر','المبيعات SAR','عدد العمليات','متوسط الفاتورة'],months.map(m=>[m.label,m.total,m.count,m.avg.toFixed(2)]));
-  addSh('السيارات',['السيارة','المبيعات SAR','عدد العمليات'],vans.map(([v,s])=>[v,s,data.filter(r=>r.van===v).length]));
-  addSh('العملاء',['العميل','المبيعات SAR'],clients.map(([c,s])=>[c,s]));
-  addSh('الخدمات',['الخدمة','المبيعات SAR'],svcs.map(([s,v])=>[s,v]));
+  addSh(smartExportT('monthlySummary','ملخص شهري'),[smartExportT('month','الشهر'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات'),smartExportT('averageInvoice','متوسط الفاتورة')],months.map(m=>[m.label,m.total,m.count,m.avg.toFixed(2)]));
+  addSh(smartExportT('vehicles','السيارات'),[smartExportT('vehicle','السيارة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات')],vans.map(([v,s])=>[v,s,data.filter(r=>r.van===v).length]));
+  addSh(smartExportT('customers','العملاء'),[smartExportT('customer','العميل'),smartExportT('salesSar','المبيعات SAR')],clients.map(([c,s])=>[c,s]));
+  addSh(smartExportT('services','الخدمات'),[smartExportT('service','الخدمة'),smartExportT('salesSar','المبيعات SAR')],svcs.map(([s,v])=>[s,v]));
   XLSX.writeFile(wb,`PETATOE_Dashboard_${y}.xlsx`);
 }
 window.exportDashPdf=exportDashPdf; window.exportDashExcel=exportDashExcel;
@@ -250,7 +262,7 @@ function exportOverviewPdf(){
       ['إجمالي كل السنوات',money(total)],
       ['عدد السجلات',fmt0(data.length)],
       ['عدد السنوات',fmt0(ys.length)],
-      ['عدد العملاء',fmt0(new Set(data.map(r=>r.client)).size)],
+      [smartExportT('customerCount','عدد العملاء'),fmt0(new Set(data.map(r=>r.client)).size)],
       ['عدد الخدمات',fmt0(new Set(data.map(r=>r.item)).size)]
     ])+
     '<div class="pz-section">مقارنة الأداء السنوي</div>'+
@@ -299,7 +311,7 @@ function exportSmartSalesExcel(){
   const wb=XLSX.utils.book_new();
   const addSh=(n,h,r)=>{const ws=XLSX.utils.aoa_to_sheet([h,...r]);ws['!cols']=h.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,n)};
   addSh('شهري',['الشهر','المبيعات SAR','الفواتير','المتوسط'],months.map(m=>[m.label,+m.total.toFixed(2),m.count,+m.avg.toFixed(2)]));
-  addSh('العملاء',['العميل','المبيعات SAR'],clients.map(([c,s])=>[c,+s.toFixed(2)]));
+  addSh(smartExportT('customers','العملاء'),[smartExportT('customer','العميل'),smartExportT('salesSar','المبيعات SAR')],clients.map(([c,s])=>[c,+s.toFixed(2)]));
   XLSX.writeFile(wb,`PETATOE_SmartSales_${y}.xlsx`);
 }
 window.exportSmartSalesPdf=exportSmartSalesPdf; window.exportSmartSalesExcel=exportSmartSalesExcel;
