@@ -21,6 +21,19 @@
   function isBlank(v){return v==null || String(v).trim()===''}
   function safeNum(v){return (typeof parseNum==='function')?parseNum(v):Number(String(v||'').replace(/,/g,''))||0}
   function cleanInvoice(v){return String(v??'').trim()}
+  function normalizeInvoiceKey(v){
+    let s=String(v??'').trim();
+    if(!s) return '';
+    s=s.replace(/[٠-٩]/g,function(d){return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d));})
+       .replace(/[۰-۹]/g,function(d){return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d));})
+       .replace(/\u00a0/g,' ')
+       .replace(/,/g,'')
+       .replace(/\s+/g,'')
+       .trim();
+    if(/^\d+\.0+$/.test(s)) s=s.replace(/\.0+$/,'');
+    if(/^0+\d+$/.test(s)) s=s.replace(/^0+(?=\d)/,'');
+    return normText(s);
+  }
   function isCashText(v){const x=normText(v);return ['cash','كاش','نقدى','نقدي'].some(k=>x===k||x.includes(k));}
   function detectInvoiceType(r){return ((isCashText(r.invoice)||isCashText(r.client)) && safeNum(r.tax)===0)?'CASH':'TAX'}
   function recordDuplicateKey(r){
@@ -255,7 +268,7 @@
       const inv=cleanInvoice(readCell(row,invIdx)); const pay=String(readCell(row,payIdx)||'').trim();
       validateRequired(erow,invIdx,'رقم الفاتورة',inv,errors); validateRequired(erow,payIdx,'طريقه الدفع',pay,errors);
       if(!inv||!pay)continue;
-      const key=normText(inv);
+      const key=normalizeInvoiceKey(inv);
       if(payMap[key] && normText(payMap[key])!==normText(pay)) errors.push(makeError(erow,payIdx+1,`رقم الفاتورة "${inv}" له أكثر من طريقة دفع مختلفة. الصف السابق ${seenRows[key]}`,pay));
       else {payMap[key]=pay; seenRows[key]=erow;}
     }
@@ -350,7 +363,53 @@
     if(typeof toast==='function')toast(message || (ok?'تم رفع البيانات الرسمية إلى Supabase بنجاح':'تمت محاولة حفظ البيانات'));
     return ok;
   }
-  function applyPaymentsToRows(rows,payMap){let matched=0,missing=[];(rows||[]).forEach(r=>{const k=normText(r.invoice);if(payMap[k]){r.pay=payMap[k];matched++;}else missing.push(r.invoice);});return {matched,missing:[...new Set(missing.filter(Boolean))]};}
+  function applyPaymentsToRows(rows,payMap){
+    const list=Array.isArray(rows)?rows:[];
+    const byInvoice={};
+    list.forEach(function(r){
+      const raw=cleanInvoice(r&&r.invoice);
+      const k=normalizeInvoiceKey(raw);
+      if(!k)return;
+      (byInvoice[k]=byInvoice[k]||[]).push(r);
+    });
+    let matched=0, updatedRows=0;
+    const missing=[];
+    const invoiceRowsByKey={};
+    Object.keys(payMap||{}).forEach(function(k){
+      const rowsForKey=byInvoice[k]||[];
+      if(rowsForKey.length){
+        matched++;
+        invoiceRowsByKey[k]=rowsForKey;
+        rowsForKey.forEach(function(r){
+          r.pay=payMap[k];
+          r.payment_method=payMap[k];
+          updatedRows++;
+        });
+      }else{
+        missing.push(k);
+      }
+    });
+    return {matched:matched,updatedRows:updatedRows,missing:missing,invoiceRowsByKey:invoiceRowsByKey};
+  }
+  async function persistPaymentMethodsToSupabase(applyResult,payMap){
+    const dl=window.PETATOEDataLayer;
+    if(!dl||typeof dl.update!=='function') return {ok:false,error:'PETATOEDataLayer.update is not available'};
+    const batches=[]; let invoices=0, rows=0;
+    for(const key of Object.keys((applyResult&&applyResult.invoiceRowsByKey)||{})){
+      const pay=payMap[key];
+      const rawInvoices=[...new Set((applyResult.invoiceRowsByKey[key]||[]).map(function(r){return cleanInvoice(r&&r.invoice);}).filter(Boolean))];
+      for(const inv of rawInvoices){
+        const res=await dl.update('sales_records',{payment_method:pay},{invoice_no:inv});
+        batches.push({invoice:inv,payment:pay,result:res});
+        if(!res||!res.ok){
+          return {ok:false,error:(res&&res.error&&(res.error.message||res.error))||'فشل تحديث طريقة الدفع في Supabase',failedInvoice:inv,batches:batches};
+        }
+        invoices++;
+        rows += (applyResult.invoiceRowsByKey[key]||[]).filter(function(r){return cleanInvoice(r&&r.invoice)===inv;}).length;
+      }
+    }
+    return {ok:true,invoices:invoices,rows:rows,batches:batches};
+  }
   function duplicateErrorsAgainstExisting(rows,replace){
     if(replace)return [];
     const errors=[]; const existing={};
@@ -384,7 +443,7 @@
     if(!file){renderErrors([makeError(1,1,'لم يتم اختيار ملف')]);return;}
     if(!ensureXlsxReady()){renderErrors([makeError(1,1,'مكتبة قراءة Excel غير جاهزة. أعد تحميل الصفحة ثم حاول مرة أخرى')]);return;}
     const reader=new FileReader();
-    reader.onload=e=>{
+    reader.onload=async e=>{
       try{
         const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
         if(!wb||!Array.isArray(wb.SheetNames)||!wb.SheetNames.length){renderErrors([makeError(1,1,'ملف Excel لا يحتوي على شيتات قابلة للقراءة')]);return;}
@@ -398,11 +457,34 @@
           let existingRows=dsRecords();
           let targetRows=(importData&&importData.length)?importData:existingRows;
           const ap=applyPaymentsToRows(targetRows,stagedPaymentMap);
-          if(targetRows===existingRows && ap.matched){dsSetRecords(existingRows); try{save()}catch(_e){console.warn('PETATOEImport post-payment save failed',_e)}}
-          renderImportStats([{label:'طرق الدفع المقروءة',value:fmt0(Object.keys(result.payments).length)},{label:'تم ربطها',value:fmt0(ap.matched)},{label:'غير موجودة',value:fmt0(ap.missing.length)},{label:'الحالة',value:'جاهز'}]);
+          let persistResult=null;
+          if(targetRows===existingRows && ap.updatedRows){
+            dsSetRecords(existingRows);
+            try{ if(typeof toast==='function')toast('جاري حفظ طرق الدفع في Supabase...'); }catch(_e){}
+            persistResult=await persistPaymentMethodsToSupabase(ap,stagedPaymentMap);
+            if(!persistResult||!persistResult.ok){
+              renderErrors([makeError(1,1,'فشل حفظ طرق الدفع في Supabase',(persistResult&&persistResult.error)||'خطأ غير معروف')]);
+              return;
+            }
+            try{
+              if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
+                await window.PETATOEDataSource.refreshSalesRecordsFromSupabase('payment-method-linking');
+              }
+            }catch(_e){console.warn('PETATOEImport payment refresh failed',_e)}
+            try{ if(typeof renderRecords==='function')renderRecords(); }catch(_e){}
+            try{ if(typeof refreshCurrentPage==='function')refreshCurrentPage(); }catch(_e){}
+          }
+          const statusText=targetRows===existingRows?(ap.updatedRows?'تم الحفظ':'جاهز'):'جاهز للربط مع البنود';
+          renderImportStats([
+            {label:'طرق الدفع المقروءة',value:fmt0(Object.keys(result.payments).length)},
+            {label:'فواتير تم ربطها',value:fmt0(ap.matched)},
+            {label:'بنود محدثة',value:fmt0(ap.updatedRows)},
+            {label:'غير موجودة',value:fmt0(ap.missing.length)},
+            {label:'الحالة',value:statusText}
+          ]);
           if(importData&&importData.length)showPreview();
           else {const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';}
-          toast(ap.matched?'تم ربط طرق الدفع بنجاح':'تم قراءة طرق الدفع، لكن لا توجد فواتير مطابقة حالياً');
+          toast(ap.matched?'تم ربط وحفظ طرق الدفع بنجاح':'تم قراءة طرق الدفع، لكن لا توجد فواتير مطابقة حالياً');
           return;
         }
         result=(importMode==='items')?parseItems(data):parseFull(data);
