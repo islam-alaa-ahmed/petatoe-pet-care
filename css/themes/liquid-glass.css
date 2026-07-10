@@ -3130,7 +3130,7 @@ body.light :where(button,.btn,.exp-btn,.reports-btn,.chip,.year-chip,.metric-chi
 }
 .topbar .pet-topbar-compact-actions #sideLauncher,
 .topbar .pet-topbar-compact-actions .side-launcher{
-  order:50!important;
+  order:0!important;
   flex:0 0 auto!important;
 }
 .topbar .pet-topbar-compact-actions #headerPdfBtn{order:40!important;}
@@ -3172,4 +3172,27 @@ body.light :where(button,.btn,.exp-btn,.reports-btn,.chip,.year-chip,.metric-chi
 }
 @media(max-width:640px){
   .topbar .pet-topbar-compact-actions .reports-btn{display:none!important;}
+}
+
+
+/* PETATOE v9 Phase 1C - Restore launcher as first RTL action
+   Root fix: in RTL flex, the lowest order renders at the far right. */
+.topbar .pet-topbar-compact-actions{
+  direction:rtl!important;
+}
+.topbar .pet-topbar-compact-actions #sideLauncher,
+.topbar .pet-topbar-compact-actions .side-launcher{
+  order:0!important;
+}
+.topbar .pet-topbar-compact-actions #topbarSearch.pet-topbar-search-icon{
+  order:10!important;
+}
+.topbar .pet-topbar-compact-actions #topPawBackToTopBtn{
+  order:20!important;
+}
+.topbar .pet-topbar-compact-actions .reports-btn:not(#headerPdfBtn){
+  order:30!important;
+}
+.topbar .pet-topbar-compact-actions #headerPdfBtn{
+  order:40!important;
 }
