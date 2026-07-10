@@ -1,0 +1,198 @@
+/* PETATOE v9 Phase 4B — Enterprise LTR Layout Overrides
+   Loaded after the shared RTL/LTR direction layer.
+   Scope: English/LTR presentation only. No data, router, permissions, or Supabase logic. */
+
+html[dir="ltr"] body{
+  direction:ltr;
+  text-align:left;
+}
+
+/* App shell: reserve the sidebar on the LEFT in desktop LTR mode. */
+html[dir="ltr"] #sidebar,
+html[dir="ltr"] .sidebar{
+  left:0!important;
+  right:auto!important;
+  border-left:0!important;
+  border-right:1px solid var(--stroke)!important;
+}
+
+html[dir="ltr"] body:not(.sidebar-open) #sidebar,
+html[dir="ltr"] body:not(.sidebar-open) .sidebar{
+  transform:translateX(-112%)!important;
+}
+
+html[dir="ltr"] body.sidebar-open #sidebar,
+html[dir="ltr"] body.sidebar-open .sidebar{
+  transform:translateX(0)!important;
+  box-shadow:18px 0 65px rgba(0,0,0,.38)!important;
+}
+
+html[dir="ltr"] .main{
+  margin-left:0!important;
+  margin-right:0!important;
+  transition:width .34s cubic-bezier(.22,1,.36,1),
+             max-width .34s cubic-bezier(.22,1,.36,1),
+             margin-left .34s cubic-bezier(.22,1,.36,1)!important;
+}
+
+@media (min-width:1101px){
+  html[dir="ltr"] body.sidebar-open .main{
+    width:calc(100% - var(--pet-v4412-side, var(--side,258px)))!important;
+    max-width:calc(100% - var(--pet-v4412-side, var(--side,258px)))!important;
+    margin-left:var(--pet-v4412-side, var(--side,258px))!important;
+    margin-right:0!important;
+  }
+
+  html[dir="ltr"] body:not(.sidebar-open) .main{
+    width:100%!important;
+    max-width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+}
+
+/* Keep the real PETATOE launcher inside the left sidebar when it is docked. */
+html[dir="ltr"] #sidebar .petatoe-sidebar-docked-launcher,
+html[dir="ltr"] .sidebar .petatoe-sidebar-docked-launcher{
+  left:calc((var(--pet-v4412-side, var(--side,258px)) - var(--pet-v4412-launcher-w,190px)) / 2)!important;
+  right:auto!important;
+}
+
+/* Header: preserve stable groups and natural English order without overlap. */
+html[dir="ltr"] .topbar{
+  direction:ltr!important;
+}
+
+html[dir="ltr"] .topbar .top-left,
+html[dir="ltr"] .topbar .top-right{
+  direction:ltr!important;
+  text-align:left!important;
+}
+
+html[dir="ltr"] .topbar .top-left{
+  justify-content:flex-start!important;
+}
+
+html[dir="ltr"] .topbar .top-right{
+  justify-content:flex-end!important;
+}
+
+/* Sidebar navigation: icon, text, and chevron follow LTR semantics. */
+html[dir="ltr"] #nav,
+html[dir="ltr"] #nav.petatoe-accordion-nav,
+html[dir="ltr"] .nav{
+  direction:ltr!important;
+}
+
+html[dir="ltr"] #nav button,
+html[dir="ltr"] .nav button,
+html[dir="ltr"] .pet-nav-group-header,
+html[dir="ltr"] .pet-v142-group-header,
+html[dir="ltr"] .pet-v127-group-header{
+  direction:ltr!important;
+  text-align:left!important;
+  justify-content:flex-start!important;
+}
+
+html[dir="ltr"] #nav button .pet-nav-arrow,
+html[dir="ltr"] #nav button .pet-v142-arrow,
+html[dir="ltr"] #nav button .pet-v127-arrow,
+html[dir="ltr"] #nav button .nav-arrow{
+  margin-left:auto!important;
+  margin-right:0!important;
+}
+
+html[dir="ltr"] #nav .pet-v142-items,
+html[dir="ltr"] #nav .pet-nav-group-items,
+html[dir="ltr"] #nav .pet-v127-items{
+  padding-left:10px!important;
+  padding-right:0!important;
+  margin-left:10px!important;
+  margin-right:0!important;
+  border-left:1px solid rgba(139,92,246,.28)!important;
+  border-right:0!important;
+}
+
+/* Dashboard and reusable layout blocks. */
+html[dir="ltr"] .section-head,
+html[dir="ltr"] .chart-head,
+html[dir="ltr"] .card-head,
+html[dir="ltr"] .panel-head,
+html[dir="ltr"] .modal-head,
+html[dir="ltr"] .toolbar,
+html[dir="ltr"] .filters,
+html[dir="ltr"] .filter-row,
+html[dir="ltr"] .actions-row{
+  direction:ltr!important;
+}
+
+html[dir="ltr"] .section-head,
+html[dir="ltr"] .chart-head,
+html[dir="ltr"] .card-head,
+html[dir="ltr"] .panel-head{
+  text-align:left!important;
+}
+
+html[dir="ltr"] .section-head > :first-child,
+html[dir="ltr"] .chart-head > :first-child,
+html[dir="ltr"] .panel-head > :first-child{
+  text-align:left!important;
+}
+
+html[dir="ltr"] .section-head > :last-child,
+html[dir="ltr"] .chart-head > :last-child,
+html[dir="ltr"] .panel-head > :last-child{
+  margin-left:auto;
+  margin-right:0;
+}
+
+/* Forms, menus, dialogs and tables. */
+html[dir="ltr"] input:not([type="number"]),
+html[dir="ltr"] textarea,
+html[dir="ltr"] select,
+html[dir="ltr"] .dropdown-menu,
+html[dir="ltr"] .popover,
+html[dir="ltr"] .modal,
+html[dir="ltr"] .dialog,
+html[dir="ltr"] table,
+html[dir="ltr"] th,
+html[dir="ltr"] td{
+  direction:ltr!important;
+  text-align:left!important;
+}
+
+html[dir="ltr"] .pet-language-menu,
+html[dir="ltr"] .dropdown-menu,
+html[dir="ltr"] .popover,
+html[dir="ltr"] .customer-yoy-filter-menu{
+  left:0!important;
+  right:auto!important;
+}
+
+/* Direction-aware spacing for common icon/text controls. */
+html[dir="ltr"] .btn,
+html[dir="ltr"] .reports-btn,
+html[dir="ltr"] .pill,
+html[dir="ltr"] .user,
+html[dir="ltr"] .toggle,
+html[dir="ltr"] .tab-btn,
+html[dir="ltr"] .menu-item{
+  direction:ltr!important;
+}
+
+/* Mobile/tablet: sidebar remains an overlay and never shrinks the page. */
+@media (max-width:1100px){
+  html[dir="ltr"] .main,
+  html[dir="ltr"] body.sidebar-open .main{
+    width:100%!important;
+    max-width:100%!important;
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+
+  html[dir="ltr"] #sidebar .petatoe-sidebar-docked-launcher,
+  html[dir="ltr"] .sidebar .petatoe-sidebar-docked-launcher{
+    left:calc(var(--pet-v4412-side, min(86vw,258px)) - var(--pet-v4412-launcher-w,58px) - 16px)!important;
+    right:auto!important;
+  }
+}
