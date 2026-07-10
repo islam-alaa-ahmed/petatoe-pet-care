@@ -1,13 +1,35 @@
-# PETATOE Translation Edge Function
+# PETATOE Translation Edge Function — Production
 
-Deploy only after running `petatoe_translation_service_migration.sql`.
+## Dashboard deployment
 
-Required Edge Function secrets:
-- `ALLOWED_ORIGINS`: comma-separated GitHub Pages and production origins.
-- `TRANSLATION_API_URL`: OpenAI-compatible chat-completions endpoint.
-- `TRANSLATION_API_KEY`: provider secret; never expose it in GitHub.
-- `TRANSLATION_MODEL`: model identifier configured for translation.
+1. Create the function as `petatoe-translate` using **Via Editor**.
+2. Replace the default `index.ts` content with this file.
+3. Deploy the function.
+4. The modern Supabase wrapper validates `publishable` or `secret` API keys. Keep legacy `verify_jwt` disabled if Supabase exposes that separate option, because authorization is handled by `withSupabase`.
 
-The built-in Supabase secrets `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are used for the server cache.
+## Required secrets
 
-Keep browser config `remoteEnabled: false` until the function, database migration, origin allowlist, rate controls, and provider billing limit are verified.
+Always add:
+
+- `ALLOWED_ORIGINS`: comma-separated exact origins, without paths. Example: `https://example.github.io,http://localhost:5500`
+- `TRANSLATION_PROVIDER`: `openai`, `deepl`, or `google`
+
+For OpenAI:
+
+- `OPENAI_API_KEY`
+- `OPENAI_TRANSLATION_MODEL` (optional; defaults to `gpt-4.1-mini`)
+
+For DeepL:
+
+- `DEEPL_API_KEY`
+- `DEEPL_API_URL` (optional; defaults to the free API endpoint)
+
+For Google Cloud Translation:
+
+- `GOOGLE_TRANSLATE_API_KEY`
+
+The built-in `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` environment variables are used for the private server cache.
+
+## Required database
+
+Run `petatoe_translation_service_migration.sql` before testing this function.
