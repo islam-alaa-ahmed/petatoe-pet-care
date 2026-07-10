@@ -8,36 +8,36 @@
   function qa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel))}
   function petatoe_v38142_sidebar_final_js_esc(s){return String(s==null?'':s).replace(/[&<>\'\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
   var groups=[
-    {id:'operations',label:'⭐ العمليات',items:[
-      {tab:'entry',screen:'sales',title:'إدخال البيانات',sub:'تسجيل الفواتير والعمليات'},
-      {tab:'import',screen:'sales',title:'رفع Excel',sub:'استيراد البيانات'},
-      {tab:'records',screen:'reports',title:'السجلات',sub:'عرض السجلات'},
-      {tab:'treasury',title:'الخزينة',sub:'الحركات المالية'},
-      {tab:'warehouses',title:'المخازن',sub:'إدارة المخزون'}
+    {id:'operations',label:'⭐ العمليات',labelKey:'navigation.groups.transactions',items:[
+      {tab:'entry',screen:'sales',title:'إدخال البيانات',sub:'تسجيل الفواتير والعمليات',titleKey:'navigation.transactions.dataEntry.title',subKey:'navigation.transactions.dataEntry.subtitle'},
+      {tab:'import',screen:'sales',title:'رفع Excel',sub:'استيراد البيانات',titleKey:'navigation.transactions.excelUpload.title',subKey:'navigation.transactions.excelUpload.subtitle'},
+      {tab:'records',screen:'reports',title:'السجلات',sub:'عرض السجلات',titleKey:'navigation.transactions.records.title',subKey:'navigation.transactions.records.subtitle'},
+      {tab:'treasury',title:'الخزينة',sub:'الحركات المالية',titleKey:'navigation.transactions.treasury.title',subKey:'navigation.transactions.treasury.subtitle'},
+      {tab:'warehouses',title:'المخازن',sub:'إدارة المخزون',titleKey:'navigation.transactions.warehouses.title',subKey:'navigation.transactions.warehouses.subtitle'}
     ]},
-    {id:'analytics',label:'📈 التحليلات',items:[
-      {tab:'smart',screen:'reports',smartOpen:'advanced',title:'التقارير',sub:'التقارير الأساسية'},
-      {tab:'smart',screen:'reports',title:'التقارير الذكية',sub:'تحليل وذكاء الأعمال'},
-      {tab:'customer360',screen:'customers',title:'Customer 360',sub:'ملف العميل الشامل'},
-      {tab:'executive',screen:'executive',title:'الإدارة العليا',sub:'Executive Dashboard'}
+    {id:'analytics',label:'📈 التحليلات',labelKey:'navigation.groups.analytics',items:[
+      {tab:'smart',screen:'reports',smartOpen:'advanced',title:'التقارير',sub:'التقارير الأساسية',titleKey:'navigation.analytics.reports.title',subKey:'navigation.analytics.reports.subtitle'},
+      {tab:'smart',screen:'reports',title:'التقارير الذكية',sub:'تحليل وذكاء الأعمال',titleKey:'navigation.analytics.smartReports.title',subKey:'navigation.analytics.smartReports.subtitle'},
+      {tab:'customer360',screen:'customers',title:'Customer 360',sub:'ملف العميل الشامل',titleKey:'navigation.analytics.customer360.title',subKey:'navigation.analytics.customer360.subtitle'},
+      {tab:'executive',screen:'executive',title:'الإدارة العليا',sub:'Executive Dashboard',titleKey:'navigation.analytics.executive.title',subKey:'navigation.analytics.executive.subtitle'}
     ]},
-    {id:'management',label:'🏢 الإدارة',items:[
-      {tab:'commissions',title:'نظام العمولات',sub:'حساب ومتابعة العمولات'},
-      {tab:'commissionStatement',title:'كشف العمولة',sub:'كشف العمولة'},
-      {tab:'fleet',title:'إدارة السيارات',sub:'السيارات والتشغيل'},
-      {tab:'obligations',title:'الالتزامات',sub:'التزامات ومواعيد السداد'},
-      {tab:'payroll',title:'إدارة الرواتب',sub:'كشوف الرواتب والاعتمادات'},
-      {tab:'salarySlip',title:'كشف الراتب',sub:'كشف راتب المستخدم الحالي'}
+    {id:'management',label:'🏢 الإدارة',labelKey:'navigation.groups.management',items:[
+      {tab:'commissions',title:'نظام العمولات',sub:'حساب ومتابعة العمولات',titleKey:'navigation.management.commissions.title',subKey:'navigation.management.commissions.subtitle'},
+      {tab:'commissionStatement',title:'كشف العمولة',sub:'كشف العمولة',titleKey:'navigation.management.commissionStatement.title',subKey:'navigation.management.commissionStatement.subtitle'},
+      {tab:'fleet',title:'إدارة السيارات',sub:'السيارات والتشغيل',titleKey:'navigation.management.fleet.title',subKey:'navigation.management.fleet.subtitle'},
+      {tab:'obligations',title:'الالتزامات',sub:'التزامات ومواعيد السداد',titleKey:'navigation.management.obligations.title',subKey:'navigation.management.obligations.subtitle'},
+      {tab:'payroll',title:'إدارة الرواتب',sub:'كشوف الرواتب والاعتمادات',titleKey:'navigation.management.payroll.title',subKey:'navigation.management.payroll.subtitle'},
+      {tab:'salarySlip',title:'كشف الراتب',sub:'كشف راتب المستخدم الحالي',titleKey:'navigation.management.salarySlip.title',subKey:'navigation.management.salarySlip.subtitle'}
     ]},
-    {id:'settings',label:'⚙️ الإعدادات والصلاحيات',items:[
-      {settingsMain:'system',title:'لوحة التحكم',sub:'ملخص وحالة النظام'},
-      {settingsMain:'settings',settingsSub:'systemSettings',title:'الإعدادات العامة',sub:'الشركة، العملة، الوجهة، اللغة'},
-      {settingsMain:'setup',title:'التهيئة',sub:'الخدمات، السيارات، العملاء، الخزن'},
-      {settingsMain:'permissions',title:'الصلاحيات',sub:'صلاحيات المستخدمين'},
-      {settingsMain:'users',title:'المستخدمين',sub:'إضافة وتعديل المستخدمين'},
-      {tab:'logs',title:'السجل النظامي',sub:'Audit Trail'},
-      {settingsMain:'settings',settingsSub:'backup',title:'نسخ احتياطي',sub:'تصدير نسخة JSON'},
-      {settingsMain:'settings',settingsSub:'backup',settingsAction:'restore',title:'استعادة بيانات',sub:'استيراد نسخة JSON'}
+    {id:'settings',label:'⚙️ الإعدادات والصلاحيات',labelKey:'navigation.groups.settings',items:[
+      {settingsMain:'system',title:'لوحة التحكم',sub:'ملخص وحالة النظام',titleKey:'navigation.settings.dashboard.title',subKey:'navigation.settings.dashboard.subtitle'},
+      {settingsMain:'settings',settingsSub:'systemSettings',title:'الإعدادات العامة',sub:'الشركة، العملة، الوجهة، اللغة',titleKey:'navigation.settings.general.title',subKey:'navigation.settings.general.subtitle'},
+      {settingsMain:'setup',title:'التهيئة',sub:'الخدمات، السيارات، العملاء، الخزن',titleKey:'navigation.settings.setup.title',subKey:'navigation.settings.setup.subtitle'},
+      {settingsMain:'permissions',title:'الصلاحيات',sub:'صلاحيات المستخدمين',titleKey:'navigation.settings.permissions.title',subKey:'navigation.settings.permissions.subtitle'},
+      {settingsMain:'users',title:'المستخدمين',sub:'إضافة وتعديل المستخدمين',titleKey:'navigation.settings.users.title',subKey:'navigation.settings.users.subtitle'},
+      {tab:'logs',title:'السجل النظامي',sub:'Audit Trail',titleKey:'navigation.settings.auditLog.title',subKey:'navigation.settings.auditLog.subtitle'},
+      {settingsMain:'settings',settingsSub:'backup',title:'نسخ احتياطي',sub:'تصدير نسخة JSON',titleKey:'navigation.settings.backup.title',subKey:'navigation.settings.backup.subtitle'},
+      {settingsMain:'settings',settingsSub:'backup',settingsAction:'restore',title:'استعادة بيانات',sub:'استيراد نسخة JSON',titleKey:'navigation.settings.restore.title',subKey:'navigation.settings.restore.subtitle'}
     ]}
   ];
   function petatoeSidebarOpenTab(tabName, smartOpen){
@@ -61,9 +61,14 @@
   function clearNode(el){ while(el && el.firstChild){ el.removeChild(el.firstChild); } }
   function navSpan(className, text){ var span=document.createElement('span'); if(className)span.className=className; span.textContent=String(text==null?'':text); return span; }
   function navArrow(){ var i=document.createElement('i'); i.className='pet-v142-arrow'; i.textContent='▶'; return i; }
-  function setButtonTitleSub(btn, title, sub){ clearNode(btn); btn.appendChild(navSpan('pet-v142-title', title||'')); btn.appendChild(navSpan('pet-v142-sub', sub||'')); }
-  function setToggleLabel(btn, label){ clearNode(btn); btn.appendChild(navSpan('', label||'')); btn.appendChild(navArrow()); }
-  function setDirectLabel(btn, label){ clearNode(btn); btn.appendChild(navSpan('', label||'')); }
+  function setI18nKey(el,key){ if(el&&key) el.setAttribute('data-i18n',key); return el; }
+  function setButtonTitleSub(btn, title, sub, titleKey, subKey){
+    clearNode(btn);
+    btn.appendChild(setI18nKey(navSpan('pet-v142-title', title||''),titleKey));
+    btn.appendChild(setI18nKey(navSpan('pet-v142-sub', sub||''),subKey));
+  }
+  function setToggleLabel(btn, label, labelKey){ clearNode(btn); btn.appendChild(setI18nKey(navSpan('', label||''),labelKey)); btn.appendChild(navArrow()); }
+  function setDirectLabel(btn, label, labelKey){ clearNode(btn); btn.appendChild(setI18nKey(navSpan('', label||''),labelKey)); }
   // PETATOE v8.0.2 Phase 9: active-state must ignore buttons hidden by the permission layer.
   // Root cause: after permission apply() hides unauthorized buttons, markActive() could still select
   // the first DOM match, leaving a hidden button active or opening the wrong collapsed group.
@@ -131,14 +136,14 @@
     if(it.settingsMain){b.setAttribute('data-settings-main',it.settingsMain);b.setAttribute('data-pet-nav-screen',it.screen||it.settingsMain);}
     if(it.settingsSub)b.setAttribute('data-settings-sub',it.settingsSub);
     if(it.settingsAction)b.setAttribute('data-settings-action',it.settingsAction);
-    setButtonTitleSub(b, it.title||'', it.sub||'');
+    setButtonTitleSub(b, it.title||'', it.sub||'', it.titleKey||'', it.subKey||'');
     return b;
   }
   function build(){
     var nav=petBlock7937_q('#nav')||petBlock7937_q('.nav'); if(!nav) return false;
     nav.id='nav'; nav.className='nav pet-v142-nav'; clearNode(nav);
 
-    function appendGroup(id,label,items){
+    function appendGroup(id,label,items,labelKey){
       // PETATOE v8.0.2 Phase 7: build the canonical menu DOM first, then let
       // PETATOENavigationPermissions.apply() hide unauthorized items after identity readiness.
       // Root cause: pre-filtering here permanently removed buttons when user/permissions were still loading,
@@ -147,7 +152,7 @@
       if(!list.length) return false;
       var wrap=document.createElement('div'); wrap.className='pet-v142-group'; wrap.setAttribute('data-group',id);
       var head=document.createElement('button'); head.type='button'; head.className='pet-v142-toggle'; head.setAttribute('data-v142-toggle',id);
-      setToggleLabel(head,label);
+      setToggleLabel(head,label,labelKey||'');
       var body=document.createElement('div'); body.className='pet-v142-items';
       list.forEach(function(it){ body.appendChild(itemButton(it)); });
       wrap.appendChild(head); wrap.appendChild(body); nav.appendChild(wrap);
@@ -155,25 +160,25 @@
     }
 
     appendGroup('operationManagement','⚙️ إدارة التشغيل',[
-      {tab:'appointments',screen:'appointments',title:'إدارة المواعيد',sub:'تخطيط وجدولة مواعيد الجلسات'},
-      {tab:'vehicleOperations',screen:'vehicleOperations',title:'تشغيل السيارات',sub:'تنفيذ جلسات اليوم والتحصيل'},
-      {tab:'vehicleOperationsReports',screen:'vehicleOperationsReports',title:'تقارير تشغيل السيارات',sub:'تحليل التنفيذ والتحصيل والأداء'},
-      {tab:'operationKpis',screen:'operationKpis',title:'مؤشرات الأداء التشغيلية',sub:'KPI Dashboard للتشغيل والجودة'},
-      {tab:'appointments',appointmentsSubTab:'master',screen:'appointmentsMaster',title:'البيانات المرجعية ⚙️',sub:'إدارة البيانات الأساسية للمواعيد'}
-    ]);
+      {tab:'appointments',screen:'appointments',title:'إدارة المواعيد',sub:'تخطيط وجدولة مواعيد الجلسات',titleKey:'navigation.operations.appointments.title',subKey:'navigation.operations.appointments.subtitle'},
+      {tab:'vehicleOperations',screen:'vehicleOperations',title:'تشغيل السيارات',sub:'تنفيذ جلسات اليوم والتحصيل',titleKey:'navigation.operations.vehicleOperations.title',subKey:'navigation.operations.vehicleOperations.subtitle'},
+      {tab:'vehicleOperationsReports',screen:'vehicleOperationsReports',title:'تقارير تشغيل السيارات',sub:'تحليل التنفيذ والتحصيل والأداء',titleKey:'navigation.operations.vehicleReports.title',subKey:'navigation.operations.vehicleReports.subtitle'},
+      {tab:'operationKpis',screen:'operationKpis',title:'مؤشرات الأداء التشغيلية',sub:'KPI Dashboard للتشغيل والجودة',titleKey:'navigation.operations.kpis.title',subKey:'navigation.operations.kpis.subtitle'},
+      {tab:'appointments',appointmentsSubTab:'master',screen:'appointmentsMaster',title:'البيانات المرجعية ⚙️',sub:'إدارة البيانات الأساسية للمواعيد',titleKey:'navigation.operations.masterData.title',subKey:'navigation.operations.masterData.subtitle'}
+    ] ,'navigation.groups.operations');
 
     var hc=homeConfig();
     if(hc){
-      var home=document.createElement('button'); home.type='button'; home.className='pet-v142-direct active'; home.setAttribute('data-tab',hc.tab); home.setAttribute('data-pet-nav-screen',hc.screen); setDirectLabel(home,hc.label);
+      var home=document.createElement('button'); home.type='button'; home.className='pet-v142-direct active'; home.setAttribute('data-tab',hc.tab); home.setAttribute('data-pet-nav-screen',hc.screen); setDirectLabel(home,hc.label,'navigation.home.title');
       nav.appendChild(home);
     }
 
     var childItem={tab:'childrenExpenses',screen:'childrenExpenses',title:'👨‍👧‍👦 مصروفات الأبناء',sub:''};
     // PETATOE v8.0.2 Phase 7: keep direct buttons in DOM; permission apply() owns visibility.
-    var childExpenses=document.createElement('button'); childExpenses.type='button'; childExpenses.className='pet-v142-direct'; childExpenses.setAttribute('data-tab','childrenExpenses'); childExpenses.setAttribute('data-pet-permission-screen','childrenExpenses'); setDirectLabel(childExpenses,'👨‍👧‍👦 مصروفات الأبناء');
+    var childExpenses=document.createElement('button'); childExpenses.type='button'; childExpenses.className='pet-v142-direct'; childExpenses.setAttribute('data-tab','childrenExpenses'); childExpenses.setAttribute('data-pet-permission-screen','childrenExpenses'); setDirectLabel(childExpenses,'👨‍👧‍👦 مصروفات الأبناء','navigation.children.title');
     nav.appendChild(childExpenses);
 
-    groups.forEach(function(g){ appendGroup(g.id,g.label,g.items||[]); });
+    groups.forEach(function(g){ appendGroup(g.id,g.label,g.items||[],g.labelKey||''); });
     bind(nav); markActive();
     try{ if(window.PETATOENavigationPermissions&&window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(nav); document.dispatchEvent(new CustomEvent('petatoe:navbuilt',{detail:{nav:nav}})); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('navigation/navigation.js',e);}
     return true;

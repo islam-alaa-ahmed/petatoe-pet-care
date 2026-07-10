@@ -14,6 +14,36 @@
     filters:{allYears:'All Years',allMonths:'All Months',allVehicles:'All Vehicles',allPayments:'All Payment Methods'},
     payroll:{manage:'Payroll Management',manageSub:'Create payroll statements and approvals',slip:'Payroll Statement',slipSub:'Show the current user payroll statement only'},
     sidebar:{appointments:'📅 Appointments Management',operations:'⚙️ Operations Management',home:'🏠 Home',children:'👨‍👩‍👧 Children Expenses',transactions:'⭐ Transactions',dataEntry:'➕ Data Entry',excelUpload:'📤 Excel Upload',records:'📋 Records',auditLog:'🧾 Audit Log',analytics:'📈 Analytics',smartReports:'🧠 Smart Reports',customer360:'👤 Customer 360',commissions:'💰 Commissions System',commissionStatement:'📄 Commission Statement',management:'🏢 Management',executive:'👑 Executive Management',obligations:'💳 Obligations',payroll:'💼 Payroll Management',salarySlip:'📄 Payroll Statement',fleet:'🚚 Fleet Management',treasury:'🏦 Treasury',warehouses:'📦 Warehouses',system:'⚙️ System',settings:'⚙️ Settings',tagline:'Care. Love. PETATOE.',petCareText:'🐾 We care for your pets',changeImage:'📷 Change Image',originalImage:'↩️ Original'},
+    navigation:{
+      groups:{operations:'⚙️ Operations Management',transactions:'⭐ Transactions',analytics:'📈 Analytics',management:'🏢 Management',settings:'⚙️ Settings & Permissions'},
+      home:{title:'🏠 Home'},children:{title:'👨‍👩‍👧 Children Expenses'},
+      operations:{
+        appointments:{title:'📅 Appointments Management',subtitle:'Plan and schedule service appointments'},
+        vehicleOperations:{title:'Vehicle Operations',subtitle:'Run today’s sessions and record collections'},
+        vehicleReports:{title:'Vehicle Operations Reports',subtitle:'Analyze execution, collections, and performance'},
+        kpis:{title:'Operational Performance Indicators',subtitle:'Operations and quality KPI dashboard'},
+        masterData:{title:'⚙️ Reference Data',subtitle:'Manage core appointment reference data'}
+      },
+      transactions:{
+        dataEntry:{title:'Data Entry',subtitle:'Record invoices and transactions'},excelUpload:{title:'Excel Upload',subtitle:'Import data from Excel'},
+        records:{title:'Records',subtitle:'View and manage records'},treasury:{title:'Treasury',subtitle:'Financial transactions'},warehouses:{title:'Warehouses',subtitle:'Inventory management'}
+      },
+      analytics:{
+        reports:{title:'Reports',subtitle:'Standard reports'},smartReports:{title:'Smart Reports',subtitle:'Analytics and business intelligence'},
+        customer360:{title:'Customer 360',subtitle:'Complete customer profile'},executive:{title:'Executive Management',subtitle:'Executive dashboard'}
+      },
+      management:{
+        commissions:{title:'Commissions System',subtitle:'Calculate and track commissions'},commissionStatement:{title:'Commission Statement',subtitle:'View commission statement'},
+        fleet:{title:'Fleet Management',subtitle:'Vehicles and operations'},obligations:{title:'Obligations',subtitle:'Liabilities and payment schedules'},
+        payroll:{title:'Payroll Management',subtitle:'Payroll statements and approvals'},salarySlip:{title:'Payroll Statement',subtitle:'Current user payroll statement'}
+      },
+      settings:{
+        dashboard:{title:'Control Panel',subtitle:'System summary and status'},general:{title:'General Settings',subtitle:'Company, currency, destination, and language'},
+        setup:{title:'Setup',subtitle:'Services, vehicles, customers, and treasuries'},permissions:{title:'Permissions',subtitle:'User access permissions'},
+        users:{title:'Users',subtitle:'Add and edit users'},auditLog:{title:'Audit Log',subtitle:'System activity trail'},
+        backup:{title:'Backup',subtitle:'Export a JSON backup'},restore:{title:'Restore Data',subtitle:'Import a JSON backup'}
+      }
+    },
     exports:{pdf:'🖨️ PDF',excel:'⬇️ Excel'},
     sales:{title:'Sales Analytics',subtitle:'Detailed monthly and quarterly sales analysis',monthlyTrend:'Monthly Trend',monthlyTrendNote:'Approved view: clear values above bars without overlap',quarterlyComparison:'Quarterly Comparison (latest two available years) 🗓️',quarterlyNote:'Each quarter from the previous year appears next to the latest available year, with values above each bar',quarterDetails:'📊 Quarter Details'},
     vans:{title:'Vans Performance',subtitle:'Vehicle reports with clear values and year / all-years filters',salesDistribution:'🥧 Vehicle Sales Distribution',monthlyPerformance:'📈 Monthly Vehicle Performance',pointValuesNote:'Values are separated above points without overlap',monthlySales:'🚐 Monthly Vehicle Sales',groupedBarsNote:'Grouped bars with total sales for each month',sarNote:'All values are in Saudi Riyal and include VAT',details:'Vehicle Details'},

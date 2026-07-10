@@ -242,7 +242,7 @@
       fleet:'sidebar.fleet',treasury:'sidebar.treasury',warehouses:'sidebar.warehouses',settings:'sidebar.settings'
     };
     document.querySelectorAll('#nav [data-tab]').forEach(function(el){
-      if(el.hasAttribute('data-i18n')) return;
+      if(el.hasAttribute('data-i18n')||el.querySelector('[data-i18n]')) return;
       var key=tabKeyMap[el.getAttribute('data-tab')];
       var value=key&&translate(key,lang);
       if(value) el.textContent=value;

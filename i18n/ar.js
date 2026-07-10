@@ -14,6 +14,36 @@
     filters:{allYears:'كل السنوات',allMonths:'كل الشهور',allVehicles:'كل السيارات',allPayments:'كل طرق الدفع'},
     payroll:{manage:'إدارة الرواتب',manageSub:'إنشاء كشوف الرواتب والاعتمادات',slip:'كشف الراتب',slipSub:'عرض كشف راتب المستخدم الحالي فقط'},
     sidebar:{appointments:'📅 إدارة المواعيد',operations:'⚙️ إدارة التشغيل',home:'🏠 الرئيسية',children:'👨‍👧‍👦 مصروفات الأبناء',transactions:'⭐ العمليات',dataEntry:'➕ إدخال البيانات',excelUpload:'📤 رفع Excel',records:'📋 السجلات',auditLog:'🧾 سجل الحركات',analytics:'📈 التحليلات',smartReports:'🧠 التقارير الذكية',customer360:'👤 Customer 360',commissions:'💰 نظام العمولات',commissionStatement:'📄 كشف العمولة',management:'🏢 الإدارة',executive:'👑 الإدارة العليا',obligations:'💳 الالتزامات',payroll:'💼 إدارة الرواتب',salarySlip:'📄 كشف الراتب',fleet:'🚚 إدارة السيارات',treasury:'🏦 الخزينة',warehouses:'📦 المخازن',system:'⚙️ النظام',settings:'⚙️ الإعدادات',tagline:'Care. Love. PETATOE.',petCareText:'🐾 نهتم بحيواناتك الأليفة',changeImage:'📷 تغيير الصورة',originalImage:'↩️ الأصلية'},
+    navigation:{
+      groups:{operations:'⚙️ إدارة التشغيل',transactions:'⭐ العمليات',analytics:'📈 التحليلات',management:'🏢 الإدارة',settings:'⚙️ الإعدادات والصلاحيات'},
+      home:{title:'🏠 الرئيسية'},children:{title:'👨‍👧‍👦 مصروفات الأبناء'},
+      operations:{
+        appointments:{title:'📅 إدارة المواعيد',subtitle:'تخطيط وجدولة مواعيد الجلسات'},
+        vehicleOperations:{title:'تشغيل السيارات',subtitle:'تنفيذ جلسات اليوم والتحصيل'},
+        vehicleReports:{title:'تقارير تشغيل السيارات',subtitle:'تحليل التنفيذ والتحصيل والأداء'},
+        kpis:{title:'مؤشرات الأداء التشغيلية',subtitle:'لوحة مؤشرات التشغيل والجودة'},
+        masterData:{title:'⚙️ البيانات المرجعية',subtitle:'إدارة البيانات الأساسية للمواعيد'}
+      },
+      transactions:{
+        dataEntry:{title:'إدخال البيانات',subtitle:'تسجيل الفواتير والعمليات'},excelUpload:{title:'رفع Excel',subtitle:'استيراد البيانات من Excel'},
+        records:{title:'السجلات',subtitle:'عرض وإدارة السجلات'},treasury:{title:'الخزينة',subtitle:'الحركات المالية'},warehouses:{title:'المخازن',subtitle:'إدارة المخزون'}
+      },
+      analytics:{
+        reports:{title:'التقارير',subtitle:'التقارير الأساسية'},smartReports:{title:'التقارير الذكية',subtitle:'التحليل وذكاء الأعمال'},
+        customer360:{title:'Customer 360',subtitle:'الملف الشامل للعميل'},executive:{title:'الإدارة العليا',subtitle:'لوحة الإدارة التنفيذية'}
+      },
+      management:{
+        commissions:{title:'نظام العمولات',subtitle:'حساب ومتابعة العمولات'},commissionStatement:{title:'كشف العمولة',subtitle:'عرض كشف العمولة'},
+        fleet:{title:'إدارة السيارات',subtitle:'السيارات والتشغيل'},obligations:{title:'الالتزامات',subtitle:'الالتزامات ومواعيد السداد'},
+        payroll:{title:'إدارة الرواتب',subtitle:'كشوف الرواتب والاعتمادات'},salarySlip:{title:'كشف الراتب',subtitle:'كشف راتب المستخدم الحالي'}
+      },
+      settings:{
+        dashboard:{title:'لوحة التحكم',subtitle:'ملخص وحالة النظام'},general:{title:'الإعدادات العامة',subtitle:'الشركة، العملة، الوجهة، واللغة'},
+        setup:{title:'التهيئة',subtitle:'الخدمات، السيارات، العملاء، والخزن'},permissions:{title:'الصلاحيات',subtitle:'صلاحيات المستخدمين'},
+        users:{title:'المستخدمون',subtitle:'إضافة وتعديل المستخدمين'},auditLog:{title:'سجل الحركات',subtitle:'سجل نشاط النظام'},
+        backup:{title:'نسخ احتياطي',subtitle:'تصدير نسخة JSON'},restore:{title:'استعادة البيانات',subtitle:'استيراد نسخة JSON'}
+      }
+    },
     exports:{pdf:'🖨️ PDF',excel:'⬇️ Excel'},
     sales:{title:'Sales Analytics',subtitle:'تحليل تفصيلي للمبيعات الشهرية والربعية',monthlyTrend:'Monthly Trend',monthlyTrendNote:'الشكل المعتمد: قيم واضحة فوق الأعمدة بدون تداخل',quarterlyComparison:'Quarterly Comparison (آخر سنتين متاحتين) 🗓️',quarterlyNote:'كل ربع من السنة السابقة بجانب آخر سنة متاحة، والقيم فوق كل عمود',quarterDetails:'📊 تفاصيل الأرباع'},
     vans:{title:'Vans Performance',subtitle:'تقارير السيارات بقيم واضحة وفلاتر سنة / كل السنوات',salesDistribution:'🥧 توزيع مبيعات السيارات',monthlyPerformance:'📈 أداء السيارات الشهري',pointValuesNote:'القيم منفصلة فوق النقاط بدون تداخل',monthlySales:'🚐 مبيعات السيارات شهرياً',groupedBarsNote:'أعمدة مجمعة مع إجمالي المبيعات لكل شهر',sarNote:'جميع القيم بالريال السعودي وتشمل ضريبة القيمة المضافة',details:'تفاصيل السيارات'},
