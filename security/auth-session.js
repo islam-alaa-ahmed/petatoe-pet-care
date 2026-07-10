@@ -1,11 +1,11 @@
-/* PETATOE v8.0.3 - Auth Session Module
+/* PETATOE v9.0 - Auth Session Module
    Purpose: enforce an explicit user session before opening PETATOE, while preserving the existing Enterprise/LTS users and permissions architecture. */
 (function(window, document){
   'use strict';
 
   if(window.PETATOEAuth && window.PETATOEAuth.__ready){ return; }
 
-  var VERSION = '8.0.3';
+  var VERSION = '9.0';
   var AUTH_KEY = 'petatoe_auth_session_v668';
   // Bootstrap credential only — first login must force password change via mustChangePassword.
   var DEFAULT_ADMIN_PASSWORD = 'admin';

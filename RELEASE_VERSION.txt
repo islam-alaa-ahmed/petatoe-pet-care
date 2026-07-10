@@ -1,21 +1,20 @@
-PETATOE v8.0.3 — PAYROLL_PHASE42_FULL_SLIP_PERSISTENCE_FIX
+PETATOE v9.0 — ENTERPRISE_GITHUB_PRODUCTION_BASELINE
 
-Release Type: Payroll Enterprise Stabilization Patch
-Base: v8.0.2 — GOLD_FINAL_AUDIT_GITHUB_PRODUCTION_CERTIFICATION
+Release Type: Enterprise Development Baseline Alignment
+Base: PETATOE v9 Enterprise GitHub Production Baseline
 
 Purpose:
-- Phase 42 targeted payroll stabilization after root-cause audit.
-- Preserve the approved UI/UX and GitHub Pages/Supabase compatibility.
+- Align the visible release identity for the new v9 Enterprise development branch.
+- Preserve the uploaded GitHub production baseline behavior without functional changes.
+- Prepare the project for staged Enterprise Production Certification work.
 
 What changed:
-- Payroll slips now persist the full editable slip payload inside payroll_master_data.slips.
-- payroll_slips remains a flat Supabase index for id/employee/period/status/net_amount compatibility.
-- Loading payroll now prefers the full master slip payload and merges status metadata from the flat index when available.
-- Opening a new salary slip form no longer creates a remote draft before explicit Save/Send.
-- Deleting a salary slip removes the flat index row and updates the full master slip list.
-- Added cache busting for payroll/payroll-core.js in index.html.
+- Updated release metadata from v8.0.3 payroll patch identity to PETATOE v9.0 baseline identity.
+- Updated runtime release globals used by UI/auth footer.
+- Updated auth-session local version fallback to 9.0.
+- Updated README current release note.
 
 Quality Gates:
 - JavaScript syntax check required before release.
 - Source/href/img reference check required before release.
-- Payroll regression required: create, edit, delete, send to board, approve, reject, cancel approval, accounts approval, mark paid, reload from Supabase.
+- Desktop, Tablet, Mobile, GitHub Pages and Supabase compatibility must be preserved.
