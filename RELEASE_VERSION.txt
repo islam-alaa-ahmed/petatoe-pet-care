@@ -1,20 +1,19 @@
-PETATOE v9.0 — ENTERPRISE_GITHUB_PRODUCTION_BASELINE
+PETATOE v9.0.0 — ELC_PHASE5_1_RELEASE_IDENTITY_CACHE_COHERENCE
 
-Release Type: Enterprise Development Baseline Alignment
+Release Type: Enterprise Localization Stabilization
 Base: PETATOE v9 Enterprise GitHub Production Baseline
 
 Purpose:
-- Align the visible release identity for the new v9 Enterprise development branch.
-- Preserve the uploaded GitHub production baseline behavior without functional changes.
-- Prepare the project for staged Enterprise Production Certification work.
+- Synchronize the visible runtime release identity with the PETATOE v9 baseline.
+- Unify cache-busting for all i18n and Enterprise Localization Center assets.
+- Prevent GitHub Pages and browser caches from mixing files from different ELC phases.
 
-What changed:
-- Updated release metadata from v8.0.3 payroll patch identity to PETATOE v9.0 baseline identity.
-- Updated runtime release globals used by UI/auth footer.
-- Updated auth-session local version fallback to 9.0.
-- Updated README current release note.
+Scope:
+- Release metadata only.
+- i18n and ELC asset cache coherence only.
+- No business logic, Supabase schema, permissions, payroll, sales, reports, or operations changes.
 
 Quality Gates:
-- JavaScript syntax check required before release.
-- Source/href/img reference check required before release.
-- Desktop, Tablet, Mobile, GitHub Pages and Supabase compatibility must be preserved.
+- JavaScript syntax validation.
+- Referenced local asset validation.
+- Unified i18n/ELC cache token validation.
