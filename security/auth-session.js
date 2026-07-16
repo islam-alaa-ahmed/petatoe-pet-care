@@ -319,6 +319,22 @@
     }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e); }
   }
 
+  async function ensureEnterpriseSession(user, source){
+    user = user || sessionUser() || window.currentUser || {};
+    var payload = remoteSessionPayload(user, false);
+    if(!payload.username || !payload.email || !payload.sessionClientToken){
+      throw new Error('ENTERPRISE_SESSION_IDENTITY_INCOMPLETE');
+    }
+    var result = await callSecurityEmail(Object.assign({
+      action:'session_start',
+      source:source || 'localization-center-session-ensure'
+    }, payload));
+    if(result && result.ok === false){
+      throw new Error(result.error || 'SESSION_START_FAILED');
+    }
+    return {ok:true, sessionClientToken:payload.sessionClientToken};
+  }
+
   function endRemoteSession(user, reason){
     try{
       var payload = remoteSessionPayload(user, false);
@@ -1106,7 +1122,7 @@
     return false;
   }
 
-  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions, revokeActiveSession:revokeActiveSession, revokeAllActiveSessions:revokeAllActiveSessions, recordActivity:recordUserActivity, listSecurityActivity:listSecurityActivity, forceRevokeUserSessions:forceRevokeUserSessions, startIdleTimeout:startIdleTimeout, stopIdleTimeout:stopIdleTimeout};
+  window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, ensureEnterpriseSession:ensureEnterpriseSession, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions, revokeActiveSession:revokeActiveSession, revokeAllActiveSessions:revokeAllActiveSessions, recordActivity:recordUserActivity, listSecurityActivity:listSecurityActivity, forceRevokeUserSessions:forceRevokeUserSessions, startIdleTimeout:startIdleTimeout, stopIdleTimeout:stopIdleTimeout};
   window.petLogout = function(){ logout('manual'); };
 
   document.addEventListener('petatoe:users-changed', function(){ validateSessionUser('users-changed'); });
