@@ -1163,6 +1163,16 @@
       'created': 'جديدة',
       'updated': 'محدثة',
       'skipped': 'متخطاة',
+      'discoveryTitle': 'اكتشاف الترجمات الناقصة',
+      'discoverySubtitle': 'افحص الشاشة المفتوحة وأضف نصوص الواجهة الجديدة إلى قائمة المراجعة بأمان.',
+      'scanCurrentScreen': 'فحص الشاشة الحالية',
+      'discoveryPrivacyNote': 'لا يتم فحص بيانات العملاء أو صفوف الجداول أو الحقول الحساسة. يمكن تجاهل أي عنصر بإضافة data-i18n-ignore.',
+      'scanningCurrentScreen': 'جاري فحص الشاشة الحالية...',
+      'discoveryCompleted': 'اكتمل الفحص',
+      'missingTextsFound': 'نصوص ناقصة',
+      'queuedForReview': 'أضيفت للمراجعة',
+      'discoveryUnavailable': 'أداة اكتشاف الترجمات غير متاحة',
+      'editPermissionRequired': 'تحتاج صلاحية إدارة الترجمات لتنفيذ الفحص',
       'status_missing': 'ناقص'
 }
   };

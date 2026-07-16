@@ -1163,6 +1163,16 @@
       'created': 'created',
       'updated': 'updated',
       'skipped': 'skipped',
+      'discoveryTitle': 'Missing Translation Discovery',
+      'discoverySubtitle': 'Scan the open screen and safely add new interface text to the review queue.',
+      'scanCurrentScreen': 'Scan Current Screen',
+      'discoveryPrivacyNote': 'Customer data, table rows, and sensitive fields are not scanned. Add data-i18n-ignore to exclude any element.',
+      'scanningCurrentScreen': 'Scanning the current screen...',
+      'discoveryCompleted': 'Scan completed',
+      'missingTextsFound': 'missing texts',
+      'queuedForReview': 'queued for review',
+      'discoveryUnavailable': 'The translation discovery tool is unavailable',
+      'editPermissionRequired': 'Translation management permission is required to run a scan',
       'status_missing': 'Missing'
 }
   };
