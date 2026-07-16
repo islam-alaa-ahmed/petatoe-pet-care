@@ -1173,6 +1173,18 @@
       'queuedForReview': 'queued for review',
       'discoveryUnavailable': 'The translation discovery tool is unavailable',
       'editPermissionRequired': 'Translation management permission is required to run a scan',
+      'filWorkspaceTitle': 'Filipino Translation Workspace',
+      'filWorkspaceSubtitle': 'Translate missing Filipino keys in batches, then submit them for review or approve them.',
+      'filSearchPlaceholder': 'Search keys or source text...',
+      'saveAllDrafts': 'Save All as Drafts',
+      'submitAllReview': 'Submit All for Review',
+      'approveCompleted': 'Approve Completed',
+      'filWorkspaceHint': 'Enter Filipino translations only. Customer names, services, and operational data are not part of this dictionary.',
+      'enterFilipinoTranslation': 'Enter Filipino translation...',
+      'noFilipinoPending': 'No missing Filipino translations on this page.',
+      'noCompletedFilTranslations': 'There are no completed translations to save.',
+      'savingFilTranslations': 'Saving Filipino translations...',
+      'filBatchCompleted': 'Batch processing completed',
       'status_missing': 'Missing'
 }
   };

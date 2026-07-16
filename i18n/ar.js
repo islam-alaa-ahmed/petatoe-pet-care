@@ -1173,6 +1173,18 @@
       'queuedForReview': 'أضيفت للمراجعة',
       'discoveryUnavailable': 'أداة اكتشاف الترجمات غير متاحة',
       'editPermissionRequired': 'تحتاج صلاحية إدارة الترجمات لتنفيذ الفحص',
+      'filWorkspaceTitle': 'مساحة عمل الترجمة الفلبينية',
+      'filWorkspaceSubtitle': 'ترجم المفاتيح الفلبينية الناقصة على دفعات، ثم أرسلها للمراجعة أو اعتمدها.',
+      'filSearchPlaceholder': 'ابحث في المفاتيح أو النص المصدر...',
+      'saveAllDrafts': 'حفظ الكل كمسودة',
+      'submitAllReview': 'إرسال الكل للمراجعة',
+      'approveCompleted': 'اعتماد المكتمل',
+      'filWorkspaceHint': 'أدخل الترجمة الفلبينية فقط. أسماء العملاء والخدمات والبيانات التشغيلية لا تدخل في هذا القاموس.',
+      'enterFilipinoTranslation': 'أدخل الترجمة الفلبينية...',
+      'noFilipinoPending': 'لا توجد ترجمات فلبينية ناقصة في هذه الصفحة.',
+      'noCompletedFilTranslations': 'لا توجد ترجمات مكتملة للحفظ.',
+      'savingFilTranslations': 'جاري حفظ الترجمات الفلبينية...',
+      'filBatchCompleted': 'اكتملت معالجة الدفعة',
       'status_missing': 'ناقص'
 }
   };
