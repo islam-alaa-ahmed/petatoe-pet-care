@@ -4,8 +4,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<script src="i18n/bootstrap.js?v=9.0.0-elc-phase5.2"></script>
-<link href="css/i18n/bootstrap.css?v=9.0.0-elc-phase5.2" rel="stylesheet"/>
+<script src="i18n/bootstrap.js?v=9.0.0-elc-phase6a"></script>
+<link href="css/i18n/bootstrap.css?v=9.0.0-elc-phase6a" rel="stylesheet"/>
 <title>PETATOE Analytics System v2.6 AI Forecast</title>
 <link rel="icon" href="./favicon.ico" sizes="any"/>
 <link rel="shortcut icon" href="./favicon.ico"/>
@@ -48,9 +48,9 @@
 <link href="css/children-expenses/children-expenses.css" rel="stylesheet"/>
 <link href="css/operations/operations.css?v=6.4.84" rel="stylesheet"/>
 <link href="css/navigation/navigation.css" rel="stylesheet"/>
-<link href="css/i18n/direction.css?v=9.0.0-elc-phase5.2" rel="stylesheet"/>
-<link href="css/i18n/ltr.css?v=9.0.0-elc-phase5.2" rel="stylesheet"/>
-<link href="css/i18n/localization-center.css?v=9.0.0-elc-phase5.2" rel="stylesheet"/>
+<link href="css/i18n/direction.css?v=9.0.0-elc-phase6a" rel="stylesheet"/>
+<link href="css/i18n/ltr.css?v=9.0.0-elc-phase6a" rel="stylesheet"/>
+<link href="css/i18n/localization-center.css?v=9.0.0-elc-phase6a" rel="stylesheet"/>
 <link href="css/core/module-boundary-guards.css" rel="stylesheet"/>
 <style id="petatoe-export-toolbar-removal">
 /* PETATOE v5.1.14 — hide selected inline export bars everywhere */
@@ -2252,7 +2252,7 @@ function petDashboardCleanText(v){return String(v==null?'':v).replace(/ى/g,'ي'
 function petDashboardIsUndefinedService(v){let x=petDashboardCleanText(v);return !x || x==='غير محدد' || x==='غير معرف' || x==='undefined' || x==='null' || x==='-' || x==='—'}
 function petDashboardIsCashClient(v){let x=petDashboardCleanText(v);return x==='كاش' || x==='cash' || x==='نقدي' || x==='نقدى' || x==='نقد' || x.includes('عميل كاش') || x.includes('عميل نقد') || x.includes('cash customer')}
 function petDashboardChartPlugins(extra){return Object.assign({}, baseOpts().plugins, {tooltip:{enabled:false}}, extra||{})}
-function petT(key,fallback){try{var api=window.PETATOE_I18N;if(api&&typeof api.translate==='function'){var v=api.translate(key);if(typeof v==='string'&&v)return v;}}catch(e){}return fallback;}
+function petT(key,fallback){try{var center=window.PETATOE_LOCALIZATION_CENTER;if(center&&typeof center.translate==='function')return center.translate(key,fallback);var api=window.PETATOE_I18N;if(api&&typeof api.translate==='function'){var v=api.translate(key);if(typeof v==='string'&&v)return v;}}catch(e){}return fallback;}
 function renderDashboardKpis(data){
   let y=selectedDashboardYear();
   const ctx=ytdContext(y);
@@ -4483,7 +4483,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <script data-petatoe-defer="v6.5.0-phase1" defer="" src="settings/audit.js"></script>
 <script src="settings/backup.js"></script>
 <script src="settings/settings.js"></script>
-<script src="i18n/localization-center/dashboard.js?v=9.0.0-elc-phase5.2"></script>
+<script src="i18n/localization-center/dashboard.js?v=9.0.0-elc-phase6a"></script>
 <script src="sales/contract-candidates-report.js"></script>
 <script src="sales/contract-candidates-dark-fix.js"></script>
 <!-- === PETATOE v3.8.131 SETTINGS MENU DUPLICATE REMOVAL - FINAL GUARD === -->
@@ -4577,7 +4577,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script defer="" src="components/liquid-glass-ui.js"></script>
 <script defer="" src="components/phase6f-safe-inline-cleanup.js"></script>
 <script defer="" src="inline-extracted/contract-candidates-full-export.js"></script>
-<script>window.PETATOE_RELEASE_VERSION='v9.0.0';window.PETATOE_RELEASE_NAME='ELC_PHASE5_2_CUMULATIVE_BASELINE_RECONCILIATION';</script>
+<script>window.PETATOE_RELEASE_VERSION='v9.0.0';window.PETATOE_RELEASE_NAME='ELC_PHASE6A_DASHBOARD_RUNTIME_MIGRATION_PILOT';</script>
 <script>
 (function(){
   function showPdfEngineMessage(){
@@ -4599,17 +4599,18 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 })();
 </script>
 
-<script src="i18n/localization-center/registry.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/localization-center/cache.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/ar.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/en.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/formatter.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/direction.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/index.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/localization-center/loader.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/localization-center/runtime.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/audit.js?v=9.0.0-elc-phase5.2"></script>
-<script src="i18n/coverage.js?v=9.0.0-elc-phase5.2"></script>
+<script src="i18n/localization-center/registry.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/localization-center/cache.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/ar.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/en.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/formatter.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/direction.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/index.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/localization-center/loader.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/localization-center/runtime.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/localization-center/dashboard-pilot.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/audit.js?v=9.0.0-elc-phase6a"></script>
+<script src="i18n/coverage.js?v=9.0.0-elc-phase6a"></script>
 <script src="diagnostics/diagnostics-core.js"></script>
 <script src="performance/cdn-hardening.js"></script>
 <script data-petatoe-defer="v6.5.0-phase1" defer="" src="diagnostics/runtime-hardening.js"></script>

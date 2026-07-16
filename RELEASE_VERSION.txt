@@ -1,19 +1,13 @@
-PETATOE v9.0.0 — ELC_PHASE5_2_CUMULATIVE_BASELINE_RECONCILIATION
+PETATOE v9.0.0 — ELC_PHASE6A_DASHBOARD_RUNTIME_MIGRATION_PILOT
 
-Release Type: Enterprise Localization Stabilization
-Base: PETATOE v9 Enterprise GitHub Production Baseline
+Release Type: Enterprise Localization Runtime Migration Pilot
+Base: PETATOE v9 Enterprise cumulative ELC Phase 5.2 baseline
 
 Purpose:
-- Synchronize the visible runtime release identity with the PETATOE v9 baseline.
-- Unify cache-busting for all i18n and Enterprise Localization Center assets.
-- Prevent GitHub Pages and browser caches from mixing files from different ELC phases.
+- Migrate Dashboard translation resolution to the Enterprise Localization Center runtime.
+- Keep Supabase approved values as the primary source with cache and local-file fallback.
+- Measure Dashboard localization apply and visual rerender timing without reloading business data.
 
 Scope:
-- Release metadata only.
-- i18n and ELC asset cache coherence only.
-- No business logic, Supabase schema, permissions, payroll, sales, reports, or operations changes.
-
-Quality Gates:
-- JavaScript syntax validation.
-- Referenced local asset validation.
-- Unified i18n/ELC cache token validation.
+- Dashboard localization runtime only.
+- No Smart Reports, payroll, sales, operations, permissions, or database schema changes.
