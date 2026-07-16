@@ -30,74 +30,7 @@
       },
       analytics:{
         reports:{title:'التقارير',subtitle:'التقارير الأساسية'},smartReports:{title:'التقارير الذكية',subtitle:'التحليل وذكاء الأعمال'},
-        smartReportsSource:{
-      'tabs':{
-        'overview':'ملخص الأداء',
-        'sales':'تحليل المبيعات',
-        'vehicles':'تحليل السيارات',
-        'customers':'تحليل العملاء',
-        'services':'تحليل الخدمات',
-        'advanced':'مركز التقارير المتقدمة',
-        'forecast':'التوقعات وذكاء الأعمال',
-        'recommendations':'التوصيات'
-      },
-      'overview':{
-        'totalSales':'إجمالي المبيعات',
-        'invoiceCount':'عدد الفواتير',
-        'customerRetention':'معدل الاحتفاظ بالعملاء',
-        'averageInvoice':'متوسط الفاتورة',
-        'topVehicle':'أكفأ سيارة',
-        'bestService':'أفضل خدمة',
-        'details':{
-          'totalSales':'تفاصيل إجمالي المبيعات',
-          'invoiceCount':'تفاصيل عدد الفواتير',
-          'customerRetention':'تفاصيل معدل الاحتفاظ بالعملاء',
-          'averageInvoice':'تفاصيل متوسط الفاتورة',
-          'topVehicle':'تفاصيل أكفأ سيارة',
-          'bestService':'تفاصيل أفضل خدمة'
-        },
-        'desc':{
-          'totalSales':'يعرض إجمالي قيمة المبيعات للفترة أو السنة المحددة داخل التقارير الذكية.',
-          'invoiceCount':'يوضح عدد الفواتير الفريدة مقارنة بعدد العمليات الفعلية المسجلة في البيانات.',
-          'customerRetention':'يقيس نسبة العملاء المتكررين من إجمالي العملاء خلال الفترة المختارة.',
-          'averageInvoice':'يعرض متوسط قيمة الفاتورة مع متوسط الإيراد اليومي حسب البيانات الحالية.',
-          'topVehicle':'ترتيب السيارة حسب متوسط الإيراد لكل عملية خلال الفترة المختارة.',
-          'bestService':'الخدمة الأعلى تحقيقًا للمبيعات في الفترة المختارة من واقع البيانات المرفوعة.'
-        },
-        'period':'الفترة',
-        'operationsCount':'عدد العمليات',
-        'dataRange':'نطاق البيانات',
-        'repeatCustomers':'عملاء متكررون',
-        'oneTimeCustomers':'عملاء مرة واحدة',
-        'totalCustomers':'إجمالي العملاء',
-        'dailyAverage':'متوسط يومي',
-        'operatingDays':'أيام التشغيل',
-        'vehicle':'السيارة',
-        'revenue':'الإيراد',
-        'operations':'العمليات',
-        'averageTransaction':'متوسط العملية',
-        'service':'الخدمة',
-        'topFiveServicesShare':'مساهمة أعلى 5 خدمات',
-        'operationUnit':'عملية',
-        'repeatCustomerUnit':'عميل متكرر'
-      },
-      'vehicleEfficiency':{
-        'title':'تحليل كفاءة السيارات',
-        'vehicle':'السيارة',
-        'operationsCount':'عدد العمليات',
-        'revenue':'الإيراد',
-        'averageTransaction':'متوسط العملية',
-        'contribution':'المساهمة',
-        'total':'الإجمالي',
-        'noData':'لا توجد بيانات مطابقة لفلاتر تحليل كفاءة السيارات.',
-        'reset':'إعادة تعيين',
-        'allYears':'كل السنوات',
-        'allMonths':'كل الشهور',
-        'allVehicles':'كل السيارات',
-        'allPayments':'كل طرق الدفع'
-      }
-    },
-    customer360:{title:'Customer 360',subtitle:'الملف الشامل للعميل'},executive:{title:'الإدارة العليا',subtitle:'لوحة الإدارة التنفيذية'}
+        customer360:{title:'Customer 360',subtitle:'الملف الشامل للعميل'},executive:{title:'الإدارة العليا',subtitle:'لوحة الإدارة التنفيذية'}
       },
       management:{
         commissions:{title:'نظام العمولات',subtitle:'حساب ومتابعة العمولات'},commissionStatement:{title:'كشف العمولة',subtitle:'عرض كشف العمولة'},

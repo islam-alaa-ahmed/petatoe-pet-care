@@ -1518,7 +1518,7 @@ function parseDate(v){
   let d=new Date(s);return isNaN(d)?s:localISO(d);
 }
 function normalizeMonth(v,date){let s=String(v||'').trim().toLowerCase();const ar={'يناير':'january','فبراير':'february','مارس':'march','أبريل':'april','ابريل':'april','مايو':'may','يونيو':'june','يوليو':'july','أغسطس':'august','اغسطس':'august','سبتمبر':'september','أكتوبر':'october','اكتوبر':'october','نوفمبر':'november','ديسمبر':'december'};if(date){let pd=parseDate(date);let m=String(pd).match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);if(m){let d=makeLocalDate(m[1],m[2],m[3]);if(!isNaN(d))return MONTHS[d.getMonth()]}}if(ar[s])return ar[s];if(MONTHS.includes(s))return s;return s||''}
-function getYear(r){let pd=r&&r.date?parseDate(r.date):'';let m=String(pd).match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);return m?Number(m[1]):''}function quarterOf(m){let i=MONTHS.indexOf(String(m||'').toLowerCase());return i<0?'Q?':'Q'+(Math.floor(i/3)+1)}function quarterRange(q){return {Q1:'يناير - مارس',Q2:'أبريل - يونيو',Q3:'يوليو - سبتمبر',Q4:'أكتوبر - ديسمبر'}[q]||''}function monthLabel(m,y){return (MAR[m]||m)+'\n'+y}function monthLabelEn(m,y){return (MSHORT[m]||m)+'\n'+y}
+function getYear(r){let pd=r&&r.date?parseDate(r.date):'';let m=String(pd).match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);return m?Number(m[1]):''}function quarterOf(m){let i=MONTHS.indexOf(String(m||'').toLowerCase());return i<0?'Q?':'Q'+(Math.floor(i/3)+1)}function quarterRange(q){return {Q1:petSalesT('quarters.q1','يناير - مارس'),Q2:petSalesT('quarters.q2','أبريل - يونيو'),Q3:petSalesT('quarters.q3','يوليو - سبتمبر'),Q4:petSalesT('quarters.q4','أكتوبر - ديسمبر')}[q]||''}function monthLabel(m,y){return petMonthT(m)+'\n'+y}function monthLabelEn(m,y){return (MSHORT[m]||m)+'\n'+y}
 function openDB(){return Promise.reject(new Error('Legacy IndexedDB sales records storage is disabled; Supabase is the source of truth.'))}
 async function loadRecords(){try{return window.PETATOEDataSource?window.PETATOEDataSource.getRecordsSync():[]}catch(_){return[]}}
 async function persistRecords(){try{if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.syncRecordsCache==='function')window.PETATOEDataSource.syncRecordsCache(records,{reason:'index-runtime-records-sync'});}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('index.html persistRecords runtime only',e);}}
@@ -2253,6 +2253,8 @@ function petDashboardIsUndefinedService(v){let x=petDashboardCleanText(v);return
 function petDashboardIsCashClient(v){let x=petDashboardCleanText(v);return x==='كاش' || x==='cash' || x==='نقدي' || x==='نقدى' || x==='نقد' || x.includes('عميل كاش') || x.includes('عميل نقد') || x.includes('cash customer')}
 function petDashboardChartPlugins(extra){return Object.assign({}, baseOpts().plugins, {tooltip:{enabled:false}}, extra||{})}
 function petT(key,fallback){try{var center=window.PETATOE_LOCALIZATION_CENTER;if(center&&typeof center.translate==='function')return center.translate(key,fallback);var api=window.PETATOE_I18N;if(api&&typeof api.translate==='function'){var v=api.translate(key);if(typeof v==='string'&&v)return v;}}catch(e){}return fallback;}
+function petSalesT(key,fallback,params){var out=petT('smartReportsSource.sales.'+key,fallback);Object.keys(params||{}).forEach(function(k){out=String(out).replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});return out;}
+function petMonthT(m){return petT('smartReportsSource.calendar.months.'+m,(MAR&&MAR[m])||m);}
 function renderDashboardKpis(data){
   let y=selectedDashboardYear();
   const ctx=ytdContext(y);
@@ -2611,20 +2613,20 @@ function renderDeep(){let data=filtered();renderSales(data);renderVans(data);ren
 function renderSales(data){
   let y=salesYear==='all'?'all':(+salesYear||defaultYear(data));
   yearButtons('salesYearBtns',String(y),'setSalesYear');
-  $('salesYearTitle').textContent=y==='all'?'(كل السنوات)':'('+y+')';
+  $('salesYearTitle').textContent=y==='all'?'('+petSalesT('allYears','كل السنوات')+')':'('+y+')';
   let rows=monthAgg(data,y);
   chart('salesTrendChart',{type:'bar',data:{labels:rows.map(r=>r.label),datasets:[{label:'Sales',data:rows.map(r=>r.total),backgroundColor:monthColors,borderRadius:10}]},options:{...baseOpts(),layout:{padding:{top:34}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,fullMoney:true}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'800'}},grid:{display:false}},y:{ticks:{color:css('--muted')},grid:{color:'rgba(148,163,184,.13)'}}}}});
   const dynYears=reportQuarterDynamicYears(data);
   const y1=dynYears.previous, y2=dynYears.current;
   let qs=['Q1','Q2','Q3','Q4'];
   chart('quarterChart',{type:'bar',data:{labels:qs.map(q=>q+'\n('+quarterRange(q)+')'),datasets:[{label:String(y1),data:qs.map(q=>qSum(data,y1,q)),backgroundColor:'#94a3b8',borderRadius:10},{label:String(y2),data:qs.map(q=>qSum(data,y2,q)),backgroundColor:['#8b5cf6','#3b82f6','#22c55e','#f97316'],borderRadius:10}]},options:{...baseOpts(),layout:{padding:{top:36}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,fullMoney:true}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'800'}},grid:{display:false}},y:{ticks:{color:css('--muted')},grid:{color:'rgba(148,163,184,.13)'}}}}});
-  $('quarterTable').innerHTML='<thead><tr><th>الربع</th><th>'+htmlSafe(y1)+'</th><th>'+htmlSafe(y2)+'</th><th>الفرق</th><th>النمو</th></tr></thead><tbody>'+qs.map(q=>{let a=qSum(data,y1,q),b=qSum(data,y2,q),d=b-a,g=a?d/a*100:(b>0?100:0);return`<tr><td>${q}</td><td>${money(a)}</td><td>${money(b)}</td><td class="${d>=0?'metric-up':'metric-down'}">${d>0?'+':''}${money(d)}</td><td class="${g>=0?'metric-up':'metric-down'}">${g>0?'+':''}${g.toFixed(2)}%</td></tr>`}).join('')+'</tbody>';
+  $('quarterTable').innerHTML='<thead><tr><th>'+petSalesT('quarter','الربع')+'</th><th>'+htmlSafe(y1)+'</th><th>'+htmlSafe(y2)+'</th><th>'+petSalesT('difference','الفرق')+'</th><th>'+petSalesT('growth','النمو')+'</th></tr></thead><tbody>'+qs.map(q=>{let a=qSum(data,y1,q),b=qSum(data,y2,q),d=b-a,g=a?d/a*100:(b>0?100:0);return`<tr><td>${q}</td><td>${money(a)}</td><td>${money(b)}</td><td class="${d>=0?'metric-up':'metric-down'}">${d>0?'+':''}${money(d)}</td><td class="${g>=0?'metric-up':'metric-down'}">${g>0?'+':''}${g.toFixed(2)}%</td></tr>`}).join('')+'</tbody>';
 }
 
 function smartSalesTaxValue(v){v=parseNum(v); if(smartSalesTaxMode==='net') return v/1.15; if(smartSalesTaxMode==='tax') return v-(v/1.15); return v;}
-function smartSalesTaxLabel(){return smartSalesTaxMode==='net'?'المبيعات قبل الضريبة':(smartSalesTaxMode==='tax'?'الضريبة':'المبيعات شاملة الضريبة');}
+function smartSalesTaxLabel(){return smartSalesTaxMode==='net'?petSalesT('salesBeforeVat','المبيعات قبل الضريبة'):(smartSalesTaxMode==='tax'?petSalesT('vat','الضريبة'):petSalesT('salesIncludingVat','المبيعات شاملة الضريبة'));}
 function smartMonthlyTrendTaxValue(v){v=parseNum(v); if(smartMonthlyTrendTaxMode==='net') return v/1.15; if(smartMonthlyTrendTaxMode==='tax') return v-(v/1.15); return v;}
-function smartMonthlyTrendTaxLabel(){return smartMonthlyTrendTaxMode==='net'?'المبيعات قبل الضريبة':(smartMonthlyTrendTaxMode==='tax'?'الضريبة':'المبيعات شاملة الضريبة');}
+function smartMonthlyTrendTaxLabel(){return smartMonthlyTrendTaxMode==='net'?petSalesT('salesBeforeVat','المبيعات قبل الضريبة'):(smartMonthlyTrendTaxMode==='tax'?petSalesT('vat','الضريبة'):petSalesT('salesIncludingVat','المبيعات شاملة الضريبة'));}
 function smartQuarterAutoYears(data=records){
   const ys=years(data).filter(Boolean).sort((a,b)=>a-b);
   const compare=ys.length?ys[ys.length-1]:defaultYear(data);
@@ -2649,10 +2651,10 @@ function smartQuarterYearOptions(current){
 function renderSmartQuarterControls(baseYear,compareYear){
   const holder=$('smartQuarterCompareControls');
   if(!holder) return;
-  holder.innerHTML=`<label class="smart-quarter-check"><input type="checkbox" ${smartQuarterCustomCompare?'checked':''} onchange="setSmartQuarterCustomCompare(this.checked)"> مقارنة مخصصة</label>
+  holder.innerHTML=`<label class="smart-quarter-check"><input type="checkbox" ${smartQuarterCustomCompare?'checked':''} onchange="setSmartQuarterCustomCompare(this.checked)"> ${petSalesT('customComparison','مقارنة مخصصة')}</label>
     <div class="smart-quarter-year-selects ${smartQuarterCustomCompare?'':'is-hidden'}">
-      <label>سنة الأساس<select onchange="setSmartQuarterCompareYear('base',this.value)">${smartQuarterYearOptions(baseYear)}</select></label>
-      <label>سنة المقارنة<select onchange="setSmartQuarterCompareYear('compare',this.value)">${smartQuarterYearOptions(compareYear)}</select></label>
+      <label>${petSalesT('baseYear','سنة الأساس')}<select onchange="setSmartQuarterCompareYear('base',this.value)">${smartQuarterYearOptions(baseYear)}</select></label>
+      <label>${petSalesT('comparisonYear','سنة المقارنة')}<select onchange="setSmartQuarterCompareYear('compare',this.value)">${smartQuarterYearOptions(compareYear)}</select></label>
     </div>`;
 }
 function setSmartQuarterCustomCompare(checked){smartQuarterCustomCompare=!!checked;petatoeSmartRerender('sales')}
@@ -2664,15 +2666,15 @@ function setSmartQuarterCompareYear(kind,value){
   petatoeSmartRerender('sales');
 }
 function renderSmartSalesTaxButtons(){
-  const monthlyHtml=['gross','net','tax'].map(m=>`<button class="metric-chip ${smartMonthlyTrendTaxMode===m?'active':''}" onclick="setSmartMonthlyTrendTaxMode('${m}')">${m==='gross'?'المبيعات شاملة الضريبة':m==='net'?'المبيعات قبل الضريبة':'الضريبة'}</button>`).join('');
-  const salesHtml=['gross','net','tax'].map(m=>`<button class="metric-chip ${smartSalesTaxMode===m?'active':''}" onclick="setSmartSalesTaxMode('${m}')">${m==='gross'?'المبيعات شاملة الضريبة':m==='net'?'المبيعات قبل الضريبة':'الضريبة'}</button>`).join('');
+  const monthlyHtml=['gross','net','tax'].map(m=>`<button class="metric-chip ${smartMonthlyTrendTaxMode===m?'active':''}" onclick="setSmartMonthlyTrendTaxMode('${m}')">${m==='gross'?petSalesT('salesIncludingVat','المبيعات شاملة الضريبة'):m==='net'?petSalesT('salesBeforeVat','المبيعات قبل الضريبة'):petSalesT('vat','الضريبة')}</button>`).join('');
+  const salesHtml=['gross','net','tax'].map(m=>`<button class="metric-chip ${smartSalesTaxMode===m?'active':''}" onclick="setSmartSalesTaxMode('${m}')">${m==='gross'?petSalesT('salesIncludingVat','المبيعات شاملة الضريبة'):m==='net'?petSalesT('salesBeforeVat','المبيعات قبل الضريبة'):petSalesT('vat','الضريبة')}</button>`).join('');
   if($('smartSalesTaxBtns1')) $('smartSalesTaxBtns1').innerHTML=monthlyHtml;
   ['smartSalesTaxBtns2','smartSalesTaxBtns3'].forEach(id=>{if($(id)) $(id).innerHTML=salesHtml;});
 }
 function setSmartMonthlyTrendTaxMode(m){smartMonthlyTrendTaxMode=['gross','net','tax'].includes(m)?m:'gross';petatoeSmartRerender('sales')}
 function setSmartSalesTaxMode(m){smartSalesTaxMode=['gross','net','tax'].includes(m)?m:'gross';petatoeSmartRerender('sales')}
 
-function salesIntelMonthlyModeLabel(m){return m==='net'?'قبل الضريبة':(m==='tax'?'الضريبة':'شامل الضريبة');}
+function salesIntelMonthlyModeLabel(m){return m==='net'?petSalesT('beforeVat','قبل الضريبة'):(m==='tax'?petSalesT('vat','الضريبة'):petSalesT('includingVat','شامل الضريبة'));}
 function salesIntelMonthlyMetricButtons(){
   return ['gross','net','tax'].map(m=>`<button type="button" class="metric-chip ${salesIntelMonthlyMode===m?'active':''}" data-smart-action="sales-monthly-mode" data-mode="${m}">${m==='gross'?'شامل الضريبة':m==='net'?'قبل الضريبة':'الضريبة'}</button>`).join('');
 }
@@ -2682,7 +2684,7 @@ function setSalesIntelMonthlyMode(m){
 }
 
 
-function salesIntelMonthCompareModeLabel(m){return m==='net'?'قبل الضريبة':(m==='tax'?'الضريبة':'شامل الضريبة');}
+function salesIntelMonthCompareModeLabel(m){return m==='net'?petSalesT('beforeVat','قبل الضريبة'):(m==='tax'?petSalesT('vat','الضريبة'):petSalesT('includingVat','شامل الضريبة'));}
 function salesIntelMonthCompareMetricButtons(){
   return ['gross','net','tax'].map(m=>`<button type="button" class="metric-chip ${salesIntelMonthCompareMode===m?'active':''}" data-smart-action="sales-month-compare-mode" data-mode="${m}">${salesIntelMonthCompareModeLabel(m)}</button>`).join('');
 }
@@ -2710,7 +2712,7 @@ function salesIntelMonthlyFilterOptions(kind,current){
   let vals=[];
   if(kind==='year') vals=['all'].concat(getYearButtonList(rows).map(String));
   if(kind==='van') vals=['all'].concat(smartUniqueSorted(rows,'van'));
-  const labels={year:{all:'كل السنوات'},van:{all:'كل السيارات'}};
+  const labels={year:{all:petSalesT('allYears','كل السنوات')},van:{all:petSalesT('allVehicles','كل السيارات')}};
   return vals.map(function(v){
     const txt=(v==='all')?labels[kind].all:v;
     return '<option value="'+smartFilterEsc(v)+'" '+(String(current)===String(v)?'selected':'')+'>'+smartFilterEsc(txt)+'</option>';
@@ -2719,8 +2721,8 @@ function salesIntelMonthlyFilterOptions(kind,current){
 function salesIntelMonthlyFilterHtml(){
   const st=salesIntelMonthlyFilterState();
   return '<div class="smart-local-filter-row sales-intel-monthly-filters" data-report-filter="sales-intel-monthly">'
-    +'<label>السنة<select id="salesIntelMonthlyYear" data-smart-action="sales-monthly-filter" data-smart-key="year">'+salesIntelMonthlyFilterOptions('year',st.year)+'</select></label>'
-    +'<label>السيارات<select id="salesIntelMonthlyVan" data-smart-action="sales-monthly-filter" data-smart-key="van">'+salesIntelMonthlyFilterOptions('van',st.van)+'</select></label>'
+    +'<label>'+petSalesT('year','السنة')+'<select id="salesIntelMonthlyYear" data-smart-action="sales-monthly-filter" data-smart-key="year">'+salesIntelMonthlyFilterOptions('year',st.year)+'</select></label>'
+    +'<label>'+petSalesT('vehicles','السيارات')+'<select id="salesIntelMonthlyVan" data-smart-action="sales-monthly-filter" data-smart-key="van">'+salesIntelMonthlyFilterOptions('van',st.van)+'</select></label>'
     +'</div>';
 }
 function salesIntelMonthlyFilteredRows(){
@@ -2793,7 +2795,7 @@ function renderSmartSales(data){
   if($('smartQuarterTitle')) $('smartQuarterTitle').textContent=`Quarterly Comparison (${baseYear} vs ${compareYear}) 🗓️`;
   renderSmartQuarterControls(baseYear,compareYear);
   chart('smartQuarterChart',{type:'bar',data:{labels:qs.map(q=>q+'\n('+quarterRange(q)+')'),datasets:[{label:baseYear+' - '+label,data:qs.map(q=>smartSalesTaxValue(qSum(data,baseYear,q))),backgroundColor:'#94a3b8',borderRadius:10},{label:compareYear+' - '+label,data:qs.map(q=>smartSalesTaxValue(qSum(data,compareYear,q))),backgroundColor:['#8b5cf6','#3b82f6','#22c55e','#f97316'],borderRadius:10}]},options:{...baseOpts(),layout:{padding:{top:36}},plugins:{...baseOpts().plugins,legend:{labels:{color:css('--text'),font:{family:'Cairo',weight:'900'}}},petatoeLabels:{enabled:true,fullMoney:true}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'800'}},grid:{display:false}},y:{title:{display:true,text:label+' (SAR)',color:css('--muted'),font:{family:'Cairo',weight:'900'}},ticks:{color:css('--muted')},grid:{color:'rgba(148,163,184,.13)'}}}}});
-  $('smartQuarterTable').innerHTML='<thead><tr><th>الربع</th><th>'+baseYear+' - '+label+'</th><th>'+compareYear+' - '+label+'</th><th>الفرق</th><th>النمو</th></tr></thead><tbody>'+qs.map(q=>{let a=smartSalesTaxValue(qSum(data,baseYear,q)),b=smartSalesTaxValue(qSum(data,compareYear,q)),d=b-a,g=a?d/a*100:(b>0?100:0);let dClass=smartQuarterSignClass(d),gClass=smartQuarterSignClass(g),dKey=smartQuarterSignKey(d),gKey=smartQuarterSignKey(g);return`<tr><td>${q}</td><td>${money(a)}</td><td>${money(b)}</td><td class="${dClass}" style="${smartQuarterSignStyle(d)}" data-qsign="${dKey}">${smartQuarterSignedMoney(d)}</td><td class="${gClass}" style="${smartQuarterSignStyle(g)}" data-qsign="${gKey}">${smartQuarterSignedPct(g)}</td></tr>`}).join('')+'</tbody>';applySmartQuarterTableColors();
+  $('smartQuarterTable').innerHTML='<thead><tr><th>'+petSalesT('quarter','الربع')+'</th><th>'+baseYear+' - '+label+'</th><th>'+compareYear+' - '+label+'</th><th>'+petSalesT('difference','الفرق')+'</th><th>'+petSalesT('growth','النمو')+'</th></tr></thead><tbody>'+qs.map(q=>{let a=smartSalesTaxValue(qSum(data,baseYear,q)),b=smartSalesTaxValue(qSum(data,compareYear,q)),d=b-a,g=a?d/a*100:(b>0?100:0);let dClass=smartQuarterSignClass(d),gClass=smartQuarterSignClass(g),dKey=smartQuarterSignKey(d),gKey=smartQuarterSignKey(g);return`<tr><td>${q}</td><td>${money(a)}</td><td>${money(b)}</td><td class="${dClass}" style="${smartQuarterSignStyle(d)}" data-qsign="${dKey}">${smartQuarterSignedMoney(d)}</td><td class="${gClass}" style="${smartQuarterSignStyle(g)}" data-qsign="${gKey}">${smartQuarterSignedPct(g)}</td></tr>`}).join('')+'</tbody>';applySmartQuarterTableColors();
 }
 function setSmartSalesYear(y){smartSalesYear=y;petatoeSmartRerender('sales')}
 function renderVans(data){let y=vanYear==='all'?'all':(+vanYear||defaultYear(data));yearButtons('vanPieBtns',String(y),'setVanYear');yearButtons('vanLineBtns',String(y),'setVanYear');yearButtons('vanBarBtns',String(y),'setVanYear');let yd=byYear(data,y),vans=[...new Set(yd.map(r=>r.van).filter(Boolean))];let vt=groupSum(yd,'van'),vk=Object.keys(vt),tot=Object.values(vt).reduce((a,b)=>a+b,0);$('vansDistSub').textContent='إجمالي المبيعات: '+money(tot);$('vanPieValues').innerHTML=vk.map((k,i)=>`<div class="value-item"><i class="value-dot" style="background:${[css('--cyan'),css('--purple'),css('--green'),css('--orange')][i%4]}"></i><span>${htmlSafe(k)}</span><b>${money(vt[k])}<br><small class="metric-up">${tot?(vt[k]/tot*100).toFixed(2):0}%</small></b></div>`).join('');chart('vansPieChart',{type:'doughnut',data:{labels:vk,datasets:[{data:vk.map(k=>vt[k]),backgroundColor:[css('--cyan'),css('--purple'),css('--green'),css('--orange')],borderWidth:0}]},options:{...baseOpts('none'),cutout:'44%',plugins:{legend:{display:false},petatoeLabels:{enabled:true,fullMoney:true,color:'#fff'}}}});let months=monthAgg(data,y);chart('vansCompareChart',{type:'line',data:{labels:months.map(x=>x.label),datasets:vans.map((v,i)=>({label:v,data:months.map(m=>yd.filter(r=>(y==='all'?getYear(r)==m.year:true)&&normalizeMonth(r.month,r.date)===m.month&&r.van===v).reduce((s,r)=>s+parseNum(r.totalInc),0)),borderColor:[css('--cyan'),css('--purple'),css('--green'),css('--orange')][i%4],backgroundColor:'transparent',fill:false,tension:.27,pointRadius:5,borderWidth:3}))},options:{...baseOpts(),layout:{padding:{top:34,right:20}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:true,font:'800 10px Cairo',offset:14}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo'},maxRotation:0,minRotation:0},grid:{color:'rgba(148,163,184,.1)'}},y:{ticks:{color:css('--muted')},grid:{color:'rgba(148,163,184,.13)'}}}}});let datasets=vans.map((v,i)=>({label:v,data:months.map(m=>yd.filter(r=>(y==='all'?getYear(r)==m.year:true)&&normalizeMonth(r.month,r.date)===m.month&&r.van===v).reduce((s,r)=>s+parseNum(r.totalInc),0)),backgroundColor:[css('--cyan'),css('--purple'),css('--green'),css('--orange')][i%4],borderRadius:7}));datasets.push({label:'إجمالي المبيعات',data:months.map(m=>yd.filter(r=>(y==='all'?getYear(r)==m.year:true)&&normalizeMonth(r.month,r.date)===m.month).reduce((s,r)=>s+parseNum(r.totalInc),0)),backgroundColor:'#94a3b8',borderRadius:7});chart('vansMonthlyBars',{type:'bar',data:{labels:months.map(x=>x.label),datasets},options:{...baseOpts(),layout:{padding:{top:36}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:true,font:'800 10px Cairo'}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'700'},maxRotation:0,minRotation:0},grid:{display:false}},y:{ticks:{color:css('--muted')},grid:{color:'rgba(148,163,184,.13)'}}}}});$('vansTable').innerHTML='<thead><tr><th>السيارة</th><th>المبيعات</th><th>العمليات</th><th>متوسط العملية</th></tr></thead><tbody>'+Object.entries(vt).map(x=>{let c=yd.filter(r=>r.van===x[0]).length;return`<tr><td>${htmlSafe(x[0])}</td><td>${money(x[1])}</td><td>${c}</td><td>${money(x[1]/(c||1))}</td></tr>`}).join('')+'</tbody>'}
@@ -3919,7 +3921,7 @@ function petatoeUpdateWhatIf(){
   });
 })();
 </script>
-<script src="smart/smart-reports-filters-real.js?v=9.0.0-smart-l10n-s1"></script>
+<script src="smart/smart-reports-filters-real.js?v=9.0.0-smart-sales-screen2"></script>
 <script src="smart/smart-reports-new-customers-real.js"></script>
 <script src="smart/smart-reports-performance-optimizer.js"></script>
 <script src="smart/smart-data-engine.js"></script>
@@ -3927,7 +3929,7 @@ function petatoeUpdateWhatIf(){
 <script src="smart/smart-services.js"></script>
 <script src="smart/smart-vehicles.js"></script>
 <script src="smart/smart-customers.js"></script>
-<script src="smart/smart-reports-core.js?v=9.0.0-smart-l10n-s1"></script>
+<script src="smart/smart-reports-core.js?v=9.0.0-smart-sales-screen2"></script>
 <script src="smart/smart-router.js"></script>
 <script src="smart/smart-reports-interactions-real.js"></script>
 <script src="smart/smart-reports-export-engine.js"></script>
@@ -4601,8 +4603,8 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 
 <script src="i18n/localization-center/registry.js?v=9.0.0-elc-phase6a"></script>
 <script src="i18n/localization-center/cache.js?v=9.0.0-elc-phase6a"></script>
-<script src="i18n/ar.js?v=9.0.0-smart-l10n-s1"></script>
-<script src="i18n/en.js?v=9.0.0-smart-l10n-s1"></script>
+<script src="i18n/ar.js?v=9.0.0-smart-sales-screen2"></script>
+<script src="i18n/en.js?v=9.0.0-smart-sales-screen2"></script>
 <script src="i18n/formatter.js?v=9.0.0-elc-phase6a"></script>
 <script src="i18n/direction.js?v=9.0.0-elc-phase6a"></script>
 <script src="i18n/index.js?v=9.0.0-elc-phase6a"></script>
