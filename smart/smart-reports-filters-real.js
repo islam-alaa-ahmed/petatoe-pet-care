@@ -7,6 +7,11 @@ function smartSafeHtml(target, html, reason){
   try{if(window.PETATOESafeRender&&typeof window.PETATOESafeRender.htmlTrusted==='function')return window.PETATOESafeRender.htmlTrusted(el,String(html==null?'':html),reason||'smart reports trusted escaped template');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('smart reports safe render fallback',e);}
   el.textContent='';el.insertAdjacentHTML('beforeend',String(html==null?'':html));return true;
 }
+
+function smartVehicleEfficiencyT(key,fallback){
+  try{if(typeof smartReportT==='function')return smartReportT('vehicleEfficiency.'+key,fallback);}catch(_){ }
+  return String(fallback==null?'':fallback);
+}
 function smartGlobalFilterValue(id){
   const el=$(id);
   const v=el ? String(el.value||'all') : 'all';
@@ -44,11 +49,18 @@ function smartVehicleEfficiencyOptions(kind,current){
   if(kind==='month') vals=['all'].concat(MONTHS.filter(function(m){return rows.some(function(r){return normalizeMonth(r.month,r.date)===m})}));
   if(kind==='van') vals=['all'].concat(smartUniqueSorted(rows,'van'));
   if(kind==='pay') vals=['all'].concat(smartUniqueSorted(rows,'pay'));
-  const labels={year:{all:'كل السنوات'},month:{all:'كل الشهور'},van:{all:'كل السيارات'},pay:{all:'كل طرق الدفع'}};
+  const labels={year:{all:smartVehicleEfficiencyT('allYears','كل السنوات')},month:{all:smartVehicleEfficiencyT('allMonths','كل الشهور')},van:{all:smartVehicleEfficiencyT('allVehicles','كل السيارات')},pay:{all:smartVehicleEfficiencyT('allPayments','كل طرق الدفع')}};
   return vals.map(function(v){
     let txt=v;
     if(v==='all') txt=labels[kind].all;
-    else if(kind==='month') txt=MAR[v]||v;
+    else if(kind==='month'){
+      try{
+        const idx=MONTHS.indexOf(v);
+        const lang=(window.PETATOE_I18N&&typeof window.PETATOE_I18N.getLanguage==='function')?window.PETATOE_I18N.getLanguage():(document.documentElement.lang||'ar');
+        if(idx>=0) txt=new Intl.DateTimeFormat(lang==='en'?'en-US':'ar-SA',{month:'long',timeZone:'UTC'}).format(new Date(Date.UTC(2024,idx,1)));
+        else txt=MAR[v]||v;
+      }catch(_){txt=MAR[v]||v;}
+    }
     return '<option value="'+smartFilterEsc(v)+'" '+(String(current)===String(v)?'selected':'')+'>'+smartFilterEsc(txt)+'</option>';
   }).join('');
 }
@@ -74,9 +86,9 @@ function smartVehicleEfficiencyRowsHtml(){
     const share=safeDiv(v[1],totalRows).toLocaleString('en-US',{style:'percent',maximumFractionDigits:1});
     return '<tr><td>'+smartFilterEsc(v[0])+'</td><td>'+fmt0(c)+'</td><td>'+money(v[1])+'</td><td>'+money(avg)+'</td><td>'+share+'</td></tr>';
   }).join('');
-  if(!out) return '<tr><td colspan="5">لا توجد بيانات مطابقة لفلاتر تحليل كفاءة السيارات.</td></tr>';
+  if(!out) return '<tr><td colspan="5">'+smartFilterEsc(smartVehicleEfficiencyT('noData','لا توجد بيانات مطابقة لفلاتر تحليل كفاءة السيارات.'))+'</td></tr>';
   const totalAvg=safeDiv(totalRows,totalCount||1);
-  return out + '<tr class="smart-total-row"><td>الإجمالي</td><td>'+fmt0(totalCount)+'</td><td>'+money(totalRows)+'</td><td>'+money(totalAvg)+'</td><td>100%</td></tr>';
+  return out + '<tr class="smart-total-row"><td>'+smartFilterEsc(smartVehicleEfficiencyT('total','الإجمالي'))+'</td><td>'+fmt0(totalCount)+'</td><td>'+money(totalRows)+'</td><td>'+money(totalAvg)+'</td><td>100%</td></tr>';
 }
 function smartVehicleEfficiencyFilterHtml(){
   const st=smartVehicleEfficiencyState();
@@ -85,7 +97,7 @@ function smartVehicleEfficiencyFilterHtml(){
     +'<select id="smartVehicleEffMonth" data-smart-action="vehicle-efficiency-filter" data-smart-key="month">'+smartVehicleEfficiencyOptions('month',st.month)+'</select>'
     +'<select id="smartVehicleEffVan" data-smart-action="vehicle-efficiency-filter" data-smart-key="van">'+smartVehicleEfficiencyOptions('van',st.van)+'</select>'
     +'<select id="smartVehicleEffPay" data-smart-action="vehicle-efficiency-filter" data-smart-key="pay">'+smartVehicleEfficiencyOptions('pay',st.pay)+'</select>'
-    +'<button type="button" class="btn btn-ghost smart-local-reset" data-smart-action="vehicle-efficiency-reset">إعادة تعيين</button>'
+    +'<button type="button" class="btn btn-ghost smart-local-reset" data-smart-action="vehicle-efficiency-reset">'+smartFilterEsc(smartVehicleEfficiencyT('reset','إعادة تعيين'))+'</button>'
     +'</div>';
 }
 function setSmartVehicleEfficiencyFilter(key,value){
@@ -101,7 +113,7 @@ function resetSmartVehicleEfficiencyFilters(){
   window.smartVehicleEfficiencyFilters={year:defaultYear,month:'all',van:'all',pay:'all'};
   const controls=document.querySelector('#smartVehicleEfficiencyPanel .smart-panel-head-with-filters');
   if(controls){
-    window.PETATOESafeRender.setHTML(controls,'<div><h3>🚐 تحليل كفاءة السيارات</h3></div>'+smartVehicleEfficiencyFilterHtml());
+    window.PETATOESafeRender.setHTML(controls,'<div><h3>🚐 '+smartFilterEsc(smartVehicleEfficiencyT('title','تحليل كفاءة السيارات'))+'</h3></div>'+smartVehicleEfficiencyFilterHtml());
   }
   const body=document.getElementById('smartVehicleEfficiencyBody');
   if(body) window.PETATOESafeRender.setHTML(body,smartVehicleEfficiencyRowsHtml());

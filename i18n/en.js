@@ -30,7 +30,74 @@
       },
       analytics:{
         reports:{title:'Reports',subtitle:'Standard reports'},smartReports:{title:'Smart Reports',subtitle:'Analytics and business intelligence'},
-        customer360:{title:'Customer 360',subtitle:'Complete customer profile'},executive:{title:'Executive Management',subtitle:'Executive dashboard'}
+        smartReportsSource:{
+      'tabs':{
+        'overview':'Performance Summary',
+        'sales':'Sales Analysis',
+        'vehicles':'Vehicle Analysis',
+        'customers':'Customer Analysis',
+        'services':'Service Analysis',
+        'advanced':'Advanced Reports Center',
+        'forecast':'Forecasting & Business Intelligence',
+        'recommendations':'Recommendations'
+      },
+      'overview':{
+        'totalSales':'Total Sales',
+        'invoiceCount':'Invoice Count',
+        'customerRetention':'Customer Retention Rate',
+        'averageInvoice':'Average Invoice',
+        'topVehicle':'Top Vehicle',
+        'bestService':'Best Service',
+        'details':{
+          'totalSales':'Total Sales Details',
+          'invoiceCount':'Invoice Count Details',
+          'customerRetention':'Customer Retention Details',
+          'averageInvoice':'Average Invoice Details',
+          'topVehicle':'Top Vehicle Details',
+          'bestService':'Best Service Details'
+        },
+        'desc':{
+          'totalSales':'Shows total sales value for the selected period or year in Smart Reports.',
+          'invoiceCount':'Shows the number of unique invoices compared with the actual recorded operations.',
+          'customerRetention':'Measures repeat customers as a percentage of all customers in the selected period.',
+          'averageInvoice':'Shows average invoice value together with average daily revenue for the current data.',
+          'topVehicle':'Ranks vehicles by average revenue per operation in the selected period.',
+          'bestService':'The service with the highest sales value in the selected period based on uploaded data.'
+        },
+        'period':'Period',
+        'operationsCount':'Operations Count',
+        'dataRange':'Data Range',
+        'repeatCustomers':'Repeat Customers',
+        'oneTimeCustomers':'One-Time Customers',
+        'totalCustomers':'Total Customers',
+        'dailyAverage':'Daily Average',
+        'operatingDays':'Operating Days',
+        'vehicle':'Vehicle',
+        'revenue':'Revenue',
+        'operations':'Operations',
+        'averageTransaction':'Average Transaction',
+        'service':'Service',
+        'topFiveServicesShare':'Top 5 Services Share',
+        'operationUnit':'operation',
+        'repeatCustomerUnit':'repeat customers'
+      },
+      'vehicleEfficiency':{
+        'title':'Vehicle Efficiency Analysis',
+        'vehicle':'Vehicle',
+        'operationsCount':'Operations Count',
+        'revenue':'Revenue',
+        'averageTransaction':'Average Transaction',
+        'contribution':'Contribution',
+        'total':'Total',
+        'noData':'No data matches the Vehicle Efficiency Analysis filters.',
+        'reset':'Reset',
+        'allYears':'All Years',
+        'allMonths':'All Months',
+        'allVehicles':'All Vehicles',
+        'allPayments':'All Payment Methods'
+      }
+    },
+    customer360:{title:'Customer 360',subtitle:'Complete customer profile'},executive:{title:'Executive Management',subtitle:'Executive dashboard'}
       },
       management:{
         commissions:{title:'Commissions System',subtitle:'Calculate and track commissions'},commissionStatement:{title:'Commission Statement',subtitle:'View commission statement'},
