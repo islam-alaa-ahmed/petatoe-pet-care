@@ -1133,6 +1133,13 @@
       'status_pending': 'Pending review',
       'status_rejected': 'Rejected',
       'status_draft': 'Draft',
+      'disableLanguage': 'Disable Language',
+      'enableLanguage': 'Enable Language',
+      'activationLocked': 'Activation Locked',
+      'fullCoverageRequired': '100% approved translation coverage is required before activation',
+      'superAdminRequired': 'This action is available to Super Admin only',
+      'confirmEnableLanguage': 'Enable this language for users?',
+      'confirmDisableLanguage': 'Disable this language?',
       'status_missing': 'Missing'
 }
   };

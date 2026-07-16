@@ -1133,6 +1133,13 @@
       'status_pending': 'قيد المراجعة',
       'status_rejected': 'مرفوض',
       'status_draft': 'مسودة',
+      'disableLanguage': 'تعطيل اللغة',
+      'enableLanguage': 'تفعيل اللغة',
+      'activationLocked': 'التفعيل مقفل',
+      'fullCoverageRequired': 'يلزم اكتمال الترجمة بنسبة 100% قبل التفعيل',
+      'superAdminRequired': 'هذه العملية متاحة لـ Super Admin فقط',
+      'confirmEnableLanguage': 'هل تريد تفعيل هذه اللغة للمستخدمين؟',
+      'confirmDisableLanguage': 'هل تريد تعطيل هذه اللغة؟',
       'status_missing': 'ناقص'
 }
   };

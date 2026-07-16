@@ -23,3 +23,6 @@
 .elc-editor-error{margin-top:12px;padding:10px 12px;border-radius:12px;background:rgba(255,77,92,.12);border:1px solid rgba(255,77,92,.3);color:#ffb1b9;font-weight:700}
 html[dir="ltr"] .elc-modal-panel{text-align:left}html[dir="rtl"] .elc-modal-panel{text-align:right}
 @media(max-width:700px){.elc-modal{padding:8px}.elc-modal-panel{width:100%;max-height:96vh;padding:15px;border-radius:17px}.elc-editor-actions .pet-v110-btn{flex:1 1 calc(50% - 8px)}.elc-history article>div{display:block}.elc-history time{display:block;margin-top:4px}}
+
+/* PETATOE v9 ELC Phase 4C — language activation controls */
+.elc-language-toggle{width:100%;margin-top:12px;min-height:36px;border-radius:10px;border:1px solid rgba(82,159,255,.34);background:rgba(82,159,255,.12);color:inherit;font-weight:800;cursor:pointer}.elc-language-toggle.success{border-color:rgba(37,215,189,.38);background:rgba(37,215,189,.14)}.elc-language-toggle.danger{border-color:rgba(255,95,111,.35);background:rgba(255,95,111,.12)}.elc-language-toggle:disabled{cursor:not-allowed;opacity:.52}
