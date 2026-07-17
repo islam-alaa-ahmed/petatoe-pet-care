@@ -17,6 +17,7 @@
 
 (function(){
   'use strict';
+  function opT(key,params){return window.PETATOE_OPERATIONS_I18N?window.PETATOE_OPERATIONS_I18N.t(key,params):key;}
   if(window.PETATOEAppointments) return;
   var KEY='petatoe_appointments_v1';
   var MASTER_KEY='petatoe_appointments_master_data_v1';
@@ -111,7 +112,7 @@
   }
   function googleMapUrlStatus(v){
     var url=normalizeGoogleMapUrl(v);
-    if(!url)return {ok:false,empty:true,url:'',message:'لا يوجد موقع محفوظ لهذا العميل.'};
+    if(!url)return {ok:false,empty:true,url:'',message:opT('noSavedLocation')};
     var a=null, host='', path='';
     try{
       a=document.createElement('a');
@@ -119,14 +120,14 @@
       host=String(a.hostname||'').toLowerCase();
       path=String(a.pathname||'').toLowerCase();
     }catch(e){
-      return {ok:false,empty:false,url:url,message:'رابط Google Maps غير صالح.'};
+      return {ok:false,empty:false,url:url,message:opT('invalidMapsLink')};
     }
     var isMapsApp=host==='maps.app.goo.gl';
     var isGoogleMaps=(host==='google.com'||host==='www.google.com')&&path.indexOf('/maps')===0;
     var isMapsGoogle=host==='maps.google.com';
     var isGooMaps=host==='goo.gl'&&path.indexOf('/maps')===0;
     if(isMapsApp||isGoogleMaps||isMapsGoogle||isGooMaps)return {ok:true,empty:false,url:url,message:''};
-    return {ok:false,empty:false,url:url,message:'رابط Google Maps غير صالح. استخدم رابطًا من maps.app.goo.gl أو google.com/maps.'};
+    return {ok:false,empty:false,url:url,message:opT('invalidMapsLinkHint')};
   }
   function appointmentMapUrl(row){
     row=row&&typeof row==='object'?row:{};
@@ -137,12 +138,12 @@
     var status=googleMapUrlStatus(row.googleMapUrl||row.customerMapLink||row.mapUrl||row.locationUrl||'');
     var label=compact?'Get Direction':'📍 Get Direction';
     if(status.ok){
-      return '<button class="vehicle-ops-direction-link '+(compact?'compact':'')+'" type="button" data-op-click="openVehicleDirectionById" data-op-arg1="'+esc(row.id||'')+'" title="فتح الاتجاهات في Google Maps">'+label+'</button>';
+      return '<button class="vehicle-ops-direction-link '+(compact?'compact':'')+'" type="button" data-op-click="openVehicleDirectionById" data-op-arg1="'+esc(row.id||'')+'" title="'+opT('openDirectionsTitle')+'">'+label+'</button>';
     }
     if(status.empty){
-      return compact?'':'<div class="vehicle-ops-direction empty"><button type="button" class="vehicle-ops-direction-link disabled" disabled>📍 Get Direction</button><span>لا يوجد موقع محفوظ لهذا العميل.</span></div>';
+      return compact?'':'<div class="vehicle-ops-direction empty"><button type="button" class="vehicle-ops-direction-link disabled" disabled>📍 Get Direction</button><span>'+opT('noSavedLocation')+'</span></div>';
     }
-    return compact?'':'<div class="vehicle-ops-direction warning"><button type="button" class="vehicle-ops-direction-link warning" data-op-click="openVehicleDirectionById" data-op-arg1="'+esc(row.id||'')+'">📍 Get Direction</button><span>رابط Google Maps غير صالح.</span></div>';
+    return compact?'':'<div class="vehicle-ops-direction warning"><button type="button" class="vehicle-ops-direction-link warning" data-op-click="openVehicleDirectionById" data-op-arg1="'+esc(row.id||'')+'">📍 Get Direction</button><span>'+opT('invalidMapsLink')+'</span></div>';
   }
   function openVehicleDirectionById(id){
     var rows=read();
@@ -151,9 +152,9 @@
     rows.some(function(r){if(String(r&&r.id||'')===id){row=r;return true}return false});
     if(!row&&vehicleOpsSelectedId){rows.some(function(r){if(String(r&&r.id||'')===String(vehicleOpsSelectedId)){row=r;return true}return false})}
     var status=googleMapUrlStatus(row?(row.googleMapUrl||row.customerMapLink||row.mapUrl||row.locationUrl||''):'');
-    if(!status.ok){toast(status.message||'رابط Google Maps غير صالح.');return false}
+    if(!status.ok){toast(status.message||opT('invalidMapsLink'));return false}
     try{window.open(status.url,'_blank','noopener,noreferrer');}
-    catch(e){toast('تعذر فتح Google Maps من المتصفح الحالي.');return false}
+    catch(e){toast(opT('mapsOpenFailed'));return false}
     try{if(window.PETATOEDiagnostics&&typeof window.PETATOEDiagnostics.capture==='function')window.PETATOEDiagnostics.capture('info','vehicle-operations.get-direction','Google Maps direction opened',{appointmentId:id});}catch(e2){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('operations/operations-legacy-engine.js',e2);}
     return true;
   }
@@ -260,18 +261,18 @@
   }
   function addNamedMasterValue(field,inputId,label){
     var name=String(val(inputId)||'').trim();
-    if(!name){alert('اكتب '+label);return;}
+    if(!name){alert(opT('enterNamedValue',{label:label}));return;}
     var master=readMasterData();
     master[field]=normalizeNamedList((master[field]||[]).concat([name]));
     writeMasterData(master);
     setVal(inputId,'');
     renderMasterData();
     refreshLookupSelects();
-    toast('تمت إضافة '+label);
+    toast(opT('namedValueAdded',{label:label}));
   }
   function removeNamedMasterValue(field,name,label){
     name=String(name||'').trim(); if(!name)return;
-    if(!confirm('حذف '+label+'؟'))return;
+    if(!confirm(opT('confirmDeleteNamedValue',{label:label})))return;
     var master=readMasterData();
     master[field]=normalizeNamedList(master[field]||[]).filter(function(x){return String(x)!==name});
     if(field==='vehicles'){master.vehicleAssignments=(master.vehicleAssignments||[]).filter(function(v){return String(v.vehicle)!==name});}
@@ -280,7 +281,7 @@
     writeMasterData(master);
     renderMasterData();
     refreshLookupSelects();
-    toast('تم الحذف');
+    toast(opT('deleted'));
   }
   function addOperationsVehicle(){addNamedMasterValue('vehicles','appointmentNewOperationVehicle','سيارة')}
   function addOperationsDriver(){addNamedMasterValue('drivers','appointmentNewOperationDriver','سائق')}
@@ -330,23 +331,23 @@
     if(type==='services'){
       return addMasterService();
     }
-    if(!value){alert('اكتب قيمة للإضافة');return}
+    if(!value){alert(opT('enterValue'));return}
     addUnique(master[type],value);
     if(type==='animalTypes'&&!master.breeds[value])master.breeds[value]=[];
-    writeMasterData(master);setVal(id,'');toast('تمت الإضافة');
+    writeMasterData(master);setVal(id,'');toast(opT('added'));
   }
   function addMasterService(){
     var master=readMasterData();
     var code=val('appointmentNewServiceCode'), name=val('appointmentNewService'), priceRaw=val('appointmentNewServicePrice'), price=priceRaw===''?'':Number(String(priceRaw).replace(/,/g,''));
-    if(!name){alert('اكتب اسم الخدمة');return;}
-    if(price!==''&&!isFinite(price)){alert('اكتب السعر بشكل صحيح');return;}
+    if(!name){alert(opT('enterServiceName'));return;}
+    if(price!==''&&!isFinite(price)){alert(opT('validPrice'));return;}
     if(!code&&currentEditingServiceKey){
       var existing=(master.services||[]).map(cleanMasterService).filter(Boolean).find(function(s){return String(s.code||s.name)===String(currentEditingServiceKey)});
       if(existing&&existing.code)code=existing.code;
     }
     if(!code)code=nextMasterServiceCode(master.services||[]);
     var row=cleanMasterService({code:code,name:name,price:price,updatedAt:new Date().toISOString()});
-    if(!row){alert('اكتب اسم الخدمة');return;}
+    if(!row){alert(opT('enterServiceName'));return;}
     var done=false, editKey=String(currentEditingServiceKey||'').toLowerCase();
     master.services=(master.services||[]).map(function(s){
       var old=cleanMasterService(s); if(!old)return null;
@@ -358,35 +359,35 @@
     }).filter(Boolean);
     if(!done)master.services.push(row);
     currentEditingServiceKey='';
-    writeMasterData(master);setVal('appointmentNewServiceCode','');setVal('appointmentNewService','');setVal('appointmentNewServicePrice','');toast('تم حفظ الخدمة');
+    writeMasterData(master);setVal('appointmentNewServiceCode','');setVal('appointmentNewService','');setVal('appointmentNewServicePrice','');toast(opT('serviceSaved'));
   }
   function addBreed(){
     var type=val('appointmentBreedAnimalType'), breed=val('appointmentNewBreed'), master=readMasterData();
-    if(!type||!breed){alert('اختر نوع الحيوان واكتب السلالة');return}
+    if(!type||!breed){alert(opT('selectAnimalAndBreed'));return}
     if(master.animalTypes.indexOf(type)===-1)master.animalTypes.push(type);
     master.breeds[type]=master.breeds[type]||[];addUnique(master.breeds[type],breed);
-    writeMasterData(master);setVal('appointmentNewBreed','');toast('تمت إضافة السلالة');
+    writeMasterData(master);setVal('appointmentNewBreed','');toast(opT('breedAdded'));
   }
   function removeMasterItem(type,value,animalType){
-    if(!confirm('حذف هذا البند من البيانات المرجعية؟'))return;
+    if(!confirm(opT('confirmDeleteReferenceItem')))return;
     var master=readMasterData();
     value=String(value||'');
     if(type==='breeds'&&animalType){master.breeds[animalType]=(master.breeds[animalType]||[]).filter(function(x){return x!==value})}
     else if(type==='services'){master.services=(master.services||[]).filter(function(x){x=cleanMasterService(x);return x&&x.name!==value&&x.code!==value});}
     else{master[type]=(master[type]||[]).filter(function(x){return x!==value}); if(type==='animalTypes')delete master.breeds[value];}
-    writeMasterData(master);toast('تم الحذف');
+    writeMasterData(master);toast(opT('deleted'));
   }
   function editMasterItem(type,value,animalType){
     var master=readMasterData();
     if(type==='services'){
       var svc=(master.services||[]).map(cleanMasterService).filter(Boolean).find(function(x){return x.name===value||x.code===value||String(x.code||x.name)===String(value)});
-      if(!svc){alert('الخدمة غير موجودة');return;}
+      if(!svc){alert(opT('serviceNotFound'));return;}
       currentEditingServiceKey=String(svc.code||svc.name);
       setVal('appointmentNewServiceCode',svc.code||'');
       setVal('appointmentNewService',svc.name||'');
       setVal('appointmentNewServicePrice',svc.price===''?'':svc.price);
       var input=byId('appointmentNewService'); if(input&&input.focus)input.focus();
-      toast('تم فتح الخدمة للتعديل في الخانات بالأعلى');
+      toast(opT('serviceLoadedForEdit'));
       return;
     }
     var next=prompt('اكتب الاسم الجديد',value); if(next==null)return; next=String(next).trim(); if(!next)return;
@@ -396,9 +397,9 @@
       if(master.breeds[value]){master.breeds[next]=master.breeds[value];delete master.breeds[value];}
     }
     else {master[type]=(master[type]||[]).map(function(x){return x===value?next:x})}
-    writeMasterData(master);toast('تم التعديل');
+    writeMasterData(master);toast(opT('updated'));
   }
-  function resetMasterData(){if(confirm('استعادة القيم الافتراضية للبيانات المرجعية؟')){writeMasterData(cloneDefaultMaster());toast('تمت الاستعادة')}}
+  function resetMasterData(){if(confirm(opT('confirmRestoreDefaults'))){writeMasterData(cloneDefaultMaster());toast(opT('restored'))}}
   function renderMasterPills(list,type,animalType){
     list=uniqueSorted(list||[]);
     return list.length?list.map(function(x){return '<span class="appointments-master-pill"><b>'+esc(x)+'</b><button type="button" data-op-click="editMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">تعديل</button><button type="button" data-op-click="removeMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">حذف</button></span>'}).join(''):'<div class="appointments-empty appointments-master-empty">لا توجد بيانات</div>';
@@ -435,10 +436,10 @@
   }
   function addMasterCustomer(){
     var c={code:val('appointmentMasterCustomerCode'),name:val('appointmentMasterCustomerName'),address:val('appointmentMasterCustomerAddress'),phone:val('appointmentMasterCustomerPhone')};
-    if(!c.name&&!c.phone){alert('اكتب اسم العميل أو الجوال');return;}
+    if(!c.name&&!c.phone){alert(opT('enterCustomerOrPhone'));return;}
     upsertMasterCustomer(c);
     ['appointmentMasterCustomerCode','appointmentMasterCustomerName','appointmentMasterCustomerAddress','appointmentMasterCustomerPhone'].forEach(function(id){setVal(id,'')});
-    toast('تم حفظ العميل في البيانات المرجعية');
+    toast(opT('customerSaved'));
   }
   function editMasterCustomer(code){
     var row=masterCustomerRows().find(function(c){return String(c.code)===String(code)}); if(!row)return;
@@ -448,10 +449,10 @@
     upsertMasterCustomer({code:row.code,name:name,phone:phone,address:address});
   }
   function removeMasterCustomer(code){
-    if(!confirm('حذف العميل من البيانات المرجعية؟ المواعيد القديمة لن يتم حذفها.'))return;
+    if(!confirm(opT('confirmDeleteCustomer')))return;
     var master=readMasterData();
     master.customers=(master.customers||[]).filter(function(c){c=cleanMasterCustomer(c);return c&&String(c.code)!==String(code)});
-    writeMasterData(master);toast('تم حذف العميل من البيانات المرجعية');
+    writeMasterData(master);toast(opT('customerDeleted'));
   }
   function masterCustomersExportRows(){
     return [['الكود','الاسم','العنوان','الجوال']].concat(masterCustomerRows().map(function(c){
@@ -508,11 +509,11 @@
     var file=input&&input.files&&input.files[0];
     if(!file)return;
     var finish=function(list){
-      if(!list.length){alert('لم يتم العثور على بيانات عملاء صالحة داخل الملف');return;}
+      if(!list.length){alert(opT('noValidCustomersInFile'));return;}
       list.forEach(upsertMasterCustomer);
       renderMasterData();
-      toast('تم رفع بيانات العملاء: '+list.length+' سجل');
-      alert('تم رفع بيانات العملاء بنجاح: '+list.length+' سجل');
+      toast(opT('customersImported',{count:list.length}));
+      alert(opT('customersImportedSuccess',{count:list.length}));
     };
     var reader=new FileReader();
     reader.onload=function(e){
@@ -524,12 +525,12 @@
           finish(parseMasterCustomersSheetRows(rows));
           return;
         }
-        if(!window.XLSX||!XLSX.read||window.__PETATOE_XLSX_STUB__){alert('مكتبة Excel غير متاحة حاليًا، جرّب ملف CSV أو أعد تحميل الصفحة.');return;}
+        if(!window.XLSX||!XLSX.read||window.__PETATOE_XLSX_STUB__){alert(opT('excelUnavailable'));return;}
         var wb=XLSX.read(e.target.result,{type:'array',cellDates:false});
         var ws=wb.Sheets[wb.SheetNames[0]];
         var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
         finish(parseMasterCustomersSheetRows(data));
-      }catch(err){console.error(err);alert('تعذر قراءة ملف العملاء. تأكد أن الأعمدة: الكود، الاسم، العنوان، الجوال');}
+      }catch(err){console.error(err);alert(opT('customersFileReadFailed'));}
       finally{if(input)input.value='';}
     };
     reader.readAsArrayBuffer(file);
@@ -546,9 +547,9 @@
   }
   function saveVehicleAssignment(){
     var vehicle=val('appointmentMasterVehicle'), groomer=val('appointmentMasterGroomer'), driver=val('appointmentMasterDriver');
-    if(!vehicle){alert('اختر السيارة');return;}
-    if(!groomer){alert('اختر الجرومر قبل حفظ الربط');return;}
-    if(!driver){alert('اختر السائق قبل حفظ الربط');return;}
+    if(!vehicle){alert(opT('selectVehicle'));return;}
+    if(!groomer){alert(opT('selectGroomer'));return;}
+    if(!driver){alert(opT('selectDriver'));return;}
     var master=readMasterData(), done=false, previousDisabled=false;
     master.vehicles=normalizeNamedList((master.vehicles||[]).concat([vehicle]));
     master.groomers=normalizeNamedList((master.groomers||[]).concat([groomer]));
@@ -561,16 +562,16 @@
       return v;
     });
     if(!done)master.vehicleAssignments.push({vehicle:vehicle,groomer:groomer,driver:driver,disabled:false,updatedAt:new Date().toISOString()});
-    writeMasterData(master);renderMasterData();refreshLookupSelects();toast('تم حفظ ربط السيارة بالموظفين');
+    writeMasterData(master);renderMasterData();refreshLookupSelects();toast(opT('assignmentSaved'));
   }
   function editVehicleAssignment(vehicle){
     vehicle=String(vehicle||'').trim(); if(!vehicle)return;
     var row=(readMasterData().vehicleAssignments||[]).map(cleanVehicleAssignment).filter(function(v){return v&&String(v.vehicle)===vehicle})[0];
-    if(!row){toast('لم يتم العثور على الربط');return;}
+    if(!row){toast(opT('assignmentNotFound'));return;}
     setVal('appointmentMasterVehicle',row.vehicle||'');
     setVal('appointmentMasterGroomer',row.groomer||'');
     setVal('appointmentMasterDriver',row.driver||'');
-    toast('تم تحميل الربط للتعديل');
+    toast(opT('assignmentLoaded'));
   }
   function toggleVehicleAssignment(vehicle){
     vehicle=String(vehicle||'').trim(); if(!vehicle)return;
@@ -580,13 +581,13 @@
       if(v&&String(v.vehicle)===vehicle){found=true;v.disabled=!v.disabled;disabled=!!v.disabled;v.updatedAt=new Date().toISOString();}
       return v;
     }).filter(Boolean);
-    if(!found){toast('لم يتم العثور على الربط');return;}
+    if(!found){toast(opT('assignmentNotFound'));return;}
     writeMasterData(master);renderMasterData();refreshLookupSelects();toast(disabled?'تم تعطيل الربط':'تم إلغاء تعطيل الربط');
   }
   function removeVehicleAssignment(vehicle){
-    if(!confirm('حذف ربط هذه السيارة؟'))return;
+    if(!confirm(opT('confirmDeleteAssignment')))return;
     var master=readMasterData();master.vehicleAssignments=(master.vehicleAssignments||[]).filter(function(v){return String(v.vehicle)!==String(vehicle)});
-    writeMasterData(master);renderMasterData();refreshLookupSelects();toast('تم حذف الربط');
+    writeMasterData(master);renderMasterData();refreshLookupSelects();toast(opT('assignmentDeleted'));
   }
   function masterServicesExportRows(){
     var rows=(readMasterData().services||[]).map(function(s){s=cleanMasterService(s);return s?[s.code||'',s.name,s.price===''?'' : s.price]:null}).filter(Boolean);
@@ -630,7 +631,7 @@
       var master=readMasterData(); master.services=[];
       list.forEach(function(s){s=cleanMasterService(s);if(s)master.services.push(s);});
       writeMasterData(master); renderMasterData();
-      toast('تم رفع الخدمات: '+list.length+' خدمة'); alert('تم رفع الخدمات بنجاح: '+list.length+' خدمة');
+      toast(opT('servicesImported',{count:list.length})); alert(opT('servicesImportedSuccess',{count:list.length}));
     };
     var reader=new FileReader();
     reader.onload=function(e){
@@ -641,12 +642,12 @@
           var rows=text.split(/\r?\n/).map(function(line){return line.split(',').map(function(x){return String(x||'').replace(/^"|"$/g,'').replace(/""/g,'"').trim()})});
           finish(parseMasterServicesSheetRows(rows));return;
         }
-        if(!window.XLSX||!XLSX.read||window.__PETATOE_XLSX_STUB__){alert('مكتبة Excel غير متاحة حاليًا، جرّب ملف CSV أو أعد تحميل الصفحة.');return;}
+        if(!window.XLSX||!XLSX.read||window.__PETATOE_XLSX_STUB__){alert(opT('excelUnavailable'));return;}
         var wb=XLSX.read(e.target.result,{type:'array',cellDates:false});
         var ws=wb.Sheets[wb.SheetNames[0]];
         var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
         finish(parseMasterServicesSheetRows(data));
-      }catch(err){console.error(err);alert('تعذر قراءة ملف الخدمات. تأكد أن الأعمدة: الكود، اسم الخدمة، السعر');}
+      }catch(err){console.error(err);alert(opT('servicesFileReadFailed'));}
       finally{if(input)input.value='';}
     };
     reader.readAsArrayBuffer(file);
@@ -1076,9 +1077,9 @@
       finally{saveAppointment._opsDelegating=false}
     }
     var r=collect();
-    if(!r.client){alert('اكتب اسم العميل');return}
-    if(!r.date){alert('اختر تاريخ الموعد');return}
-    if(!r.services||!r.services.length){alert('اختر خدمة واحدة على الأقل');return}
+    if(!r.client){alert(opT('enterCustomerName'));return}
+    if(!r.date){alert(opT('selectAppointmentDate'));return}
+    if(!r.services||!r.services.length){alert(opT('selectAtLeastOneService'));return}
     var rows=read();
     var profile=findCustomerProfile();
     if(profile){
@@ -1087,7 +1088,7 @@
       if(!r.address&&profile.address)r.address=profile.address;
     }
     var conflicts=findConflicts(r,rows);
-    if(conflicts.length){alert('⚠️ يوجد تعارض في الموعد:\n'+conflicts.map(function(c){return '- '+c.reason+' مع '+(c.row.client||'عميل')+' من '+(c.row.start||'?')+' إلى '+(c.row.end||'?')}).join('\n'));return}
+    if(conflicts.length){alert(opT('appointmentConflictHeader')+'\n'+conflicts.map(function(c){return opT('appointmentConflictLine',{reason:c.reason,client:(c.row.client||opT('unspecifiedCustomer')),start:(c.row.start||'?'),end:(c.row.end||'?')})}).join('\n'));return}
 
     var idx=rows.findIndex(function(x){return String(x.id)===String(r.id)});
     if(idx>-1){
@@ -1099,12 +1100,12 @@
       pushExecutionLog(rows[0],'create',{status:normalizeStatus(rows[0].status),notes:'تم إنشاء الموعد من إدارة المواعيد'});
     }
     upsertMasterCustomer({code:r.customerId||customerKey(r),name:r.client,phone:r.phone,address:r.address,googleMapUrl:appointmentMapUrl(r)});
-    write(rows);clearForm();setTab('log');toast('تم حفظ الموعد');
+    write(rows);clearForm();setTab('log');toast(opT('appointmentSaved'));
   }
   function toast(msg){try{if(typeof window.toast==='function')window.toast(msg);else if(typeof window.toastSafe==='function')window.toastSafe(msg)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-legacy-engine.js",e);}}
   function edit(id){if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.edit==='function'&&!edit._opsDelegating){edit._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.edit(id)}finally{edit._opsDelegating=false}}var r=read().find(function(x){return String(x.id)===String(id)});if(!r)return;fill(r);setTab('add')}
-  function remove(id){if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.remove==='function'&&!remove._opsDelegating){remove._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.remove(id)}finally{remove._opsDelegating=false}}if(!confirm('حذف الموعد؟'))return;write(read().filter(function(x){return String(x.id)!==String(id)}));render();toast('تم حذف الموعد')}
-  function changeStatus(id,s){if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.changeStatus==='function'&&!changeStatus._opsDelegating){changeStatus._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.changeStatus(id,s)}finally{changeStatus._opsDelegating=false}}var rows=read();rows.forEach(function(x){if(String(x.id)===String(id))x.status=normalizeStatus(s)});write(rows);render();toast('تم تحديث حالة الموعد')}
+  function remove(id){if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.remove==='function'&&!remove._opsDelegating){remove._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.remove(id)}finally{remove._opsDelegating=false}}if(!confirm(opT('confirmDeleteAppointment')))return;write(read().filter(function(x){return String(x.id)!==String(id)}));render();toast(opT('appointmentDeleted'))}
+  function changeStatus(id,s){if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.changeStatus==='function'&&!changeStatus._opsDelegating){changeStatus._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.changeStatus(id,s)}finally{changeStatus._opsDelegating=false}}var rows=read();rows.forEach(function(x){if(String(x.id)===String(id))x.status=normalizeStatus(s)});write(rows);render();toast(opT('appointmentStatusUpdated'))}
   function filtered(){
     var filters={
       q:val('appointmentSearch').toLowerCase(),
@@ -1251,7 +1252,7 @@
   function showAppointmentDetails(id,anchor){
     var rows=read().map(function(x){return calcFinancials(x)});
     var r=rows.find(function(x){return String(x.id||'')===String(id||'')});
-    if(!r){toast('لم يتم العثور على الموعد');return}
+    if(!r){toast(opT('appointmentNotFound'));return}
     clearTimeout(appointmentDetailsHoverTimer);
     appointmentDetailsActiveId=String(id||'');
     var pop=byId('appointmentDetailsPopover');
@@ -1454,7 +1455,7 @@
   }
   function refreshCustomersCrm(){
     renderCustomersPets();
-    toast('تم تحديث قائمة العملاء والحيوانات');
+    toast(opT('customersPetsUpdated'));
   }
   function customerDatabaseReportRows(sourceProfiles,query){
     var profiles=(sourceProfiles||buildCustomerProfiles()).slice().sort(function(a,b){return String(b.lastVisit||'').localeCompare(String(a.lastVisit||''))||String(a.client||'').localeCompare(String(b.client||''),'ar')});
@@ -2044,8 +2045,8 @@
     }
     var file=input&&input.files&&input.files[0];
     if(!file)return;
-    if(!/^image\//.test(file.type||'')){toast('يمكن إرفاق صورة فقط لإثبات الدفع');input.value='';return;}
-    if(file.size>1024*1024*2){toast('حجم الصورة كبير. الحد الأقصى 2MB');input.value='';return;}
+    if(!/^image\//.test(file.type||'')){toast(opT('paymentImageOnly'));input.value='';return;}
+    if(file.size>1024*1024*2){toast(opT('paymentImageTooLarge'));input.value='';return;}
     var reader=new FileReader();
     reader.onload=function(){
       updateVehicleRow(id,function(x){
@@ -2055,9 +2056,9 @@
         x.updatedAt=new Date().toISOString();
         pushExecutionLog(x,'collection',{oldStatus:normalizeStatus(x.status),status:normalizeStatus(x.status),paymentAttachmentName:file.name,notes:'تم إضافة/تغيير صورة إثبات الدفع. السابق: '+oldName});
       });
-      toast('تم إرفاق صورة إثبات الدفع');
+      toast(opT('paymentImageAttached'));
     };
-    reader.onerror=function(){toast('تعذر قراءة صورة إثبات الدفع');};
+    reader.onerror=function(){toast(opT('paymentImageReadFailed'));};
     reader.readAsDataURL(file);
   }
   function validateVehicleCollection(row,id,requireFull){
@@ -2074,7 +2075,7 @@
   function requireBackwardReason(oldStatus,newStatus){
     var reason=prompt('أنت ترجع حالة الطلب من "'+oldStatus+'" إلى "'+newStatus+'". اكتب سبب التراجع');
     reason=String(reason||'').trim();
-    if(!reason){toast('سبب التراجع إجباري عند الرجوع لمرحلة سابقة');return null;}
+    if(!reason){toast(opT('rollbackReasonRequired'));return null;}
     return reason;
   }
   function validateVehicleStatusTransition(row,newStatus,id){
@@ -2137,7 +2138,7 @@
     if(!r)return;
     var check=validateVehicleStatusTransition(r,status,id);
     if(!check.ok){toast(check.msg||'لا يمكن تغيير الحالة بهذا التسلسل');return;}
-    if(check.same){toast('الحالة الحالية مختارة بالفعل');return;}
+    if(check.same){toast(opT('statusAlreadySelected'));return;}
     updateVehicleRow(id,function(x){
       var oldStatus=normalizeStatus(x.status);
       if(status==='تم التحصيل'){
@@ -2151,7 +2152,7 @@
   }
   function closeVehicleSessionById(id){
     var r=vehicleOpsRows().find(function(x){return String(x.id)===String(id)}); if(!r)return;
-    if(!vehicleOpsCanClose(r)){toast('لا تملك صلاحية إغلاق هذه الجلسة أو أن حالتها لا تسمح بالإغلاق');return;}
+    if(!vehicleOpsCanClose(r)){toast(opT('cannotCloseSession'));return;}
     updateVehicleRow(id,function(x){
       var oldStatus=normalizeStatus(x.status), c=calcFinancials(x), paid=Number(c.paidAmount||0);
       x.isClosed=true;x.closedAt=new Date().toISOString();x.closedBy=currentUserId();x.updatedAt=x.closedAt;
@@ -2159,25 +2160,25 @@
       else {x.status='مغلق';pushExecutionLog(x,'close',{oldStatus:oldStatus,status:'مغلق',closedBy:x.closedBy});}
     });
     vehicleOpsSelectNextAfter(id);
-    toast('تم إغلاق الجلسة ونقل الشاشة للموعد التالي');
+    toast(opT('sessionClosed'));
   }
   function reopenVehicleSessionById(id){
     if(!requireVehicleOpsAction('reopen','لا تملك صلاحية فتح رحلة تشغيل السيارات مرة أخرى'))return;
     var r=vehicleOpsRows().find(function(x){return String(x.id)===String(id)}); if(!r)return;
-    if(!vehicleOpsCanReopen(r)){toast('لا تملك صلاحية إعادة فتح هذه الجلسة');return;}
+    if(!vehicleOpsCanReopen(r)){toast(opT('cannotReopenSession'));return;}
     var reason=prompt('اكتب سبب إعادة فتح الجلسة');
-    if(!String(reason||'').trim()){toast('سبب إعادة الفتح إجباري');return;}
+    if(!String(reason||'').trim()){toast(opT('reopenReasonRequired'));return;}
     updateVehicleRow(id,function(x){var oldStatus=normalizeStatus(x.status);x.status='تمت الجلسة';x.wasConfirmed=!!x.isConfirmed;x.isConfirmed=false;x.isClosed=false;x.reopenedAt=new Date().toISOString();x.reopenedBy=currentUserId();x.reopenReason=String(reason).trim();x.updatedAt=x.reopenedAt;pushExecutionLog(x,'reopen',{oldStatus:oldStatus,status:'تمت الجلسة',reason:x.reopenReason,reopenedBy:x.reopenedBy});});
     vehicleOpsSelectedId=String(id);vehicleOpsViewTab='current';
-    toast('تم إعادة فتح الجلسة');
+    toast(opT('sessionReopened'));
   }
   function confirmVehicleSessionById(id){
     if(!requireVehicleOpsAction('approve','لا تملك صلاحية اعتماد رحلة تشغيل السيارات'))return;
     var r=vehicleOpsRows().find(function(x){return String(x.id)===String(id)}); if(!r)return;
-    if(!vehicleOpsCanConfirm(r)){toast('لا تملك صلاحية تأكيد الجلسة أو يجب إغلاقها أولاً');return;}
-    if(!confirm('تأكيد هذه الجلسة؟ بعد التأكيد لن يستطيع السائق أو الجرومر تعديلها بدون صلاحية.'))return;
+    if(!vehicleOpsCanConfirm(r)){toast(opT('cannotConfirmSession'));return;}
+    if(!confirm(opT('confirmSession')))return;
     updateVehicleRow(id,function(x){var oldStatus=normalizeStatus(x.status);x.status='مؤكد';x.isConfirmed=true;x.confirmedAt=new Date().toISOString();x.confirmedBy=currentUserId();x.updatedAt=x.confirmedAt;pushExecutionLog(x,'confirm',{oldStatus:oldStatus,status:'مؤكد',confirmedBy:x.confirmedBy});});
-    toast('تم تأكيد الجلسة');
+    toast(opT('sessionConfirmed'));
   }
   function setVehicleStatusByIndex(idx,status){
     if(window.PETATOEOperationsStatusActions&&typeof window.PETATOEOperationsStatusActions.setVehicleStatusByIndex==='function'&&!setVehicleStatusByIndex._opsDelegating){
@@ -2214,13 +2215,13 @@
       try{return window.PETATOEOperationsPaymentsActions.saveVehicleSessionById(id)}finally{saveVehicleSessionById._opsDelegating=false}
     }
     var r=vehicleOpsRows().find(function(x){return String(x.id)===String(id)}); if(!r)return;
-    if(vehicleOpsIsLocked(r)){toast('هذه الجلسة مؤكدة ولا يمكن تعديلها بدون صلاحية تعديل جلسة مؤكدة');return;}
+    if(vehicleOpsIsLocked(r)){toast(opT('confirmedSessionLocked'));return;}
     var hasPaymentInputs=!!byId('vehicleOpsPaid_'+id);
     var paid=hasPaymentInputs?Number(String(val('vehicleOpsPaid_'+id)||0).replace(/,/g,'')):Number((r&&r.paidAmount)||0), method=hasPaymentInputs?val('vehicleOpsPayment_'+id):(r.paymentMethod||''), notes=val('vehicleOpsNotes_'+id), collection=hasPaymentInputs?val('vehicleOpsCollection_'+id):(r.collectionStatus||'غير محصل'), ref=hasPaymentInputs?val('vehicleOpsRef_'+id):(r.collectionReference||'');
     var base=calcFinancials(Object.assign({},r,{paidAmount:paid,paymentMethod:method}));
-    if(paid<0){toast('المبلغ المحصل لا يمكن أن يكون أقل من صفر');return;}
-    if(Number(base.totalAmount||0)>0 && paid>Number(base.totalAmount||0)){toast('المبلغ المحصل لا يمكن أن يكون أكبر من قيمة الجلسة');return;}
-    if(paid>0 && !method){toast('اختر طريقة السداد قبل حفظ التحصيل');return;}
+    if(paid<0){toast(opT('paidBelowZero'));return;}
+    if(Number(base.totalAmount||0)>0 && paid>Number(base.totalAmount||0)){toast(opT('paidExceedsTotal'));return;}
+    if(paid>0 && !method){toast(opT('selectPaymentMethod'));return;}
     var shouldMoveNext=false;
     updateVehicleRow(r.id,function(x){
       var oldStatus=normalizeStatus(x.status);
@@ -2242,7 +2243,7 @@
       pushExecutionLog(x,'collection',{oldStatus:oldStatus,status:normalizeStatus(x.status),paidAmount:x.paidAmount,paymentMethod:x.paymentMethod,collectionStatus:x.collectionStatus,collectionReference:x.collectionReference});
     });
     if(shouldMoveNext){vehicleOpsSelectNextAfter(r.id);renderVehicleOperations();}
-    toast('تم حفظ بيانات الجلسة والتحصيل');
+    toast(opT('sessionCollectionSaved'));
   }
   function saveVehicleSessionByIndex(idx){
     if(window.PETATOEOperationsPaymentsActions&&typeof window.PETATOEOperationsPaymentsActions.saveVehicleSessionByIndex==='function'&&!saveVehicleSessionByIndex._opsDelegating){

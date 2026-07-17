@@ -1,0 +1,19 @@
+'use strict';
+const fs=require('fs');
+function fail(msg){console.error('Source Migration Pack 4 Check: Failed\n'+msg);process.exit(1);}
+const source=fs.readFileSync('i18n/operations-source.js','utf8');
+const engine=fs.readFileSync('operations/operations-legacy-engine.js','utf8');
+const index=fs.readFileSync('index.html','utf8');
+if(!index.includes('i18n/operations-source.js?v=9.2.5-source-migration-pack4')) fail('Operations localization source is not loaded before the engine.');
+if(!engine.includes('function opT(')) fail('Operations source helper is missing.');
+const enBlock=(source.match(/var en=\{([\s\S]*?)\n  \};/)||[])[1]||'';
+if(/[\u0600-\u06FF]/.test(enBlock)) fail('Arabic characters found in the English operations dictionary.');
+const direct=/\b(?:alert|toast|confirm)\(\s*['"][^'"]*[\u0600-\u06FF]/g;
+const matches=engine.match(direct)||[];
+if(matches.length) fail('Direct Arabic alert/toast/confirm calls remain: '+matches.length);
+const keys=[...engine.matchAll(/opT\(\s*['"]([^'"]+)['"]/g)].map(m=>m[1]);
+const missing=[...new Set(keys)].filter(k=>!new RegExp('(?:^|[,\\n]\\s*)'+k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+"\\s*:").test(enBlock));
+if(missing.length) fail('Missing English operations keys: '+missing.join(', '));
+console.log('Source Migration Pack 4 Check: Passed');
+console.log('Operations runtime keys covered: '+new Set(keys).size);
+console.log('Direct Arabic alert/toast/confirm calls remaining: 0');
