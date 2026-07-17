@@ -265,6 +265,7 @@
   }
   var applying=false;
   var reapplyTimer=null;
+  function localizationLoading(){var loader=window.PETATOE_LOCALIZATION_LOADER;return !!(loader&&loader.state&&loader.state.loading);}
   function isInsideI18nScope(node){
     var el=node&&node.nodeType===1?node:(node&&node.parentElement);
     if(!el||!el.closest) return false;
@@ -272,6 +273,7 @@
   }
   function reapplyLanguage(lang){
     lang=normalizeLang(lang||currentLang());
+    if(localizationLoading()){scheduleReapply(lang,40);return false;}
     patchRuntimeTextAPIs();
     applying=true;
     applyDataAttributes(lang);
@@ -280,7 +282,7 @@
     applying=false;
   }
   function translateAddedSubtree(root,lang){
-    if(!root||!root.nodeType) return;
+    if(!root||!root.nodeType||localizationLoading()) return;
     lang=normalizeLang(lang||currentLang());
     patchRuntimeTextAPIs();
     applying=true;
@@ -295,7 +297,7 @@
   function scheduleReapply(lang,delay){
     lang=normalizeLang(lang||currentLang());
     if(reapplyTimer) clearTimeout(reapplyTimer);
-    reapplyTimer=setTimeout(function(){reapplyTimer=null;reapplyLanguage(lang);},typeof delay==='number'?delay:80);
+    reapplyTimer=setTimeout(function(){reapplyTimer=null;if(localizationLoading()){scheduleReapply(lang,40);return;}reapplyLanguage(lang);},typeof delay==='number'?delay:80);
   }
   function setNavigationReady(ready){
     document.documentElement.setAttribute('data-pet-i18n-nav-ready',ready?'true':'false');
@@ -398,6 +400,7 @@
   });
   document.addEventListener('petatoe:tabchange',function(){scheduleReapply(currentLang(),90);});
   window.addEventListener('petatoe:localization-ready',function(){bindLanguageOptions();scheduleReapply(currentLang(),0);});
+  window.addEventListener('petatoe:localization-loading',function(e){if(!(e&&e.detail&&e.detail.loading))scheduleReapply(currentLang(),0);});
   window.PETATOE_I18N={
     getLanguage:currentLang,
     setLanguage:applyLanguage,

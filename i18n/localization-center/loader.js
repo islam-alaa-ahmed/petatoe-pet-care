@@ -3,13 +3,35 @@
   'use strict';
   var REGISTRY=window.PETATOE_LOCALIZATION_REGISTRY;
   var CACHE=window.PETATOE_LOCALIZATION_CACHE;
-  var state={ready:false,loading:false,lastError:null,loadedLanguages:[],loadedValues:0,source:'local-files',cacheHydrated:false,lastLoadedAt:null,sourceIndex:{},requestCount:0,lastDurationMs:0};
+  var state={ready:false,loading:false,lastError:null,loadedLanguages:[],loadedValues:0,source:'local-files',cacheHydrated:false,lastLoadedAt:null,sourceIndex:{},requestCount:0,lastDurationMs:0,rejectedValues:0,protectedValues:0};
   function client(){return window.PETATOE_SUPABASE_CLIENT||window.supabase||null;}
   function setPath(target,path,value){
     if(!target||!path) return;
     var parts=String(path).split('.'),cursor=target;
     for(var i=0;i<parts.length-1;i++){var key=parts[i];if(!cursor[key]||typeof cursor[key]!=='object')cursor[key]={};cursor=cursor[key];}
     cursor[parts[parts.length-1]]=value;
+  }
+  function getPath(target,path){
+    return String(path||'').split('.').reduce(function(acc,key){return acc&&Object.prototype.hasOwnProperty.call(acc,key)?acc[key]:undefined;},target);
+  }
+  function hasArabic(value){return /[\u0600-\u06FF]/.test(typeof value==='string'?value:JSON.stringify(value==null?'':value));}
+  function isEmptyValue(value){return value==null||(typeof value==='string'&&!value.trim());}
+  function safeEnglishValue(value){
+    if(isEmptyValue(value)||hasArabic(value))return false;
+    if(Array.isArray(value))return value.every(safeEnglishValue);
+    if(value&&typeof value==='object')return Object.keys(value).every(function(key){return safeEnglishValue(value[key]);});
+    return true;
+  }
+  function filterLanguageMap(code,values,source){
+    var out={},dictionaries=window.PETATOE_I18N_DICTIONARIES||{},local=dictionaries[code]||{};
+    Object.keys(values||{}).forEach(function(key){
+      var value=values[key],existing=getPath(local,key);
+      if(code==='en'&&!safeEnglishValue(value)){state.rejectedValues++;return;}
+      /* Local dictionaries are the production source of truth. Runtime sources may only fill missing keys. */
+      if(code==='en'&&source!=='local-file'&&!isEmptyValue(existing)&&safeEnglishValue(existing)){state.protectedValues++;return;}
+      out[key]=value;
+    });
+    return out;
   }
   function markSources(code,values,source){
     state.sourceIndex[code]=state.sourceIndex[code]||{};
@@ -20,9 +42,9 @@
     var dictionaries=window.PETATOE_I18N_DICTIONARIES=window.PETATOE_I18N_DICTIONARIES||{};
     code=REGISTRY?REGISTRY.normalizeCode(code):String(code).toLowerCase();
     dictionaries[code]=dictionaries[code]||{};
-    var count=0;
-    Object.keys(values).forEach(function(key){setPath(dictionaries[code],key,values[key]);count++;});
-    markSources(code,values,source||'runtime');
+    var accepted=filterLanguageMap(code,values,source||'runtime'),count=0;
+    Object.keys(accepted).forEach(function(key){setPath(dictionaries[code],key,accepted[key]);count++;});
+    markSources(code,accepted,source||'runtime');
     return count;
   }
   function hydrateCache(){
@@ -48,8 +70,10 @@
     Object.keys(bundle||{}).forEach(function(code){
       var item=bundle[code]||{},values=item.values||item;
       if(!values||typeof values!=='object') return;
-      total+=mergeLanguageMap(code,values,'supabase');languages.push(code);
-      if(CACHE) CACHE.writeLanguage(code,values,item.version||1);
+      var normalized=REGISTRY?REGISTRY.normalizeCode(code):String(code).toLowerCase();
+      var accepted=filterLanguageMap(normalized,values,'supabase');
+      total+=mergeLanguageMap(normalized,accepted,'supabase');languages.push(normalized);
+      if(CACHE&&Object.keys(accepted).length) CACHE.writeLanguage(normalized,accepted,item.version||1);
     });
     state.loadedLanguages=languages;state.loadedValues=total;state.source='supabase';state.lastLoadedAt=new Date().toISOString();
     return total;
@@ -66,7 +90,7 @@
   async function load(options){
     options=options||{};
     if(state.loading) return state;
-    state.loading=true;state.lastError=null;var started=(window.performance&&performance.now)?performance.now():Date.now();
+    state.loading=true;state.lastError=null;window.dispatchEvent(new CustomEvent('petatoe:localization-loading',{detail:{loading:true}}));var started=(window.performance&&performance.now)?performance.now():Date.now();
     try{
       var db=client();if(!db||typeof db.rpc!=='function')throw new Error('Supabase client is not available');
       var codes=REGISTRY?REGISTRY.enabledCodes():['ar','en'];
@@ -77,7 +101,7 @@
     }catch(error){
       state.lastError=error&&error.message?error.message:String(error);state.ready=state.cacheHydrated;renderLanguageMenu();
       console.warn('[PETATOE ELC] Approved database bundle unavailable; cached/local dictionaries remain active.',state.lastError);
-    }finally{state.loading=false;var ended=(window.performance&&performance.now)?performance.now():Date.now();state.lastDurationMs=Math.max(0,Math.round(ended-started));}
+    }finally{state.loading=false;window.dispatchEvent(new CustomEvent('petatoe:localization-loading',{detail:{loading:false}}));var ended=(window.performance&&performance.now)?performance.now():Date.now();state.lastDurationMs=Math.max(0,Math.round(ended-started));}
     return state;
   }
   hydrateCache();

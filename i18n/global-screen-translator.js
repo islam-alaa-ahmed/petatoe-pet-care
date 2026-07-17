@@ -156,8 +156,10 @@
   }
   function replaceLiteral(text,source,target){return text.split(source).join(target);}
   function setCache(key,value){
+    /* Never persist partial Arabic/English output. */
+    if(hasArabic(value))return false;
     if(translationCache.size>=MAX_CACHE)translationCache.clear();
-    translationCache.set(key,value);
+    translationCache.set(key,value);return true;
   }
   function translateMixed(value){
     if(language()!=='en'||value==null)return value;
@@ -177,8 +179,8 @@
       var pair=phrasePairs[i];
       if(out.indexOf(pair.source)!==-1)out=replaceLiteral(out,pair.source,pair.target);
     }
-    setCache(original,out);
-    return out;
+    if(!hasArabic(out))setCache(original,out);
+    return hasArabic(out)?original:out;
   }
   function englishMonth(value){
     var key=String(value==null?'':value).trim().toLowerCase();
@@ -404,7 +406,7 @@
     }
     inspect(document.body);return rows;
   }
-  function init(){patchCanvas();installObserver();if(runtimeEnabled()){buildIndex();requestFullScan(0);}}
+  function init(){patchCanvas();if(runtimeEnabled())buildIndex();}
 
   window.PETATOE_GLOBAL_SCREEN_TRANSLATOR={
     translate:translateMixed,
@@ -413,7 +415,7 @@
     rebuild:function(){ensureIndexFresh(true);requestFullScan(0);},
     hydrate:function(){scheduleInitialEnglishHydration('manual-api',0);},
     remainingArabic:residuals,
-    stats:function(){return{authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing};},
+    stats:function(){return{mode:'manual-fallback-only',observerActive:false,authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing};},
     assertEnglishClean:function(){
       var rows=residuals();
       if(rows.length)console.error('[PETATOE i18n] Arabic remains in English UI',rows);
@@ -423,21 +425,21 @@
   };
 
   window.addEventListener('petatoe:language-changed',function(){
-    if(runtimeEnabled()){ensureIndexFresh(true);resumeObserver();requestFullScan(30);}else{pauseObserver();mutationQueue.length=0;queuedNodes.clear();}
+    if(runtimeEnabled()){ensureIndexFresh(true);}else{pauseObserver();mutationQueue.length=0;queuedNodes.clear();}
   });
   document.addEventListener('petatoe:userchanged',function(e){
     var user=e&&e.detail&&e.detail.user;
     if(user&&(user.id||user.username)){
-      ensureIndexFresh(true);resumeObserver();requestFullScan(40);scheduleInitialEnglishHydration('userchanged',260);
+      ensureIndexFresh(true);
     }else{
       pauseObserver();cancelIdle(flushHandle);cancelIdle(fullScanHandle);flushHandle=0;fullScanHandle=0;
       mutationQueue.length=0;queuedNodes.clear();processing=false;
     }
   });
-  document.addEventListener('petatoe:tabchange',function(e){requestFullScan(90);var d=e&&e.detail||{};if(d.tabId==='smart'||document.querySelector('.smart-tab-section.active'))scheduleInitialEnglishHydration('smart-tabchange',220);});
-  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-smart-action],[data-contract-reason-index],[data-contract-reason-close]'))requestFullScan(120);},true);
-  window.addEventListener('petatoe:records-changed',function(){ensureIndexFresh(false);requestFullScan(120);scheduleInitialEnglishHydration('records-changed',240);});
-  document.addEventListener('petatoe:navbuilt',function(){requestFullScan(90);scheduleInitialEnglishHydration('navbuilt',160);});
+  document.addEventListener('petatoe:tabchange',function(){ensureIndexFresh(false);});
+  document.addEventListener('click',function(){},true);
+  window.addEventListener('petatoe:records-changed',function(){ensureIndexFresh(false);});
+  document.addEventListener('petatoe:navbuilt',function(){ensureIndexFresh(false);});
   window.addEventListener('petatoe:localization-ready',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(50);scheduleInitialEnglishHydration('localization-ready',140);}});
   window.addEventListener('load',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(180);scheduleInitialEnglishHydration('window-load',420);}});
 

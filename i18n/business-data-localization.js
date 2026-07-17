@@ -72,6 +72,18 @@
     }),
     generic:Object.freeze({'غير محدد':'Unspecified'})
   });
+  function hasArabic(value){return /[\u0600-\u06FF]/.test(String(value==null?'':value));}
+  function recordMissing(type,original,fallback){
+    var rows=window.PETATOE_BUSINESS_I18N_MISSING=window.PETATOE_BUSINESS_I18N_MISSING||{};
+    var key=String(type||'generic')+'|'+String(original||'');
+    rows[key]={type:type||'generic',source:String(original||''),fallback:String(fallback||''),lastSeenAt:new Date().toISOString()};
+  }
+  function safeEnglishFallback(type,original){
+    if(!hasArabic(original))return original;
+    var fallback=transliterateArabic(original)||'Untranslated';
+    recordMissing(type,original,fallback);
+    return fallback;
+  }
   function staticBusinessValue(type,value,code){
     var original=text(value),c=text(code||lang()).toLowerCase();
     if(!original||c==='ar')return original;
@@ -133,7 +145,7 @@
           if(runtimeValue&&runtimeValue!==original)return runtimeValue;
         }
       }catch(_e){}
-      return original;
+      return c==='en'?safeEnglishFallback(type,original):original;
     }
     var localized=text(c==='fil'||c==='tl'?item.fil:item[c]);
     if(localized)return localized;
@@ -144,7 +156,8 @@
         if(fallbackValue&&fallbackValue!==(item.canonical||original))return fallbackValue;
       }
     }catch(_e2){}
-    return item.canonical||original;
+    var canonicalValue=item.canonical||original;
+    return c==='en'?safeEnglishFallback(type,canonicalValue):canonicalValue;
   }
   function canonical(type,value){
     var original=text(value); if(!original)return original;

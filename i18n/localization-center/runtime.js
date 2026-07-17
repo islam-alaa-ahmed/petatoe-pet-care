@@ -1,7 +1,7 @@
 /* PETATOE v9.1 - Unified Enterprise Localization Center v2.0 */
 (function(){
   'use strict';
-  var VERSION='9.1.0-unified-center-v2';
+  var VERSION='9.2.1-runtime-stability-phase1';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}
@@ -30,7 +30,8 @@
   function smart(key,fallback,params){return resolveValue('smartReportsSource.'+key,{fallback:fallback,params:params||{},allowKeyFallback:true});}
   function translate(key,fallback,lang){return resolveValue(key,{fallback:fallback,lang:lang});}
   function setLanguage(lang,options){var a=api();return a&&a.setLanguage?a.setLanguage(lang,options):lang;}
-  function apply(root){var a=api();if(a&&a.applySubtree)a.applySubtree(root||document);}
+  function isLoading(){var l=window.PETATOE_LOCALIZATION_LOADER;return !!(l&&l.state&&l.state.loading);}
+  function apply(root){var a=api();if(isLoading())return false;if(a&&a.applySubtree){a.applySubtree(root||document);return true;}return false;}
   function business(type,value,lang){var b=window.PETATOE_BUSINESS_DATA_I18N;return b&&b.resolve?b.resolve(type,value,lang):value;}
   function monthName(month,lang){
     var code=String(month||'');var idx=Number(month);
@@ -42,7 +43,7 @@
   function reload(){var l=window.PETATOE_LOCALIZATION_LOADER;return l&&l.load?l.load({force:true}).then(function(x){markReady('reload');return x;}):Promise.resolve(null);}
   function markReady(source){if(ready)return;ready=true;window.dispatchEvent(new CustomEvent('petatoe:localization-center-ready',{detail:{version:VERSION,source:source||'runtime'}}));listeners.splice(0).forEach(function(fn){try{fn();}catch(_){}});}
   function whenReady(fn){if(ready){fn();return;}listeners.push(fn);}
-  function getStatus(){return {version:VERSION,ready:ready,currentLanguage:currentLanguage(),registry:registry()&&registry().list?registry().list({includeDisabled:true}):[],smartPackReady:!!window.PETATOE_SMART_REPORTS_TRANSLATIONS,businessReady:!!window.PETATOE_BUSINESS_DATA_I18N};}
+  function getStatus(){return {version:VERSION,ready:ready,currentLanguage:currentLanguage(),registry:registry()&&registry().list?registry().list({includeDisabled:true}):[],smartPackReady:!!window.PETATOE_SMART_REPORTS_TRANSLATIONS,businessReady:!!window.PETATOE_BUSINESS_DATA_I18N,loading:isLoading()};}
   var center={version:VERSION,t:t,smart:smart,translate:translate,resolve:function(key,fallback,lang){return {key:key,value:translate(key,fallback,lang),language:lang||currentLanguage(),source:'unified-center'};},getLanguage:currentLanguage,setLanguage:setLanguage,apply:apply,business:business,monthName:monthName,formatDate:formatDate,reload:reload,whenReady:whenReady,getStatus:getStatus,listLanguages:function(o){var r=registry();return r&&r.list?r.list(o):[];},clearCache:function(){var c=window.PETATOE_LOCALIZATION_CACHE;if(c&&c.clear)c.clear();return reload();}};
   window.PETATOE_LOCALIZATION_CENTER=center;
   window.localize=function(key,fallback,lang){return center.translate(key,fallback,lang);};

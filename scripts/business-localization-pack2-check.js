@@ -20,6 +20,6 @@ const index=read('index.html');
   "business('payment',raw)",
   "petatoe:language-changed"
 ].forEach(token=>assert(c360.includes(token),`Customer360 is not routed through business localization: ${token}`));
-assert(/business-data-localization\.js\?v=[^"']+/.test(index),'business localization script is missing a cache-busting version');
-assert(/customer360-runtime-data-binding-fix\.js\?v=[^"']+/.test(index),'Customer360 localization script is missing a cache-busting version');
+assert(/business-data-localization\.js\?v=[^"']+/.test(index),'business localization cache version missing');
+assert(/customer360-runtime-data-binding-fix\.js\?v=[^"']+/.test(index),'Customer360 cache version missing');
 if(!process.exitCode) console.log('Business Localization Pack 2 Check: Passed');
