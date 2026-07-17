@@ -7,7 +7,7 @@
 (function(){
   'use strict';
 
-  const ENGINE_VERSION = 'v6.4.163-A5.5';
+  const ENGINE_VERSION = 'v9.0.0-BDL1';
   let cacheKey = '';
   let cacheValue = null;
   let derivedCache = Object.create(null);
@@ -195,8 +195,12 @@
 
   function buildSmartData(records, options){
     const __perfStart = perfNow();
-    const source = asArray(records);
-    const key = stableRecordsKey(source);
+    const rawSource = asArray(records);
+    const source = (window.PETATOE_BUSINESS_DATA_I18N&&typeof window.PETATOE_BUSINESS_DATA_I18N.localizeRecord==='function')
+      ? rawSource.map(function(row){return window.PETATOE_BUSINESS_DATA_I18N.localizeRecord(row);})
+      : rawSource;
+    const activeBusinessLang=(window.PETATOE_BUSINESS_DATA_I18N&&window.PETATOE_BUSINESS_DATA_I18N.getLanguage)?window.PETATOE_BUSINESS_DATA_I18N.getLanguage():(document.documentElement.lang||'ar');
+    const key = stableRecordsKey(rawSource)+'|bdl:'+activeBusinessLang;
     if(!options || !options.force){
       if(cacheValue && cacheKey === key){
         smartPerfMeasure('SmartDataEngine.cacheHit', __perfStart, {records: source.length});
