@@ -62,7 +62,7 @@ function petatoeOpenSmartRecReport(target,reportName){
   const safeTarget=valid.includes(target)?target:'overview';
   try{window.petatoeSmartRecReturnScrollY=window.scrollY||document.documentElement.scrollTop||0;}catch(e){window.petatoeSmartRecReturnScrollY=0;}
   window.petatoeSmartRecReturnActive=true;
-  window.petatoeSmartRecReturnLabel=reportName||'التقرير المرتبط';
+  window.petatoeSmartRecReturnLabel=reportName||smartInteractionT('linkedReport','التقرير المرتبط');
   setSmartTab(safeTarget);
   try{petatoeRenderSmartRecFloatingBack(safeTarget)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
   setTimeout(()=>{
@@ -88,7 +88,7 @@ function petatoeEnsureSmartRecFloatingBack(){
     btn.id='smartRecFloatingBackBtn';
     btn.type='button';
     btn.className='smart-rec-floating-back';
-    btn.setAttribute('aria-label','رجوع لتقرير التوصيات');
+    btn.setAttribute('aria-label',smartInteractionT('backToRecommendations','رجوع لتقرير التوصيات'));
     btn.addEventListener('click',petatoeBackToSmartRecommendations,{once:false});
     document.body.appendChild(btn);
   }
@@ -100,7 +100,7 @@ function petatoeRenderSmartRecFloatingBack(activeTab){
   const label=window.petatoeSmartRecReturnLabel||smartInteractionT('linkedReport','التقرير المرتبط');
   btn.classList.toggle('show',show);
   if(show){
-    window.PETATOESafeRender.setHTML(btn,`<span class="smart-rec-floating-ico">↩️</span><span class="smart-rec-floating-text"><b>رجوع للتوصيات</b><small>${htmlSafe(label)}</small></span>`);
+    window.PETATOESafeRender.setHTML(btn,`<span class="smart-rec-floating-ico">↩️</span><span class="smart-rec-floating-text"><b>${smartInteractionT('backToRecommendationsShort','رجوع للتوصيات')}</b><small>${htmlSafe(label)}</small></span>`);
   }
 }
 window.petatoeOpenSmartRecReport=petatoeOpenSmartRecReport;
@@ -151,11 +151,11 @@ function petatoeCeoKpiItems(type){
 }
 function petatoeShowCeoKpiTooltip(ev,type){
   if(petatoeCeoTooltipTimer) clearTimeout(petatoeCeoTooltipTimer);
-  const labels={growth:'فرص النمو',high:'أولوية عالية',urgent:'تدخل عاجل'};
+  const labels={growth:smartInteractionT('growthOpportunities','فرص النمو'),high:smartInteractionT('highPriority','أولوية عالية'),urgent:smartInteractionT('urgentIntervention','تدخل عاجل')};
   const items=petatoeCeoKpiItems(type).slice(0,12);
   const el=petatoeCeoTooltipEl();
   const rows=items.length?items.map((r,i)=>`<div class="ceo-tip-row"><span>${i+1}</span><b>${htmlSafe(r.title||'')}</b><small>${htmlSafe(r.report||'')}</small></div>`).join(''):'<div class="ceo-tip-empty">'+smartInteractionT('noItems','لا توجد عناصر في هذا القسم حاليًا.')+'</div>';
-  window.PETATOESafeRender.setHTML(el,`<div class="ceo-tip-head"><strong>${labels[type]||'تفاصيل'}</strong><em>${items.length} عنصر</em></div><div class="ceo-tip-body">${rows}</div>`);
+  window.PETATOESafeRender.setHTML(el,`<div class="ceo-tip-head"><strong>${labels[type]||smartInteractionT('details','تفاصيل')}</strong><em>${smartInteractionT('itemCount','{count} عنصر',{count:items.length})}</em></div><div class="ceo-tip-body">${rows}</div>`);
   el.classList.add('show');
   const anchor=ev.currentTarget||ev.target;
   const rect=anchor.getBoundingClientRect();
