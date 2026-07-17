@@ -543,12 +543,12 @@ function renderSmartReports(){
   const customerCompareBaseStart=new Date(customerCompareBaseYear,0,1,0,0,0,0);
   const customerCompareBaseEnd=new Date(customerCompareBaseYear,customerCompareCutoffMonth,customerCompareCutoffDay,23,59,59,999);
   const customerComparePeriodDays=Math.round((new Date(customerCompareTargetYear,customerCompareCutoffMonth,customerCompareCutoffDay)-new Date(customerCompareTargetYear,0,1))/86400000)+1;
-  const customerComparePeriodModeLabel=customerCompareUseFullYear?'السنة كاملة':'حتى الفترة الحالية';
+  const customerComparePeriodModeLabel=customerCompareUseFullYear?smartReportT('period.fullYear','السنة كاملة'):smartReportT('period.currentPeriod','حتى الفترة الحالية');
   const customerComparePeriodLabel=customerCompareUseFullYear
-    ? `وضع المقارنة: السنة كاملة — من 01 يناير إلى 31 ديسمبر ${customerCompareTargetYear} مقابل نفس السنة كاملة ${customerCompareBaseYear}.`
+    ? smartReportT('period.fullYearComparison','وضع المقارنة: السنة كاملة — من 01 يناير إلى 31 ديسمبر {targetYear} مقابل نفس السنة كاملة {baseYear}.',{targetYear:customerCompareTargetYear,baseYear:customerCompareBaseYear})
     : (customerCompareLatestDate
-      ? `وضع المقارنة: حتى الفترة الحالية — من 01 يناير ${customerCompareTargetYear} إلى ${fmtDateAr(customerCompareTargetEnd)} مقابل نفس الفترة من ${customerCompareBaseYear} حتى ${fmtDateAr(customerCompareBaseEnd)} — آخر فاتورة مرفوعة: ${htmlSafe(String(customerCompareLatestRecord.invoice||'—'))}`
-      : `وضع المقارنة: حتى الفترة الحالية — لا توجد فواتير مؤرخة في سنة المقارنة ${customerCompareTargetYear} ضمن الفلتر الحالي.`);
+      ? smartReportT('period.ytdComparison','وضع المقارنة: حتى الفترة الحالية — من 01 يناير {targetYear} إلى {targetEnd} مقابل نفس الفترة من {baseYear} حتى {baseEnd} — آخر فاتورة مرفوعة: {invoice}',{targetYear:customerCompareTargetYear,targetEnd:fmtDateAr(customerCompareTargetEnd),baseYear:customerCompareBaseYear,baseEnd:fmtDateAr(customerCompareBaseEnd),invoice:htmlSafe(String(customerCompareLatestRecord.invoice||'—'))})
+      : smartReportT('period.noDatedInvoices','وضع المقارنة: حتى الفترة الحالية — لا توجد فواتير مؤرخة في سنة المقارنة {targetYear} ضمن الفلتر الحالي.',{targetYear:customerCompareTargetYear}));
   const customerCompareInSelectedPeriod=function(r,yy){
     const d=smartDateValue(r); if(!d) return false;
     if(yy===customerCompareTargetYear) return d>=customerCompareTargetStart && d<=customerCompareTargetEnd;
@@ -556,9 +556,9 @@ function renderSmartReports(){
     return false;
   };
   const customerCompareYearItems=customerCompareAvailableYears.map(yy=>({value:String(yy),text:String(yy)}));
-  const customerCompareCarItems=customerCompareCars.map(c=>({value:String(c),text:c==='all'?'كل السيارات':String(c)}));
-  const customerCompareTopItems=['10','20','50','all'].map(v=>({value:v,text:v==='all'?'الكل':'أعلى '+v}));
-  const customerComparePeriodItems=[{value:'ytd',text:'حتى الفترة الحالية'},{value:'full',text:'السنة كاملة'}];
+  const customerCompareCarItems=customerCompareCars.map(c=>({value:String(c),text:c==='all'?smartReportT('filters.allVehicles','كل السيارات'):String(c)}));
+  const customerCompareTopItems=['10','20','50','all'].map(v=>({value:v,text:v==='all'?smartReportT('filters.all','الكل'):smartReportT('filters.topN','أعلى {count}',{count:v})}));
+  const customerComparePeriodItems=[{value:'ytd',text:smartReportT('period.currentPeriod','حتى الفترة الحالية')},{value:'full',text:smartReportT('period.fullYear','السنة كاملة')}];
   const customerCompareFilterDropdown=function(field,label,current,items){
     // PETATOE v5.1.79 - use native select controls for Customer Compare only.
     // Previous custom dropdown UI had no reliable scoped CSS/menu behavior, so values did not consistently update.
@@ -798,11 +798,11 @@ function renderSmartReports(){
   const inactiveCritical=inactiveCustomers.filter(x=>x.daysSince>120).length;
   const topInactive=inactiveCustomers[0]||{name:'—',lostRevenue:0,daysSince:0};
   const inactiveBuckets=[
-    {label:'0-30 يوم',min:0,max:30},
-    {label:'31-60 يوم',min:31,max:60},
-    {label:'61-90 يوم',min:61,max:90},
-    {label:'91-120 يوم',min:91,max:120},
-    {label:'120+ يوم',min:121,max:99999}
+    {label:smartReportT('period.days0to30','0-30 يوم'),min:0,max:30},
+    {label:smartReportT('period.days31to60','31-60 يوم'),min:31,max:60},
+    {label:smartReportT('period.days61to90','61-90 يوم'),min:61,max:90},
+    {label:smartReportT('period.days91to120','91-120 يوم'),min:91,max:120},
+    {label:smartReportT('period.days120Plus','120+ يوم'),min:121,max:99999}
   ].map(b=>({label:b.label,count:allCustomerValueRows.filter(x=>x.daysSince>=b.min && x.daysSince<=b.max).length}));
   const inactiveTrendMap={};
   inactiveCustomers.forEach(x=>{
@@ -810,7 +810,7 @@ function renderSmartReports(){
     const k=`${x.lastDate.getFullYear()}-${String(x.lastDate.getMonth()+1).padStart(2,'0')}`;
     inactiveTrendMap[k]=(inactiveTrendMap[k]||0)+1;
   });
-  const inactiveTrendRows=Object.entries(inactiveTrendMap).sort().slice(-12).map(([k,count])=>{const [yy,mm]=k.split('-');return {key:k,label:`${MAR[MONTHS[(+mm)-1]]} ${yy}`,count};});
+  const inactiveTrendRows=Object.entries(inactiveTrendMap).sort().slice(-12).map(([k,count])=>{const [yy,mm]=k.split('-');const monthKey=MONTHS[(+mm)-1];return {key:k,label:`${smartReportMonth(monthKey,MAR[monthKey])} ${yy}`,count};});
   const inactiveLostTooltipHtml=(x)=>{
     const activeMonths=Math.max(1,(x.visitMonths||[]).length);
     const completedMissedMonths=Math.max(0,Math.floor(x.daysSince/30));
@@ -1111,8 +1111,8 @@ function renderSmartReports(){
         <div class="sales-intel-panel"><div class="chart-head sales-intel-monthly-head" style="align-items:flex-start;gap:12px;flex-wrap:wrap"><div><h3>📈 ${smartReportHtml('sales.monthlyTrendTitle','اتجاه المبيعات الشهري')}</h3></div>${salesIntelMonthlyFilterHtml()}<div class="report-control-group sales-intel-monthly-modes" style="margin-inline-start:auto">${salesIntelMonthlyMetricButtons()}</div></div><div class="sales-intel-chart tall"><canvas id="salesIntelMonthly"></canvas></div></div>
         <div class="sales-intel-panel"><div class="chart-head sales-intel-month-compare-head" style="align-items:flex-start;gap:12px;flex-wrap:wrap"><div><h3>📊 ${smartReportHtml('sales.monthOverMonthTitle','مقارنة شهر بشهر')}</h3></div><div class="report-control-group sales-intel-month-compare-modes" style="margin-inline-start:auto">${salesIntelMonthCompareMetricButtons()}</div></div><div class="sales-intel-chart"><canvas id="salesIntelMonthCompare"></canvas></div><div class="sales-intel-table" style="margin-top:10px"><table><thead><tr><th>${smartReportHtml('table.period','الفترة')}</th><th>${smartReportHtml('compare.current','الحالي')}</th><th>${smartReportHtml('compare.previous','السابق')}</th><th>${smartReportHtml('compare.difference','الفرق')}</th><th>%</th></tr></thead><tbody>${salesComparisonRows.map(r=>`<tr><td>${r.tableLabel}</td><td>${money(r.current)}</td><td>${money(r.previous)}</td><td>${money(r.diff)}</td><td class="${r.diff>=0?'metric-up':'metric-down'}" style="color:${r.diff>=0?'#22c55e':'#ef4444'};font-weight:900">${r.pct.toFixed(1)}%</td></tr>`).join('')}</tbody></table></div></div>
         <div class="sales-intel-panel">
-          <h3>📅 مقارنة سنة بسنة</h3>
-          <p>${salesPrevYear} مقابل ${salesCurrentYear} شهريًا.</p>
+          <h3>📅 ${smartReportHtml('sales.yearOverYearTitle','مقارنة سنة بسنة')}</h3>
+          <p>${smartReportHtml('sales.yearOverYearSubtitle','{previousYear} مقابل {currentYear} شهريًا.',{previousYear:salesPrevYear,currentYear:salesCurrentYear})}</p>
           <div class="yoy-control-panel">
             <div class="yoy-year-buttons">${salesYoYYearButtons}</div>
             <div class="yoy-custom-row">
@@ -1121,10 +1121,10 @@ function renderSmartReports(){
                 ${smartReportHtml('compare.customTwoYears','مقارنة مخصصة بين سنتين')}
               </label>
               <div class="yoy-selects ${salesYoYCustomMode?'show':''}">
-                <label>سنة الأساس
+                <label>${smartReportHtml('compare.baseYear','سنة الأساس')}
                   <select data-smart-action="sales-yoy-base">${salesYoYOptions}</select>
                 </label>
-                <label>سنة المقارنة
+                <label>${smartReportHtml('compare.targetYear','سنة المقارنة')}
                   <select data-smart-action="sales-yoy-compare">${salesYoYOptions}</select>
                 </label>
               </div>
@@ -1151,7 +1151,7 @@ function renderSmartReports(){
     <div class="smart-tab-section" data-smart-section="sales">
       <div class="card"><div class="chart-head"><div><b>Monthly Trend 🗓️</b></div><div><div class="year-strip" id="smartSalesYearBtns"></div><div class="report-control-group" id="smartSalesTaxBtns1" style="margin-top:10px"></div></div></div><div class="chart xl"><canvas id="smartSalesTrendChart"></canvas></div></div>
       <div class="card" style="margin-top:16px"><div class="chart-head" style="align-items:flex-start;gap:12px;flex-wrap:wrap"><div><b id="smartQuarterTitle">Quarterly Comparison 🗓️</b><div id="smartQuarterCompareControls" class="smart-quarter-control-panel"></div></div><div class="report-control-group" id="smartSalesTaxBtns2"></div></div><div class="chart xl"><canvas id="smartQuarterChart"></canvas></div></div>
-      <div class="card" style="margin-top:16px"><div class="card-title"><b>📊 تفاصيل الأرباع</b><div class="report-control-group" id="smartSalesTaxBtns3"></div></div><div class="table-wrap compact-table"><table id="smartQuarterTable"></table></div></div>
+      <div class="card" style="margin-top:16px"><div class="card-title"><b>📊 ${smartReportHtml('sales.quarterDetails','تفاصيل الأرباع')}</b><div class="report-control-group" id="smartSalesTaxBtns3"></div></div><div class="table-wrap compact-table"><table id="smartQuarterTable"></table></div></div>
     </div>
 
     <div class="smart-tab-section" data-smart-section="customers">
@@ -1252,20 +1252,20 @@ function renderSmartReports(){
     <div class="smart-tab-section" data-smart-section="vehicles">
       <div class="smart-vehicles-stack">
         <div class="card smart-vehicle-report smart-vehicle-details-report">
-          <div class="chart-head"><div><b>تفاصيل السيارات</b></div><div class="year-strip" id="smartVanDetailsBtns"></div></div>
+          <div class="chart-head"><div><b>${smartReportHtml('vehicles.details','تفاصيل السيارات')}</b></div><div class="year-strip" id="smartVanDetailsBtns"></div></div>
           <div class="table-wrap compact-table"><table id="smartVansTable"></table></div>
         </div>
         <div class="card smart-vehicle-report smart-vehicle-monthly-report">
-          <div class="chart-head"><div><b>🚐 مبيعات السيارات شهرياً</b></div><div class="year-strip" id="smartVanBarBtns"></div></div>
+          <div class="chart-head"><div><b>🚐 ${smartReportHtml('vehicles.monthlySales','مبيعات السيارات شهرياً')}</b></div><div class="year-strip" id="smartVanBarBtns"></div></div>
           <div class="chart xl"><canvas id="smartVansMonthlyBars"></canvas></div>
-          <div class="sar-note">جميع القيم بالريال السعودي وتشمل ضريبة القيمة المضافة</div>
+          <div class="sar-note">${smartReportHtml('vehicles.valuesIncludeVat','جميع القيم بالريال السعودي وتشمل ضريبة القيمة المضافة')}</div>
         </div>
         <div class="card smart-vehicle-report smart-vehicle-distribution-report">
-          <div class="chart-head"><div><b>🥧 توزيع مبيعات السيارات</b><br><small id="smartVansDistSub"></small></div><div class="year-strip" id="smartVanPieBtns"></div></div>
+          <div class="chart-head"><div><b>🥧 ${smartReportHtml('vehicles.salesDistribution','توزيع مبيعات السيارات')}</b><br><small id="smartVansDistSub"></small></div><div class="year-strip" id="smartVanPieBtns"></div></div>
           <div class="grid smart-vehicle-distribution-grid"><div class="value-list" id="smartVanPieValues"></div><div class="chart"><canvas id="smartVansPieChart"></canvas></div></div>
         </div>
         <div class="card smart-vehicle-report smart-vehicle-performance-report">
-          <div class="chart-head"><div><b>📈 أداء السيارات الشهري</b></div><div class="year-strip" id="smartVanLineBtns"></div></div>
+          <div class="chart-head"><div><b>📈 ${smartReportHtml('vehicles.monthlyPerformance','أداء السيارات الشهري')}</b></div><div class="year-strip" id="smartVanLineBtns"></div></div>
           <div class="chart"><canvas id="smartVansCompareChart"></canvas></div>
         </div>
       </div>
@@ -1275,7 +1275,7 @@ function renderSmartReports(){
     <div class="smart-tab-section" data-smart-section="advanced">
       <div class="card" style="margin-top:16px" id="reportsCenter">
         <div class="section-head" style="margin-bottom:10px"><div><h2>📑 مركز التقارير المتقدمة</h2><p>مقارنات شاملة وبيانات تفصيلية تدعم قراراتك</p></div></div>
-        <div class="report-tabs"><button class="chip active" id="tab_months" data-smart-action="report-mode" data-mode="months">مقارنة الشهور</button><button class="chip" id="tab_quarters" data-smart-action="report-mode" data-mode="quarters">مقارنة الأرباع</button><button class="chip" id="tab_payment" data-smart-action="report-mode" data-mode="payment">طرق الدفع شهرياً</button></div>
+        <div class="report-tabs"><button class="chip active" id="tab_months" data-smart-action="report-mode" data-mode="months">${smartReportHtml('advanced.compareMonths','مقارنة الشهور')}</button><button class="chip" id="tab_quarters" data-smart-action="report-mode" data-mode="quarters">${smartReportHtml('advanced.compareQuarters','مقارنة الأرباع')}</button><button class="chip" id="tab_payment" data-smart-action="report-mode" data-mode="payment">${smartReportHtml('advanced.monthlyPayments','طرق الدفع شهرياً')}</button></div>
         <div id="reportDynamic"></div>
       </div>
     </div>
