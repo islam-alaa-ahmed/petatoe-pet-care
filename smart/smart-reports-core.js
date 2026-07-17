@@ -22,7 +22,11 @@ function smartReportInterpolate(value,params){
 function smartReportHtml(key, fallback, params){
   return htmlSafe(smartReportT(key,fallback,params));
 }
-function smartServiceDisplay(v){try{return window.businessDataT?window.businessDataT('service',v):v}catch(_){return v}}
+function smartBusinessDisplay(type,v){try{return window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.business==='function'?window.PETATOE_LOCALIZATION_CENTER.business(type,v):v}catch(_){return v}}
+function smartServiceDisplay(v){return smartBusinessDisplay('service',v)}
+function smartVehicleDisplay(v){return smartBusinessDisplay('vehicle',v)}
+function smartCustomerDisplay(v){return smartBusinessDisplay('customer',v)}
+function smartPaymentDisplay(v){return smartBusinessDisplay('payment',v)}
 function smartFormatDate(value,options){
   try{
     var center=window.PETATOE_LOCALIZATION_CENTER;
@@ -79,9 +83,9 @@ function renderSmartReports(){
   const clients=[...new Set(data.map(r=>r.client).filter(Boolean))];
   const invoices=[...new Set(data.map(r=>r.invoice).filter(Boolean))];
   const serviceSum=(smartEngineData&&smartEngineData.indexes&&smartEngineData.indexes.services?smartEngineData.indexes.services.map(x=>[smartServiceDisplay(x.name),x.total]):Object.entries(groupSum(data,'item')).map(x=>[smartServiceDisplay(x[0]),x[1]])).filter(([name,val])=>String(name||'').trim() && String(name)!=='غير محدد').sort((a,b)=>b[1]-a[1]);
-  const clientSum=(smartEngineData&&smartEngineData.indexes&&smartEngineData.indexes.customers?smartEngineData.indexes.customers.map(x=>[x.name,x.total]):Object.entries(groupSum(data,'client'))).sort((a,b)=>b[1]-a[1]);
-  const vanSum=(smartEngineData&&smartEngineData.indexes&&smartEngineData.indexes.vehicles?smartEngineData.indexes.vehicles.map(x=>[x.name,x.total]):Object.entries(groupSum(data,'van'))).sort((a,b)=>b[1]-a[1]);
-  const paySum=(smartEngineData&&smartEngineData.indexes&&smartEngineData.indexes.payments?smartEngineData.indexes.payments.map(x=>[x.name,x.total]):Object.entries(groupSum(data,'pay'))).sort((a,b)=>b[1]-a[1]);
+  const clientSum=(smartEngineData&&smartEngineData.indexes&&smartEngineData.indexes.customers?smartEngineData.indexes.customers.map(x=>[smartCustomerDisplay(x.name),x.total]):Object.entries(groupSum(data,'client')).map(x=>[smartCustomerDisplay(x[0]),x[1]])).sort((a,b)=>b[1]-a[1]);
+  const vanSum=(smartEngineData&&smartEngineData.indexes&&smartEngineData.indexes.vehicles?smartEngineData.indexes.vehicles.map(x=>[smartVehicleDisplay(x.name),x.total]):Object.entries(groupSum(data,'van')).map(x=>[smartVehicleDisplay(x[0]),x[1]])).sort((a,b)=>b[1]-a[1]);
+  const paySum=(smartEngineData&&smartEngineData.indexes&&smartEngineData.indexes.payments?smartEngineData.indexes.payments.map(x=>[smartPaymentDisplay(x.name),x.total]):Object.entries(groupSum(data,'pay')).map(x=>[smartPaymentDisplay(x[0]),x[1]])).sort((a,b)=>b[1]-a[1]);
   const topService=serviceSum[0]||['-',0], topClient=clientSum[0]||['-',0], topVan=vanSum[0]||['-',0], topPay=paySum[0]||['-',0];
   const dateRange=firstLastDates(data);
   const serviceTop5Share=safeDiv(serviceSum.slice(0,5).reduce((s,x)=>s+x[1],0),total)*100;

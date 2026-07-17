@@ -2,7 +2,7 @@
    Localizes user-maintained master-data display names without changing canonical stored values. */
 (function(){
   'use strict';
-  var VERSION='9.0.0-bdl-phase1';
+  var VERSION='9.1.7-enterprise-business-localization';
   var cache={signature:'',maps:null};
 
   function text(v){return String(v==null?'':v).trim();}
@@ -47,6 +47,28 @@
     cache={signature:signature,maps:maps};
     return maps;
   }
+
+  var STATIC_BUSINESS_EN=Object.freeze({
+    payment:Object.freeze({
+      'كاش':'Cash','نقدي':'Cash','نقدًا':'Cash','نقدا':'Cash','مدى':'Mada','شبكة':'Card / POS',
+      'تحويل':'Bank Transfer','تحويل بنكي':'Bank Transfer','آجل':'Credit','غير محدد':'Unspecified'
+    }),
+    customerStatus:Object.freeze({
+      'نشط':'Active','غير نشط':'Inactive','مفقود':'Lost','عميل جديد':'New Customer','جديد':'New',
+      'مؤكد':'Confirmed','ملغي':'Cancelled','مكتمل':'Completed','قيد التنفيذ':'In Progress','غير محدد':'Unspecified'
+    }),
+    appointmentStatus:Object.freeze({
+      'مؤكد':'Confirmed','ملغي':'Cancelled','مكتمل':'Completed','قيد التنفيذ':'In Progress','جديد':'New','غير محدد':'Unspecified'
+    }),
+    generic:Object.freeze({'غير محدد':'Unspecified'})
+  });
+  function staticBusinessValue(type,value,code){
+    var original=text(value),c=text(code||lang()).toLowerCase();
+    if(!original||c==='ar')return original;
+    var group=STATIC_BUSINESS_EN[type]||STATIC_BUSINESS_EN.generic;
+    return group&&group[original]?group[original]:original;
+  }
+
   var SERVICE_EXACT_EN=Object.freeze({
     'الشاملة - كلب متوسط':'Comprehensive - Medium Dog',
     'الشاملة - قط متوسط':'Comprehensive - Medium Cat',
@@ -92,6 +114,8 @@
     var map=build()[type]||{}; var item=map[original.toLowerCase()];
     var c=text(code||lang()).toLowerCase();
     if(!item){
+      var staticValue=staticBusinessValue(type,original,c);
+      if(staticValue!==original)return staticValue;
       if(type==='service'&&c==='en'){var serviceValue=translateServiceName(original,c);if(serviceValue&&serviceValue!==original)return serviceValue;}
       try{
         if(c!=='ar'&&window.PETATOE_I18N&&typeof window.PETATOE_I18N.translateRuntime==='function'){
@@ -123,13 +147,17 @@
     var service=text(row.item||row.service||row.serviceName||row.product||row['الخدمة']);
     var vehicle=text(row.van||row.vehicle||row.car||row.carName||row['السيارة']);
     var customer=text(row.client||row.customer||row.customerName||row.clientName||row['العميل']||row['اسم العميل']);
+    var payment=text(row.pay||row.payment||row.paymentMethod||row.payment_method||row['طريقة الدفع']);
+    var customerStatus=text(row.customerStatus||row.customer_status||row.status||row['الحالة']);
     if(service){out.__serviceCanonical=service;out.item=resolve('service',service,code);if('service' in out)out.service=out.item;if('serviceName' in out)out.serviceName=out.item;}
     if(vehicle){out.__vehicleCanonical=vehicle;out.van=resolve('vehicle',vehicle,code);if('vehicle' in out)out.vehicle=out.van;if('car' in out)out.car=out.van;}
     if(customer){out.__customerCanonical=customer;out.client=resolve('customer',customer,code);if('customer' in out)out.customer=out.client;if('customerName' in out)out.customerName=out.client;}
+    if(payment){out.__paymentCanonical=payment;out.pay=resolve('payment',payment,code);if('payment' in out)out.payment=out.pay;if('paymentMethod' in out)out.paymentMethod=out.pay;if('payment_method' in out)out.payment_method=out.pay;}
+    if(customerStatus){out.__statusCanonical=customerStatus;var localizedStatus=resolve('customerStatus',customerStatus,code);if('customerStatus' in out)out.customerStatus=localizedStatus;if('customer_status' in out)out.customer_status=localizedStatus;if('status' in out)out.status=localizedStatus;}
     return out;
   }
   function invalidate(){cache={signature:'',maps:null};return true;}
-  window.PETATOE_BUSINESS_DATA_I18N={version:'9.0.0-bdl-phase3',resolve:resolve,canonical:canonical,localizeRecord:localizeRecord,translateServiceName:translateServiceName,invalidate:invalidate,getLanguage:lang};
+  window.PETATOE_BUSINESS_DATA_I18N={version:VERSION,resolve:resolve,canonical:canonical,localizeRecord:localizeRecord,translateServiceName:translateServiceName,invalidate:invalidate,getLanguage:lang};
   window.businessDataT=window.businessDataT||function(type,value,code){return resolve(type,value,code);};
   ['petatoe:language-changed','petatoe:reference-registry-updated','petatoe:operations-storage-change'].forEach(function(evt){window.addEventListener(evt,function(){invalidate();try{if(window.PETATOESmartReports&&typeof window.PETATOESmartReports.clearCache==='function')window.PETATOESmartReports.clearCache('business-data-localization');}catch(_e){}try{if(typeof window.renderSmartReports==='function'&&document.getElementById('smartReportsArea'))window.renderSmartReports();}catch(_e2){}});});
 })();
