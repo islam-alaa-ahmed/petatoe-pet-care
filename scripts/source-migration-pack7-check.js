@@ -18,8 +18,8 @@ const forbidden=[
   "t.textContent='✏️ تعديل موعد'","t.textContent='➕ إضافة موعد جديد'"
 ];
 for(const text of forbidden){if(engine.includes(text))fail('Direct Arabic UI source remains: '+text)}
-if(!index.includes('i18n/operations-source.js?v=9.2.8-source-migration-pack7'))fail('Operations dictionary cache token is not updated');
-if(!index.includes('operations/operations-legacy-engine.js?v=9.2.8-source-migration-pack7'))fail('Operations engine cache token is not updated');
+if(!/i18n\/operations-source\.js\?v=9\.2\.(?:8|9)-source-migration-pack(?:7|8)/.test(index))fail('Operations dictionary cache token is not a valid Pack 7+ version');
+if(!/operations\/operations-legacy-engine\.js\?v=9\.2\.(?:8|9)-source-migration-pack(?:7|8)/.test(index))fail('Operations engine cache token is not a valid Pack 7+ version');
 const enMatch=dict.match(/var en=\{([\s\S]*?)\n  \};/);
 if(!enMatch)fail('English dictionary not found');
 if(/[\u0600-\u06FF]/.test(enMatch[1]))fail('Arabic characters found inside English operations dictionary');

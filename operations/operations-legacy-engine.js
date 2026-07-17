@@ -18,6 +18,7 @@
 (function(){
   'use strict';
   function opT(key,params){return window.PETATOE_OPERATIONS_I18N?window.PETATOE_OPERATIONS_I18N.t(key,params):key;}
+  function opStatusT(status){var map={'مجدول':'statusScheduled','في الطريق':'statusOnTheWay','وصل العميل':'statusArrived','بدأت الجلسة':'statusStarted','تمت الجلسة':'statusCompleted','تم التحصيل':'statusCollected','مغلق':'statusClosed','مؤكد':'statusConfirmed','غير مكتملة':'statusIncomplete','مؤجل':'statusPostponed','ملغي':'statusCancelled','تم':'statusCompleted'};return opT(map[String(status||'')]||'statusUnknown');}
   if(window.PETATOEAppointments) return;
   var KEY='petatoe_appointments_v1';
   var MASTER_KEY='petatoe_appointments_master_data_v1';
@@ -1151,17 +1152,17 @@
     var monthFinancial=all.filter(function(r){return inRange(r,monthFrom,monthTo)}).reduce(function(a,r){r=calcFinancials(r);a.total+=r.totalAmount;a.paid+=r.paidAmount;a.remaining+=r.remainingAmount;return a},{total:0,paid:0,remaining:0});
     var alertCount=buildAlerts(all).length;
     var cards=[
-      ['🔔','تنبيهات نشطة',alertCount],
-      ['📅','مواعيد اليوم',todayRows],
-      ['🌅','مواعيد الغد',tomorrowRows],
-      ['🗓️','مواعيد هذا الشهر',monthRows],
-      ['💰','إيراد الشهر',money(monthFinancial.total)],
-      ['✅','محصل الشهر',money(monthFinancial.paid)],
-      ['⏳','متبقي الشهر',money(monthFinancial.remaining)]
+      ['🔔',opT('activeAlerts'),alertCount],
+      ['📅',opT('todayAppointments'),todayRows],
+      ['🌅',opT('tomorrowAppointments'),tomorrowRows],
+      ['🗓️',opT('monthAppointments'),monthRows],
+      ['💰',opT('monthRevenue'),money(monthFinancial.total)],
+      ['✅',opT('monthCollected'),money(monthFinancial.paid)],
+      ['⏳',opT('monthRemaining'),money(monthFinancial.remaining)]
     ];
     safeHtml(el, cards.map(function(c){return '<div class="appointments-kpi"><span class="ico">'+c[0]+'</span><div><span>'+esc(c[1])+'</span><b>'+c[2]+'</b></div></div>'}).join(''), 'operations legacy render');
   }
-  function renderStatusFilter(){var sel=byId('appointmentStatusFilter');if(!sel)return;var old=sel.value||'all';safeHtml(sel, '<option value="all">كل الحالات</option>'+STATUS_FLOW.map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>'}).join(''), 'operations legacy render');sel.value=(old==='all'||STATUS_FLOW.indexOf(normalizeStatus(old))>-1)?(old==='all'?'all':normalizeStatus(old)):'all'}
+  function renderStatusFilter(){var sel=byId('appointmentStatusFilter');if(!sel)return;var old=sel.value||'all';safeHtml(sel, '<option value="all">'+esc(opT('allStatuses'))+'</option>'+STATUS_FLOW.map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>'}).join(''), 'operations legacy render');sel.value=(old==='all'||STATUS_FLOW.indexOf(normalizeStatus(old))>-1)?(old==='all'?'all':normalizeStatus(old)):'all'}
   function renderSelectFilter(id,placeholder,values){
     var sel=byId(id);if(!sel)return;var old=sel.value||'all';
     var clean=uniqueSorted(values||[]);
@@ -1171,10 +1172,10 @@
   function renderDynamicFilters(){
     var rows=read();
     renderStatusFilter();
-    renderSelectFilter('appointmentAnimalFilter','كل أنواع الحيوانات',rows.map(function(r){return r.animalType}));
-    renderSelectFilter('appointmentGroomerFilter','كل الجرومرز',rows.map(function(r){return r.groomer}));
-    renderSelectFilter('appointmentDriverFilter','كل السائقين',rows.map(function(r){return r.driver}));
-    renderSelectFilter('appointmentVehicleFilter','كل السيارات',rows.map(function(r){return r.vehicle}));
+    renderSelectFilter('appointmentAnimalFilter',opT('allAnimalTypes'),rows.map(function(r){return r.animalType}));
+    renderSelectFilter('appointmentGroomerFilter',opT('allGroomers'),rows.map(function(r){return r.groomer}));
+    renderSelectFilter('appointmentDriverFilter',opT('allDrivers'),rows.map(function(r){return r.driver}));
+    renderSelectFilter('appointmentVehicleFilter',opT('allVehicles'),rows.map(function(r){return r.vehicle}));
   }
   function applyQuickActive(){
     document.querySelectorAll('[data-appointment-quick]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-appointment-quick')===quickRange)});
@@ -1189,15 +1190,15 @@
     else{setVal('appointmentDateFromFilter','');setVal('appointmentDateToFilter','')}
     render();
   }
-  function appointmentAnimalSummary(r){return [r.animalType,r.breed,r.size,r.petName, r.petCount?('عدد '+r.petCount):''].filter(Boolean).join(' - ')}
-  function appointmentStatusBadge(r){var st=normalizeStatus((r&&r.status)||'مجدول');return '<span class="appointments-status '+statusClass(st)+'">'+esc(st)+'</span>'}
+  function appointmentAnimalSummary(r){return [r.animalType,r.breed,r.size,r.petName, r.petCount?opT('countValue',{count:r.petCount}):''].filter(Boolean).join(' - ')}
+  function appointmentStatusBadge(r){var st=normalizeStatus((r&&r.status)||'مجدول');return '<span class="appointments-status '+statusClass(st)+'">'+esc(opStatusT(st))+'</span>'}
   function appointmentDetailItem(label,value,extraClass){return '<div class="appointment-detail-item '+(extraClass||'')+'"><span>'+esc(label)+'</span><b>'+esc((value===0||value)?value:'-')+'</b></div>'}
   var appointmentDetailsHoverTimer=null;
   var appointmentDetailsActiveId=null;
   function appointmentDetailsFinancialClass(label,value){
     var n=Number(value||0);
-    if(label==='المتبقي'&&n>0)return ' danger';
-    if(label==='المحصل'&&n>=0)return ' success';
+    if(label===opT('remaining')&&n>0)return ' danger';
+    if(label===opT('collected')&&n>=0)return ' success';
     return '';
   }
   function appointmentPopoverItem(label,value,icon,kind){
@@ -1209,18 +1210,18 @@
     var time=[r.start,r.end].filter(Boolean).join(' - ')||'-';
     var st=normalizeStatus((r&&r.status)||'مجدول');
     return '<div class="appointment-popover-head">'
-      +'<div><small>تفاصيل الموعد</small><h3>'+esc(r.client||'-')+'</h3><p>'+esc([r.date,time].filter(Boolean).join(' • '))+'</p></div>'
+      +'<div><small>'+esc(opT('appointmentDetails'))+'</small><h3>'+esc(r.client||'-')+'</h3><p>'+esc([r.date,time].filter(Boolean).join(' • '))+'</p></div>'
       +appointmentStatusBadge(r)
       +'</div>'
-      +'<div class="appointment-popover-hero"><div><span>الحيوان</span><b>'+esc(r.petName||r.animalType||'-')+'</b><small>'+esc(animal||'-')+'</small></div><div><span>القيمة</span><b>'+money(r.totalAmount)+'</b><small>'+esc(r.collectionStatus||'-')+'</small></div></div>'
+      +'<div class="appointment-popover-hero"><div><span>'+esc(opT('animal'))+'</span><b>'+esc(r.petName||r.animalType||'-')+'</b><small>'+esc(animal||'-')+'</small></div><div><span>'+esc(opT('value'))+'</span><b>'+money(r.totalAmount)+'</b><small>'+esc(r.collectionStatus||'-')+'</small></div></div>'
       +'<div class="appointment-popover-grid">'
-      +'<div class="appointment-popover-section"><h4>👤 معلومات العميل</h4>'+appointmentPopoverItem('اسم العميل',r.client,'👤')+appointmentPopoverItem('الهاتف',r.phone,'☎')+appointmentPopoverItem('العنوان',r.address,'📍',' wide')+'</div>'
-      +'<div class="appointment-popover-section"><h4>🐾 معلومات الجلسة</h4>'+appointmentPopoverItem('نوع الحيوان',r.animalType,'🐾')+appointmentPopoverItem('السلالة',r.breed,'🧬')+appointmentPopoverItem('الحجم',r.size,'↔')+appointmentPopoverItem('اسم الحيوان',r.petName,'🏷')+appointmentPopoverItem('العدد',r.petCount||1,'#')+appointmentPopoverItem('الخدمة',r.service,'🛁')+'</div>'
-      +'<div class="appointment-popover-section"><h4>🚐 التشغيل</h4>'+appointmentPopoverItem('الجرومر',r.groomer,'✂')+appointmentPopoverItem('السائق',r.driver,'🧑‍✈️')+appointmentPopoverItem('السيارة',r.vehicle,'🚐')+'</div>'
-      +'<div class="appointment-popover-section"><h4>💰 المالية</h4>'+appointmentPopoverItem('طريقة الدفع',r.paymentMethod,'💳')+appointmentPopoverItem('الإجمالي',money(r.totalAmount),'₪')+appointmentPopoverItem('الخصم',money(r.discount),'٪')+appointmentPopoverItem('المحصل',money(r.paidAmount),'✓',' success')+appointmentPopoverItem('المتبقي',money(r.remainingAmount),'!',' danger')+'</div>'
+      +'<div class="appointment-popover-section"><h4>👤 '+esc(opT('customerInformation'))+'</h4>'+appointmentPopoverItem(opT('customerName'),r.client,'👤')+appointmentPopoverItem(opT('phone'),r.phone,'☎')+appointmentPopoverItem(opT('address'),r.address,'📍',' wide')+'</div>'
+      +'<div class="appointment-popover-section"><h4>🐾 '+esc(opT('sessionInformation'))+'</h4>'+appointmentPopoverItem(opT('animalType'),r.animalType,'🐾')+appointmentPopoverItem(opT('breed'),r.breed,'🧬')+appointmentPopoverItem(opT('size'),r.size,'↔')+appointmentPopoverItem(opT('petName'),r.petName,'🏷')+appointmentPopoverItem(opT('count'),r.petCount||1,'#')+appointmentPopoverItem(opT('service'),r.service,'🛁')+'</div>'
+      +'<div class="appointment-popover-section"><h4>🚐 '+esc(opT('operations'))+'</h4>'+appointmentPopoverItem(opT('groomer'),r.groomer,'✂')+appointmentPopoverItem(opT('driver'),r.driver,'🧑‍✈️')+appointmentPopoverItem(opT('vehicle'),r.vehicle,'🚐')+'</div>'
+      +'<div class="appointment-popover-section"><h4>💰 '+esc(opT('financials'))+'</h4>'+appointmentPopoverItem(opT('paymentMethod'),r.paymentMethod,'💳')+appointmentPopoverItem(opT('total'),money(r.totalAmount),'₪')+appointmentPopoverItem(opT('discount'),money(r.discount),'٪')+appointmentPopoverItem(opT('collected'),money(r.paidAmount),'✓',' success')+appointmentPopoverItem(opT('remaining'),money(r.remainingAmount),'!',' danger')+'</div>'
       +'</div>'
-      +'<div class="appointment-popover-notes"><span>📝 ملاحظات</span><b>'+esc(r.notes||'-')+'</b></div>'
-      +'<div class="appointment-popover-foot"><span>رقم الموعد: '+esc(r.id||'-')+'</span><span>الحالة: '+esc(st)+'</span></div>';
+      +'<div class="appointment-popover-notes"><span>📝 '+esc(opT('notes'))+'</span><b>'+esc(r.notes||'-')+'</b></div>'
+      +'<div class="appointment-popover-foot"><span>'+esc(opT('appointmentNumber'))+': '+esc(r.id||'-')+'</span><span>'+esc(opT('status'))+': '+esc(opStatusT(st))+'</span></div>';
   }
   function positionAppointmentDetailsPopover(pop,btn){
     if(!pop||!btn)return;
@@ -1288,9 +1289,9 @@
       r=calcFinancials(r);
       var animal=appointmentAnimalSummary(r);
       var dateCell=esc(r.date||'-')+'<small class="appointments-date-sub">'+esc([r.start,r.end].filter(Boolean).join(' - ')||'-')+'</small>';
-      var actions='<div class="appointments-log-actions"><button class="btn btn-ghost appointment-details-btn appointment-details-hover-btn" type="button" data-appt-popover-id="'+esc(r.id)+'" aria-label="عرض تفاصيل الموعد كفقاعة">📄 التفاصيل</button><button class="btn btn-ghost appointments-log-edit-btn" type="button" data-op-click="edit" data-op-arg1="'+esc(r.id)+'">✏️ تعديل</button><button class="btn btn-ghost appointments-log-delete-btn danger" type="button" data-op-click="remove" data-op-arg1="'+esc(r.id)+'">🗑️ حذف</button></div>';
+      var actions='<div class="appointments-log-actions"><button class="btn btn-ghost appointment-details-btn appointment-details-hover-btn" type="button" data-appt-popover-id="'+esc(r.id)+'" aria-label="'+esc(opT('viewAppointmentDetails'))+'">📄 '+esc(opT('details'))+'</button><button class="btn btn-ghost appointments-log-edit-btn" type="button" data-op-click="edit" data-op-arg1="'+esc(r.id)+'">✏️ '+esc(opT('edit'))+'</button><button class="btn btn-ghost appointments-log-delete-btn danger" type="button" data-op-click="remove" data-op-arg1="'+esc(r.id)+'">🗑️ '+esc(opT('delete'))+'</button></div>';
       return '<tr><td>'+(i+1)+'</td><td class="appointments-date-cell">'+dateCell+'</td><td>'+esc(r.client||'-')+'</td><td class="appointments-animal-cell">'+esc(animal||'-')+'</td><td>'+esc(r.service||'-')+'</td><td>'+esc(r.vehicle||'-')+'</td><td>'+money(r.totalAmount)+'</td><td>'+appointmentStatusBadge(r)+'</td><td>'+actions+'</td></tr>';
-    }).join(''):'<tr><td colspan="9" class="appointments-empty">لا توجد مواعيد مطابقة للفلاتر الحالية</td></tr>', 'operations appointments table render');
+    }).join(''):'<tr><td colspan="9" class="appointments-empty">'+esc(opT('noAppointmentsForFilters'))+'</td></tr>', 'operations appointments table render');
     bindAppointmentDetailsPopover();
   }
   function pct(part,total){return total?Math.round((Number(part||0)/Number(total||1))*1000)/10:0}
@@ -1593,7 +1594,7 @@
     var body=shown.length?shown.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+r.count+'</td><td>'+r.percent+'%</td></tr>'}).join(''):'<tr><td colspan="4" class="appointments-empty">لا توجد بيانات لهذا التقرير</td></tr>';
     if(hidden){body+='<tr class="appointments-report-more-row"><td>+</td><td>بنود أخرى</td><td>'+hidden+'</td><td>'+pct(hidden,total)+'%</td></tr>';}
     var subtitle=max&&rows.length>max?'يعرض أعلى '+max+' من '+rows.length+' بنود | إجمالي السجلات: '+total:'إجمالي السجلات: '+total;
-    return '<div class="appointments-report-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>'+subtitle+'</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table"><thead><tr><th>#</th><th>البند</th><th>عدد المواعيد</th><th>النسبة</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="2">'+esc(totalLabel||'الإجمالي')+'</td><td>'+total+'</td><td>100%</td></tr></tfoot></table></div></div>'
+    return '<div class="appointments-report-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>'+subtitle+'</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table"><thead><tr><th>#</th><th>البند</th><th>عدد المواعيد</th><th>النسبة</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="2">'+esc(totalLabel||opT('total'))+'</td><td>'+total+'</td><td>100%</td></tr></tfoot></table></div></div>'
   }
   function sumFinancial(rows){return (rows||[]).reduce(function(a,r){r=calcFinancials(r);a.total+=r.totalAmount;a.paid+=r.paidAmount;a.remaining+=r.remainingAmount;a.count+=1;return a},{total:0,paid:0,remaining:0,count:0})}
   function appointmentReportYears(rows){
@@ -1700,7 +1701,7 @@
     var body=shown&&shown.length?shown.map(function(r,i){r=calcFinancials(r);return '<tr><td>'+(i+1)+'</td><td>'+esc(r.client||'عميل غير محدد')+'</td><td>'+esc(r.date||'-')+'</td><td>'+esc(r.paymentMethod||'-')+'</td><td>'+money(r.totalAmount)+'</td><td>'+money(r.paidAmount)+'</td><td>'+money(r.remainingAmount)+'</td><td>'+esc(r.collectionStatus||'-')+'</td></tr>'}).join(''):'<tr><td colspan="8" class="appointments-empty">لا توجد بيانات مالية</td></tr>';
     var controls=options.localFinanceFilters?appointmentReportFiltersHtml(key,rows,shown.length,reportRows.length):'';
     var more=options.paginate&&reportRows.length>shown.length?'<div class="appointments-finance-load-more"><span class="appointments-finance-more-count">يعرض '+shown.length+' من أصل '+reportRows.length+' سجل</span><button type="button" data-op-click="showMoreAppointmentLocalReportRows" data-op-arg1="'+esc(key)+'" onclick="(window.PETATOEOperations||window.PETATOEAppointments).showMoreAppointmentLocalReportRows(\''+esc(key)+'\');return false;">عرض المزيد</button></div>':(options.paginate?'<div class="appointments-finance-load-more"><span>يعرض '+shown.length+' من أصل '+reportRows.length+' سجل</span></div>':'');
-    return '<div class="appointments-report-table-card appointments-finance-report'+(options.localFinanceFilters?' appointments-finance-report-local':'')+'"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>إجمالي: '+money(f.total)+' | محصل: '+money(f.paid)+' | متبقي: '+money(f.remaining)+'</p></div></div>'+controls+'<div class="appointments-report-table-wrap"><table class="appointments-report-table appointments-finance-table"><thead><tr><th>#</th><th>العميل</th><th>التاريخ</th><th>طريقة الدفع</th><th>الإجمالي</th><th>المحصل</th><th>المتبقي</th><th>حالة التحصيل</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="4">'+esc(totalLabel||'الإجمالي')+'</td><td>'+money(f.total)+'</td><td>'+money(f.paid)+'</td><td>'+money(f.remaining)+'</td><td>-</td></tr></tfoot></table></div>'+more+'</div>'
+    return '<div class="appointments-report-table-card appointments-finance-report'+(options.localFinanceFilters?' appointments-finance-report-local':'')+'"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>إجمالي: '+money(f.total)+' | محصل: '+money(f.paid)+' | '+esc(opT('remaining'))+': '+money(f.remaining)+'</p></div></div>'+controls+'<div class="appointments-report-table-wrap"><table class="appointments-report-table appointments-finance-table"><thead><tr><th>#</th><th>العميل</th><th>التاريخ</th><th>طريقة الدفع</th><th>الإجمالي</th><th>المحصل</th><th>المتبقي</th><th>حالة التحصيل</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="4">'+esc(totalLabel||opT('total'))+'</td><td>'+money(f.total)+'</td><td>'+money(f.paid)+'</td><td>'+money(f.remaining)+'</td><td>-</td></tr></tfoot></table></div>'+more+'</div>'
   }
   function localReportTable(key,title,icon,baseRows,field,fallback,totalLabel,limit,transform){
     key=appointmentReportKey(key);baseRows=Array.isArray(baseRows)?baseRows:[];
@@ -1717,7 +1718,7 @@
     if(hidden){body+='<tr class="appointments-report-more-row"><td>+</td><td>بنود أخرى غير معروضة</td><td>'+hidden+'</td><td>'+pct(hidden,total)+'%</td></tr>';}
     var controls=appointmentReportFiltersHtml(key,baseRows,shown.length,rows.length);
     var more=rows.length>shown.length?'<div class="appointments-finance-load-more"><span class="appointments-finance-more-count">يعرض '+shown.length+' من أصل '+rows.length+' بند</span><button type="button" data-op-click="showMoreAppointmentLocalReportRows" data-op-arg1="'+esc(key)+'" onclick="(window.PETATOEOperations||window.PETATOEAppointments).showMoreAppointmentLocalReportRows(\''+esc(key)+'\');return false;">عرض المزيد</button></div>':'<div class="appointments-finance-load-more"><span>يعرض '+shown.length+' من أصل '+rows.length+' بند</span></div>';
-    return '<div class="appointments-report-table-card appointments-finance-report-local"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>إجمالي السجلات المطابقة للفلتر: '+filtered.length+' | إجمالي البنود: '+total+'</p></div></div>'+controls+'<div class="appointments-report-table-wrap"><table class="appointments-report-table"><thead><tr><th>#</th><th>البند</th><th>عدد المواعيد</th><th>النسبة</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="2">'+esc(totalLabel||'الإجمالي')+'</td><td>'+total+'</td><td>100%</td></tr></tfoot></table></div>'+more+'</div>';
+    return '<div class="appointments-report-table-card appointments-finance-report-local"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>إجمالي السجلات المطابقة للفلتر: '+filtered.length+' | إجمالي البنود: '+total+'</p></div></div>'+controls+'<div class="appointments-report-table-wrap"><table class="appointments-report-table"><thead><tr><th>#</th><th>البند</th><th>عدد المواعيد</th><th>النسبة</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="2">'+esc(totalLabel||opT('total'))+'</td><td>'+total+'</td><td>100%</td></tr></tfoot></table></div>'+more+'</div>';
   }
 
   function renderReports(){
@@ -1976,7 +1977,7 @@
     var old=sel.value||'all';
     var names=vehicleScopeFilterNames(uniqueSorted(read().map(function(r){return r.vehicle||''}).concat(vehicleNames()).filter(Boolean)));
     if(old&&old!=='all'&&names.indexOf(old)===-1){old='all';sel.value='all'}
-    safeHtml(sel, '<option value="all">كل السيارات المصرح بها</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope render');
+    safeHtml(sel, '<option value="all">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope render');
   }
   function vehicleOpsRows(){
     var day=vehicleOpsDate(), car=val('vehicleOpsVehicleFilter')||'all';
@@ -2386,7 +2387,7 @@
     var rows=vehicleOpsRows(), day=vehicleOpsDate(), vehicles=groupBy(rows,'vehicle','بدون سيارة');
     var selected=vehicleOpsPickSelected(rows);
     var active=countAnyStatus(rows,['في الطريق','وصل العميل','بدأت الجلسة']), done=countAnyStatus(rows,['تمت الجلسة','تم التحصيل']), collected=rows.reduce(function(a,r){return a+Number(calcFinancials(r).paidAmount||0)},0), remaining=rows.reduce(function(a,r){return a+Number(calcFinancials(r).remainingAmount||0)},0);
-    if(summary){safeHtml(summary,'<div class="appointments-dispatch-summary-card"><span>📅 التاريخ</span><b>'+esc(day)+'</b><small>تشغيل السيارات</small></div><div class="appointments-dispatch-summary-card"><span>إجمالي الجلسات</span><b>'+rows.length+'</b><small>'+vehicles.length+' سيارات</small></div><div class="appointments-dispatch-summary-card"><span>قيد التشغيل</span><b>'+active+'</b><small>مكتمل: '+done+'</small></div><div class="appointments-dispatch-summary-card"><span>التحصيل</span><b>'+money(collected)+'</b><small>متبقي: '+money(remaining)+'</small></div>','operations vehicle ops summary')}
+    if(summary){safeHtml(summary,'<div class="appointments-dispatch-summary-card"><span>📅 التاريخ</span><b>'+esc(day)+'</b><small>تشغيل السيارات</small></div><div class="appointments-dispatch-summary-card"><span>'+esc(opT('totalSessions'))+'</span><b>'+rows.length+'</b><small>'+vehicles.length+' سيارات</small></div><div class="appointments-dispatch-summary-card"><span>قيد التشغيل</span><b>'+active+'</b><small>مكتمل: '+done+'</small></div><div class="appointments-dispatch-summary-card"><span>'+esc(opT('collection'))+'</span><b>'+money(collected)+'</b><small>متبقي: '+money(remaining)+'</small></div>','operations vehicle ops summary')}
     if(!board)return;
     var tabs='<div class="vehicle-ops-tabs"><button class="vehicle-ops-tab '+(vehicleOpsViewTab==='day'?'active':'')+'" type="button" data-op-click="setVehicleOpsViewTab" data-op-arg1="day">📋 جدول اليوم</button><button class="vehicle-ops-tab '+(vehicleOpsViewTab==='current'?'active':'')+'" type="button" data-op-click="setVehicleOpsViewTab" data-op-arg1="current">🚦 الطلب الحالي</button></div>';
     if(!rows.length){safeHtml(board, tabs+'<div class="appointments-empty appointments-calendar-empty">لا توجد مواعيد تشغيل في تاريخ '+esc(day)+'</div>', 'operations legacy render');return;}
@@ -2421,7 +2422,7 @@
     var old=sel.value||'all';
     var names=vehicleScopeFilterNames(uniqueSorted(read().map(function(r){return r.vehicle||''}).concat(vehicleNames()).filter(Boolean)));
     if(old&&old!=='all'&&names.indexOf(old)===-1){old='all';sel.value='all'}
-    safeHtml(sel, '<option value="all">كل السيارات المصرح بها</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope report render');
+    safeHtml(sel, '<option value="all">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope report render');
   }
   function vehicleExecutionReportRows(){
     var from=vehicleOpsReportDate('vehicleOpsReportFrom',today()), to=vehicleOpsReportDate('vehicleOpsReportTo',from), car=val('vehicleOpsReportVehicleFilter')||'all';
@@ -2441,7 +2442,7 @@
   function plannedDate(row,timeField){var d=String(row.date||''), t=String(row[timeField]||'');if(!d||!t)return null;var x=new Date(d+'T'+t);return isNaN(x.getTime())?null:x}
   function diffMinutes(a,b){return a&&b?Math.max(0,Math.round((b.getTime()-a.getTime())/60000)):null}
   function avg(list){list=(list||[]).filter(function(x){return x!=null&&isFinite(x)});return list.length?Math.round(list.reduce(function(a,b){return a+b},0)/list.length):null}
-  function fmtMins(n){if(n==null)return '-';if(n<60)return n+' د';var h=Math.floor(n/60), m=n%60;return h+' س '+(m?m+' د':'')}
+  function fmtMins(n){if(n==null)return '-';if(n<60)return opT('minutesShort',{value:n});var h=Math.floor(n/60), m=n%60;return opT('hoursMinutesShort',{hours:h,minutes:m})}
   function executionMetrics(rows){
     rows=rows||[];
     var completed=countAnyStatus(rows,['تمت الجلسة','تم التحصيل']), collected=rows.reduce(function(a,r){return a+Number(calcFinancials(r).paidAmount||0)},0), remaining=rows.reduce(function(a,r){return a+Number(calcFinancials(r).remainingAmount||0)},0);
@@ -2460,29 +2461,29 @@
   }
   function vehicleExecutionReportTable(title,icon,rows,totalLabel){
     var totals=rows.reduce(function(a,r){a.count+=r.count;a.completed+=r.completed;a.collected+=r.collected;a.remaining+=r.remaining;a.late+=r.late;return a},{count:0,completed:0,collected:0,remaining:0,late:0});
-    var body=rows.length?rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+r.count+'</td><td>'+r.completed+'</td><td>'+money(r.collected)+'</td><td>'+money(r.remaining)+'</td><td>'+fmtMins(r.avgArrival)+'</td><td>'+fmtMins(r.avgSession)+'</td><td>'+r.late+'</td></tr>'}).join(''):'<tr><td colspan="9" class="appointments-empty">لا توجد بيانات تشغيل في الفترة المحددة</td></tr>';
-    return '<div class="appointments-report-table-card vehicle-exec-report-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>تقارير تشغيل السيارات من بيانات إدارة التشغيل فقط</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table vehicle-exec-report-table"><thead><tr><th>#</th><th>البند</th><th>الجلسات</th><th>مكتملة</th><th>محصل</th><th>متبقي</th><th>متوسط الوصول</th><th>متوسط الجلسة</th><th>متأخر</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="2">'+esc(totalLabel||'الإجمالي')+'</td><td>'+totals.count+'</td><td>'+totals.completed+'</td><td>'+money(totals.collected)+'</td><td>'+money(totals.remaining)+'</td><td>-</td><td>-</td><td>'+totals.late+'</td></tr></tfoot></table></div></div>';
+    var body=rows.length?rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+r.count+'</td><td>'+r.completed+'</td><td>'+money(r.collected)+'</td><td>'+money(r.remaining)+'</td><td>'+fmtMins(r.avgArrival)+'</td><td>'+fmtMins(r.avgSession)+'</td><td>'+r.late+'</td></tr>'}).join(''):'<tr><td colspan="9" class="appointments-empty">'+esc(opT('noOperationsDataForPeriod'))+'</td></tr>';
+    return '<div class="appointments-report-table-card vehicle-exec-report-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>'+esc(opT('vehicleReportsSourceNote'))+'</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table vehicle-exec-report-table"><thead><tr><th>#</th><th>'+esc(opT('item'))+'</th><th>'+esc(opT('sessions'))+'</th><th>'+esc(opT('completed'))+'</th><th>'+esc(opT('collected'))+'</th><th>'+esc(opT('remaining'))+'</th><th>'+esc(opT('averageArrival'))+'</th><th>'+esc(opT('averageSession'))+'</th><th>'+esc(opT('delayed'))+'</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="2">'+esc(totalLabel||opT('total'))+'</td><td>'+totals.count+'</td><td>'+totals.completed+'</td><td>'+money(totals.collected)+'</td><td>'+money(totals.remaining)+'</td><td>-</td><td>-</td><td>'+totals.late+'</td></tr></tfoot></table></div></div>';
   }
   function renderVehicleExecutionReports(){
     var wrap=byId('vehicleOpsReports'), summary=byId('vehicleOpsReportsSummary');
     if(!wrap&&!summary)return;
-    if(!canVehicleOpsAction('reports')){if(summary)summary.textContent='';if(wrap)safeHtml(wrap,vehicleOpsNoAccessHtml('تقارير تشغيل السيارات'),'vehicle reports permission denied');return;}
+    if(!canVehicleOpsAction('reports')){if(summary)summary.textContent='';if(wrap)safeHtml(wrap,vehicleOpsNoAccessHtml(opT('vehicleOperationsReports')),'vehicle reports permission denied');return;}
     renderVehicleReportOptions();
     var rows=vehicleExecutionReportRows(), m=executionMetrics(rows);
     var collectedFull=rows.filter(function(r){return String(r.collectionStatus||'')==='محصل بالكامل'||normalizeStatus(r.status)==='تم التحصيل'}).length;
     var uncollected=rows.filter(function(r){return Number(calcFinancials(r).paidAmount||0)<=0}).length;
     if(summary){if(window.PETATOESafeRender&&window.PETATOESafeRender.clear){window.PETATOESafeRender.clear(summary)}else{summary.textContent=''}
-      +'<div class="appointments-dispatch-summary-card"><span>إجمالي جلسات التشغيل</span><b>'+m.count+'</b><small>حسب الفترة والسيارة</small></div>'
-      +'<div class="appointments-dispatch-summary-card"><span>مكتملة</span><b>'+m.completed+'</b><small>تحصيل كامل: '+collectedFull+'</small></div>'
-      +'<div class="appointments-dispatch-summary-card"><span>التحصيل</span><b>'+money(m.collected)+'</b><small>غير محصل: '+uncollected+' | متبقي: '+money(m.remaining)+'</small></div>'
-      +'<div class="appointments-dispatch-summary-card"><span>متوسط التشغيل</span><b>'+fmtMins(m.avgSession)+'</b><small>وصول: '+fmtMins(m.avgArrival)+' | تأخير: '+(m.lateStart+m.lateEnd)+'</small></div>';}
+      +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('totalOperationsSessions'))+'</span><b>'+m.count+'</b><small>'+esc(opT('byPeriodAndVehicle'))+'</small></div>'
+      +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('completed'))+'</span><b>'+m.completed+'</b><small>'+esc(opT('fullyCollected'))+': '+collectedFull+'</small></div>'
+      +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('collection'))+'</span><b>'+money(m.collected)+'</b><small>'+esc(opT('uncollected'))+': '+uncollected+' | '+esc(opT('remaining'))+': '+money(m.remaining)+'</small></div>'
+      +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('averageOperations'))+'</span><b>'+fmtMins(m.avgSession)+'</b><small>'+esc(opT('arrival'))+': '+fmtMins(m.avgArrival)+' | '+esc(opT('delay'))+': '+(m.lateStart+m.lateEnd)+'</small></div>';}
     if(!wrap)return;
     var paymentRows=reportRowsByField(rows,function(r){return r.paymentMethod||'بدون طريقة دفع'},'بدون طريقة دفع').map(function(x){return Object.assign(x,{completed:0,collected:rows.filter(function(r){return (r.paymentMethod||'بدون طريقة دفع')===x.name}).reduce(function(a,r){return a+Number(calcFinancials(r).paidAmount||0)},0),remaining:0,avgArrival:null,avgSession:null,late:0})});
-    var paymentTable='<div class="appointments-report-table-card vehicle-exec-report-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">💳</span><div><h4>طرق الدفع المستخدمة</h4><p>توزيع التحصيل حسب طريقة الدفع</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table"><thead><tr><th>#</th><th>طريقة الدفع</th><th>عدد المعاملات</th><th>النسبة</th><th>المحصل</th></tr></thead><tbody>'+(paymentRows.length?paymentRows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+r.count+'</td><td>'+r.percent+'%</td><td>'+money(r.collected)+'</td></tr>'}).join(''):'<tr><td colspan="5" class="appointments-empty">لا توجد بيانات دفع</td></tr>')+'</tbody><tfoot><tr><td colspan="2">الإجمالي</td><td>'+rows.length+'</td><td>100%</td><td>'+money(m.collected)+'</td></tr></tfoot></table></div></div>';
+    var paymentTable='<div class="appointments-report-table-card vehicle-exec-report-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">💳</span><div><h4>'+esc(opT('paymentMethodsUsed'))+'</h4><p>'+esc(opT('collectionByPaymentMethod'))+'</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table"><thead><tr><th>#</th><th>'+esc(opT('paymentMethod'))+'</th><th>'+esc(opT('transactionsCount'))+'</th><th>'+esc(opT('percentage'))+'</th><th>'+esc(opT('collected'))+'</th></tr></thead><tbody>'+(paymentRows.length?paymentRows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+r.count+'</td><td>'+r.percent+'%</td><td>'+money(r.collected)+'</td></tr>'}).join(''):'<tr><td colspan="5" class="appointments-empty">'+esc(opT('noPaymentData'))+'</td></tr>')+'</tbody><tfoot><tr><td colspan="2">'+esc(opT('total'))+'</td><td>'+rows.length+'</td><td>100%</td><td>'+money(m.collected)+'</td></tr></tfoot></table></div></div>';
     var delayedRows=rows.filter(function(r){var st=logDate(r,'بدأت الجلسة'), en=logDate(r,'تمت الجلسة')||logDate(r,'تم التحصيل'), ps=plannedDate(r,'start'), pe=plannedDate(r,'end');return (ps&&st&&st.getTime()>ps.getTime()+10*60000)||(pe&&en&&en.getTime()>pe.getTime()+10*60000)});
-    var delayedBody=delayedRows.length?delayedRows.map(function(r,i){var st=logDate(r,'بدأت الجلسة'), en=logDate(r,'تمت الجلسة')||logDate(r,'تم التحصيل'), ps=plannedDate(r,'start'), pe=plannedDate(r,'end');var lateS=(ps&&st)?Math.max(0,Math.round((st.getTime()-ps.getTime())/60000)):0;var lateE=(pe&&en)?Math.max(0,Math.round((en.getTime()-pe.getTime())/60000)):0;return '<tr><td>'+(i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.start||'-')+'</td><td>'+esc(r.client||'-')+'</td><td>'+esc(r.vehicle||'-')+'</td><td>'+esc(r.groomer||'-')+'</td><td>'+fmtMins(lateS)+'</td><td>'+fmtMins(lateE)+'</td></tr>'}).join(''):'<tr><td colspan="8" class="appointments-empty">لا توجد مواعيد متأخرة في الفترة المحددة</td></tr>';
-    var delayedTable='<div class="appointments-report-table-card vehicle-exec-report-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">⏱️</span><div><h4>المواعيد التي بدأت أو انتهت متأخر</h4><p>يتم احتساب التأخير بعد 10 دقائق من وقت الموعد المخطط</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table"><thead><tr><th>#</th><th>التاريخ</th><th>وقت الموعد</th><th>العميل</th><th>السيارة</th><th>الجرومر</th><th>تأخير البدء</th><th>تأخير الانتهاء</th></tr></thead><tbody>'+delayedBody+'</tbody></table></div></div>';
-    safeHtml(wrap, vehicleExecutionReportTable('عدد الجلسات المنفذة لكل سيارة','🚐',vehicleExecutionStatsRows(rows,'vehicle','بدون سيارة'),'إجمالي السيارات')+vehicleExecutionReportTable('عدد الجلسات لكل سائق','🚗',vehicleExecutionStatsRows(rows,'driver','بدون سائق'),'إجمالي السائقين')+vehicleExecutionReportTable('عدد الجلسات لكل جرومر','✂️',vehicleExecutionStatsRows(rows,'groomer','بدون جرومر'),'إجمالي الجرومرز')+paymentTable+delayedTable, 'operations legacy render');
+    var delayedBody=delayedRows.length?delayedRows.map(function(r,i){var st=logDate(r,'بدأت الجلسة'), en=logDate(r,'تمت الجلسة')||logDate(r,'تم التحصيل'), ps=plannedDate(r,'start'), pe=plannedDate(r,'end');var lateS=(ps&&st)?Math.max(0,Math.round((st.getTime()-ps.getTime())/60000)):0;var lateE=(pe&&en)?Math.max(0,Math.round((en.getTime()-pe.getTime())/60000)):0;return '<tr><td>'+(i+1)+'</td><td>'+esc(r.date)+'</td><td>'+esc(r.start||'-')+'</td><td>'+esc(r.client||'-')+'</td><td>'+esc(r.vehicle||'-')+'</td><td>'+esc(r.groomer||'-')+'</td><td>'+fmtMins(lateS)+'</td><td>'+fmtMins(lateE)+'</td></tr>'}).join(''):'<tr><td colspan="8" class="appointments-empty">'+esc(opT('noDelayedAppointments'))+'</td></tr>';
+    var delayedTable='<div class="appointments-report-table-card vehicle-exec-report-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">⏱️</span><div><h4>'+esc(opT('delayedAppointments'))+'</h4><p>'+esc(opT('delayThresholdNote'))+'</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table"><thead><tr><th>#</th><th>'+esc(opT('date'))+'</th><th>'+esc(opT('appointmentTime'))+'</th><th>'+esc(opT('customer'))+'</th><th>'+esc(opT('vehicle'))+'</th><th>'+esc(opT('groomer'))+'</th><th>'+esc(opT('startDelay'))+'</th><th>'+esc(opT('endDelay'))+'</th></tr></thead><tbody>'+delayedBody+'</tbody></table></div></div>';
+    safeHtml(wrap, vehicleExecutionReportTable(opT('sessionsPerVehicle'),'🚐',vehicleExecutionStatsRows(rows,'vehicle',opT('withoutVehicle')),opT('totalVehicles'))+vehicleExecutionReportTable(opT('sessionsPerDriver'),'🚗',vehicleExecutionStatsRows(rows,'driver',opT('withoutDriver')),opT('totalDrivers'))+vehicleExecutionReportTable(opT('sessionsPerGroomer'),'✂️',vehicleExecutionStatsRows(rows,'groomer',opT('withoutGroomer')),opT('totalGroomers'))+paymentTable+delayedTable, 'operations legacy render');
   }
 
 
@@ -2493,7 +2494,7 @@
     var old=sel.value||'all';
     var names=vehicleScopeFilterNames(uniqueSorted(read().map(function(r){return r.vehicle||''}).concat(vehicleNames()).filter(Boolean)));
     if(old&&old!=='all'&&names.indexOf(old)===-1){old='all';sel.value='all'}
-    safeHtml(sel, '<option value="all">كل السيارات المصرح بها</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope kpi render');
+    safeHtml(sel, '<option value="all">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope kpi render');
   }
   function operationsKpiRows(){
     var from=operationsKpiDate('operationsKpiFrom',today()), to=operationsKpiDate('operationsKpiTo',from), car=val('operationsKpiVehicleFilter')||'all';
@@ -2534,37 +2535,37 @@
     return groupBy(rows,field,emptyLabel).map(function(g){var s=operationsKpiStats(g.rows), m=s.metrics;return {name:g.name,count:s.total,completed:s.completed,confirmed:s.confirmed,incomplete:s.incomplete,success:pct(s.completed,s.total),late:s.late,reopened:s.reopened,avgArrival:m.avgArrival,avgSession:m.avgSession,collected:m.collected,remaining:m.remaining};}).sort(function(a,b){return b.count-a.count||a.name.localeCompare(b.name,'ar')});
   }
   function operationKpiTable(title,icon,rows){
-    var body=rows.length?rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+r.count+'</td><td>'+r.completed+'</td><td>'+r.confirmed+'</td><td>'+r.incomplete+'</td><td>'+r.success+'%</td><td>'+fmtMins(r.avgArrival)+'</td><td>'+fmtMins(r.avgSession)+'</td><td>'+r.late+'</td><td>'+r.reopened+'</td><td>'+money(r.collected)+'</td><td>'+money(r.remaining)+'</td></tr>'}).join(''):'<tr><td colspan="13" class="appointments-empty">لا توجد بيانات كافية للفترة المحددة</td></tr>';
-    return '<div class="appointments-report-table-card operation-kpi-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>مؤشرات أداء مستقلة من إدارة التشغيل فقط</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table operation-kpi-table"><thead><tr><th>#</th><th>البند</th><th>الجلسات</th><th>مكتملة</th><th>مؤكدة</th><th>غير مكتملة</th><th>نسبة الإكمال</th><th>متوسط الوصول</th><th>متوسط الجلسة</th><th>تأخير</th><th>إعادة فتح</th><th>محصل</th><th>متبقي</th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
+    var body=rows.length?rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.name)+'</td><td>'+r.count+'</td><td>'+r.completed+'</td><td>'+r.confirmed+'</td><td>'+r.incomplete+'</td><td>'+r.success+'%</td><td>'+fmtMins(r.avgArrival)+'</td><td>'+fmtMins(r.avgSession)+'</td><td>'+r.late+'</td><td>'+r.reopened+'</td><td>'+money(r.collected)+'</td><td>'+money(r.remaining)+'</td></tr>'}).join(''):'<tr><td colspan="13" class="appointments-empty">'+esc(opT('insufficientDataForPeriod'))+'</td></tr>';
+    return '<div class="appointments-report-table-card operation-kpi-table-card"><div class="appointments-report-title"><span class="appointments-report-icon">'+icon+'</span><div><h4>'+esc(title)+'</h4><p>'+esc(opT('operationsKpiSourceNote'))+'</p></div></div><div class="appointments-report-table-wrap"><table class="appointments-report-table operation-kpi-table"><thead><tr><th>#</th><th>'+esc(opT('item'))+'</th><th>'+esc(opT('sessions'))+'</th><th>'+esc(opT('completed'))+'</th><th>'+esc(opT('confirmed'))+'</th><th>'+esc(opT('incomplete'))+'</th><th>'+esc(opT('completionRate'))+'</th><th>'+esc(opT('averageArrival'))+'</th><th>'+esc(opT('averageSession'))+'</th><th>'+esc(opT('delay'))+'</th><th>'+esc(opT('reopened'))+'</th><th>'+esc(opT('collected'))+'</th><th>'+esc(opT('remaining'))+'</th></tr></thead><tbody>'+body+'</tbody></table></div></div>';
   }
   function renderOperationsKpiDashboard(){
     var wrap=byId('operationsKpiDashboard'), summary=byId('operationsKpiSummary');
     if(!wrap&&!summary)return;
-    if(!canVehicleOpsAction('kpis')){if(summary)summary.textContent='';if(wrap)safeHtml(wrap,vehicleOpsNoAccessHtml('مؤشرات تشغيل السيارات'),'vehicle kpi permission denied');return;}
+    if(!canVehicleOpsAction('kpis')){if(summary)summary.textContent='';if(wrap)safeHtml(wrap,vehicleOpsNoAccessHtml(opT('vehicleOperationsKpis')),'vehicle kpi permission denied');return;}
     renderOperationsKpiVehicleOptions();
     var rows=operationsKpiRows(), s=operationsKpiStats(rows), m=s.metrics;
     if(summary){if(window.PETATOESafeRender&&window.PETATOESafeRender.clear){window.PETATOESafeRender.clear(summary)}else{summary.textContent=''}
-      +'<div class="appointments-dispatch-summary-card"><span>إجمالي الجلسات</span><b>'+s.total+'</b><small>الفترة المحددة</small></div>'
-      +'<div class="appointments-dispatch-summary-card"><span>مكتملة / مغلقة</span><b>'+s.completed+'</b><small>مغلقة: '+s.closed+' | مؤكدة: '+s.confirmed+'</small></div>'
-      +'<div class="appointments-dispatch-summary-card"><span>جودة التشغيل</span><b>'+pct(s.completed,s.total)+'%</b><small>تأخير: '+s.late+' | إعادة فتح: '+s.reopened+'</small></div>'
-      +'<div class="appointments-dispatch-summary-card"><span>التحصيل</span><b>'+money(s.collected)+'</b><small>غير محصل: '+s.unpaid+' | متبقي: '+money(s.remaining)+'</small></div>';}
+      +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('totalSessions'))+'</span><b>'+s.total+'</b><small>'+esc(opT('selectedPeriod'))+'</small></div>'
+      +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('completedClosed'))+'</span><b>'+s.completed+'</b><small>'+esc(opT('closed'))+': '+s.closed+' | '+esc(opT('confirmed'))+': '+s.confirmed+'</small></div>'
+      +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('operationsQuality'))+'</span><b>'+pct(s.completed,s.total)+'%</b><small>'+esc(opT('delay'))+': '+s.late+' | '+esc(opT('reopened'))+': '+s.reopened+'</small></div>'
+      +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('collection'))+'</span><b>'+money(s.collected)+'</b><small>'+esc(opT('uncollected'))+': '+s.unpaid+' | '+esc(opT('remaining'))+': '+money(s.remaining)+'</small></div>';}
     if(!wrap)return;
     var paymentRows=reportRowsByField(rows,function(r){return r.paymentMethod||'بدون طريقة دفع'},'بدون طريقة دفع');
-    var payHtml='<div class="operation-kpi-payment-grid">'+(paymentRows.length?paymentRows.map(function(r){var amount=rows.filter(function(x){return (x.paymentMethod||'بدون طريقة دفع')===r.name}).reduce(function(a,x){return a+Number(calcFinancials(x).paidAmount||0)},0);return '<div class="operation-kpi-pay-card"><b>'+esc(r.name)+'</b><span>'+r.count+' عملية</span><strong>'+money(amount)+'</strong><small>'+r.percent+'%</small></div>'}).join(''):'<div class="appointments-empty">لا توجد بيانات دفع</div>')+'</div>';
+    var payHtml='<div class="operation-kpi-payment-grid">'+(paymentRows.length?paymentRows.map(function(r){var amount=rows.filter(function(x){return (x.paymentMethod||'بدون طريقة دفع')===r.name}).reduce(function(a,x){return a+Number(calcFinancials(x).paidAmount||0)},0);return '<div class="operation-kpi-pay-card"><b>'+esc(r.name)+'</b><span>'+r.count+' عملية</span><strong>'+money(amount)+'</strong><small>'+r.percent+'%</small></div>'}).join(''):'<div class="appointments-empty">'+esc(opT('noPaymentData'))+'</div>')+'</div>';
     var topCards=''
-      +kpiCard('📅','جلسات اليوم/الفترة',s.total,'حسب الفلاتر','')
-      +kpiCard('✅','مكتملة',s.completed,pct(s.completed,s.total)+'% من الإجمالي','ok')
-      +kpiCard('🔒','مغلقة',s.closed,'مؤكدة: '+s.confirmed,'')
-      +kpiCard('⚠️','غير مكتملة',s.incomplete,'تحتاج متابعة','warn')
-      +kpiCard('↩️','إعادة فتح',s.reopened,'تراجع حالة: '+s.backMoves,'warn')
-      +kpiCard('⏱️','متوسط الوصول',fmtMins(m.avgArrival),'تأخير: '+s.late,'')
-      +kpiCard('✂️','متوسط مدة الجلسة',fmtMins(m.avgSession),'من بداية الجلسة للنهاية','')
-      +kpiCard('💳','عمليات محصلة',s.collectedRows,'غير محصل: '+s.unpaid,'ok');
+      +kpiCard('📅',opT('todayPeriodSessions'),s.total,opT('byFilters'),'')
+      +kpiCard('✅',opT('completed'),s.completed,pct(s.completed,s.total)+'% '+opT('ofTotal'),'ok')
+      +kpiCard('🔒',opT('closed'),s.closed,opT('confirmed')+': '+s.confirmed,'')
+      +kpiCard('⚠️',opT('incomplete'),s.incomplete,opT('needsFollowUp'),'warn')
+      +kpiCard('↩️',opT('reopened'),s.reopened,opT('statusRollbacks')+': '+s.backMoves,'warn')
+      +kpiCard('⏱️',opT('averageArrival'),fmtMins(m.avgArrival),opT('delay')+': '+s.late,'')
+      +kpiCard('✂️',opT('averageSessionDuration'),fmtMins(m.avgSession),opT('sessionStartToEnd'),'')
+      +kpiCard('💳',opT('collectedTransactions'),s.collectedRows,opT('uncollected')+': '+s.unpaid,'ok');
     safeHtml(wrap,'<div class="operation-kpi-grid">'+topCards+'</div>'
-      +'<div class="operation-kpi-two-col"><div class="operation-kpi-panel"><h4>💳 توزيع طرق الدفع</h4>'+payHtml+'</div><div class="operation-kpi-panel"><h4>📊 مؤشرات الجودة</h4><div class="operation-kpi-quality"><p><span>نسبة التأخير</span><b>'+pct(s.late,s.total)+'%</b></p><p><span>نسبة إعادة الفتح</span><b>'+pct(s.reopened,s.total)+'%</b></p><p><span>نسبة غير المكتمل</span><b>'+pct(s.incomplete,s.total)+'%</b></p><p><span>نسبة التأكيد</span><b>'+pct(s.confirmed,s.total)+'%</b></p></div></div></div>'
-      +operationKpiTable('أداء السيارات','🚐',operationKpiPerformanceRows(rows,'vehicle','بدون سيارة'))
-      +operationKpiTable('أداء السائقين','🚗',operationKpiPerformanceRows(rows,'driver','بدون سائق'))
-      +operationKpiTable('أداء الجرومرز','✂️',operationKpiPerformanceRows(rows,'groomer','بدون جرومر')),'operations kpi render');
+      +'<div class="operation-kpi-two-col"><div class="operation-kpi-panel"><h4>💳 '+esc(opT('paymentMethodDistribution'))+'</h4>'+payHtml+'</div><div class="operation-kpi-panel"><h4>📊 '+esc(opT('qualityIndicators'))+'</h4><div class="operation-kpi-quality"><p><span>'+esc(opT('delayRate'))+'</span><b>'+pct(s.late,s.total)+'%</b></p><p><span>'+esc(opT('reopenRate'))+'</span><b>'+pct(s.reopened,s.total)+'%</b></p><p><span>'+esc(opT('incompleteRate'))+'</span><b>'+pct(s.incomplete,s.total)+'%</b></p><p><span>'+esc(opT('confirmationRate'))+'</span><b>'+pct(s.confirmed,s.total)+'%</b></p></div></div></div>'
+      +operationKpiTable(opT('vehiclePerformance'),'🚐',operationKpiPerformanceRows(rows,'vehicle',opT('withoutVehicle')))
+      +operationKpiTable(opT('driverPerformance'),'🚗',operationKpiPerformanceRows(rows,'driver',opT('withoutDriver')))
+      +operationKpiTable(opT('groomerPerformance'),'✂️',operationKpiPerformanceRows(rows,'groomer',opT('withoutGroomer'))),'operations kpi render');
   }
 
 
