@@ -26,7 +26,36 @@
     'status.targetAchieved':'Target Achieved','status.targetNotAchieved':'Target Not Achieved',
     'status.notSpecified':'Not Specified'
   };
+  Object.assign(ar,{
+    'tabs.overview':'ملخص الأداء','tabs.sales':'تحليل المبيعات','tabs.vehicles':'تحليل السيارات','tabs.customers':'تحليل العملاء','tabs.services':'تحليل الخدمات','tabs.advanced':'مركز التقارير المتقدمة','tabs.forecast':'التوقعات وذكاء الأعمال','tabs.recommendations':'التوصيات',
+    'overview.invoiceCount':'عدد الفواتير','overview.customerRetention':'معدل الاحتفاظ بالعملاء','overview.averageInvoice':'متوسط الفاتورة','overview.topVehicle':'أكفأ سيارة','overview.bestService':'أفضل خدمة',
+    'overview.details.totalSales':'تفاصيل إجمالي المبيعات','overview.details.invoiceCount':'تفاصيل عدد الفواتير','overview.details.customerRetention':'تفاصيل معدل الاحتفاظ بالعملاء','overview.details.averageInvoice':'تفاصيل متوسط الفاتورة','overview.details.topVehicle':'تفاصيل أكفأ سيارة','overview.details.bestService':'تفاصيل أفضل خدمة',
+    'overview.desc.totalSales':'يعرض إجمالي قيمة المبيعات للفترة أو السنة المحددة داخل التقارير الذكية.','overview.desc.invoiceCount':'يوضح عدد الفواتير الفريدة مقارنة بعدد العمليات الفعلية المسجلة في البيانات.','overview.desc.customerRetention':'يقيس نسبة العملاء المتكررين من إجمالي العملاء خلال الفترة المختارة.','overview.desc.averageInvoice':'يعرض متوسط قيمة الفاتورة مع متوسط الإيراد اليومي حسب البيانات الحالية.','overview.desc.topVehicle':'ترتيب السيارة حسب متوسط الإيراد لكل عملية خلال الفترة المختارة.','overview.desc.bestService':'الخدمة الأعلى تحقيقًا للمبيعات في الفترة المختارة من واقع البيانات المرفوعة.',
+    'overview.period':'الفترة','overview.operationsCount':'عدد العمليات','overview.dataRange':'نطاق البيانات','overview.repeatCustomers':'عملاء متكررون','overview.oneTimeCustomers':'عملاء مرة واحدة','overview.totalCustomers':'إجمالي العملاء','overview.dailyAverage':'متوسط يومي','overview.operatingDays':'أيام التشغيل','overview.vehicle':'السيارة','overview.revenue':'الإيراد','overview.operations':'العمليات','overview.averageTransaction':'متوسط العملية','overview.service':'الخدمة','overview.topFiveServicesShare':'مساهمة أعلى 5 خدمات','overview.operationUnit':'عملية','overview.repeatCustomerUnit':'عميل متكرر',
+    'vehicleEfficiency.vehicle':'السيارة','vehicleEfficiency.operationsCount':'عدد العمليات','vehicleEfficiency.revenue':'الإيراد','vehicleEfficiency.averageTransaction':'متوسط العملية','vehicleEfficiency.contribution':'المساهمة','vehicleEfficiency.total':'الإجمالي','vehicleEfficiency.noData':'لا توجد بيانات مطابقة لفلاتر تحليل كفاءة السيارات.','vehicleEfficiency.reset':'إعادة تعيين','vehicleEfficiency.allYears':'كل السنوات','vehicleEfficiency.allMonths':'كل الشهور','vehicleEfficiency.allVehicles':'كل السيارات','vehicleEfficiency.allPayments':'كل طرق الدفع'
+  });
+  Object.assign(en,{
+    'tabs.overview':'Performance Summary','tabs.sales':'Sales Analysis','tabs.vehicles':'Vehicle Analysis','tabs.customers':'Customer Analysis','tabs.services':'Service Analysis','tabs.advanced':'Advanced Reports Center','tabs.forecast':'Forecasting & Business Intelligence','tabs.recommendations':'Recommendations',
+    'overview.invoiceCount':'Invoice Count','overview.customerRetention':'Customer Retention Rate','overview.averageInvoice':'Average Invoice','overview.topVehicle':'Top Vehicle','overview.bestService':'Best Service',
+    'overview.details.totalSales':'Total Sales Details','overview.details.invoiceCount':'Invoice Count Details','overview.details.customerRetention':'Customer Retention Details','overview.details.averageInvoice':'Average Invoice Details','overview.details.topVehicle':'Top Vehicle Details','overview.details.bestService':'Best Service Details',
+    'overview.desc.totalSales':'Shows total sales value for the selected period or year in Smart Reports.','overview.desc.invoiceCount':'Shows the number of unique invoices compared with the actual recorded operations.','overview.desc.customerRetention':'Measures repeat customers as a percentage of all customers in the selected period.','overview.desc.averageInvoice':'Shows average invoice value together with average daily revenue for the current data.','overview.desc.topVehicle':'Ranks vehicles by average revenue per operation in the selected period.','overview.desc.bestService':'The service with the highest sales value in the selected period based on uploaded data.',
+    'overview.period':'Period','overview.operationsCount':'Operations Count','overview.dataRange':'Data Range','overview.repeatCustomers':'Repeat Customers','overview.oneTimeCustomers':'One-Time Customers','overview.totalCustomers':'Total Customers','overview.dailyAverage':'Daily Average','overview.operatingDays':'Operating Days','overview.vehicle':'Vehicle','overview.revenue':'Revenue','overview.operations':'Operations','overview.averageTransaction':'Average Transaction','overview.service':'Service','overview.topFiveServicesShare':'Top 5 Services Share','overview.operationUnit':'operation','overview.repeatCustomerUnit':'repeat customers',
+    'vehicleEfficiency.vehicle':'Vehicle','vehicleEfficiency.operationsCount':'Operations Count','vehicleEfficiency.revenue':'Revenue','vehicleEfficiency.averageTransaction':'Average Transaction','vehicleEfficiency.contribution':'Contribution','vehicleEfficiency.total':'Total','vehicleEfficiency.noData':'No data matches the Vehicle Efficiency Analysis filters.','vehicleEfficiency.reset':'Reset','vehicleEfficiency.allYears':'All Years','vehicleEfficiency.allMonths':'All Months','vehicleEfficiency.allVehicles':'All Vehicles','vehicleEfficiency.allPayments':'All Payment Methods'
+  });
+
   const months={january:['يناير','January'],february:['فبراير','February'],march:['مارس','March'],april:['أبريل','April'],may:['مايو','May'],june:['يونيو','June'],july:['يوليو','July'],august:['أغسطس','August'],september:['سبتمبر','September'],october:['أكتوبر','October'],november:['نوفمبر','November'],december:['ديسمبر','December']};
   Object.keys(months).forEach(function(k){ar['calendar.months.'+k]=months[k][0];en['calendar.months.'+k]=months[k][1];ar['calendar.months.'+(k[0].toUpperCase()+k.slice(1))]=months[k][0];en['calendar.months.'+(k[0].toUpperCase()+k.slice(1))]=months[k][1];});
   window.PETATOE_SMART_REPORTS_TRANSLATIONS={ar:ar,en:en};
+  if(!window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__){
+    window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__=true;
+    window.addEventListener('petatoe:language-changed',function(){
+      try{
+        if(typeof window.renderSmartReports==='function'&&document.getElementById('smartReportsArea')){
+          window.renderSmartReports();
+        }
+      }catch(error){
+        try{window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('smart reports language synchronization',error);}catch(_){ }
+      }
+    });
+  }
 })();
