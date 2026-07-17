@@ -1,0 +1,16 @@
+{
+  "status": "PASSED",
+  "stats": {
+    "files": 272,
+    "js": 270,
+    "html": 2,
+    "legacyCalls": 0,
+    "staticUiCandidates": 512,
+    "missingStoredTexts": 0,
+    "missingCounterparts": 0,
+    "arabicEntries": 3336,
+    "englishEntries": 3336
+  },
+  "failures": [],
+  "warnings": []
+}

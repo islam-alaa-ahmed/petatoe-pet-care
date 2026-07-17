@@ -1,12 +1,10 @@
-PETATOE v9.4.2 — Single Source Localization Enforcement
+PETATOE v9.4.3 — Enterprise Localization Certification
 
-- Enforced PETATOE_LOCALIZATION_CENTER_STORE as the canonical translation source.
-- Removed active dictionaries from Operations, Warehouse, Smart Reports, Maintenance, and Business Data compatibility modules.
-- Converted legacy localization APIs into thin Localization Center adapters.
-- Removed the embedded Global Screen Translator UI glossary.
-- Routed Global Screen Translator phrase indexing through the canonical Center store.
-- Removed runtime fallback reads from PETATOE_I18N dictionaries.
-- Moved Business Data localization engine into the Localization Center.
-- Removed the remaining Warehouse direct legacy localization API reference.
-- Added Single Source Enforcement validation.
-- Updated release metadata to PETATOE v9.4.2.
+- Completed full-project Enterprise Localization Certification scan.
+- Removed remaining direct PETATOE_I18N usage from index screen helpers.
+- Added 130 missing Arabic/English UI and runtime phrases to the canonical Localization Center.
+- Verified 3,336 Arabic and 3,336 English translation entries with zero missing counterparts.
+- Verified zero direct legacy localization calls outside the i18n compatibility layer.
+- Added enterprise localization certification validator and machine-readable results.
+- Passed 270 JavaScript syntax checks with zero failures.
+- Updated release metadata to PETATOE v9.4.3.

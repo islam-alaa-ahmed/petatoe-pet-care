@@ -11,7 +11,7 @@ const consolidation=read('i18n/localization-center/consolidation.js');
 const globalTranslator=read('i18n/global-screen-translator.js');
 const index=read('index.html');
 const release=read('RELEASE_VERSION.txt');
-assert(runtime.includes("VERSION='9.4.2-single-source-enforcement'"),'runtime version is not v9.4.2');
+assert(runtime.includes("VERSION='9.4.3-single-source-enforcement'"),'runtime version is not v9.4.2');
 assert(!/a&&a\.translate\(/.test(runtime),'runtime still falls back to PETATOE_I18N.translate');
 assert(runtime.includes('PETATOE_LOCALIZATION_CENTER_BUSINESS'),'business localization is not owned by the center');
 assert(consolidation.includes('__singleSourceEnforced=true'),'single-source enforcement flag missing');
@@ -25,7 +25,7 @@ for(const f of ['i18n/operations-source.js','i18n/warehouse-source.js','i18n/sma
 }
 assert(index.indexOf('localization-center/dictionary-store.js')<index.indexOf('localization-center/runtime.js'),'dictionary store must load before runtime');
 assert(index.indexOf('localization-center/runtime.js')<index.indexOf('operations-source.js'),'center must load before compatibility adapters');
-assert(release.includes('PETATOE v9.4.2')&&release.includes('ELC_V9_4_2_SINGLE_SOURCE_ENFORCEMENT'),'release metadata mismatch');
+assert(release.includes('PETATOE v9.4.3')&&release.includes('ELC_V9_4_3_ENTERPRISE_LOCALIZATION_CERTIFICATION'),'release metadata mismatch');
 const applicationFiles=[];
 function walk(dir){for(const e of fs.readdirSync(dir,{withFileTypes:true})){if(e.name==='.git'||e.name==='node_modules'||e.name==='scripts'||e.name==='i18n')continue;const p=path.join(dir,e.name);if(e.isDirectory())walk(p);else if(/\.(js|html)$/.test(e.name))applicationFiles.push(p);}}
 walk(root);

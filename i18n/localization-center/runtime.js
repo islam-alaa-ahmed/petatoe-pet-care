@@ -1,7 +1,7 @@
 /* PETATOE v9.1 - Unified Enterprise Localization Center v2.0 */
 (function(){
   'use strict';
-  var VERSION='9.4.2-single-source-enforcement';
+  var VERSION='9.4.3-single-source-enforcement';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

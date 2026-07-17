@@ -1622,8 +1622,8 @@ function dateObj(r){
 }
 function sameDashboardFilters(r){const m=$('fMonth')?.value||'',v=$('fVan')?.value||'',p=$('fPay')?.value||'';return (!m||normalizeMonth(r.month,r.date)===m)&&(!v||r.van===v)&&(!p||r.pay===p)}
 function dashboardDataForYear(y){return records.filter(r=>String(getYear(r))===String(y)&&sameDashboardFilters(r))}
-function fmtDateAr(d){if(!d||isNaN(d))return'-';const lang=(window.PETATOE_I18N&&window.PETATOE_I18N.getLanguage)?window.PETATOE_I18N.getLanguage():(document.documentElement.lang||'ar');const monthKey=MONTHS[d.getMonth()];const month=(window.PETATOE_I18N&&window.PETATOE_I18N.t)?window.PETATOE_I18N.t('smartReportsSource.calendar.months.'+monthKey)||MAR[monthKey]:MAR[monthKey];return lang==='en'?`${String(d.getDate()).padStart(2,'0')} ${month} ${d.getFullYear()}`:`${String(d.getDate()).padStart(2,'0')} ${month} ${d.getFullYear()}`}
-function fmtDateLocalized(value){try{const d=new Date(value);if(!Number.isNaN(d.getTime())){const lang=(window.PETATOE_I18N&&window.PETATOE_I18N.getLanguage)?window.PETATOE_I18N.getLanguage():(document.documentElement.lang||'ar');return new Intl.DateTimeFormat(lang==='en'?'en-GB':'ar-SA',{day:'2-digit',month:'long',year:'numeric'}).format(d)}}catch(_){ }return fmtDateAr(value)}
+function fmtDateAr(d){if(!d||isNaN(d))return'-';const lang=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.getLanguage)?window.PETATOE_LOCALIZATION_CENTER.getLanguage():(document.documentElement.lang||'ar');const monthKey=MONTHS[d.getMonth()];const month=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.t)?window.PETATOE_LOCALIZATION_CENTER.t('smartReportsSource.calendar.months.'+monthKey,{}, {fallback:MAR[monthKey]})||MAR[monthKey]:MAR[monthKey];return lang==='en'?`${String(d.getDate()).padStart(2,'0')} ${month} ${d.getFullYear()}`:`${String(d.getDate()).padStart(2,'0')} ${month} ${d.getFullYear()}`}
+function fmtDateLocalized(value){try{const d=new Date(value);if(!Number.isNaN(d.getTime())){const lang=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.getLanguage)?window.PETATOE_LOCALIZATION_CENTER.getLanguage():(document.documentElement.lang||'ar');return new Intl.DateTimeFormat(lang==='en'?'en-GB':'ar-SA',{day:'2-digit',month:'long',year:'numeric'}).format(d)}}catch(_){ }return fmtDateAr(value)}
 
 function invoiceNumValue(v){
   const m=String(v||'').match(/\d+/g);
@@ -2254,7 +2254,7 @@ function petDashboardCleanText(v){return String(v==null?'':v).replace(/ى/g,'ي'
 function petDashboardIsUndefinedService(v){let x=petDashboardCleanText(v);return !x || x==='غير محدد' || x==='غير معرف' || x==='undefined' || x==='null' || x==='-' || x==='—'}
 function petDashboardIsCashClient(v){let x=petDashboardCleanText(v);return x==='كاش' || x==='cash' || x==='نقدي' || x==='نقدى' || x==='نقد' || x.includes('عميل كاش') || x.includes('عميل نقد') || x.includes('cash customer')}
 function petDashboardChartPlugins(extra){return Object.assign({}, baseOpts().plugins, {tooltip:{enabled:false}}, extra||{})}
-function petT(key,fallback){try{var center=window.PETATOE_LOCALIZATION_CENTER;if(center&&typeof center.translate==='function')return center.translate(key,fallback);var api=window.PETATOE_I18N;if(api&&typeof api.translate==='function'){var v=api.translate(key);if(typeof v==='string'&&v)return v;}}catch(e){}return fallback;}
+function petT(key,fallback){try{var center=window.PETATOE_LOCALIZATION_CENTER;if(center&&typeof center.translate==='function')return center.translate(key,fallback);var api=window.PETATOE_LOCALIZATION_CENTER;if(api&&typeof api.t==='function'){var v=api.t(key,{}, {fallback:fallback});if(typeof v==='string'&&v)return v;}}catch(e){}return fallback;}
 function petTpl(key,fallback,params){let out=petT(key,fallback);Object.keys(params||{}).forEach(k=>{out=String(out).replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});return out;}
 function renderDashboardKpis(data){
   let y=selectedDashboardYear();
@@ -4582,7 +4582,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script defer="" src="components/liquid-glass-ui.js"></script>
 <script defer="" src="components/phase6f-safe-inline-cleanup.js"></script>
 <script defer="" src="inline-extracted/contract-candidates-full-export.js"></script>
-<script>window.PETATOE_RELEASE_VERSION='v9.4.2';window.PETATOE_RELEASE_NAME='ELC_V9_4_2_SINGLE_SOURCE_ENFORCEMENT';</script>
+<script>window.PETATOE_RELEASE_VERSION='v9.4.3';window.PETATOE_RELEASE_NAME='ELC_V9_4_2_SINGLE_SOURCE_ENFORCEMENT';</script>
 <script>
 (function(){
   function showPdfEngineMessage(){
@@ -4614,16 +4614,16 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 
 
 <script src="i18n/localization-center/loader.js?v=9.2.1-runtime-stability-phase1"></script>
-<script src="i18n/localization-center/dictionary-store.js?v=9.4.2-single-source"></script>
-<script src="i18n/localization-center/runtime.js?v=9.4.2-single-source"></script>
-<script src="i18n/localization-center/business-data.js?v=9.4.2-single-source"></script>
-<script src="i18n/operations-source.js?v=9.4.2-center-adapter"></script>
-<script src="i18n/warehouse-source.js?v=9.4.2-center-adapter"></script>
-<script src="i18n/smart-reports-source.js?v=9.4.2-center-adapter"></script>
-<script src="i18n/business-data-localization.js?v=9.4.2-center-adapter"></script>
-<script src="i18n/maintenance-source.js?v=9.4.2-center-adapter"></script>
-<script src="i18n/localization-center/consolidation.js?v=9.4.2-single-source"></script>
-<script src="i18n/global-screen-translator.js?v=9.4.2-single-source"></script>
+<script src="i18n/localization-center/dictionary-store.js?v=9.4.3-single-source"></script>
+<script src="i18n/localization-center/runtime.js?v=9.4.3-single-source"></script>
+<script src="i18n/localization-center/business-data.js?v=9.4.3-single-source"></script>
+<script src="i18n/operations-source.js?v=9.4.3-center-adapter"></script>
+<script src="i18n/warehouse-source.js?v=9.4.3-center-adapter"></script>
+<script src="i18n/smart-reports-source.js?v=9.4.3-center-adapter"></script>
+<script src="i18n/business-data-localization.js?v=9.4.3-center-adapter"></script>
+<script src="i18n/maintenance-source.js?v=9.4.3-center-adapter"></script>
+<script src="i18n/localization-center/consolidation.js?v=9.4.3-single-source"></script>
+<script src="i18n/global-screen-translator.js?v=9.4.3-single-source"></script>
 <script src="i18n/localization-center/dashboard-pilot.js?v=9.0.0-elc-phase6a"></script>
 <script src="i18n/localization-center/application-shell-pilot.js?v=9.0.0-elc-phase7a"></script>
 <script src="i18n/audit.js?v=9.0.0-elc-phase6a"></script>

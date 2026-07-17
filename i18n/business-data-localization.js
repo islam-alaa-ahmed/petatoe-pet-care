@@ -1,4 +1,4 @@
-/* PETATOE v9.4.2 — Business data localization compatibility adapter.
+/* PETATOE v9.4.3 — Business data localization compatibility adapter.
  * Translation data and resolution logic live inside the Localization Center.
  */
 (function(){
@@ -6,7 +6,7 @@
   function engine(){return window.PETATOE_LOCALIZATION_CENTER_BUSINESS||{};}
   function call(name,args,fallback){var e=engine(),fn=e[name];return typeof fn==='function'?fn.apply(e,args):fallback;}
   window.PETATOE_BUSINESS_DATA_I18N={
-    version:'9.4.2-center-adapter',source:'PETATOE_LOCALIZATION_CENTER',
+    version:'9.4.3-center-adapter',source:'PETATOE_LOCALIZATION_CENTER',
     resolve:function(type,value,lang){return call('resolve',arguments,value);},
     canonical:function(type,value){return call('canonical',arguments,value);},
     localizeRecord:function(record,lang){return call('localizeRecord',arguments,record);},
