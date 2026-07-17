@@ -1,4 +1,4 @@
-/* PETATOE v9.3.1 - Bulk Localization Runtime Refactor
+/* PETATOE v9.3.2 - Runtime Localization Cleanup
    Batches DOM mutations, avoids recursive observer loops and caches translations. */
 (function(){
   'use strict';
@@ -312,6 +312,35 @@
     }catch(_e){}
   }
 
+
+
+  var patchedMessageFunctions=Object.create(null);
+  function localizeMessageArgument(args){
+    if(!runtimeEnabled()||!args||!args.length)return args;
+    if(hasArabic(args[0]))args[0]=translateMixed(args[0]);
+    return args;
+  }
+  function patchMessageFunction(name){
+    try{
+      var current=window[name];
+      if(typeof current!=='function'||current.__petatoeLocalizedMessageWrapper)return false;
+      var original=current;
+      var wrapped=function(){
+        var args=localizeMessageArgument(Array.prototype.slice.call(arguments));
+        return original.apply(this,args);
+      };
+      try{Object.defineProperty(wrapped,'name',{value:original.name||name,configurable:true});}catch(_nameError){}
+      wrapped.__petatoeLocalizedMessageWrapper=true;
+      wrapped.__petatoeLocalizedOriginal=original;
+      window[name]=wrapped;
+      patchedMessageFunctions[name]=wrapped;
+      return true;
+    }catch(_e){return false;}
+  }
+  function patchRuntimeMessageApis(){
+    ['toast','toastSafe','showToast','notify','showNotification','petatoeToast'].forEach(patchMessageFunction);
+  }
+
   function patchCanvas(){
     try{
       var proto=window.CanvasRenderingContext2D&&window.CanvasRenderingContext2D.prototype;
@@ -405,6 +434,26 @@
     hydrationTimer=setTimeout(function(){runInitialEnglishHydration(reason);},typeof delay==='number'?delay:180);
   }
 
+
+  var residualRetryTimer=0;
+  var residualRetryCount=0;
+  function scheduleResidualCleanup(reason,delay){
+    if(!runtimeEnabled())return;
+    clearTimeout(residualRetryTimer);
+    residualRetryTimer=setTimeout(function run(){
+      residualRetryTimer=0;
+      patchRuntimeMessageApis();
+      ensureIndexFresh(false);
+      requestFullScan(0);
+      if(activeSurfaceHasArabic()&&residualRetryCount<3){
+        residualRetryCount++;
+        residualRetryTimer=setTimeout(run,120*(residualRetryCount+1));
+      }else{
+        residualRetryCount=0;
+      }
+    },typeof delay==='number'?delay:60);
+  }
+
   function residuals(){
     var rows=[];if(!document.body)return rows;
     function inspect(root){
@@ -423,7 +472,7 @@
     }
     inspect(document.body);return rows;
   }
-  function init(){patchCanvas();patchNativeDialogs();installObserver();if(runtimeEnabled()){buildIndex();resumeObserver();requestFullScan(0);}}
+  function init(){patchCanvas();patchNativeDialogs();patchRuntimeMessageApis();installObserver();if(runtimeEnabled()){buildIndex();resumeObserver();requestFullScan(0);}}
 
   window.PETATOE_GLOBAL_SCREEN_TRANSLATOR={
     translate:translateMixed,
@@ -432,7 +481,7 @@
     rebuild:function(){ensureIndexFresh(true);requestFullScan(0);},
     hydrate:function(){scheduleInitialEnglishHydration('manual-api',0);},
     remainingArabic:residuals,
-    stats:function(){return{mode:'bulk-runtime-refactor',observerActive:!!observer&&runtimeEnabled(),authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing};},
+    stats:function(){return{mode:'bulk-runtime-refactor',observerActive:!!observer&&runtimeEnabled(),authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing,patchedMessageApis:Object.keys(patchedMessageFunctions).length};},
     assertEnglishClean:function(){
       var rows=residuals();
       if(rows.length)console.error('[PETATOE i18n] Arabic remains in English UI',rows);
@@ -442,7 +491,7 @@
   };
 
   window.addEventListener('petatoe:language-changed',function(){
-    if(runtimeEnabled()){ensureIndexFresh(true);installObserver();resumeObserver();requestFullScan(0);scheduleInitialEnglishHydration('language-changed',40);}else{pauseObserver();mutationQueue.length=0;queuedNodes.clear();}
+    if(runtimeEnabled()){patchRuntimeMessageApis();patchRuntimeMessageApis();ensureIndexFresh(true);installObserver();resumeObserver();requestFullScan(0);scheduleInitialEnglishHydration('language-changed',40);scheduleResidualCleanup('language-changed',80);}else{pauseObserver();mutationQueue.length=0;queuedNodes.clear();}
   });
   document.addEventListener('petatoe:userchanged',function(e){
     var user=e&&e.detail&&e.detail.user;
@@ -458,6 +507,8 @@
   window.addEventListener('petatoe:records-changed',function(){ensureIndexFresh(false);});
   document.addEventListener('petatoe:navbuilt',function(){ensureIndexFresh(false);});
   window.addEventListener('petatoe:localization-ready',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(50);scheduleInitialEnglishHydration('localization-ready',140);}});
+  ['petatoe:dashboard-rendered','petatoe:reports-rendered','petatoe:smart-rendered','petatoe:operations-rendered','petatoe:payroll-rendered','petatoe:warehouse-rendered','petatoe:treasury-rendered','petatoe:modal-opened'].forEach(function(evt){window.addEventListener(evt,function(){scheduleResidualCleanup(evt,30);});});
+  document.addEventListener('petatoe:tabchange',function(){scheduleResidualCleanup('tabchange',40);});
   window.addEventListener('load',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(180);scheduleInitialEnglishHydration('window-load',420);}});
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();

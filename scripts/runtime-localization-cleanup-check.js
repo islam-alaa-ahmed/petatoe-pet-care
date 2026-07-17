@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+'use strict';
+const fs=require('fs');
+const assert=require('assert');
+const read=p=>fs.readFileSync(p,'utf8');
+const translator=read('i18n/global-screen-translator.js');
+const runtime=read('i18n/localization-center/runtime.js');
+const index=read('index.html');
+const release=read('RELEASE_VERSION.txt');
+assert(translator.includes('patchRuntimeMessageApis'), 'runtime message API patch missing');
+assert(translator.includes("['toast','toastSafe','showToast','notify','showNotification','petatoeToast']"), 'expected message APIs are not covered');
+assert(translator.includes('scheduleResidualCleanup'), 'bounded residual cleanup missing');
+assert(translator.includes('residualRetryCount<3'), 'residual cleanup must be bounded');
+assert(translator.includes("petatoe:operations-rendered"), 'module render cleanup events missing');
+assert(runtime.includes("9.3.2-runtime-localization-cleanup"), 'localization center runtime version mismatch');
+assert(index.includes("PETATOE_RELEASE_VERSION='v9.3.2'"), 'index release version mismatch');
+assert(index.includes("PETATOE_RELEASE_NAME='ELC_V9_3_2_RUNTIME_LOCALIZATION_CLEANUP'"), 'index release name mismatch');
+assert(index.includes('runtime.js?v=9.3.2-runtime-localization-cleanup'), 'runtime cache token mismatch');
+assert(index.includes('global-screen-translator.js?v=9.3.2-runtime-localization-cleanup'), 'translator cache token mismatch');
+assert(release.includes('PETATOE v9.3.2')&&release.includes('ELC_V9_3_2_RUNTIME_LOCALIZATION_CLEANUP'), 'release file mismatch');
+console.log('runtime-localization-cleanup-check: passed');
