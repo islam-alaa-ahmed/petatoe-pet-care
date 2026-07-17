@@ -1190,4 +1190,6 @@
   };
 ;try{Object.assign(window.PETATOE_I18N_DICTIONARIES.en.dashboard,{"ytdTitle": "Comparison uses the same day range from the previous year (Year-To-Date)", "ytdLatestInvoice": "Latest invoice in {year}: {invoice}, dated {date}", "ytdCurrentPeriod": "Current data: from January 1, {year}, to {endDate} ({days} days)", "ytdComparisonPeriod": "Comparison period: from January 1, {year}, to {endDate} ({days} days)"});}catch(_){ }
 
+;try{window.PETATOE_I18N_DICTIONARIES.en.payrollRuntime={"payments":{"unspecified":"Unspecified","mada":"Mada","bank":"Bank Transfer","cash":"Cash","all":"All Payment Methods"},"employeeStatus":{"active":"Active","stopped":"Suspended","resigned":"Resigned"},"status":{"draft":"Draft","pendingBoard":"Awaiting Chairman Approval","boardApproved":"Initially Approved — Awaiting Employee Approval","employeeObjection":"Employee Objection","employeeApproved":"Employee Approved — Ready for Accounts","accountsApproved":"Approved for Payment","paid":"Paid","rejected":"Rejected"},"errors":{"masterSave":"Unable to save payroll configuration in Supabase","dataSave":"Unable to save payroll data in Supabase","employeeSave":"Unable to save employee in Supabase","statusSave":"Payroll status change was not saved to the database"}};}catch(_){ }
+
 })();

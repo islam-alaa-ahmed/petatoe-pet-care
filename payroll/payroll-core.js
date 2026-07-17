@@ -16,6 +16,8 @@
   function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]})}
   function num(v){if(v==null||v==='')return 0;if(typeof v==='number')return isFinite(v)?v:0;var n=parseFloat(String(v).replace(/,/g,'').replace(/SAR|sar|ريال|ر\.س/gi,'').trim());return isNaN(n)?0:n}
   function money(v){try{if(window.PETATOENumber)return PETATOENumber.money(num(v),'SAR')}catch(e){console.warn('PETATOEPayroll money formatter fallback',e)}return num(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})+' SAR'}
+  function payrollLang(){try{var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.getLanguage?c.getLanguage():(document.documentElement.lang||'ar')}catch(_e){return document.documentElement.lang||'ar'}}
+  function payrollT(key,fallback,params){try{var c=window.PETATOE_LOCALIZATION_CENTER;if(c&&typeof c.t==='function')return c.t('payrollRuntime.'+key,params||{},{fallback:fallback});if(c&&typeof c.translate==='function')return c.translate('payrollRuntime.'+key,fallback,payrollLang())}catch(_e){}return String(fallback==null?'':fallback).replace(/\{([^}]+)\}/g,function(_m,k){return params&&params[k]!=null?params[k]:_m})}
   function toastMsg(m){try{if(typeof toast==='function')toast(m);else alert(m)}catch(e){alert(m)}}
 
   /* Payroll Supabase storage boundary
@@ -63,7 +65,7 @@
     return R.saveSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,payrollMasterPayload()).then(function(res){
       if(res&&!res.ok)throw new Error(res.error||'Payroll master save failed');
       return res||{ok:true};
-    }).catch(function(e){console.warn('PETATOEPayroll master persist failed',e);toastMsg('تعذر حفظ تهيئة الرواتب في Supabase');throw e});
+    }).catch(function(e){console.warn('PETATOEPayroll master persist failed',e);toastMsg(payrollT('errors.masterSave','تعذر حفظ تهيئة الرواتب في Supabase'));throw e});
   }
   function stablePayload(row){
     var v=cloneVal(row||{});
@@ -98,7 +100,7 @@
       return {ok:true,count:ops.length,total:nextRows.length};
     }).catch(function(e){
       console.warn('PETATOEPayroll persist failed',table,e);
-      toastMsg('تعذر حفظ بيانات الرواتب في Supabase');
+      toastMsg(payrollT('errors.dataSave','تعذر حفظ بيانات الرواتب في Supabase'));
       throw e;
     });
   }
@@ -121,7 +123,7 @@
         ops.push(R.upsertPayrollEmployee(row).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Employee save failed');return res||{ok:true}}));
       }
     });
-    return Promise.all(ops).then(function(){return {ok:true,count:nextRows.length}}).catch(function(e){console.warn('PETATOEPayroll employee persist failed',e);toastMsg('تعذر حفظ الموظف في Supabase');throw e});
+    return Promise.all(ops).then(function(){return {ok:true,count:nextRows.length}}).catch(function(e){console.warn('PETATOEPayroll employee persist failed',e);toastMsg(payrollT('errors.employeeSave','تعذر حفظ الموظف في Supabase'));throw e});
   }
   function persistPayrollKey(key,val,prev){
     if(key===EMP_KEY){
@@ -168,13 +170,13 @@
   function currentArchiveMonth(){return String(new Date().getMonth()+1).padStart(2,'0')}
   function ensureArchiveDefaults(){if(!state.archiveYear)state.archiveYear=currentArchiveYear();if(!state.archiveMonth)state.archiveMonth=currentArchiveMonth();if(state.archivePayment==null)state.archivePayment=''}
   function ensureReportDefaults(){if(!state.reportYear)state.reportYear=currentArchiveYear();if(state.reportMonth==null)state.reportMonth='';if(state.reportPayment==null)state.reportPayment=''}
-  function periodLabel(p){var ar=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];var m=String(p||'').match(/^(\d{4})-(\d{2})$/);return m?ar[(+m[2])-1]+' '+m[1]:p}
+  function periodLabel(p){var m=String(p||'').match(/^(\d{4})-(\d{2})$/);return m?monthName(m[2])+' '+m[1]:p}
   function periodYear(p){var m=String(p||'').match(/^(\d{4})-(\d{2})$/);return m?m[1]:''}
   function periodMonth(p){var m=String(p||'').match(/^(\d{4})-(\d{2})$/);return m?m[2]:''}
-  function monthName(mm){var ar=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];var i=parseInt(mm,10)-1;return ar[i]||mm}
-  function paymentMethods(){return [['','غير محدد'],['mada','مدد'],['bank','تحويل بنكي'],['cash','نقدًا']]}
-  function paymentLabel(v){v=String(v||'');var found=paymentMethods().find(function(x){return x[0]===v});return found?found[1]:'غير محدد'}
-  function paymentOptions(selected,includeAll){selected=String(selected||'');var opts=includeAll?'<option value="">كل طرق الصرف</option>':'';var methods=paymentMethods();if(includeAll)methods=methods.filter(function(x){return x[0]!==''});return opts+methods.map(function(x){return '<option value="'+esc(x[0])+'" '+(String(x[0])===selected?'selected':'')+'>'+esc(x[1])+'</option>'}).join('')}
+  function monthName(mm){try{var c=window.PETATOE_LOCALIZATION_CENTER;if(c&&typeof c.monthName==='function')return c.monthName(mm,payrollLang())}catch(_e){}var names=payrollLang()==='en'?['January','February','March','April','May','June','July','August','September','October','November','December']:['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];var i=parseInt(mm,10)-1;return names[i]||mm}
+  function paymentMethods(){return [['',payrollT('payments.unspecified','غير محدد')],['mada',payrollT('payments.mada','مدى')],['bank',payrollT('payments.bank','تحويل بنكي')],['cash',payrollT('payments.cash','نقدًا')]]}
+  function paymentLabel(v){v=String(v||'');var found=paymentMethods().find(function(x){return x[0]===v});return found?found[1]:payrollT('payments.unspecified','غير محدد')}
+  function paymentOptions(selected,includeAll){selected=String(selected||'');var opts=includeAll?'<option value="">'+esc(payrollT('payments.all','كل طرق الصرف'))+'</option>':'';var methods=paymentMethods();if(includeAll)methods=methods.filter(function(x){return x[0]!==''});return opts+methods.map(function(x){return '<option value="'+esc(x[0])+'" '+(String(x[0])===selected?'selected':'')+'>'+esc(x[1])+'</option>'}).join('')}
   function uniqueSorted(arr,desc){var out=[];(arr||[]).forEach(function(x){x=String(x||'');if(x&&out.indexOf(x)===-1)out.push(x)});out.sort();if(desc)out.reverse();return out}
   function payrollYears(){return uniqueSorted(slips().map(function(s){return periodYear(s.period)}),true)}
   function payrollMonths(year){return uniqueSorted(slips().filter(function(s){return !year||periodYear(s.period)===String(year)}).map(function(s){return periodMonth(s.period)}),false)}
@@ -254,7 +256,7 @@
         return true;
       }).catch(function(e){
         console.warn('PETATOEPayroll status persistence failed',e);
-        toastMsg('لم يتم حفظ تغيير حالة كشف الراتب في قاعدة البيانات');
+        toastMsg(payrollT('errors.statusSave','لم يتم حفظ تغيير حالة كشف الراتب في قاعدة البيانات'));
         return false;
       });
     }
@@ -283,11 +285,11 @@
   function jobTypes(){var arr=read(JOB_TYPES_KEY,[]);if(!Array.isArray(arr)||!arr.length)arr=['مدير','محاسب','مندوب مبيعات','جروومر','سائق','إداري'];return arr.filter(function(x){return String(x||'').trim()})}
   function saveJobTypes(arr){write(JOB_TYPES_KEY,(Array.isArray(arr)?arr:[]).map(function(x){return String(x||'').trim()}).filter(Boolean))}
   function jobOptions(selected){var exists=false;var html=jobTypes().map(function(j){var sel=String(j)===String(selected||'');if(sel)exists=true;return '<option value="'+esc(j)+'" '+(sel?'selected':'')+'>'+esc(j)+'</option>'}).join('');if(selected&&!exists)html='<option value="'+esc(selected)+'" selected>'+esc(selected)+'</option>'+html;return '<option value="">اختر الوظيفة</option>'+html}
-  function employeeStatusLabel(st){return ({active:'نشط',stopped:'موقوف',resigned:'مستقيل'})[st]||st||'نشط'}
+  function employeeStatusLabel(st){return ({active:payrollT('employeeStatus.active','نشط'),stopped:payrollT('employeeStatus.stopped','موقوف'),resigned:payrollT('employeeStatus.resigned','مستقيل')})[st]||st||payrollT('employeeStatus.active','نشط')}
   function employeeStatusBadge(st){var cls=st==='active'?'ok':(st==='stopped'?'warn':'bad');return '<span class="payroll-badge '+cls+'">'+esc(employeeStatusLabel(st))+'</span>'}
   function employeeStatusPicker(value){
     value=value||'active';
-    var items=[['active','نشط'],['stopped','موقوف'],['resigned','مستقيل']];
+    var items=[['active',payrollT('employeeStatus.active','نشط')],['stopped',payrollT('employeeStatus.stopped','موقوف')],['resigned',payrollT('employeeStatus.resigned','مستقيل')]];
     return '<select id="peStatus" class="payroll-native-select">'+items.map(function(x){return '<option value="'+x[0]+'" '+(value===x[0]?'selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>';
   }
 
@@ -368,7 +370,7 @@
   }
   function getEmployee(id){return employees().find(function(e){return sameEmployeeRef(e,id)})||null}
   function activeEmployees(){return employees().filter(function(e){return e.status!=='stopped'&&e.status!=='resigned'})}
-  function statusInfo(st){var map={draft:['مسودة','warn'],pending_board:['بانتظار اعتماد رئيس مجلس الإدارة','warn'],board_approved:['معتمد مبدئيًا - بانتظار موافقة الموظف','ok'],employee_objection:['اعتراض من الموظف','bad'],employee_approved:['موافق عليه من الموظف - جاهز للحسابات','ok'],accounts_approved:['معتمد للصرف','ok'],paid:['تم الصرف','ok'],rejected:['مرفوض','bad']};return map[st]||[st||'مسودة','warn']}
+  function statusInfo(st){var map={draft:[payrollT('status.draft','مسودة'),'warn'],pending_board:[payrollT('status.pendingBoard','بانتظار اعتماد رئيس مجلس الإدارة'),'warn'],board_approved:[payrollT('status.boardApproved','معتمد مبدئيًا - بانتظار موافقة الموظف'),'ok'],employee_objection:[payrollT('status.employeeObjection','اعتراض من الموظف'),'bad'],employee_approved:[payrollT('status.employeeApproved','موافق عليه من الموظف - جاهز للحسابات'),'ok'],accounts_approved:[payrollT('status.accountsApproved','معتمد للصرف'),'ok'],paid:[payrollT('status.paid','تم الصرف'),'ok'],rejected:[payrollT('status.rejected','مرفوض'),'bad']};return map[st]||[st||payrollT('status.draft','مسودة'),'warn']}
   function statusBadge(st){var x=statusInfo(st);return '<span class="payroll-badge '+x[1]+'">'+esc(x[0])+'</span>'}
   function readCommissionSnapshots(){var s=read(COMM_SNAPSHOT_KEY,{});return s&&typeof s==='object'?s:{}}
   function readCommissionStore(){
@@ -760,6 +762,7 @@
     }catch(err){console.warn('PETATOEPayroll delegated change failed',type,err)}
   }
 
+  window.addEventListener('petatoe:language-changed',function(){try{if(byId('payrollArea'))render();if(byId('salarySlipArea'))renderSalarySlip()}catch(e){console.warn('PETATOEPayroll language rerender failed',e)}});
   window.PETATOEPayroll={
     openTab:function(t){state.tab=t||'employees';render()},render:render,renderSalarySlip:renderSalarySlip,selectMySalarySlip:function(id){var s=slips().find(function(x){return String(x.id)===String(id)});if(!s||!canEmployeeSee(s)){toastMsg('لا يمكنك فتح كشف غير خاص بك');return}state.salarySlipId=id;renderSalarySlip()},
     setArchiveFilter:function(year,month,payment){if(year!==null&&year!==undefined){state.archiveYear=String(year||'');state.archiveMonth=''}if(month!==null&&month!==undefined){state.archiveMonth=String(month||'')}if(payment!==null&&payment!==undefined){state.archivePayment=String(payment||'')}render()},

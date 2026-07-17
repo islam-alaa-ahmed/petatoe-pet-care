@@ -1190,4 +1190,6 @@
   };
 ;try{Object.assign(window.PETATOE_I18N_DICTIONARIES.ar.dashboard,{"ytdTitle": "المقارنة تتم بنفس مدى الأيام من السنة السابقة (Year-To-Date)", "ytdLatestInvoice": "آخر فاتورة في {year}: {invoice} بتاريخ {date}", "ytdCurrentPeriod": "البيانات الحالية: من 01 يناير {year} إلى {endDate} ({days} يوم)", "ytdComparisonPeriod": "فترة المقارنة: من 01 يناير {year} إلى {endDate} ({days} يوم)"});}catch(_){ }
 
+;try{window.PETATOE_I18N_DICTIONARIES.ar.payrollRuntime={"payments":{"unspecified":"غير محدد","mada":"مدى","bank":"تحويل بنكي","cash":"نقدًا","all":"كل طرق الصرف"},"employeeStatus":{"active":"نشط","stopped":"موقوف","resigned":"مستقيل"},"status":{"draft":"مسودة","pendingBoard":"بانتظار اعتماد رئيس مجلس الإدارة","boardApproved":"معتمد مبدئيًا - بانتظار موافقة الموظف","employeeObjection":"اعتراض من الموظف","employeeApproved":"موافق عليه من الموظف - جاهز للحسابات","accountsApproved":"معتمد للصرف","paid":"تم الصرف","rejected":"مرفوض"},"errors":{"masterSave":"تعذر حفظ تهيئة الرواتب في Supabase","dataSave":"تعذر حفظ بيانات الرواتب في Supabase","employeeSave":"تعذر حفظ الموظف في Supabase","statusSave":"لم يتم حفظ تغيير حالة كشف الراتب في قاعدة البيانات"}};}catch(_){ }
+
 })();
