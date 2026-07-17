@@ -294,6 +294,18 @@
       applying=false;
     }
   }
+
+  function activeLocalizationRoots(){
+    var roots=[];
+    ['header','.topbar','.top-bar','#nav','.sidebar','.panel.active','main .active','#smartTabs','.smart-tab-section.active','.smart-modal-overlay.show','.contract-reason-modal-overlay.show'].forEach(function(selector){
+      try{document.querySelectorAll(selector).forEach(function(el){if(roots.indexOf(el)===-1)roots.push(el);});}catch(_e){}
+    });
+    return roots.length?roots:[document.body||document.documentElement];
+  }
+  function applyActiveSubtrees(lang){
+    activeLocalizationRoots().forEach(function(root){translateAddedSubtree(root,lang);});
+  }
+
   function scheduleReapply(lang,delay){
     lang=normalizeLang(lang||currentLang());
     if(reapplyTimer) clearTimeout(reapplyTimer);
@@ -393,12 +405,12 @@
 
   document.addEventListener('petatoe:navbuilt',function(){
     try{
-      reapplyLanguage(currentLang());
+      translateAddedSubtree(document.getElementById('nav')||document.body,currentLang());
     }finally{
       setNavigationReady(true);
     }
   });
-  document.addEventListener('petatoe:tabchange',function(){scheduleReapply(currentLang(),90);});
+  document.addEventListener('petatoe:tabchange',function(){setTimeout(function(){applyActiveSubtrees(currentLang());},0);});
   window.addEventListener('petatoe:localization-ready',function(){bindLanguageOptions();scheduleReapply(currentLang(),0);});
   window.addEventListener('petatoe:localization-loading',function(e){if(!(e&&e.detail&&e.detail.loading))scheduleReapply(currentLang(),0);});
   window.PETATOE_I18N={

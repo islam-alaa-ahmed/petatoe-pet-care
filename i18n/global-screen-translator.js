@@ -1,4 +1,4 @@
-/* PETATOE v9.3.3 - Final Bulk Source Migration
+/* PETATOE v9.4.5 - Localization Performance Stabilization
    Batches DOM mutations, avoids recursive observer loops and caches translations. */
 (function(){
   'use strict';
@@ -10,6 +10,7 @@
     '01':'January','02':'February','03':'March','04':'April','05':'May','06':'June','07':'July','08':'August','09':'September','10':'October','11':'November','12':'December'};
 
   var phrasePairs=[];
+  var phraseBuckets=Object.create(null);
   var phraseMap=Object.create(null);
   var translationCache=new Map();
   var observer=null;
@@ -71,6 +72,15 @@
     Object.keys(UI_GLOSSARY).forEach(function(k){addPair(k,UI_GLOSSARY[k]);});
     phrasePairs=Object.keys(phraseMap).map(function(source){return{source:source,target:phraseMap[source]};})
       .sort(function(a,b){return b.source.length-a.source.length;});
+    phraseBuckets=Object.create(null);
+    phrasePairs.forEach(function(pair){
+      var tokens=pair.source.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}/g)||[];
+      var seen=Object.create(null);
+      tokens.forEach(function(token){
+        if(seen[token])return;seen[token]=true;
+        (phraseBuckets[token]||(phraseBuckets[token]=[])).push(pair);
+      });
+    });
   }
   function replaceLiteral(text,source,target){return text.split(source).join(target);}
   function setCache(key,value){
@@ -93,8 +103,17 @@
       setCache(original,exact);return exact;
     }
     var out=original;
-    for(var i=0;i<phrasePairs.length&&hasArabic(out);i++){
-      var pair=phrasePairs[i];
+    var candidates=[];
+    var candidateSeen=new Set();
+    var tokens=original.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]{2,}/g)||[];
+    tokens.forEach(function(token){
+      var bucket=phraseBuckets[token];
+      if(!bucket)return;
+      bucket.forEach(function(pair){if(!candidateSeen.has(pair.source)){candidateSeen.add(pair.source);candidates.push(pair);}});
+    });
+    candidates.sort(function(a,b){return b.source.length-a.source.length;});
+    for(var i=0;i<candidates.length&&hasArabic(out);i++){
+      var pair=candidates[i];
       if(out.indexOf(pair.source)!==-1)out=replaceLiteral(out,pair.source,pair.target);
     }
     if(!hasArabic(out))setCache(original,out);
@@ -331,14 +350,10 @@
     lastHydrationAt=now;
     hydrationRunning=true;
     try{
-      if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.apply==='function'){
-        window.PETATOE_I18N.apply('en',{renderDashboard:false,source:'initial-hydration',silent:true});
-      }
+      activeEnglishRoots().forEach(enqueue);
     }catch(_e){}
     finally{
       hydrationRunning=false;
-      ensureIndexFresh(false);
-      requestFullScan(20);
       try{window.dispatchEvent(new CustomEvent('petatoe:english-hydrated',{detail:{reason:reason||'unknown'}}));}catch(_e2){}
     }
   }
@@ -435,7 +450,7 @@
     }
   }
 
-  function init(){installSourceSetterBridge();patchCanvas();patchNativeDialogs();patchRuntimeMessageApis();installObserver();if(runtimeEnabled()){buildIndex();resumeObserver();requestFullScan(0);}}
+  function init(){patchCanvas();patchNativeDialogs();patchRuntimeMessageApis();installObserver();if(runtimeEnabled()){buildIndex();resumeObserver();requestFullScan(0);}}
 
 
   window.PETATOE_GLOBAL_SCREEN_TRANSLATOR={
@@ -455,7 +470,13 @@
   };
 
   window.addEventListener('petatoe:language-changed',function(){
-    if(runtimeEnabled()){patchRuntimeMessageApis();patchRuntimeMessageApis();ensureIndexFresh(true);installObserver();resumeObserver();requestFullScan(0);scheduleInitialEnglishHydration('language-changed',40);scheduleResidualCleanup('language-changed',80);}else{pauseObserver();mutationQueue.length=0;queuedNodes.clear();}
+    mutationQueue.length=0;queuedNodes.clear();
+    if(runtimeEnabled()){
+      patchRuntimeMessageApis();ensureIndexFresh(false);installObserver();resumeObserver();
+      activeEnglishRoots().forEach(enqueue);
+    }else{
+      pauseObserver();
+    }
   });
   document.addEventListener('petatoe:userchanged',function(e){
     var user=e&&e.detail&&e.detail.user;
@@ -472,7 +493,7 @@
   document.addEventListener('petatoe:navbuilt',function(){ensureIndexFresh(false);});
   window.addEventListener('petatoe:localization-ready',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(50);scheduleInitialEnglishHydration('localization-ready',140);}});
   ['petatoe:dashboard-rendered','petatoe:reports-rendered','petatoe:smart-rendered','petatoe:operations-rendered','petatoe:payroll-rendered','petatoe:warehouse-rendered','petatoe:treasury-rendered','petatoe:modal-opened'].forEach(function(evt){window.addEventListener(evt,function(){scheduleResidualCleanup(evt,30);});});
-  document.addEventListener('petatoe:tabchange',function(){scheduleResidualCleanup('tabchange',40);});
+  document.addEventListener('petatoe:tabchange',function(){if(runtimeEnabled())setTimeout(function(){activeEnglishRoots().forEach(enqueue);},0);});
   window.addEventListener('load',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(180);scheduleInitialEnglishHydration('window-load',420);}});
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
