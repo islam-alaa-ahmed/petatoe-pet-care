@@ -17,11 +17,12 @@ assert(loader.includes("petatoe:localization-loading"),'Loader exposes the runti
 assert(index.includes('function localizationLoading()'),'Primary engine respects the loading lock');
 assert(index.includes("petatoe:localization-loading"),'Primary engine resumes after loading finishes');
 assert(globalTranslator.includes("if(hasArabic(value))return false"),'Mixed translator refuses to cache partial Arabic output');
-assert(globalTranslator.includes("function init(){patchCanvas();if(runtimeEnabled())buildIndex();}"),'Secondary DOM observer is disabled');
-assert(globalTranslator.includes("mode:'manual-fallback-only',observerActive:false"),'Secondary translator reports manual fallback mode');
+assert(globalTranslator.includes("installObserver();if(runtimeEnabled())"),'Secondary DOM observer is installed by the bulk refactor');
+assert(globalTranslator.includes("mode:'bulk-runtime-refactor'"),'Secondary translator reports bulk runtime mode');
 assert(business.includes('safeEnglishFallback(type,original)'),'English business values use a safe non-Arabic fallback');
 assert(business.includes('PETATOE_BUSINESS_I18N_MISSING'),'Missing business translations are discoverable');
-assert(runtime.includes("9.2.1-runtime-stability-phase1"),'Localization center runtime version is synchronized');
-['i18n/index.js','i18n/localization-center/loader.js','i18n/localization-center/runtime.js','i18n/global-screen-translator.js','i18n/business-data-localization.js'].forEach(file=>assert(html.includes(file+'?v=9.2.1-runtime-stability-phase1'),file+' cache token synchronized'));
+assert(runtime.includes("9.3.1-bulk-localization-refactor"),'Localization center runtime version is synchronized');
+['i18n/index.js','i18n/localization-center/loader.js','i18n/business-data-localization.js'].forEach(file=>assert(html.includes(file+'?v=9.2.1-runtime-stability-phase1'),file+' cache token synchronized'));
+['i18n/localization-center/runtime.js','i18n/global-screen-translator.js'].forEach(file=>assert(html.includes(file+'?v=9.3.1-bulk-localization-refactor'),file+' cache token synchronized'));
 if(process.exitCode)process.exit(process.exitCode);
 console.log('Runtime Stability Phase 1 check passed.');
