@@ -47,7 +47,7 @@
   function today(){ return new Date().toISOString().slice(0,10); }
   function currentYear(){ return today().slice(0,4); }
   function currentMonth(){ return today().slice(0,7); }
-  var MONTH_OPTIONS=[['01','يناير'],['02','فبراير'],['03','مارس'],['04','أبريل'],['05','مايو'],['06','يونيو'],['07','يوليو'],['08','أغسطس'],['09','سبتمبر'],['10','أكتوبر'],['11','نوفمبر'],['12','ديسمبر']];
+  var MONTH_OPTIONS=[['01','يناير'],['02','فبراير'],['03','مارس'],['04','أبريل'],['05','مايو'],['06','يونيو'],['07','يوليو'],['08','أغسطس'],['09','سبتمبر'],['10','أكتوبر'],['11','نوفمبر'],['12','ديسمبر']].map(function(x){return [x[0],(window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(x[1]):x[1]];});
   function monthNameByNumber(mm){
     mm=pad2(mm);
     var found=(MONTH_OPTIONS||[]).filter(function(pair){ return pair[0]===mm; })[0];

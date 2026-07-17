@@ -68,7 +68,7 @@ const [newCustPeriodYearStr,newCustPeriodMonthStr]=(newCustPeriod||'').split('-'
 const newCustYear=+(newCustPeriodYearStr||new Date().getFullYear());
 const newCustMonthIdx=Math.max(0,(+(newCustPeriodMonthStr||1))-1);
 const newCustMonth=MONTHS[newCustMonthIdx]||'jan';
-const newCustPeriodLabel=`${MAR[newCustMonth]} ${newCustYear}`;
+const newCustPeriodLabel=`${(window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(MAR[newCustMonth]||newCustMonth):(MAR[newCustMonth]||newCustMonth)} ${newCustYear}`;
 const sameNewCustPeriod=(r)=>{
   const d=smartDateValue(r);
   return d && d.getFullYear()===newCustYear && d.getMonth()===newCustMonthIdx;
@@ -145,7 +145,7 @@ const firstCustomerPeriodCounts=Object.values(allCustomerFirstMap).reduce((a,fir
 const newCustTrendRows=(newCustSelectedYear==='all'?newCustPeriods:newCustPeriods.filter(k=>k.startsWith(newCustSelectedYear+'-'))).map(k=>{
   const [yy,mm]=k.split('-');
   const mi=(+mm)-1;
-  return {period:k,label:`${MAR[MONTHS[mi]]} ${yy}`,count:firstCustomerPeriodCounts[k]||0};
+  return {period:k,label:`${(window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(MAR[MONTHS[mi]]||MONTHS[mi]):(MAR[MONTHS[mi]]||MONTHS[mi])} ${yy}`,count:firstCustomerPeriodCounts[k]||0};
 });
 const newCustTableLimit=Math.max(10,+(window.smartNewCustomerTableLimit||10));
 const newCustomerDisplayedRows=newCustomerRows.slice(0,newCustTableLimit);
@@ -178,7 +178,7 @@ const newCustYearButtons=`<button class="new-cust-year-btn ${newCustSelectedYear
 const newCustMonthButtons=newCustPeriods.map(k=>{
   const [yy,mm]=k.split('-');
   const mi=(+mm)-1;
-  return `<button class="new-cust-month-btn ${newCustPeriod===k?'active':''}" data-smart-action="new-customer-period" data-period="${k}" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">${MAR[MONTHS[mi]]} ${yy}</button>`;
+  return `<button class="new-cust-month-btn ${newCustPeriod===k?'active':''}" data-smart-action="new-customer-period" data-period="${k}" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">${(window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(MAR[MONTHS[mi]]||MONTHS[mi]):(MAR[MONTHS[mi]]||MONTHS[mi])} ${yy}</button>`;
 }).join('') || '<span class="pill">لا توجد شهور متاحة</span>';
 
 

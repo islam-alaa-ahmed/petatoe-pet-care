@@ -51,7 +51,7 @@ function renderSmartVans(data){
         return window.PETATOESmartDataEngine.filterInvoicesByYear(data,y);
       }
     }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-vehicles.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-    return byYear(data,y).map(function(r){return {row:r,year:getYear(r),month:normalizeMonth(r.month,r.date),monthName:MAR[normalizeMonth(r.month,r.date)]||normalizeMonth(r.month,r.date),vehicle:r.van||'غير محدد',amount:parseNum(r.totalInc)};});
+    return byYear(data,y).map(function(r){return {row:r,year:getYear(r),month:normalizeMonth(r.month,r.date),monthName:(window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(MAR[normalizeMonth(r.month,r.date)]||normalizeMonth(r.month,r.date)):(MAR[normalizeMonth(r.month,r.date)]||normalizeMonth(r.month,r.date)),vehicle:r.van||'غير محدد',amount:parseNum(r.totalInc)};});
   }
   function aggVehicles(rows, yearValue){
     try{

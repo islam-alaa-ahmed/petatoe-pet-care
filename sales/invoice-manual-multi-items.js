@@ -73,7 +73,7 @@
   function monthVal(r){try{return typeof normalizeMonth==='function'?normalizeMonth(r.month,r.date):(r.month||'')}catch(e){return r.month||''}}
   function yearVal(r){var d=rowDate(r);var m=String(d||'').match(/(20\d{2})/);return m?m[1]:''}
   function dayVal(r){var d=rowDate(r);var m=String(d||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);return m?m[3]:''}
-  function monthName(m){try{return (typeof MAR==='object'&&MAR[m])?MAR[m]:m}catch(e){return m}}
+  function monthName(m){try{var raw=(typeof MAR==='object'&&MAR[m])?MAR[m]:m;return (window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(raw):raw}catch(e){return m}}
   function nextLegacy(used){var x=30000001;while(used[String(x)])x++;return String(x)}
   function normalizeLegacyInvoices(){
     var data=arr(),used={},changed=false,rowMap={};

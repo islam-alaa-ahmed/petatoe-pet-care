@@ -58,8 +58,8 @@ function smartVehicleEfficiencyOptions(kind,current){
         const idx=MONTHS.indexOf(v);
         const lang=(window.PETATOE_I18N&&typeof window.PETATOE_I18N.getLanguage==='function')?window.PETATOE_I18N.getLanguage():(document.documentElement.lang||'ar');
         if(idx>=0) txt=new Intl.DateTimeFormat(lang==='en'?'en-US':'ar-SA',{month:'long',timeZone:'UTC'}).format(new Date(Date.UTC(2024,idx,1)));
-        else txt=MAR[v]||v;
-      }catch(_){txt=MAR[v]||v;}
+        else txt=(window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(MAR[v]||v):(MAR[v]||v);
+      }catch(_){txt=(window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(MAR[v]||v):(MAR[v]||v);}
     }
     return '<option value="'+smartFilterEsc(v)+'" '+(String(current)===String(v)?'selected':'')+'>'+smartFilterEsc(txt)+'</option>';
   }).join('');

@@ -237,7 +237,7 @@ function fillFilters(){
     const monthOptions=monthKeys.map((mm,i)=>{
       const val=String(i+1).padStart(2,'0');
       let label=arMonths[i];
-      try{ if(window.MAR && window.MAR[mm]) label=window.MAR[mm]; }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/commission-inline.js",e);}
+      try{ if(window.MAR && window.MAR[mm]) label=(window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(window.MAR[mm]):window.MAR[mm]; }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/commission-inline.js",e);}
       return {value:val,label:label};
     });
     const lp=latestPeriod();
