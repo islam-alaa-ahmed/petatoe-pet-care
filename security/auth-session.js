@@ -1112,6 +1112,8 @@
       if(valid && valid.ok){
         setLoggedInClass(true);
         var old = document.getElementById('pet-auth-overlay'); if(old) old.remove();
+        try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged', {detail:{user:user, source:'auth-restore'}})); }catch(_e){}
+        try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_e){}
         startIdleTimeout();
         return true;
       }

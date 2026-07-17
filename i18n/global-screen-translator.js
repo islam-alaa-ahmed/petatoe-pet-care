@@ -75,6 +75,18 @@
       return stored||window.__PETATOE_INITIAL_LANGUAGE__||document.documentElement.lang||'ar';
     }catch(_){return document.documentElement.lang||'ar';}
   }
+  function isAuthenticated(){
+    try{
+      if(document.documentElement.classList.contains('pet-authenticated')) return true;
+      if(document.body&&document.body.classList.contains('pet-authenticated')) return true;
+      if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'){
+        var u=window.PETATOEAuth.currentUser();
+        return !!(u&&(u.id||u.username));
+      }
+    }catch(_e){}
+    return false;
+  }
+  function runtimeEnabled(){ return language()==='en'&&isAuthenticated(); }
   function normalize(v){return String(v==null?'':v).replace(/\s+/g,' ').trim();}
   function hasArabic(v){return ARABIC_RE.test(String(v||''));}
   function flatten(obj,prefix,out){
@@ -167,7 +179,7 @@
     }
   }
   function processNode(root){
-    if(language()!=='en'||!root)return;
+    if(!runtimeEnabled()||!root)return;
     if(root.nodeType===3){translateTextNode(root);return;}
     if(root.nodeType!==1&&root.nodeType!==9&&root.nodeType!==11)return;
     if(root.nodeType===1&&skip(root))return;
@@ -189,7 +201,7 @@
   }
   function pauseObserver(){if(observer)observer.disconnect();}
   function resumeObserver(){
-    if(!observer||!observerTarget||language()!=='en')return;
+    if(!observer||!observerTarget||!runtimeEnabled())return;
     observer.observe(observerTarget,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:ATTRS.concat(['value'])});
   }
   function runIdle(callback){
@@ -201,13 +213,13 @@
     if(window.cancelIdleCallback)window.cancelIdleCallback(handle);else clearTimeout(handle);
   }
   function enqueue(node){
-    if(!node||language()!=='en'||queuedNodes.has(node))return;
+    if(!node||!runtimeEnabled()||queuedNodes.has(node))return;
     queuedNodes.add(node);mutationQueue.push(node);
     if(!flushHandle)flushHandle=runIdle(flushQueue);
   }
   function flushQueue(deadline){
     flushHandle=0;
-    if(processing||language()!=='en'){mutationQueue.length=0;queuedNodes.clear();return;}
+    if(processing||!runtimeEnabled()){mutationQueue.length=0;queuedNodes.clear();return;}
     processing=true;pauseObserver();
     var processed=0;
     try{
@@ -220,18 +232,24 @@
     if(mutationQueue.length&&!flushHandle)flushHandle=runIdle(flushQueue);
   }
   function requestFullScan(delay){
-    if(language()!=='en')return;
+    if(!runtimeEnabled())return;
     cancelIdle(fullScanHandle);
     fullScanHandle=setTimeout(function(){
       fullScanHandle=0;
-      enqueue(document.body||document.documentElement);
+      if(!runtimeEnabled()) return;
+      var roots=[];
+      ['header','.topbar','.top-bar','#nav','.sidebar','.panel.active','main .active'].forEach(function(selector){
+        try{ document.querySelectorAll(selector).forEach(function(el){ if(roots.indexOf(el)===-1) roots.push(el); }); }catch(_e){}
+      });
+      if(!roots.length) roots.push(document.body||document.documentElement);
+      roots.forEach(enqueue);
     },typeof delay==='number'?delay:120);
   }
   function installObserver(){
     if(observer||!window.MutationObserver)return;
     observerTarget=document.body||document.documentElement;
     observer=new MutationObserver(function(records){
-      if(processing||language()!=='en')return;
+      if(processing||!runtimeEnabled())return;
       records.forEach(function(record){
         if(record.type==='characterData')enqueue(record.target);
         else if(record.type==='attributes')enqueue(record.target);
@@ -248,7 +266,7 @@
         var original=proto[name];if(typeof original!=='function')return;
         proto[name]=function(text){
           var args=Array.prototype.slice.call(arguments);
-          if(language()==='en'&&hasArabic(text))args[0]=translateMixed(text);
+          if(runtimeEnabled()&&hasArabic(text))args[0]=translateMixed(text);
           return original.apply(this,args);
         };
       });
@@ -273,7 +291,7 @@
     }
     inspect(document.body);return rows;
   }
-  function init(){buildIndex();patchCanvas();installObserver();requestFullScan(0);}
+  function init(){patchCanvas();installObserver();if(runtimeEnabled()){buildIndex();requestFullScan(0);}}
 
   window.PETATOE_GLOBAL_SCREEN_TRANSLATOR={
     translate:translateMixed,
@@ -281,7 +299,7 @@
     scan:function(){requestFullScan(0);},
     rebuild:function(){buildIndex();requestFullScan(0);},
     remainingArabic:residuals,
-    stats:function(){return{queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing};},
+    stats:function(){return{authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing};},
     assertEnglishClean:function(){
       var rows=residuals();
       if(rows.length)console.error('[PETATOE i18n] Arabic remains in English UI',rows);
@@ -291,13 +309,21 @@
   };
 
   window.addEventListener('petatoe:language-changed',function(){
-    buildIndex();
-    if(language()==='en'){resumeObserver();requestFullScan(30);}else{pauseObserver();mutationQueue.length=0;queuedNodes.clear();}
+    if(runtimeEnabled()){buildIndex();resumeObserver();requestFullScan(30);}else{pauseObserver();mutationQueue.length=0;queuedNodes.clear();}
+  });
+  document.addEventListener('petatoe:userchanged',function(e){
+    var user=e&&e.detail&&e.detail.user;
+    if(user&&(user.id||user.username)){
+      buildIndex();resumeObserver();requestFullScan(40);
+    }else{
+      pauseObserver();cancelIdle(flushHandle);cancelIdle(fullScanHandle);flushHandle=0;fullScanHandle=0;
+      mutationQueue.length=0;queuedNodes.clear();processing=false;
+    }
   });
   document.addEventListener('petatoe:tabchange',function(){requestFullScan(90);});
   document.addEventListener('petatoe:navbuilt',function(){requestFullScan(90);});
-  window.addEventListener('petatoe:localization-ready',function(){buildIndex();requestFullScan(50);});
-  window.addEventListener('load',function(){requestFullScan(180);});
+  window.addEventListener('petatoe:localization-ready',function(){if(runtimeEnabled()){buildIndex();requestFullScan(50);}});
+  window.addEventListener('load',function(){if(runtimeEnabled()){buildIndex();requestFullScan(180);}});
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();

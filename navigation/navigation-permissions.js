@@ -33,6 +33,21 @@
     try{ if(window.currentUser&&typeof window.currentUser==='object') return window.currentUser; }catch(e){}
     return {id:'',username:'',role:'guest',status:'inactive'};
   }
+  function isAuthenticated(){
+    try{
+      if(document.documentElement.classList.contains('pet-authenticated')) return true;
+      if(document.body&&document.body.classList.contains('pet-authenticated')) return true;
+      if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'){
+        var sessionUser=window.PETATOEAuth.currentUser();
+        return !!(sessionUser&&(sessionUser.id||sessionUser.username));
+      }
+    }catch(_e){}
+    return false;
+  }
+  function clearNoAccessPanel(){
+    var panel=document.getElementById('petatoeNoPermissionPanel');
+    if(panel) panel.classList.remove('active');
+  }
   function isActive(u){ var s=String((u&&u.status)||'active').trim().toLowerCase(); return s==='active'||s==='نشط'; }
   function settingsScreen(screen){ screen=normalizeScreen(screen); return screen==='settings'||screen==='setup'||screen==='permissions'||screen==='users'||screen==='audit'; }
   // PETATOE v8.0.2 Phase 15: strict user identity candidates.
@@ -175,6 +190,7 @@
     return false;
   }
   function enforceActivePanelPermission(u){
+    if(!isAuthenticated()){ clearNoAccessPanel(); return; }
     u=u||currentUser();
     if(isSuperUser(u)) return;
     var active=document.querySelector('.panel.active');
@@ -211,6 +227,14 @@
   }
   function apply(root){
     root=root||document; if(!root) return;
+    // Authentication owns the pre-login screen. Do not evaluate guest permissions
+    // or replace the active panel before a real session exists.
+    if(!isAuthenticated()){
+      clearNoAccessPanel();
+      if(deferredApplyTimer){ clearTimeout(deferredApplyTimer); deferredApplyTimer=null; }
+      deferredApplyAttempts=0;
+      return;
+    }
     if(!identityReady()){
       // PETATOE v8.0.2 Phase 10: fail closed while permissions are loading.
       // Root cause regression: Phase 7 builds the full menu DOM first; returning here left unauthorized screens visible until a later refresh/apply.
@@ -232,13 +256,16 @@
     try{ document.dispatchEvent(new CustomEvent('petatoe:navigationpermissionsapplied',{detail:{root:root}})); }catch(_e){}
   }
   function guardClick(btn){
+    // The login overlay is the only interaction owner before authentication.
+    // Never emit a permission warning for a guest session.
+    if(!isAuthenticated()) return true;
     var screen=screenFromButton(btn);
     if(!screen) return true;
     if(canOpen(screen)) return true;
     notify('غير متاح للصلاحية الحالية');
     return false;
   }
-  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase-phase19-right-sidebar-binding'};
+  window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase-phase20-auth-gated'};
   document.addEventListener('click',function(e){
     var el=e.target&&e.target.closest&&e.target.closest('[data-pet-permission-screen],[data-pet-nav-screen],[data-settings-main]');
     if(!el) return;
