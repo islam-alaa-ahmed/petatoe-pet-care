@@ -276,10 +276,14 @@
     if(localizationLoading()){scheduleReapply(lang,40);return false;}
     patchRuntimeTextAPIs();
     applying=true;
-    applyDataAttributes(lang);
-    applyKnownStaticTexts(lang);
-    translateAutoStaticPhrases(lang);
-    applying=false;
+    try{
+      // Performance: translate only the persistent shell and currently visible surfaces.
+      // Hidden panels are localized lazily on petatoe:tabchange.
+      applyKnownStaticTexts(lang);
+      applyActiveSubtrees(lang);
+    }finally{
+      applying=false;
+    }
   }
   function translateAddedSubtree(root,lang){
     if(!root||!root.nodeType||localizationLoading()) return;
@@ -378,24 +382,32 @@
     if(!document.documentElement.dataset.petI18nMutationBound){
       document.documentElement.dataset.petI18nMutationBound='1';
       try{
-        var pendingRoots=[];
+        var pendingRoots=new Set();
         var pendingFrame=0;
+        function queueRoot(node){
+          if(!node||node.nodeType!==1||node.closest('#petLanguageSwitcher'))return;
+          // Avoid processing both a parent subtree and its descendants in the same frame.
+          var covered=false;
+          pendingRoots.forEach(function(existing){
+            if(existing===node||(existing.contains&&existing.contains(node)))covered=true;
+            else if(node.contains&&node.contains(existing))pendingRoots.delete(existing);
+          });
+          if(!covered)pendingRoots.add(node);
+        }
         function flushAddedRoots(){
           pendingFrame=0;
-          if(applying||!pendingRoots.length) return;
-          var roots=pendingRoots.splice(0,pendingRoots.length);
+          if(applying||!pendingRoots.size) return;
+          var roots=Array.from(pendingRoots);pendingRoots.clear();
           roots.forEach(function(root){
-            if(root&&root.nodeType===1&&!root.closest('#petLanguageSwitcher')) translateAddedSubtree(root,currentLang());
+            if(root&&root.isConnected!==false) translateAddedSubtree(root,currentLang());
           });
         }
         var observer=new MutationObserver(function(mutations){
           if(applying) return;
           mutations.forEach(function(mutation){
-            Array.prototype.forEach.call(mutation.addedNodes||[],function(node){
-              if(node&&node.nodeType===1) pendingRoots.push(node);
-            });
+            Array.prototype.forEach.call(mutation.addedNodes||[],queueRoot);
           });
-          if(pendingRoots.length&&!pendingFrame) pendingFrame=requestAnimationFrame(flushAddedRoots);
+          if(pendingRoots.size&&!pendingFrame) pendingFrame=requestAnimationFrame(flushAddedRoots);
         });
         observer.observe(document.body||document.documentElement,{childList:true,subtree:true});
       }catch(_){}

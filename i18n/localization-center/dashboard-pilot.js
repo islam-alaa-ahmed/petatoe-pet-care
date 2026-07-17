@@ -22,7 +22,7 @@
   }
   function synchronize(options){options=options||{};applyDashboard();if(options.rerender!==false)rerenderDashboardVisuals();applyDashboard();return Object.assign({},stats);}
   window.addEventListener('petatoe:localization-ready',function(){synchronize({rerender:true});});
-  window.addEventListener('petatoe:language-changed',function(){synchronize({rerender:true});});
+  window.addEventListener('petatoe:language-changed',function(){var el=root();if(el&&el.classList.contains('active'))synchronize({rerender:true});});
   document.addEventListener('petatoe:tabchange',function(event){if(!event||!event.detail||event.detail.tab==='dashboard')applyDashboard();});
   window.PETATOE_DASHBOARD_LOCALIZATION_PILOT={version:stats.version,synchronize:synchronize,getStatus:function(){return Object.assign({},stats);}};
   window.petatoeDashboardLocalizationStatus=function(){return {pilot:Object.assign({},stats),localization:window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.getStatus?window.PETATOE_LOCALIZATION_CENTER.getStatus():null};};

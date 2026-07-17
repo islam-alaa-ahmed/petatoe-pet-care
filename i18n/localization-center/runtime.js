@@ -1,7 +1,7 @@
-/* PETATOE v9.4.5 — Localization Performance Stabilization Runtime */
+/* PETATOE v9.4.7 — Navigation & Language Performance Runtime */
 (function(){
   'use strict';
-  var VERSION='9.4.5-localization-performance';
+  var VERSION='9.4.7-navigation-language-performance';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

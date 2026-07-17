@@ -769,7 +769,7 @@
     }catch(err){console.warn('PETATOEPayroll delegated change failed',type,err)}
   }
 
-  window.addEventListener('petatoe:language-changed',function(){try{if(byId('payrollArea'))render();if(byId('salarySlipArea'))renderSalarySlip()}catch(e){console.warn('PETATOEPayroll language rerender failed',e)}});
+  window.addEventListener('petatoe:language-changed',function(){try{var payrollPanel=byId('payroll'),salaryPanel=byId('salarySlip');if(payrollPanel&&payrollPanel.classList.contains('active')&&byId('payrollArea'))render();if(salaryPanel&&salaryPanel.classList.contains('active')&&byId('salarySlipArea'))renderSalarySlip()}catch(e){console.warn('PETATOEPayroll language rerender failed',e)}});
   window.PETATOEPayroll={
     openTab:function(t){state.tab=t||'employees';render()},render:render,renderSalarySlip:renderSalarySlip,selectMySalarySlip:function(id){var s=slips().find(function(x){return String(x.id)===String(id)});if(!s||!canEmployeeSee(s)){toastMsg('لا يمكنك فتح كشف غير خاص بك');return}state.salarySlipId=id;renderSalarySlip()},
     setArchiveFilter:function(year,month,payment){if(year!==null&&year!==undefined){state.archiveYear=String(year||'');state.archiveMonth=''}if(month!==null&&month!==undefined){state.archiveMonth=String(month||'')}if(payment!==null&&payment!==undefined){state.archivePayment=String(payment||'')}render()},

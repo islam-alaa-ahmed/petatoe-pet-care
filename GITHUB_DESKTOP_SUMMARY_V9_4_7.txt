@@ -1,0 +1,11 @@
+PETATOE v9.4.7 — Navigation & Language Performance
+
+- Removed overlapping DOM translation work by keeping a single primary localization MutationObserver.
+- Converted Global Screen Translator to a passive residual fallback.
+- Limited language switching to the persistent shell and currently active screen.
+- Added deduplicated Set-based processing for dynamically added DOM subtrees.
+- Prevented hidden Dashboard, Smart Reports, and Payroll screens from rerendering during language changes.
+- Removed repeated residual cleanup retry scans after render events.
+- Added navigation and language performance validation with 11/11 checks passed.
+- Passed JavaScript syntax validation for 274 files with zero failures.
+- Updated release metadata to PETATOE v9.4.7.

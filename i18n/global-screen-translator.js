@@ -1,5 +1,5 @@
-/* PETATOE v9.4.5 - Localization Performance Stabilization
-   Batches DOM mutations, avoids recursive observer loops and caches translations. */
+/* PETATOE v9.4.7 - Navigation & Language Runtime Performance
+   Passive residual translator; the primary i18n runtime owns DOM mutation observation. */
 (function(){
   'use strict';
 
@@ -365,21 +365,14 @@
 
 
   var residualRetryTimer=0;
-  var residualRetryCount=0;
   function scheduleResidualCleanup(reason,delay){
     if(!runtimeEnabled())return;
     clearTimeout(residualRetryTimer);
-    residualRetryTimer=setTimeout(function run(){
+    residualRetryTimer=setTimeout(function(){
       residualRetryTimer=0;
       patchRuntimeMessageApis();
       ensureIndexFresh(false);
       requestFullScan(0);
-      if(activeSurfaceHasArabic()&&residualRetryCount<3){
-        residualRetryCount++;
-        residualRetryTimer=setTimeout(run,120*(residualRetryCount+1));
-      }else{
-        residualRetryCount=0;
-      }
     },typeof delay==='number'?delay:60);
   }
 
@@ -450,7 +443,7 @@
     }
   }
 
-  function init(){patchCanvas();patchNativeDialogs();patchRuntimeMessageApis();installObserver();if(runtimeEnabled()){buildIndex();resumeObserver();requestFullScan(0);}}
+  function init(){patchCanvas();patchNativeDialogs();patchRuntimeMessageApis();if(runtimeEnabled()){buildIndex();requestFullScan(0);}}
 
 
   window.PETATOE_GLOBAL_SCREEN_TRANSLATOR={
@@ -460,7 +453,7 @@
     rebuild:function(){ensureIndexFresh(true);requestFullScan(0);},
     hydrate:function(){scheduleInitialEnglishHydration('manual-api',0);},
     remainingArabic:residuals,
-    stats:function(){return{mode:'final-residual-source-cleanup',observerActive:!!observer&&runtimeEnabled(),authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing,patchedMessageApis:Object.keys(patchedMessageFunctions).length};},
+    stats:function(){return{mode:'passive-residual-performance',observerActive:!!observer&&runtimeEnabled(),authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing,patchedMessageApis:Object.keys(patchedMessageFunctions).length};},
     assertEnglishClean:function(){
       var rows=residuals();
       if(rows.length)console.error('[PETATOE i18n] Arabic remains in English UI',rows);
@@ -472,8 +465,9 @@
   window.addEventListener('petatoe:language-changed',function(){
     mutationQueue.length=0;queuedNodes.clear();
     if(runtimeEnabled()){
-      patchRuntimeMessageApis();ensureIndexFresh(false);installObserver();resumeObserver();
-      activeEnglishRoots().forEach(enqueue);
+      patchRuntimeMessageApis();ensureIndexFresh(false);
+      // One deferred visible-surface pass; do not attach a second global MutationObserver.
+      requestFullScan(0);
     }else{
       pauseObserver();
     }
@@ -481,7 +475,7 @@
   document.addEventListener('petatoe:userchanged',function(e){
     var user=e&&e.detail&&e.detail.user;
     if(user&&(user.id||user.username)){
-      ensureIndexFresh(true);installObserver();resumeObserver();requestFullScan(0);
+      ensureIndexFresh(true);requestFullScan(0);
     }else{
       pauseObserver();cancelIdle(flushHandle);cancelIdle(fullScanHandle);flushHandle=0;fullScanHandle=0;
       mutationQueue.length=0;queuedNodes.clear();processing=false;
@@ -493,7 +487,7 @@
   document.addEventListener('petatoe:navbuilt',function(){ensureIndexFresh(false);});
   window.addEventListener('petatoe:localization-ready',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(50);scheduleInitialEnglishHydration('localization-ready',140);}});
   ['petatoe:dashboard-rendered','petatoe:reports-rendered','petatoe:smart-rendered','petatoe:operations-rendered','petatoe:payroll-rendered','petatoe:warehouse-rendered','petatoe:treasury-rendered','petatoe:modal-opened'].forEach(function(evt){window.addEventListener(evt,function(){scheduleResidualCleanup(evt,30);});});
-  document.addEventListener('petatoe:tabchange',function(){if(runtimeEnabled())setTimeout(function(){activeEnglishRoots().forEach(enqueue);},0);});
+  document.addEventListener('petatoe:tabchange',function(){if(runtimeEnabled())requestFullScan(0);});
   window.addEventListener('load',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(180);scheduleInitialEnglishHydration('window-load',420);}});
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
