@@ -179,6 +179,5 @@
   function renderList(type,values,code){return (Array.isArray(values)?values:[]).map(function(value){return resolve(type,value,code);});}
   function invalidate(){cache={signature:'',maps:null};return true;}
   window.PETATOE_BUSINESS_DATA_I18N={version:VERSION,resolve:resolve,canonical:canonical,localizeRecord:localizeRecord,render:render,renderRecord:renderRecord,renderList:renderList,translateServiceName:translateServiceName,invalidate:invalidate,getLanguage:lang};
-  window.businessDataT=window.businessDataT||function(type,value,code){return resolve(type,value,code);};
   ['petatoe:language-changed','petatoe:reference-registry-updated','petatoe:operations-storage-change'].forEach(function(evt){window.addEventListener(evt,function(){invalidate();try{if(window.PETATOESmartReports&&typeof window.PETATOESmartReports.clearCache==='function')window.PETATOESmartReports.clearCache('business-data-localization');}catch(_e){}try{if(typeof window.renderSmartReports==='function'&&document.getElementById('smartReportsArea'))window.renderSmartReports();}catch(_e2){}});});
 })();

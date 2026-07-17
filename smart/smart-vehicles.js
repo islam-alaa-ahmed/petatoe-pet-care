@@ -3,7 +3,7 @@
    Source of truth remains invoice/manual sales records only via the Smart Data Engine when available. */
 
 
-function petatoeSmartVehiclesT(key,fallback,params){try{if(typeof window.smartReportT==='function')return window.smartReportT(key,fallback,params);}catch(_){ }return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,k){return params&&params[k]!=null?params[k]:_;});}
+function petatoeSmartVehiclesT(key,fallback,params){try{var center=window.PETATOE_LOCALIZATION_CENTER;if(center&&typeof center.t==='function')return center.t('smartReportsSource.'+key,params||{},{fallback:fallback,allowKeyFallback:true});}catch(_){ }return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,k){return params&&params[k]!=null?params[k]:_;});}
 
 function petatoeSmartVehiclesEscHTML(value){
   if(window.PETATOESafeRender && typeof window.PETATOESafeRender.escapeHTML === 'function') return window.PETATOESafeRender.escapeHTML(value);

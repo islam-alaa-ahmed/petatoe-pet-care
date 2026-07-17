@@ -45,7 +45,6 @@
   var center={version:VERSION,t:t,translate:translate,resolve:function(key,fallback,lang){return {key:key,value:translate(key,fallback,lang),language:lang||currentLanguage(),source:'unified-center'};},getLanguage:currentLanguage,setLanguage:setLanguage,apply:apply,business:business,monthName:monthName,formatDate:formatDate,reload:reload,whenReady:whenReady,getStatus:getStatus,listLanguages:function(o){var r=registry();return r&&r.list?r.list(o):[];},clearCache:function(){var c=window.PETATOE_LOCALIZATION_CACHE;if(c&&c.clear)c.clear();return reload();}};
   window.PETATOE_LOCALIZATION_CENTER=center;
   window.localize=function(key,fallback,lang){return center.translate(key,fallback,lang);};
-  window.businessDataT=function(type,value,lang){return center.business(type,value,lang);};
   window.petatoeLocalizationStatus=getStatus;
   window.petatoeLocalizationReload=reload;
   ['petatoe:localization-ready','petatoe:smart-translations-ready','DOMContentLoaded'].forEach(function(evt){window.addEventListener(evt,function(){if(api()&&window.PETATOE_SMART_REPORTS_TRANSLATIONS)markReady(evt);},{once:evt==='DOMContentLoaded'});});

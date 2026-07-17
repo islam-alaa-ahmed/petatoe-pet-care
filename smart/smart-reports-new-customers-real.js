@@ -1,7 +1,7 @@
 /* PETATOE v6.4.52 Phase G2 - Smart Reports New Customers Real Extraction.
    Extracted from smart-reports-core.js without changing formulas, filters, or rendered markup. */
 (function(){
-  function serviceDisplay(v){try{var value=window.businessDataT?window.businessDataT('service',v):v;return typeof htmlSafe==='function'?htmlSafe(value):String(value==null?'':value);}catch(_){return typeof htmlSafe==='function'?htmlSafe(v):String(v==null?'':v);}}
+  function serviceDisplay(v){try{var center=window.PETATOE_LOCALIZATION_CENTER;var value=center&&typeof center.business==='function'?center.business('service',v):v;return typeof htmlSafe==='function'?htmlSafe(value):String(value==null?'':value);}catch(_){return typeof htmlSafe==='function'?htmlSafe(v):String(v==null?'':v);}}
   function buildSmartReportsNewCustomersState(ctx){
     const records=ctx.records||[];
     const data=ctx.data||[];
