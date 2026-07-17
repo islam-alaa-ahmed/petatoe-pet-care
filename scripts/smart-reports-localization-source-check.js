@@ -3,6 +3,7 @@
 const fs=require('fs');
 const path=require('path');
 const root=path.resolve(__dirname,'..');
+const fail=(message)=>{console.error(message);process.exitCode=1;};
 const core=fs.readFileSync(path.join(root,'smart/smart-reports-core.js'),'utf8');
 const forbidden=[
  'reasons.push(`عدد الزيارات ${fmt0(stats.visits)} زيارة، وهو أكبر من أو يساوي 5 زيارات`)',
@@ -35,4 +36,26 @@ for(const key of required){
   const count=(source.match(new RegExp(`'${key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}'`,'g'))||[]).length;
   if(count<2){console.error(`Localization key is not present in both AR and EN dictionaries: ${key}`);process.exit(1);}
 }
+// PETATOE v9.1.3 - Pack 3 source migration guards.
+[
+  "{label:'العميل'",
+  "{label:'آخر فاتورة'",
+  "{label:'رقم آخر فاتورة'",
+  "{label:'مبيعات السنة السابقة'",
+  "{label:'تصنيف الخطورة'",
+  "{label:'عرض التفاصيل'",
+  '<h2>📑 مركز التقارير المتقدمة</h2>',
+  '<p>مقارنات شاملة وبيانات تفصيلية تدعم قراراتك</p>'
+].forEach((legacyLiteral)=>{
+  if(core.includes(legacyLiteral)) fail(`Pack 3 legacy literal returned: ${legacyLiteral}`);
+});
+[
+  'customerCompare.valueForYear','customerCompare.noLostCustomersInPeriod','customerCompare.rankForYear',
+  'customerCompare.change','customerCompare.salesDifference','customerCompare.noClearRankChange',
+  'customerCompare.totalForYear','advanced.centerTitle','advanced.centerDescription'
+].forEach((key)=>{
+  if(!source.includes(`'${key}'`)) fail(`Missing Pack 3 key in Smart Reports locale source: ${key}`);
+});
+
+if(process.exitCode) process.exit(process.exitCode);
 console.log('Smart Reports source localization check passed.');

@@ -502,7 +502,7 @@ function renderSmartReports(){
   const customerCompareResetLimits=function(){customerCompareResetAllLimits();};
   const customerCompareRowCar=function(r){return String(r.van||r.car||r.vehicle||r['السيارة']||'غير محدد').trim()||'غير محدد'};
   const customerCompareRowValue=function(r){if(customerCompareTaxMode==='net')return parseNum(r.totalEx);if(customerCompareTaxMode==='tax')return parseNum(r.tax);return parseNum(r.totalInc)};
-  const customerCompareValueLabel=function(){return customerCompareTaxMode==='net'?'قبل الضريبة':(customerCompareTaxMode==='tax'?'الضريبة':'شامل الضريبة')};
+  const customerCompareValueLabel=function(){return customerCompareTaxMode==='net'?smartReportT('metrics.net','قبل الضريبة'):(customerCompareTaxMode==='tax'?smartReportT('metrics.vat','الضريبة'):smartReportT('metrics.gross','شامل الضريبة'))};
   const customerCompareSourceAll=records.slice().filter(r=>!isGenericCashCustomer(String(r.client||'غير محدد').trim()));
   const customerCompareCars=['all',...[...new Set(customerCompareSourceAll.map(customerCompareRowCar).filter(Boolean))].sort((a,b)=>String(a).localeCompare(String(b),'ar'))];
   const customerCompareCarFilter=customerCompareCars.includes(requestedCarFilter)?requestedCarFilter:'all';
@@ -687,36 +687,36 @@ function renderSmartReports(){
     });
   };
   const customerCompareLostLimit=customerCompareLimitOf('customerCompareLostLimit');
-  const customerCompareLostSimpleFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>آخر فاتورة</th><th>رقم آخر فاتورة</th><th>قيمة ${customerCompareBaseYear}</th></tr></thead><tbody>${customerCompareLostRows.slice(0,customerCompareLostLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${x.baseLast?fmtDateAr(x.baseLast):'—'}</td><td>${htmlSafe(x.baseLastInvoice||'—')}</td><td>${money(x.base)}</td></tr>`).join('') || '<tr><td colspan="5">لا توجد عملاء مفقودون في الفترة المختارة.</td></tr>'}</tbody></table></div>`;
+  const customerCompareLostSimpleFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>${smartReportHtml('table.lastInvoice','آخر فاتورة')}</th><th>${smartReportHtml('table.lastInvoiceNumber','رقم آخر فاتورة')}</th><th>${smartReportHtml('customerCompare.valueForYear','قيمة {year}',{year:customerCompareBaseYear})}</th></tr></thead><tbody>${customerCompareLostRows.slice(0,customerCompareLostLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${x.baseLast?fmtDateAr(x.baseLast):'—'}</td><td>${htmlSafe(x.baseLastInvoice||'—')}</td><td>${money(x.base)}</td></tr>`).join('') || `<tr><td colspan="5">${smartReportHtml('customerCompare.noLostCustomersInPeriod','لا توجد عملاء مفقودون في الفترة المختارة.')}</td></tr>`}</tbody></table></div>`;
   const customerCompareLostSimpleTableHtml=customerCompareRenderVirtualTable('customerCompareLostSimpleVirtualTable',customerCompareLostRows,customerCompareLostLimit,[
     {label:'#',render:(x)=>String((customerCompareLostRows.indexOf(x)||0)+1)},
-    {label:'العميل',render:(x)=>htmlSafe(x.name)},
-    {label:'آخر فاتورة',render:(x)=>x.baseLast?fmtDateAr(x.baseLast):'—'},
-    {label:'رقم آخر فاتورة',render:(x)=>htmlSafe(x.baseLastInvoice||'—')},
-    {label:`قيمة ${customerCompareBaseYear}`,render:(x)=>money(x.base)}
+    {label:smartReportT('table.customer','العميل'),render:(x)=>htmlSafe(x.name)},
+    {label:smartReportT('table.lastInvoice','آخر فاتورة'),render:(x)=>x.baseLast?fmtDateAr(x.baseLast):'—'},
+    {label:smartReportT('table.lastInvoiceNumber','رقم آخر فاتورة'),render:(x)=>htmlSafe(x.baseLastInvoice||'—')},
+    {label:smartReportT('customerCompare.valueForYear','قيمة {year}',{year:customerCompareBaseYear}),render:(x)=>money(x.base)}
   ],customerCompareLostSimpleFallbackTable);
   const customerCompareLostFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>${smartReportHtml('customerCompare.previousYearSales','مبيعات السنة السابقة')}</th><th>${smartReportHtml('customerCompare.invoiceCount','عدد الفواتير')}</th><th>${smartReportHtml('customerCompare.lastInvoice','آخر فاتورة')}</th><th>${smartReportHtml('table.lastVisit','آخر زيارة')}</th><th>${smartReportHtml('customerCompare.lostValue','القيمة المفقودة')}</th><th>${smartReportHtml('customerCompare.riskClassification','تصنيف الخطورة')}</th><th>${smartReportHtml('actions.viewDetails','عرض التفاصيل')}</th></tr></thead><tbody>${customerCompareLostRows.slice(0,customerCompareLostLimit).map((x,i)=>{const risk=customerCompareLostRiskMeta(x.base||0);return `<tr><td>${i+1}</td><td><b>${htmlSafe(x.name)}</b></td><td>${money(x.base)}</td><td>${fmt0(x.baseInv)}</td><td>${htmlSafe(x.baseLastInvoice||'—')}</td><td>${x.baseLast?fmtDateAr(x.baseLast):'—'}</td><td>${money(x.base)}</td><td><span class="smart-tag ${risk.cls}">${risk.icon} ${risk.label}</span></td><td>${customerCompareLostDetailsButton(x)}</td></tr>`}).join('') || `<tr><td colspan="9">${smartReportHtml('customerCompare.noLostRows','لا توجد عملاء ظهروا في سنة الأساس ولم يظهروا في سنة المقارنة.')}</td></tr>`}</tbody></table></div>`;
   const customerCompareLostTableHtml=customerCompareRenderVirtualTable('customerCompareLostDetailedVirtualTable',customerCompareLostRows,customerCompareLostLimit,[
     {label:'#',render:(x)=>String((customerCompareLostRows.indexOf(x)||0)+1)},
-    {label:'العميل',render:(x)=>`<b>${htmlSafe(x.name)}</b>`},
-    {label:'مبيعات السنة السابقة',render:(x)=>money(x.base)},
-    {label:'عدد الفواتير',render:(x)=>fmt0(x.baseInv)},
-    {label:'آخر فاتورة',render:(x)=>htmlSafe(x.baseLastInvoice||'—')},
-    {label:'آخر زيارة',render:(x)=>x.baseLast?fmtDateAr(x.baseLast):'—'},
-    {label:'القيمة المفقودة',render:(x)=>money(x.base)},
-    {label:'تصنيف الخطورة',render:(x)=>{const risk=customerCompareLostRiskMeta(x.base||0);return `<span class="smart-tag ${risk.cls}">${risk.icon} ${risk.label}</span>`}},
-    {label:'عرض التفاصيل',render:(x)=>customerCompareLostDetailsButton(x)}
+    {label:smartReportT('table.customer','العميل'),render:(x)=>`<b>${htmlSafe(x.name)}</b>`},
+    {label:smartReportT('customerCompare.previousYearSales','مبيعات السنة السابقة'),render:(x)=>money(x.base)},
+    {label:smartReportT('customerCompare.invoiceCount','عدد الفواتير'),render:(x)=>fmt0(x.baseInv)},
+    {label:smartReportT('customerCompare.lastInvoice','آخر فاتورة'),render:(x)=>htmlSafe(x.baseLastInvoice||'—')},
+    {label:smartReportT('table.lastVisit','آخر زيارة'),render:(x)=>x.baseLast?fmtDateAr(x.baseLast):'—'},
+    {label:smartReportT('customerCompare.lostValue','القيمة المفقودة'),render:(x)=>money(x.base)},
+    {label:smartReportT('customerCompare.riskClassification','تصنيف الخطورة'),render:(x)=>{const risk=customerCompareLostRiskMeta(x.base||0);return `<span class="smart-tag ${risk.cls}">${risk.icon} ${risk.label}</span>`}},
+    {label:smartReportT('actions.viewDetails','عرض التفاصيل'),render:(x)=>customerCompareLostDetailsButton(x)}
   ],customerCompareLostFallbackTable);
 
   const customerCompareRankLimit=customerCompareLimitOf('customerCompareRankLimit');
-  const customerCompareRankFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>ترتيب ${customerCompareBaseYear}</th><th>ترتيب ${customerCompareTargetYear}</th><th>التغير</th><th>فرق المبيعات</th></tr></thead><tbody>${customerCompareRankRows.slice(0,customerCompareRankLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>#${fmt0(x.baseRank)}</td><td>#${fmt0(x.targetRank)}</td><td>${customerCompareRankHtml(x)}</td><td>${money(x.diff)}</td></tr>`).join('') || '<tr><td colspan="6">لا يوجد تغير واضح في ترتيب العملاء.</td></tr>'}</tbody></table></div>`;
+  const customerCompareRankFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>${smartReportHtml('customerCompare.rankForYear','ترتيب {year}',{year:customerCompareBaseYear})}</th><th>${smartReportHtml('customerCompare.rankForYear','ترتيب {year}',{year:customerCompareTargetYear})}</th><th>${smartReportHtml('customerCompare.change','التغير')}</th><th>${smartReportHtml('customerCompare.salesDifference','فرق المبيعات')}</th></tr></thead><tbody>${customerCompareRankRows.slice(0,customerCompareRankLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>#${fmt0(x.baseRank)}</td><td>#${fmt0(x.targetRank)}</td><td>${customerCompareRankHtml(x)}</td><td>${money(x.diff)}</td></tr>`).join('') || `<tr><td colspan="6">${smartReportHtml('customerCompare.noClearRankChange','لا يوجد تغير واضح في ترتيب العملاء.')}</td></tr>`}</tbody></table></div>`;
   const customerCompareRankTableHtml=customerCompareRenderVirtualTable('customerCompareRankShiftVirtualTable',customerCompareRankRows,customerCompareRankLimit,[
     {label:'#',render:(x)=>String((customerCompareRankRows.indexOf(x)||0)+1)},
-    {label:'العميل',render:(x)=>htmlSafe(x.name)},
-    {label:`ترتيب ${customerCompareBaseYear}`,render:(x)=>'#'+fmt0(x.baseRank)},
-    {label:`ترتيب ${customerCompareTargetYear}`,render:(x)=>'#'+fmt0(x.targetRank)},
-    {label:'التغير',render:(x)=>customerCompareRankHtml(x)},
-    {label:'فرق المبيعات',render:(x)=>money(x.diff)}
+    {label:smartReportT('table.customer','العميل'),render:(x)=>htmlSafe(x.name)},
+    {label:smartReportT('customerCompare.rankForYear','ترتيب {year}',{year:customerCompareBaseYear}),render:(x)=>'#'+fmt0(x.baseRank)},
+    {label:smartReportT('customerCompare.rankForYear','ترتيب {year}',{year:customerCompareTargetYear}),render:(x)=>'#'+fmt0(x.targetRank)},
+    {label:smartReportT('customerCompare.change','التغير'),render:(x)=>customerCompareRankHtml(x)},
+    {label:smartReportT('customerCompare.salesDifference','فرق المبيعات'),render:(x)=>money(x.diff)}
   ],customerCompareRankFallbackTable);
   const customerCompareHeatCell=function(v){const cls=v>0?'hot':(v<0?'cold':'flat');return `<td><span class="customer-yoy-heat-cell ${cls}" title="${money(v)}">${v>0?'🟩':v<0?'🟥':'⬜'}</span></td>`};
   const customerCompareHeatTable=customerCompareHeatRows.slice(0,customerCompareLimitOf('customerCompareHeatLimit')).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td>${customerCompareMonthNames.map((m,mi)=>customerCompareHeatCell((x.monthsTarget[mi]||0)-(x.monthsBase[mi]||0))).join('')}</tr>`).join('') || `<tr><td colspan="14">${smartReportHtml('empty.noMonthlyComparisonData','لا توجد بيانات شهرية للمقارنة.')}</td></tr>`;
@@ -752,8 +752,8 @@ function renderSmartReports(){
           <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.lostCustomers','عملاء مفقودون')}</span><b>${fmt0(customerCompareLost)}</b><small>اشتروا في فترة الأساس ولم يشتروا في نفس فترة المقارنة</small></div>
         </div>
         <div class="customer-yoy-kpis">
-          <div class="new-cust-kpi"><span>إجمالي ${customerCompareBaseYear}</span><b>${money(customerCompareBaseTotal)}</b><small>${customerCompareValueLabel()}</small></div>
-          <div class="new-cust-kpi"><span>إجمالي ${customerCompareTargetYear}</span><b>${money(customerCompareTargetTotal)}</b><small>${customerCompareValueLabel()}</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.totalForYear','إجمالي {year}',{year:customerCompareBaseYear})}</span><b>${money(customerCompareBaseTotal)}</b><small>${customerCompareValueLabel()}</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.totalForYear','إجمالي {year}',{year:customerCompareTargetYear})}</span><b>${money(customerCompareTargetTotal)}</b><small>${customerCompareValueLabel()}</small></div>
           <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.salesDifference','فرق المبيعات')}</span><b class="${customerCompareTotalDiff>=0?'metric-up':'metric-down'}">${customerCompareTotalDiff>=0?'+':''}${money(customerCompareTotalDiff)}</b><small>حتى ${customerCompareLatestDate?fmtDateAr(customerCompareTargetEnd):'نهاية السنة'}</small></div>
           <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.newCustomers','عملاء جدد')}</span><b>${fmt0(customerCompareNew)}</b><small>ظهروا في نفس فترة المقارنة</small></div>
         </div>
@@ -1264,7 +1264,7 @@ function renderSmartReports(){
 
     <div class="smart-tab-section" data-smart-section="advanced">
       <div class="card" style="margin-top:16px" id="reportsCenter">
-        <div class="section-head" style="margin-bottom:10px"><div><h2>📑 مركز التقارير المتقدمة</h2><p>مقارنات شاملة وبيانات تفصيلية تدعم قراراتك</p></div></div>
+        <div class="section-head" style="margin-bottom:10px"><div><h2>${smartReportHtml('advanced.centerTitle','📑 مركز التقارير المتقدمة')}</h2><p>${smartReportHtml('advanced.centerDescription','مقارنات شاملة وبيانات تفصيلية تدعم قراراتك')}</p></div></div>
         <div class="report-tabs"><button class="chip active" id="tab_months" data-smart-action="report-mode" data-mode="months">${smartReportHtml('advanced.compareMonths','مقارنة الشهور')}</button><button class="chip" id="tab_quarters" data-smart-action="report-mode" data-mode="quarters">${smartReportHtml('advanced.compareQuarters','مقارنة الأرباع')}</button><button class="chip" id="tab_payment" data-smart-action="report-mode" data-mode="payment">${smartReportHtml('advanced.monthlyPayments','طرق الدفع شهرياً')}</button></div>
         <div id="reportDynamic"></div>
       </div>

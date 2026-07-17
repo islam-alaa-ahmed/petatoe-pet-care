@@ -555,8 +555,19 @@
     'services.analysisTitle':'📦 Service Analysis','services.lazyDescription':'Open the Service Analysis tab to load the report from invoice data only.','services.readyForFastLoad':'Ready for fast loading.'
   });
 
+
+  Object.assign(ar,{
+    'customerCompare.valueForYear':'قيمة {year}','customerCompare.noLostCustomersInPeriod':'لا توجد عملاء مفقودون في الفترة المختارة.','customerCompare.rankForYear':'ترتيب {year}','customerCompare.change':'التغير','customerCompare.salesDifference':'فرق المبيعات','customerCompare.noClearRankChange':'لا يوجد تغير واضح في ترتيب العملاء.','customerCompare.totalForYear':'إجمالي {year}',
+    'advanced.centerTitle':'📑 مركز التقارير المتقدمة','advanced.centerDescription':'مقارنات شاملة وبيانات تفصيلية تدعم قراراتك'
+  });
+
+  Object.assign(en,{
+    'customerCompare.valueForYear':'Value {year}','customerCompare.noLostCustomersInPeriod':'No lost customers were found in the selected period.','customerCompare.rankForYear':'Rank {year}','customerCompare.change':'Change','customerCompare.salesDifference':'Sales Difference','customerCompare.noClearRankChange':'No clear customer ranking change was found.','customerCompare.totalForYear':'Total {year}',
+    'advanced.centerTitle':'📑 Advanced Reports Center','advanced.centerDescription':'Comprehensive comparisons and detailed data to support your decisions.'
+  });
+
   window.PETATOE_SMART_REPORTS_TRANSLATIONS={ar:ar,en:en};
-  window.dispatchEvent(new CustomEvent('petatoe:smart-translations-ready',{detail:{languages:['ar','en'],version:'9.1.2'}}));
+  window.dispatchEvent(new CustomEvent('petatoe:smart-translations-ready',{detail:{languages:['ar','en'],version:'9.1.3'}}));
   if(!window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__){
     window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__=true;
     window.addEventListener('petatoe:language-changed',function(){
