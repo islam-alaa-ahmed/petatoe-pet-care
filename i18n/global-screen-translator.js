@@ -472,7 +472,57 @@
     }
     inspect(document.body);return rows;
   }
-  function init(){patchCanvas();patchNativeDialogs();patchRuntimeMessageApis();installObserver();if(runtimeEnabled()){buildIndex();resumeObserver();requestFullScan(0);}}
+
+  var sourceSetterBridgeInstalled=false;
+  function translateAssignedValue(owner,value){
+    if(!runtimeEnabled()||value==null||!hasArabic(value))return value;
+    try{
+      if(owner&&owner.nodeType===1&&skip(owner))return value;
+      return translateMixed(value);
+    }catch(_){return value;}
+  }
+  function patchPropertySetter(proto,name){
+    if(!proto)return false;
+    var descriptor;
+    try{descriptor=Object.getOwnPropertyDescriptor(proto,name);}catch(_){return false;}
+    if(!descriptor||typeof descriptor.set!=='function'||descriptor.set.__petatoeI18nBridge)return false;
+    var originalSet=descriptor.set;
+    var wrappedSet=function(value){return originalSet.call(this,translateAssignedValue(this,value));};
+    wrappedSet.__petatoeI18nBridge=true;
+    wrappedSet.__petatoeI18nOriginal=originalSet;
+    try{
+      Object.defineProperty(proto,name,{configurable:descriptor.configurable,enumerable:descriptor.enumerable,get:descriptor.get,set:wrappedSet});
+      return true;
+    }catch(_){return false;}
+  }
+  function installSourceSetterBridge(){
+    if(sourceSetterBridgeInstalled)return;
+    sourceSetterBridgeInstalled=true;
+    patchPropertySetter(window.Node&&Node.prototype,'textContent');
+    patchPropertySetter(window.Element&&Element.prototype,'innerHTML');
+    patchPropertySetter(window.Element&&Element.prototype,'outerHTML');
+    if(window.Element&&Element.prototype&&typeof Element.prototype.insertAdjacentHTML==='function'&&!Element.prototype.insertAdjacentHTML.__petatoeI18nBridge){
+      var originalInsertAdjacentHTML=Element.prototype.insertAdjacentHTML;
+      var wrappedInsertAdjacentHTML=function(position,html){return originalInsertAdjacentHTML.call(this,position,translateAssignedValue(this,html));};
+      wrappedInsertAdjacentHTML.__petatoeI18nBridge=true;
+      wrappedInsertAdjacentHTML.__petatoeI18nOriginal=originalInsertAdjacentHTML;
+      try{Element.prototype.insertAdjacentHTML=wrappedInsertAdjacentHTML;}catch(_){ }
+    }
+    if(window.Element&&Element.prototype&&typeof Element.prototype.setAttribute==='function'&&!Element.prototype.setAttribute.__petatoeI18nBridge){
+      var originalSetAttribute=Element.prototype.setAttribute;
+      var wrappedSetAttribute=function(name,value){
+        var attr=String(name||'').toLowerCase();
+        if(ATTRS.indexOf(attr)!==-1||attr==='value')value=translateAssignedValue(this,value);
+        return originalSetAttribute.call(this,name,value);
+      };
+      wrappedSetAttribute.__petatoeI18nBridge=true;
+      wrappedSetAttribute.__petatoeI18nOriginal=originalSetAttribute;
+      try{Element.prototype.setAttribute=wrappedSetAttribute;}catch(_){ }
+    }
+  }
+
+  function init(){installSourceSetterBridge();patchCanvas();patchNativeDialogs();patchRuntimeMessageApis();installObserver();if(runtimeEnabled()){buildIndex();resumeObserver();requestFullScan(0);}}
+
 
   window.PETATOE_GLOBAL_SCREEN_TRANSLATOR={
     translate:translateMixed,
@@ -481,7 +531,7 @@
     rebuild:function(){ensureIndexFresh(true);requestFullScan(0);},
     hydrate:function(){scheduleInitialEnglishHydration('manual-api',0);},
     remainingArabic:residuals,
-    stats:function(){return{mode:'bulk-runtime-refactor',observerActive:!!observer&&runtimeEnabled(),authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing,patchedMessageApis:Object.keys(patchedMessageFunctions).length};},
+    stats:function(){return{mode:'final-residual-source-cleanup',observerActive:!!observer&&runtimeEnabled(),authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing,patchedMessageApis:Object.keys(patchedMessageFunctions).length};},
     assertEnglishClean:function(){
       var rows=residuals();
       if(rows.length)console.error('[PETATOE i18n] Arabic remains in English UI',rows);

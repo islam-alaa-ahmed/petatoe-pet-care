@@ -21,7 +21,7 @@ function walk(dir){
 }
 walk(root);
 const release=fs.readFileSync(path.join(root,'RELEASE_VERSION.txt'),'utf8');
-if(!release.includes('PETATOE v9.3.3')||!release.includes('ELC_V9_3_3_FINAL_BULK_SOURCE_MIGRATION')){
+if(!((release.includes('PETATOE v9.3.3')&&release.includes('ELC_V9_3_3_FINAL_BULK_SOURCE_MIGRATION'))||(release.includes('PETATOE v9.3.5')&&release.includes('ELC_V9_3_5_FINAL_RESIDUAL_LOCALIZATION_CLEANUP')))){
   console.error('Release metadata is not synchronized.'); process.exit(1);
 }
 if(violations.length){
