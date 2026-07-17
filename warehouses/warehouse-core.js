@@ -310,7 +310,7 @@
     if(!statementSource){alert(whT('openStatementFirst'));return}
     var rows=filteredStatementRows();
     var html='<!doctype html><html dir="rtl"><head><meta charset="utf-8"><title>كشف حساب المخزن</title><style>body{font-family:Cairo,Arial,sans-serif;color:#111827;padding:18px}h2{text-align:center}table{width:100%;border-collapse:collapse;font-size:11px}th{background:#2563eb;color:#fff;padding:7px}td{border:1px solid #ddd;padding:6px;text-align:center}.in{color:#15803d;font-weight:bold}.out{color:#dc2626;font-weight:bold}</style></head><body><h2>كشف حساب: '+petatoe_v359_car_warehouses_js_esc(statementSource)+'</h2><table><thead><tr><th>#</th><th>التاريخ</th><th>الحركة</th><th>الصنف</th><th>من</th><th>إلى</th><th>وارد</th><th>صادر</th><th>الرصيد</th><th>المسؤول</th><th>المرجع</th></tr></thead><tbody>'+rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+petatoe_v359_car_warehouses_js_esc(r.time?new Date(r.time).toLocaleString(whLocale()):'-')+'</td><td>'+petatoe_v359_car_warehouses_js_esc(normalizeType(r.type))+'</td><td>'+petatoe_v359_car_warehouses_js_esc(r.item)+'</td><td>'+petatoe_v359_car_warehouses_js_esc(r.from)+'</td><td>'+petatoe_v359_car_warehouses_js_esc(r.to)+'</td><td class="in">'+(r.inQty?fmtQty(r.inQty):'-')+'</td><td class="out">'+(r.outQty?fmtQty(r.outQty):'-')+'</td><td>'+fmtQty(r.balance)+'</td><td>'+petatoe_v359_car_warehouses_js_esc(r.person)+'</td><td>'+petatoe_v359_car_warehouses_js_esc(r.ref)+'</td></tr>'}).join('')+'</tbody></table></bo'+'dy></html>';
-    html=html.replace('</bo'+'dy></html>','<scr'+'ipt>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},300);});<\/scr'+'ipt></bo'+'dy></html>'); var w=openPrintHtml(html,'width=1100,height=800'); if(!w){alert('المتصفح منع نافذة الطباعة');return}
+    html=html.replace('</bo'+'dy></html>','<scr'+'ipt>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},300);});<\/scr'+'ipt></bo'+'dy></html>'); var w=openPrintHtml(html,'width=1100,height=800'); if(!w){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('المتصفح منع نافذة الطباعة'):'المتصفح منع نافذة الطباعة');return}
   }
   var __warehouseMainRenderBusy=false, __warehouseMainRenderQueued=false;
   function render(){
@@ -389,33 +389,33 @@
         await window.PETATOEWarehouseDataStore.load();
       }
       var code=String((byId('whItemCode')||{}).value||'').trim()||nextCode(),name=String((byId('whItemName')||{}).value||'').trim(),type=(byId('whItemType')||{}).value||'service',cat=String((byId('whItemCategory')||{}).value||'').trim(),unit=String((byId('whItemUnit')||{}).value||'').trim(),min=num((byId('whItemMin')||{}).value),notes=String((byId('whItemNotes')||{}).value||'').trim();
-      if(!name){alert('اكتب اسم الصنف');return}
+      if(!name){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب اسم الصنف'):'اكتب اسم الصنف');return}
       code=editItemId?code:nextCode();
-      if(!/^\d+$/.test(code)){alert('كود الصنف يجب أن يكون رقمياً مثل 100001');return}
+      if(!/^\d+$/.test(code)){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('كود الصنف يجب أن يكون رقمياً مثل 100001'):'كود الصنف يجب أن يكون رقمياً مثل 100001');return}
       var a=warehouseUiGetItems();
       var dupCode=a.find(function(x){return String(x.code||x.item_code||'').trim()===code&&String(x.id||x.legacy_id||x.code)!==String(editItemId||'')});
-      if(dupCode){alert('كود الصنف موجود بالفعل');return}
+      if(dupCode){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('كود الصنف موجود بالفعل'):'كود الصنف موجود بالفعل');return}
       var dupName=a.find(function(x){return String(x.name||'').trim()===name&&String(x.id||x.legacy_id||x.code)!==String(editItemId||'')});
-      if(dupName){alert('اسم الصنف موجود بالفعل');return}
+      if(dupName){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اسم الصنف موجود بالفعل'):'اسم الصنف موجود بالفعل');return}
       if(editItemId){
         a=a.map(function(x){return String(x.id||x.legacy_id||x.code)===String(editItemId)?Object.assign({},x,{id:code,legacy_id:code,code:code,item_code:code,name:name,type:type,category:cat,unit:unit,min:min,notes:notes,updatedAt:new Date().toISOString()}):x})
       }else{
         a.push({id:code,legacy_id:code,code:code,item_code:code,name:name,type:type,category:cat,unit:unit,min:min,notes:notes,status:'active',source:'manual',userClassified:true,createdAt:new Date().toISOString()})
       }
       var result=await warehouseUiSetItems(a);
-      if(result&&result.ok===false){alert('فشل حفظ الصنف في Supabase: '+(result.error||'خطأ غير معروف'));return}
+      if(result&&result.ok===false){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('فشل حفظ الصنف في Supabase: '):'فشل حفظ الصنف في Supabase: '+(result.error||'خطأ غير معروف'));return}
       clearItemForm();renderWarehouseUIAll();
       try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-saved',{detail:{name:name,code:code,type:type}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}
       try{window.PETATOEWarehouses&&window.PETATOEWarehouses.render&&window.PETATOEWarehouses.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}
-      toast('تم حفظ الصنف')
+      toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم حفظ الصنف'):'تم حفظ الصنف')
     }catch(e){
-      alert('فشل حفظ الصنف: '+(e&&e.message?e.message:String(e)));
+      alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('فشل حفظ الصنف: '):'فشل حفظ الصنف: '+(e&&e.message?e.message:String(e)));
       try{window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}catch(_e){}
     }
   }
   function editItem(id){var x=warehouseUiGetItems().find(function(i){return i.id===id});if(!x)return;editItemId=id;try{window.PETATOEWarehouseUI&&(window.PETATOEWarehouseUI.__editingItemId=true)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}var set=function(id,v){var e=byId(id);if(e)e.value=v==null?'':v};set('whItemCode',x.code||x.id);set('whItemName',x.name);set('whItemType',x.type||'service');set('whItemCategory',x.category);set('whItemUnit',x.unit);set('whItemMin',x.min||0);set('whItemNotes',x.notes);try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-edit',{detail:{id:id}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}openWarehouseTab('items');}
   function toggleItem(id){var a=warehouseUiGetItems().map(function(x){return x.id===id?Object.assign({},x,{status:(x.status||'active')==='active'?'inactive':'active'}):x});warehouseUiSetItems(a);renderWarehouseUIAll();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-changed',{detail:{id:id,action:'toggle'}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}try{window.PETATOEWarehouses&&window.PETATOEWarehouses.render&&window.PETATOEWarehouses.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
-  function deleteItem(id){var x=warehouseUiGetItems().find(function(i){return i.id===id});if(!x)return;if(petBlock6857_getTx().some(function(t){return t.item===x.name})){alert('لا يمكن حذف صنف عليه حركات مخزنية. يمكن إيقافه بدل الحذف.');return}if(!confirm('حذف الصنف؟'))return;warehouseUiSetItems(warehouseUiGetItems().filter(function(i){return i.id!==id}));renderWarehouseUIAll();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-changed',{detail:{id:id,action:'delete'}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
+  function deleteItem(id){var x=warehouseUiGetItems().find(function(i){return i.id===id});if(!x)return;if(petBlock6857_getTx().some(function(t){return t.item===x.name})){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا يمكن حذف صنف عليه حركات مخزنية. يمكن إيقافه بدل الحذف.'):'لا يمكن حذف صنف عليه حركات مخزنية. يمكن إيقافه بدل الحذف.');return}if(!confirm(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حذف الصنف؟'):'حذف الصنف؟'))return;warehouseUiSetItems(warehouseUiGetItems().filter(function(i){return i.id!==id}));renderWarehouseUIAll();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:item-changed',{detail:{id:id,action:'delete'}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
   function renderItems(){var body=byId('whItemsBody');if(!body)return;var q=String((byId('whItemSearch')||{}).value||'').toLowerCase(),typ=(byId('whItemTypeFilter')||{}).value||'all',st=(byId('whItemStatusFilter')||{}).value||'all';var rows=warehouseUiGetItems().filter(function(x){var txt=(x.code+' '+x.name+' '+x.category+' '+x.unit).toLowerCase();return(!q||txt.indexOf(q)>-1)&&(typ==='all'||(x.type||'stock')===typ)&&(st==='all'||(x.status||'active')===st)});window.PETATOEWarehouseSafeRender.html(body, rows.map(function(x,i){var type=x.type||'stock',status=x.status||'active';return '<tr><td>'+(i+1)+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(x.code||x.id)+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(x.name)+'</td><td><span class="wh-type-pill '+(type==='service'?'service':'stock')+'">'+(type==='service'?'خدمي':'مخزني')+'</span></td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(x.category||'-')+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(x.unit||'-')+'</td><td style="direction:ltr;font-weight:950">'+fmtQty(x.min||0)+'</td><td><span class="wh-status-pill '+(status==='inactive'?'inactive':'active')+'">'+(status==='inactive'?'متوقف':'نشط')+'</span></td><td><button class="btn btn-ghost" type="button" data-wh-item-action="edit" data-wh-item-id="'+petatoe_v364_warehouse_tabs_items_js_esc(x.id)+'">تعديل</button> <button class="btn btn-ghost" type="button" data-wh-item-action="toggle" data-wh-item-id="'+petatoe_v364_warehouse_tabs_items_js_esc(x.id)+'">'+(status==='inactive'?'تفعيل':'إيقاف')+'</button> <button class="btn btn-danger" type="button" data-wh-item-action="delete" data-wh-item-id="'+petatoe_v364_warehouse_tabs_items_js_esc(x.id)+'">حذف</button></td></tr>'}).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:22px">لا توجد أصناف مطابقة.</td></tr>', 'warehouse-core render');}
   function renderRecent(){var body=byId('whRecentBody');if(!body)return;var rows=movementRows().slice(0,10);window.PETATOEWarehouseSafeRender.html(body, rows.map(function(t,i){return '<tr><td>'+(i+1)+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(t.time?new Date(t.time).toLocaleString(whLocale()):'-')+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(normalizeType(t.type))+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(t.item)+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(t.from||'-')+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(t.to||'-')+'</td><td style="direction:ltr;font-weight:950">'+fmtQty(t.qty)+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(t.person||'-')+'</td><td>'+petatoe_v364_warehouse_tabs_items_js_esc(t.ref||'-')+'</td></tr>'}).join('')||'<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:22px">لا توجد حركات بعد.</td></tr>', 'warehouse-core render')}
   function renderReportSelects(){var st=stores();warehouseUiFillSelect(byId('whStatementStoreSelect'),st,'اختر المخزن');warehouseUiFillSelect(byId('whInventoryStore'),st,'كل المخازن');warehouseUiFillSelect(byId('whSlowStore'),st,'كل المخازن');warehouseUiFillSelect(byId('whFastStore'),st,'كل المخازن');var dl=byId('whItemsList');if(dl)window.PETATOEWarehouseSafeRender.html(dl, stockNames().map(function(v){return '<option value="'+petatoe_v364_warehouse_tabs_items_js_esc(v)+'"></option>'}).join(''), 'warehouse datalist render')}
@@ -433,7 +433,7 @@
   function refreshAll(){try{window.PETATOEWarehouses&&window.PETATOEWarehouses.render&&window.PETATOEWarehouses.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}renderWarehouseUIAll()}
   function renderWarehouseUIAllNow(){renderReportSelects();renderItems();renderRecent();renderInventory();renderSlowItems();renderFastItems();var c=byId('whItemCode');if(c&&!editItemId)c.value=nextCode();try{document.dispatchEvent(new CustomEvent('petatoe:warehouse:ui-rendered'))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("warehouses/warehouse-core.js",e);}}
   function renderWarehouseUIAll(){window.PETATOEWarehousePerf.runWhenActive('ui-render-all',renderWarehouseUIAllNow,90)}
-  document.addEventListener('petatoe:warehouse:before-save-movement',function(e){var item=String((e.detail&&e.detail.item)||'').trim();var it=itemByName(item);if(it&&(it.type||'stock')==='service'){alert('هذا صنف خدمي ولا يتم خصمه أو تحريكه داخل المخازن');e.preventDefault();return}if(it&&(it.status||'active')==='inactive'){alert('هذا الصنف متوقف، فعّله أولاً من دليل الأصناف');e.preventDefault();return}});
+  document.addEventListener('petatoe:warehouse:before-save-movement',function(e){var item=String((e.detail&&e.detail.item)||'').trim();var it=itemByName(item);if(it&&(it.type||'stock')==='service'){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('هذا صنف خدمي ولا يتم خصمه أو تحريكه داخل المخازن'):'هذا صنف خدمي ولا يتم خصمه أو تحريكه داخل المخازن');e.preventDefault();return}if(it&&(it.status||'active')==='inactive'){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('هذا الصنف متوقف، فعّله أولاً من دليل الأصناف'):'هذا الصنف متوقف، فعّله أولاً من دليل الأصناف');e.preventDefault();return}});
   document.addEventListener('click',function(e){var b=e.target&&e.target.closest?e.target.closest('.wh-statement-open'):null;if(b){openWarehouseTab('statement')}});
   document.addEventListener('click',function(e){
     var btn=e.target&&e.target.closest?e.target.closest('[data-wh-item-action]'):null;
@@ -589,13 +589,13 @@
     var file=e.target.files&&e.target.files[0];
     e.target.value='';
     if(!file) return;
-    if(!window.XLSX){alert('مكتبة Excel غير محملة. افتح الصفحة بالإنترنت أو استخدم القالب CSV لاحقاً.');return}
+    if(!window.XLSX){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('مكتبة Excel غير محملة. افتح الصفحة بالإنترنت أو استخدم القالب CSV لاحقاً.'):'مكتبة Excel غير محملة. افتح الصفحة بالإنترنت أو استخدم القالب CSV لاحقاً.');return}
     var reader=new FileReader();
     reader.onload=function(ev){
       try{
         var wb=XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
-        Promise.resolve(importRows(rowsFromWorkbook(wb))).catch(function(err){console.error(err);alert('فشل حفظ أصناف Excel: '+(err&&err.message?err.message:String(err)));});
-      }catch(err){console.error(err);alert('تعذر قراءة ملف Excel. تأكد من صيغة الملف.');}
+        Promise.resolve(importRows(rowsFromWorkbook(wb))).catch(function(err){console.error(err);alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('فشل حفظ أصناف Excel: '):'فشل حفظ أصناف Excel: '+(err&&err.message?err.message:String(err)));});
+      }catch(err){console.error(err);alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر قراءة ملف Excel. تأكد من صيغة الملف.'):'تعذر قراءة ملف Excel. تأكد من صيغة الملف.');}
     };
     reader.readAsArrayBuffer(file);
   }
@@ -617,7 +617,7 @@
   }
   async function importRows(rows){
     rows=Array.isArray(rows)?rows:[];
-    if(!rows.length){alert('ملف Excel لا يحتوي على بيانات.');return}
+    if(!rows.length){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('ملف Excel لا يحتوي على بيانات.'):'ملف Excel لا يحتوي على بيانات.');return}
     await ensureWarehouseStoreReady();
     var items=petatoe_v372_warehouse_stock_search_exce_getItems();
     var byCode={};
@@ -656,7 +656,7 @@
         items.push(obj);byCode[code]=obj;added++;
       }
     });
-    if(errors.length && !added && !updated){alert('لم يتم استيراد أي صنف.\n'+errors.slice(0,8).join('\n'));return}
+    if(errors.length && !added && !updated){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لم يتم استيراد أي صنف.\n'):'لم يتم استيراد أي صنف.\n'+errors.slice(0,8).join('\n'));return}
     var saveResult=warehouseStockSearchSetItems(items);
     if(saveResult && typeof saveResult.then==='function'){
       saveResult=await saveResult;
@@ -664,7 +664,7 @@
     if(saveResult && saveResult.ok===false){throw new Error(saveResult.error||'فشل حفظ الأصناف في Supabase')}
     try{if(window.PETATOEWarehouseDataStore&&typeof window.PETATOEWarehouseDataStore.load==='function') await window.PETATOEWarehouseDataStore.load();}catch(_e){}
     refreshAllSafe();
-    toast('تم استيراد الأصناف من Excel: جديد '+added+' / تحديث '+updated+' / متروك '+skipped+(errors.length?'\nملاحظات: '+errors.slice(0,5).join(' | '):''));
+    toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم استيراد الأصناف من Excel: جديد '):'تم استيراد الأصناف من Excel: جديد '+added+' / تحديث '+updated+' / متروك '+skipped+(errors.length?'\nملاحظات: '+errors.slice(0,5).join(' | '):''));
   }
 
   function bindWarehouseEvents(){
@@ -673,9 +673,9 @@
     window.PETATOEWarehousePerf.bindDocumentOnce('warehouse-stock-before-save','petatoe:warehouse:before-save-movement',function(e){
       var inp=byId('whItem');
       var name=whWarehouseTextNorm((e.detail&&e.detail.item)||(inp&&inp.value));
-      if(!name){alert('اختر صنف مخزني أولاً');e.preventDefault();return}
+      if(!name){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اختر صنف مخزني أولاً'):'اختر صنف مخزني أولاً');e.preventDefault();return}
       if(!stockItems().some(function(x){return low(x.name)===low(name)})){
-        alert('هذا الصنف غير موجود ضمن الأصناف المخزنية. حوّله إلى مخزني من دليل الأصناف أو أضفه من Excel.');
+        alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('هذا الصنف غير موجود ضمن الأصناف المخزنية. حوّله إلى مخزني من دليل الأصناف أو أضفه من Excel.'):'هذا الصنف غير موجود ضمن الأصناف المخزنية. حوّله إلى مخزني من دليل الأصناف أو أضفه من Excel.');
         if(inp) inp.focus();
         e.preventDefault();
       }
@@ -760,7 +760,7 @@
   function bindSaveValidation(){
     if(window.__PETATOE_V377_WAREHOUSE_VALIDATION_BOUND__)return;
     window.__PETATOE_V377_WAREHOUSE_VALIDATION_BOUND__=true;
-    window.PETATOEWarehousePerf.bindDocumentOnce('warehouse-stock-menu-before-save','petatoe:warehouse:before-save-movement',function(e){if(!validate()){var inp=byId('whItem');if(inp)inp.focus();alert('اختر صنف مخزني صحيح من القائمة.');e.preventDefault();}});
+    window.PETATOEWarehousePerf.bindDocumentOnce('warehouse-stock-menu-before-save','petatoe:warehouse:before-save-movement',function(e){if(!validate()){var inp=byId('whItem');if(inp)inp.focus();alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اختر صنف مخزني صحيح من القائمة.'):'اختر صنف مخزني صحيح من القائمة.');e.preventDefault();}});
   }
   function refresh(){removeNative();bind();renderMenu(false);bindSaveValidation()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){window.PETATOEWarehousePerf.runWhenActive('stock-search-menu-startup',refresh,500)});else{window.PETATOEWarehousePerf.runWhenActive('stock-search-menu-startup',refresh,500)}

@@ -11,7 +11,7 @@
       if(typeof fn === 'string' && typeof window[fn] === 'function') return window[fn]();
     }catch(e){
       console.error('[PETATOEExport] legacy export failed', e);
-      if(typeof window.toast === 'function') window.toast('تعذر تنفيذ التصدير');
+      if(typeof window.toast === 'function') window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر تنفيذ التصدير'):'تعذر تنفيذ التصدير');
     }
   };
   ns.pdf = ns.pdf || function(fn){ return ns.runLegacy(fn); };

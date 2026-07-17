@@ -87,7 +87,7 @@
     }catch(e){ try{ console.warn('[PETATOE Import Override] audit failed', e); }catch(_e){} }
   }
   async function forceImportAfterOverride(reason){
-    if(!(importData&&importData.length)){ toast('لا توجد بيانات قابلة للرفع بعد التخطي'); return; }
+    if(!(importData&&importData.length)){ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات قابلة للرفع بعد التخطي'):'لا توجد بيانات قابلة للرفع بعد التخطي'); return; }
     const replace=!!pendingOverrideReplace;
     auditOverride(reason, replace);
     const existingRows=dsRecords().slice();
@@ -104,7 +104,7 @@
   function openOverrideModal(){
     ensureOverrideStyle();
     const full=findCurrentFullUser();
-    if(!isSuperAdminUser(full)){ toast('تخطي قواعد الرفع متاح فقط لـ Super Admin'); return; }
+    if(!isSuperAdminUser(full)){ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تخطي قواعد الرفع متاح فقط لـ Super Admin'):'تخطي قواعد الرفع متاح فقط لـ Super Admin'); return; }
     const old=document.getElementById('petImportOverrideModal'); if(old)old.remove();
     const bd=document.createElement('div'); bd.className='pet-override-modal-backdrop'; bd.id='petImportOverrideModal';
     bd.innerHTML='<div class="pet-override-modal" role="dialog" aria-modal="true"><h3>🛡️ تخطي قواعد التحقق والرفع</h3><p>سيتم رفع البيانات رغم وجود أخطاء أو تكرار. استخدم هذا الإجراء فقط عند التأكد من صحة الملف ومسؤوليتك عن التجاوز.</p><label>سبب التجاوز / ملاحظة</label><textarea id="petOverrideReason" placeholder="مثال: استيراد اضطراري بعد مراجعة الملف"></textarea><label>كلمة مرور Super Admin</label><input id="petOverridePassword" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور"><label class="pet-override-check"><input id="petOverrideAcknowledge" type="checkbox"><span>أقر أن هذا الإجراء قد يرفع بيانات مخالفة لقواعد التحقق أو مكررة.</span></label><div class="pet-override-error" id="petOverrideError"></div><div class="pet-override-actions"><button type="button" class="pet-override-confirm" id="petOverrideConfirmBtn">تخطي والرفع</button><button type="button" class="pet-override-cancel" id="petOverrideCancelBtn">إلغاء</button></div></div>';
@@ -119,7 +119,7 @@
       const check=verifyOverridePassword(bd.querySelector('#petOverridePassword').value);
       if(!check.ok){ err.textContent=check.reason; return; }
       const reason=bd.querySelector('#petOverrideReason').value||'';
-      close(); forceImportAfterOverride(reason).catch(function(e){ console.error('[PETATOE Import Override] failed', e); if(typeof toast==='function') toast('فشل تنفيذ التخطي والرفع'); });
+      close(); forceImportAfterOverride(reason).catch(function(e){ console.error('[PETATOE Import Override] failed', e); if(typeof toast==='function') toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('فشل تنفيذ التخطي والرفع'):'فشل تنفيذ التخطي والرفع'); });
     });
   }
   function appendOverrideButton(box){
@@ -164,7 +164,7 @@
     if(lastImportErrors.length>80){const more=appendText(box,'div','تم عرض أول 80 خطأ فقط.'); more.style.marginTop='8px'; more.style.color='var(--muted)';}
     appendOverrideButton(box);
     const pv=document.getElementById('previewCard'); if(pv)pv.style.display='none';
-    if(typeof toast==='function')toast('تم منع الرفع - راجع تفاصيل الأخطاء');
+    if(typeof toast==='function')toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم منع الرفع - راجع تفاصيل الأخطاء'):'تم منع الرفع - راجع تفاصيل الأخطاء');
   }
   function clearErrors(){renderErrors([])}
   function findHeaderRow(data, wanted){
@@ -304,7 +304,7 @@
 
     if(hasOfficialDataLayer()){
       try{
-        if(typeof toast==='function') toast('جاري رفع البيانات الرسمية إلى Supabase...');
+        if(typeof toast==='function') toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('جاري رفع البيانات الرسمية إلى Supabase...'):'جاري رفع البيانات الرسمية إلى Supabase...');
         supabaseResult = await window.PETATOEDataLayer.insertSalesRecords(uploadRows, {
           mode: importMode,
           replace: !!options.replace,
@@ -314,7 +314,7 @@
           const msg=(supabaseResult&&supabaseResult.error&&supabaseResult.error.message)?supabaseResult.error.message:'فشل حفظ البيانات في Supabase';
           console.error('[PETATOE Import] Supabase save failed', supabaseResult);
           renderErrors([makeError(1,1,'فشل الرفع إلى Supabase',msg)]);
-          if(typeof toast==='function') toast('فشل الرفع إلى Supabase — راجع Console');
+          if(typeof toast==='function') toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('فشل الرفع إلى Supabase — راجع Console'):'فشل الرفع إلى Supabase — راجع Console');
           window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase',rows:uploadRows.length,result:supabaseResult};
           return false;
         }
@@ -331,7 +331,7 @@
       }catch(e){
         console.error('[PETATOE Import] Supabase save crashed', e);
         renderErrors([makeError(1,1,'حدث خطأ أثناء الرفع إلى Supabase',e&&e.message?e.message:String(e))]);
-        if(typeof toast==='function') toast('حدث خطأ أثناء الرفع إلى Supabase');
+        if(typeof toast==='function') toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حدث خطأ أثناء الرفع إلى Supabase'):'حدث خطأ أثناء الرفع إلى Supabase');
         window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase',rows:uploadRows.length,error:String(e&&e.message?e.message:e)};
         return false;
       }
@@ -340,7 +340,7 @@
       const msg='PETATOEDataLayer غير محمل — تم إلغاء الرفع لمنع الحفظ المحلي أو فقدان البيانات';
       console.error('[PETATOE Import] Data Layer missing; Supabase-only commit aborted');
       renderErrors([makeError(1,1,'تعذر الرفع إلى Supabase',msg)]);
-      if(typeof toast==='function') toast('تعذر الرفع إلى Supabase — راجع Console');
+      if(typeof toast==='function') toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر الرفع إلى Supabase — راجع Console'):'تعذر الرفع إلى Supabase — راجع Console');
       window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase-required',rows:uploadRows.length,error:msg};
       return false;
     }
@@ -429,7 +429,7 @@
       if(importMode==='payments')n.textContent='ملف المدفوعات لا يضيف بنود جديدة، لكنه يربط طريقة الدفع برقم الفاتورة في بيانات البنود المرفوعة أو السجلات الحالية.';
     }
   }
-  window.setImportMode=function(mode){importMode=MODES[mode]?mode:'full';clearErrors();updateImportModeUI(); if(typeof toast==='function')toast('تم اختيار: '+(importMode==='full'?'رفع تقرير تفصيلي شامل':importMode==='items'?'مبيعات البنود حسب التصنيف':'تحديد طريقة المدفوعات'));};
+  window.setImportMode=function(mode){importMode=MODES[mode]?mode:'full';clearErrors();updateImportModeUI(); if(typeof toast==='function')toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم اختيار: '):'تم اختيار: '+(importMode==='full'?'رفع تقرير تفصيلي شامل':importMode==='items'?'مبيعات البنود حسب التصنيف':'تحديد طريقة المدفوعات'));};
   window.downloadTemplate=function(){
     let headers;
     if(importMode==='items')headers=['الاسم','التاريخ','رقم الفاتورة','العميل','سعر الوحدة','الكمية','الخصم','الضرائب','الإجمالي (SAR)','السياره'];
@@ -460,7 +460,7 @@
           let persistResult=null;
           if(targetRows===existingRows && ap.updatedRows){
             dsSetRecords(existingRows);
-            try{ if(typeof toast==='function')toast('جاري حفظ طرق الدفع في Supabase...'); }catch(_e){}
+            try{ if(typeof toast==='function')toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('جاري حفظ طرق الدفع في Supabase...'):'جاري حفظ طرق الدفع في Supabase...'); }catch(_e){}
             persistResult=await persistPaymentMethodsToSupabase(ap,stagedPaymentMap);
             if(!persistResult||!persistResult.ok){
               renderErrors([makeError(1,1,'فشل حفظ طرق الدفع في Supabase',(persistResult&&persistResult.error)||'خطأ غير معروف')]);
@@ -517,7 +517,7 @@
     }
   };
   window.confirmImport=async function(replace){
-    if(!(importData&&importData.length)){toast('لا توجد بيانات جاهزة للاعتماد');return;}
+    if(!(importData&&importData.length)){toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات جاهزة للاعتماد'):'لا توجد بيانات جاهزة للاعتماد');return;}
     pendingOverrideReplace=!!replace; pendingOverrideContext='confirm';
     const errs=[];
     const dup=duplicateErrorsAgainstExisting(importData,replace); errs.push(...dup);

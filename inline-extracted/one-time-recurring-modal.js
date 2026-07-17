@@ -86,7 +86,7 @@
   window.exportSmartNewReturningList=function(kind){
     kind = kind==='returning'?'returning':'oneTime';
     var list=rows(kind);
-    if(!list.length){notify('لا توجد بيانات للتصدير');return;}
+    if(!list.length){notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير');return;}
     var data=list.map(function(r){return {
       'العميل':r.name||'',
       'عدد العمليات':r.operations||0,
@@ -98,7 +98,7 @@
       'السيارات':r.vans||'',
       'طرق الدفع':r.pays||''
     };});
-    if(!window.XLSX){notify('مكتبة Excel غير متاحة');return;}
+    if(!window.XLSX){notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('مكتبة Excel غير متاحة'):'مكتبة Excel غير متاحة');return;}
     var ws=XLSX.utils.json_to_sheet(data);
     ws['!cols']=[{wch:34},{wch:14},{wch:14},{wch:18},{wch:16},{wch:16},{wch:18},{wch:30},{wch:20}];
     var wb=XLSX.utils.book_new();

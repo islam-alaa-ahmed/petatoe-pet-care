@@ -99,10 +99,10 @@
   }
 
   function openPrintableInvoice(html, autoPrint){
-    if(!html){ alert('افتح معاينة الفاتورة الأول من زر العين أو رقم الفاتورة'); return false; }
+    if(!html){ alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('افتح معاينة الفاتورة الأول من زر العين أو رقم الفاتورة'):'افتح معاينة الفاتورة الأول من زر العين أو رقم الفاتورة'); return false; }
     var printHtml='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PETATOE Invoice</title><style>'+standaloneInvoiceCss()+'</style></head><body><div class="sir-print-toolbar"><button id="petInvoicePrintBtn" type="button">طباعة / حفظ PDF</button><button id="petInvoiceCloseBtn" type="button">إغلاق</button><script>document.addEventListener("click",function(e){if(e.target&&e.target.id==="petInvoicePrintBtn")window.print();if(e.target&&e.target.id==="petInvoiceCloseBtn")window.close();});<\/script></div>'+html+(autoPrint?'<scr'+'ipt>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},900);});<\/scr'+'ipt>':'')+ '</body></html>';
     var w=openPrintHtml(printHtml,'width=920,height=900');
-    if(!w){ alert('المتصفح منع فتح نافذة الطباعة. اسمح بالـ Popups وجرب تاني.'); return false; }
+    if(!w){ alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('المتصفح منع فتح نافذة الطباعة. اسمح بالـ Popups وجرب تاني.'):'المتصفح منع فتح نافذة الطباعة. اسمح بالـ Popups وجرب تاني.'); return false; }
     return true;
   }
 

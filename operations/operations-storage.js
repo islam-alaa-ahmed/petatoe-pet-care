@@ -154,7 +154,7 @@
       lastWriteError = e;
       warn(e);
       try{ window.dispatchEvent(new CustomEvent('petatoe:operations-sync', { detail:{ ok:false, error:e && (e.message || String(e)) } })); }catch(evtErr){ warn(evtErr); }
-      try{ if(typeof window.toast === 'function') window.toast('فشل مزامنة بيانات التشغيل مع Supabase'); }catch(toastErr){ warn(toastErr); }
+      try{ if(typeof window.toast === 'function') window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('فشل مزامنة بيانات التشغيل مع Supabase'):'فشل مزامنة بيانات التشغيل مع Supabase'); }catch(toastErr){ warn(toastErr); }
     });
     return true;
   }

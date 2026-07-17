@@ -116,8 +116,8 @@
     var a = adapter();
     if(!a) return callTarget('saveAppointment', []);
     var r = a.collect();
-    if(!r.client){ alert('اكتب اسم العميل'); return; }
-    if(!r.date){ alert('اختر تاريخ الموعد'); return; }
+    if(!r.client){ alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب اسم العميل'):'اكتب اسم العميل'); return; }
+    if(!r.date){ alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اختر تاريخ الموعد'):'اختر تاريخ الموعد'); return; }
     var rows = a.read();
     var profile = a.findCustomerProfile();
     if(profile){
@@ -127,7 +127,7 @@
     }
     var conflicts = a.findConflicts(r, rows);
     if(conflicts.length){
-      alert('⚠️ يوجد تعارض في الموعد:\n' + conflicts.map(function(c){
+      alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('⚠️ يوجد تعارض في الموعد:\n'):'⚠️ يوجد تعارض في الموعد:\n' + conflicts.map(function(c){
         return '- ' + c.reason + ' مع ' + ((c.row && c.row.client) || 'عميل') + ' من ' + ((c.row && c.row.start) || '?') + ' إلى ' + ((c.row && c.row.end) || '?');
       }).join('\n'));
       return;
@@ -160,7 +160,7 @@
     a.write(rows);
     a.clearForm();
     a.setTab('log');
-    a.toast('تم حفظ الموعد');
+    a.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم حفظ الموعد'):'تم حفظ الموعد');
   }
 
   function actionEdit(id){
@@ -175,10 +175,10 @@
   function actionRemove(id){
     var a = adapter();
     if(!a) return callTarget('remove', [id]);
-    if(!confirm('حذف الموعد؟')) return;
+    if(!confirm(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حذف الموعد؟'):'حذف الموعد؟')) return;
     a.write(a.read().filter(function(x){ return String(x.id) !== String(id); }));
     a.render();
-    a.toast('تم حذف الموعد');
+    a.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم حذف الموعد'):'تم حذف الموعد');
   }
 
   function actionChangeStatus(id, status){
@@ -190,7 +190,7 @@
     });
     a.write(rows);
     a.render();
-    a.toast('تم تحديث حالة الموعد');
+    a.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم تحديث حالة الموعد'):'تم تحديث حالة الموعد');
   }
 
   window.PETATOEOperationsAppointmentsActions = {

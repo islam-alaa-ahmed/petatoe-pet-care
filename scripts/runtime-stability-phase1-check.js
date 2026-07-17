@@ -21,8 +21,8 @@ assert(globalTranslator.includes("installObserver();if(runtimeEnabled())"),'Seco
 assert(globalTranslator.includes("mode:'bulk-runtime-refactor'"),'Secondary translator reports bulk runtime mode');
 assert(business.includes('safeEnglishFallback(type,original)'),'English business values use a safe non-Arabic fallback');
 assert(business.includes('PETATOE_BUSINESS_I18N_MISSING'),'Missing business translations are discoverable');
-assert(runtime.includes("9.3.1-bulk-localization-refactor")||runtime.includes("9.3.2-runtime-localization-cleanup"),'Localization center runtime version is synchronized');
+assert(runtime.includes("9.3.1-bulk-localization-refactor")||runtime.includes("9.3.2-runtime-localization-cleanup")||runtime.includes("9.3.3-final-bulk-source-migration"),'Localization center runtime version is synchronized');
 ['i18n/index.js','i18n/localization-center/loader.js','i18n/business-data-localization.js'].forEach(file=>assert(html.includes(file+'?v=9.2.1-runtime-stability-phase1'),file+' cache token synchronized'));
-['i18n/localization-center/runtime.js','i18n/global-screen-translator.js'].forEach(file=>assert(html.includes(file+'?v=9.3.1-bulk-localization-refactor')||html.includes(file+'?v=9.3.2-runtime-localization-cleanup'),file+' cache token synchronized'));
+['i18n/localization-center/runtime.js','i18n/global-screen-translator.js'].forEach(file=>assert(html.includes(file+'?v=9.3.1-bulk-localization-refactor')||html.includes(file+'?v=9.3.2-runtime-localization-cleanup')||html.includes(file+'?v=9.3.3-final-bulk-source-migration'),file+' cache token synchronized'));
 if(process.exitCode)process.exit(process.exitCode);
 console.log('Runtime Stability Phase 1 check passed.');

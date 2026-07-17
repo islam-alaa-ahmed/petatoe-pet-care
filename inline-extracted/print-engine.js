@@ -809,11 +809,11 @@
     try{ window.petatoeRefreshPdfReport(); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/print-engine.js",e);}
     var zone = document.getElementById('petatoe-pdf-zone');
     if(!zone || !zone.innerHTML || !zone.innerHTML.trim()){
-      alert('لا يوجد محتوى للطباعة. اضغط "تحديث" أولاً.');
+      alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا يوجد محتوى للطباعة. اضغط "تحديث" أولاً.'):'لا يوجد محتوى للطباعة. اضغط "تحديث" أولاً.');
       return;
     }
     if(zone.innerText && zone.innerText.indexOf('لا توجد بيانات بعد') !== -1){
-      alert('لا توجد بيانات متاحة للطباعة. قم باستيراد البيانات أولاً.');
+      alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات متاحة للطباعة. قم باستيراد البيانات أولاً.'):'لا توجد بيانات متاحة للطباعة. قم باستيراد البيانات أولاً.');
       return;
     }
 
@@ -823,7 +823,7 @@
     var pdfThemeClass = 'petatoe-pdf-theme-' + pdfTheme;
     var win = window.open('', '_blank', 'width=1200,height=850');
     if(!win){
-      alert('لم يتمكن المتصفح من فتح نافذة الطباعة. تحقق من إعدادات الـ Popup.');
+      alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لم يتمكن المتصفح من فتح نافذة الطباعة. تحقق من إعدادات الـ Popup.'):'لم يتمكن المتصفح من فتح نافذة الطباعة. تحقق من إعدادات الـ Popup.');
       return;
     }
 
@@ -969,7 +969,7 @@
   window.PETATOEHeaderPdfSafeOpen = window.PETATOEHeaderPdfSafeOpen || function(event){
     try{ if(event && event.preventDefault) event.preventDefault(); }catch(_e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('inline-extracted/print-engine.js',_e);}
     if(typeof window.petatoeOpenPdfModal === 'function') window.petatoeOpenPdfModal();
-    else alert('محرك تقرير PDF لم يكتمل تحميله بعد. أعد المحاولة خلال ثانية.');
+    else alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('محرك تقرير PDF لم يكتمل تحميله بعد. أعد المحاولة خلال ثانية.'):'محرك تقرير PDF لم يكتمل تحميله بعد. أعد المحاولة خلال ثانية.');
     return false;
   };
 

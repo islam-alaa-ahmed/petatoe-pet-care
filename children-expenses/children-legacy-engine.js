@@ -505,24 +505,24 @@
   function exportReportExcelInternal(){
     if(!canSpecial('children_expenses_export')){ deny('ليس لديك صلاحية تصدير تقارير مصروفات الأبناء'); return; }
     var rows=reportFilterRowsInternal(read());
-    if(!rows.length){ if(window.toast) window.toast('لا توجد بيانات للتصدير'); else alert('لا توجد بيانات للتصدير'); return; }
+    if(!rows.length){ if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير'); else alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير'); return; }
     var lines=[['التاريخ','الابن','نوع المصروف','طريقة الدفع','المبلغ','ملاحظات'].map(csvCell).join(',')];
     rows.forEach(function(r){ lines.push([r.date,r.child,r.category,r.payment,numberOnly(r.amount),r.notes||''].map(csvCell).join(',')); });
     var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8;'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='children-expenses-report-'+today()+'.csv'; document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); if(a.parentNode) a.parentNode.removeChild(a); },0);
-    if(window.toast) window.toast('تم تصدير تقرير المصروفات');
+    if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم تصدير تقرير المصروفات'):'تم تصدير تقرير المصروفات');
   }
   function openPrintHtml(html, features){try{var blob=new Blob([String(html||'')],{type:'text/html;charset=utf-8'});var url=URL.createObjectURL(blob);var w=window.open(url,'_blank',features||'width=1100,height=800');if(w)setTimeout(function(){try{URL.revokeObjectURL(url)}catch(_e){try{if(window.PETATOECaptureSilentCatch)window.PETATOECaptureSilentCatch('children-expenses/children-legacy-engine.js',_e,{phase:'v6.5.9-risk-cleanup'});}catch(_petatoeSilentCatch){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('children-expenses/children-legacy-engine.js',_petatoeSilentCatch);}}},60000);return w;}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('children-expenses/children-legacy-engine.js',e);return null;}}
   function htmlEsc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
   function printReportInternal(){
     if(!canSpecial('children_expenses_export')){ deny('ليس لديك صلاحية طباعة تقارير مصروفات الأبناء'); return; }
     var rows=reportFilterRowsInternal(read());
-    if(!rows.length){ if(window.toast) window.toast('لا توجد بيانات للطباعة'); else alert('لا توجد بيانات للطباعة'); return; }
+    if(!rows.length){ if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للطباعة'):'لا توجد بيانات للطباعة'); else alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للطباعة'):'لا توجد بيانات للطباعة'); return; }
     var total=rows.reduce(function(s,r){return s+numberOnly(r.amount);},0);
     var trs=rows.map(function(r,i){ return '<tr><td>'+htmlEsc(i+1)+'</td><td>'+htmlEsc(r.date)+'</td><td>'+htmlEsc(r.child)+'</td><td>'+htmlEsc(r.category)+'</td><td>'+htmlEsc(r.payment)+'</td><td>'+htmlEsc(fmt(r.amount))+'</td><td>'+htmlEsc(r.notes||'-')+'</td></tr>'; }).join('');
     var printHtml='<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تقرير مصروفات الأبناء</title><style>body{font-family:Cairo,Arial,sans-serif;margin:24px;color:#111827}h1{margin:0 0 8px}.meta{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0 18px}.pill{border:1px solid #d1d5db;border-radius:12px;padding:8px 12px;background:#f9fafb}table{width:100%;border-collapse:collapse}th,td{border:1px solid #d1d5db;padding:8px;text-align:right;font-size:12px}th{background:#f3f4f6}.total{margin-top:14px;font-weight:800}@media print{button{display:none}}</style></head><body><h1>تقرير مصروفات الأبناء</h1><div class="meta"><div class="pill">تاريخ التقرير: '+htmlEsc(today())+'</div><div class="pill">عدد العمليات: '+htmlEsc(rows.length)+'</div><div class="pill">الإجمالي: '+htmlEsc(fmt(total))+'</div></div><table><thead><tr><th>#</th><th>التاريخ</th><th>الابن</th><th>النوع</th><th>طريقة الدفع</th><th>المبلغ</th><th>ملاحظات</th></tr></thead><tbody>'+trs+'</tbody></table><div class="total">الإجمالي: '+htmlEsc(fmt(total))+'</div><script>window.onload=function(){setTimeout(function(){window.print();},150)}<\/script></body></html>';
     var w=openPrintHtml(printHtml,'width=1100,height=800');
-    if(!w){ alert('المتصفح منع نافذة الطباعة'); return; }
+    if(!w){ alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('المتصفح منع نافذة الطباعة'):'المتصفح منع نافذة الطباعة'); return; }
   }
 
   function ensureAnnualResetPlacement(){
@@ -549,8 +549,8 @@
   function saveFromFormInternal(){
     if(!can('add')){ deny('ليس لديك صلاحية إضافة مصروفات الأبناء'); return; }
     var child=val('childrenExpenseChild'), date=val('childrenExpenseDate')||today(), amount=Number(val('childrenExpenseAmount'));
-    if(!child){ if(window.toast) window.toast('اكتب اسم الابن'); else alert('اكتب اسم الابن'); return; }
-    if(!isFinite(amount) || amount<=0){ if(window.toast) window.toast('اكتب مبلغ صحيح'); else alert('اكتب مبلغ صحيح'); return; }
+    if(!child){ if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب اسم الابن'):'اكتب اسم الابن'); else alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب اسم الابن'):'اكتب اسم الابن'); return; }
+    if(!isFinite(amount) || amount<=0){ if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب مبلغ صحيح'):'اكتب مبلغ صحيح'); else alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب مبلغ صحيح'):'اكتب مبلغ صحيح'); return; }
     var rows=read(), id=val('childrenExpenseId'), now=new Date().toISOString();
     var row={id:id||makeId('ce'),date:date,child:child,category:val('childrenExpenseCategory')||'أخرى',payment:val('childrenExpensePayment')||'كاش',amount:Math.round(amount*100)/100,notes:val('childrenExpenseNotes'),createdAt:now,updatedAt:now};
     var idx=rows.findIndex(function(x){return x.id===id;});
@@ -561,9 +561,9 @@
   function saveBudgetFromFormInternal(){
     if(!canSpecial('children_expenses_budget')){ deny('ليس لديك صلاحية إدارة ميزانية مصروفات الأبناء'); return; }
     var month=val('childrenBudgetMonth')||currentMonth(), child=val('childrenBudgetChild'), amount=Number(val('childrenBudgetAmount'));
-    if(!/^\d{4}-\d{2}$/.test(month)){ if(window.toast) window.toast('حدد شهر صحيح'); else alert('حدد شهر صحيح'); return; }
-    if(!child){ if(window.toast) window.toast('اكتب اسم الابن'); else alert('اكتب اسم الابن'); return; }
-    if(!isFinite(amount) || amount<0){ if(window.toast) window.toast('اكتب ميزانية صحيحة'); else alert('اكتب ميزانية صحيحة'); return; }
+    if(!/^\d{4}-\d{2}$/.test(month)){ if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حدد شهر صحيح'):'حدد شهر صحيح'); else alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حدد شهر صحيح'):'حدد شهر صحيح'); return; }
+    if(!child){ if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب اسم الابن'):'اكتب اسم الابن'); else alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب اسم الابن'):'اكتب اسم الابن'); return; }
+    if(!isFinite(amount) || amount<0){ if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب ميزانية صحيحة'):'اكتب ميزانية صحيحة'); else alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب ميزانية صحيحة'):'اكتب ميزانية صحيحة'); return; }
     var rows=readBudgets(), now=new Date().toISOString();
     var idx=rows.findIndex(function(x){return String(x.month||'')===month && String(x.child||'')===child;});
     var row={id:idx>=0?rows[idx].id:makeId('ceb'),month:month,child:child,amount:Math.round(amount*100)/100,createdAt:idx>=0?(rows[idx].createdAt||now):now,updatedAt:now};
@@ -586,14 +586,14 @@
   function deleteRowInternal(id){
     if(!can('delete')){ deny('ليس لديك صلاحية حذف مصروفات الأبناء'); return; }
     var rows=read(), r=rows.find(function(x){return x.id===id;}); if(!r) return;
-    if(!confirm('حذف مصروف '+(r.child||'')+'؟')) return;
-    write(rows.filter(function(x){return x.id!==id;})); render(); if(window.toast) window.toast('تم حذف المصروف');
+    if(!confirm(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حذف مصروف '):'حذف مصروف '+(r.child||'')+'؟')) return;
+    write(rows.filter(function(x){return x.id!==id;})); render(); if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم حذف المصروف'):'تم حذف المصروف');
   }
   function deleteBudgetInternal(id){
     if(!canSpecial('children_expenses_budget')){ deny('ليس لديك صلاحية إدارة ميزانية مصروفات الأبناء'); return; }
     var rows=readBudgets(), b=rows.find(function(x){return x.id===id;}); if(!b) return;
-    if(!confirm('حذف ميزانية '+(b.child||'')+' لشهر '+(b.month||'')+'؟')) return;
-    writeBudgets(rows.filter(function(x){return x.id!==id;})); render(); if(window.toast) window.toast('تم حذف الميزانية');
+    if(!confirm(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حذف ميزانية '):'حذف ميزانية '+(b.child||'')+' لشهر '+(b.month||'')+'؟')) return;
+    writeBudgets(rows.filter(function(x){return x.id!==id;})); render(); if(window.toast) window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم حذف الميزانية'):'تم حذف الميزانية');
   }
   window.__PETATOEChildrenExpensesEntryInternal = {
     clearForm: clearForm,

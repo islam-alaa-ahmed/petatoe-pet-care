@@ -154,7 +154,7 @@
     options = options || {};
     var targetNode = ns.getNode ? ns.getNode(options.target || options.selector || 'body') : null;
     var clone = ns.cloneForExport(options.target || options.selector || 'body');
-    if(!clone){ ns.notify && ns.notify('تعذر العثور على محتوى الطباعة'); return; }
+    if(!clone){ ns.notify && ns.notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر العثور على محتوى الطباعة'):'تعذر العثور على محتوى الطباعة'); return; }
     var title = options.title || document.title || 'PETATOE Report';
     var isCommission = (targetNode && (targetNode.id === 'commissionStatementExportArea' || targetNode.getAttribute('data-commission-print') === '1')) || (clone && (clone.id === 'commissionStatementExportArea' || clone.getAttribute('data-commission-print') === '1'));
     var printHtml = '';
@@ -177,7 +177,7 @@
         '</head><body><h2>'+esc(title)+'</h2>'+ safeExportHtml + '<scr'+'ipt>window.addEventListener("load",function(){setTimeout(function(){window.focus();window.print();},450);});<\/scr'+'ipt></body></html>';
     }
     var w = openPrintHtml(printHtml);
-    if(!w){ ns.notify && ns.notify('المتصفح منع نافذة الطباعة'); return; }
+    if(!w){ ns.notify && ns.notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('المتصفح منع نافذة الطباعة'):'المتصفح منع نافذة الطباعة'); return; }
   };
   ns.print = function(options){
     if(typeof options === 'function' || typeof options === 'string' && typeof window[options] === 'function') return ns.runLegacy(options);

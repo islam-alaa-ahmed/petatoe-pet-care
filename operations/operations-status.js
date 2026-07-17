@@ -74,7 +74,7 @@
       return;
     }
     if(check.same){
-      toast('الحالة الحالية مختارة بالفعل');
+      toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('الحالة الحالية مختارة بالفعل'):'الحالة الحالية مختارة بالفعل');
       return;
     }
 

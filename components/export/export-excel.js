@@ -16,12 +16,12 @@
       XLSX.writeFile(wb, filename);
     }else{
       ns.downloadText(ns.rowsToCsv(rows), filename.replace(/\.xlsx$/i,'.csv'), 'text/csv;charset=utf-8');
-      ns.notify && ns.notify('تم تصدير CSV بديل لأن مكتبة Excel غير متاحة.');
+      ns.notify && ns.notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم تصدير CSV بديل لأن مكتبة Excel غير متاحة.'):'تم تصدير CSV بديل لأن مكتبة Excel غير متاحة.');
     }
   };
   ns.excelTable = function(table, filename, sheetName){
     var rows = ns.tableToRows(table);
-    if(!rows.length){ ns.notify && ns.notify('لا توجد بيانات للتصدير'); return; }
+    if(!rows.length){ ns.notify && ns.notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير'); return; }
     return ns.excelRows(rows, filename, sheetName);
   };
   ns.excelWorkbook = function(sheets, filename){
@@ -38,7 +38,7 @@
         return '### '+ns.safeSheetName(sh.name)+' ###\n' + ns.rowsToCsv(sh.rows || []).replace(/^\ufeff/,'');
       }).join('\n\n');
       ns.downloadText(text, filename.replace(/\.xlsx$/i,'_fallback.txt'), 'text/plain;charset=utf-8');
-      ns.notify && ns.notify('تم تصدير TXT/CSV بديل لأن مكتبة Excel غير متاحة.');
+      ns.notify && ns.notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم تصدير TXT/CSV بديل لأن مكتبة Excel غير متاحة.'):'تم تصدير TXT/CSV بديل لأن مكتبة Excel غير متاحة.');
     }
   };
   ns.excel = function(options){

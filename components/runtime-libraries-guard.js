@@ -83,7 +83,7 @@
     var utils={
       aoa_to_sheet:function(rows){return {__petatoeRows:Array.isArray(rows)?rows:[]};},
       json_to_sheet:jsonRowsToSheet,
-      sheet_to_json:function(){notify('مكتبة Excel غير متاحة حالياً، لا يمكن قراءة ملف Excel.'); return [];},
+      sheet_to_json:function(){notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('مكتبة Excel غير متاحة حالياً، لا يمكن قراءة ملف Excel.'):'مكتبة Excel غير متاحة حالياً، لا يمكن قراءة ملف Excel.'); return [];},
       book_new:function(){return {SheetNames:[],Sheets:{}};},
       book_append_sheet:function(wb,ws,name){
         if(!wb.SheetNames) wb.SheetNames=[];
@@ -97,14 +97,14 @@
     };
     window.XLSX={
       utils:utils,
-      read:function(){notify('مكتبة Excel غير متاحة حالياً، لا يمكن قراءة الملف.'); return {SheetNames:[],Sheets:{}};},
+      read:function(){notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('مكتبة Excel غير متاحة حالياً، لا يمكن قراءة الملف.'):'مكتبة Excel غير متاحة حالياً، لا يمكن قراءة الملف.'); return {SheetNames:[],Sheets:{}};},
       writeFile:function(wb,filename){
         var outName=safeName(String(filename||'PETATOE_export.xlsx').replace(/\.xlsx$/i,''));
         var multi=wb && Array.isArray(wb.SheetNames) && wb.SheetNames.length>1;
         var text=workbookToText(wb);
         if(!text) text='\ufeffلا توجد بيانات للتصدير';
         downloadText(text, outName + (multi ? '_fallback.txt' : '_fallback.csv'), multi ? 'text/plain;charset=utf-8' : 'text/csv;charset=utf-8');
-        notify('مكتبة Excel غير متاحة، تم تصدير نسخة CSV بديلة بدون كسر الصفحة.');
+        notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('مكتبة Excel غير متاحة، تم تصدير نسخة CSV بديلة بدون كسر الصفحة.'):'مكتبة Excel غير متاحة، تم تصدير نسخة CSV بديلة بدون كسر الصفحة.');
       }
     };
     window.__PETATOE_XLSX_STUB__=true;

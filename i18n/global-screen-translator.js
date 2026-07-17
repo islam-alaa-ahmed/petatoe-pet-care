@@ -1,4 +1,4 @@
-/* PETATOE v9.3.2 - Runtime Localization Cleanup
+/* PETATOE v9.3.3 - Final Bulk Source Migration
    Batches DOM mutations, avoids recursive observer loops and caches translations. */
 (function(){
   'use strict';
