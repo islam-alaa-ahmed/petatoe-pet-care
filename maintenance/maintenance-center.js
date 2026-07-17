@@ -14,8 +14,28 @@
   var MAINTENANCE_VERSION = 'v6.5.11';
   var MAINTENANCE_RELEASE = 'PETATOE_v6.5.11_ENTERPRISE_LTS_BASELINE';
 
+  function maintenanceLang() {
+    try {
+      if (window.PETATOE_LOCALIZATION_CENTER && typeof window.PETATOE_LOCALIZATION_CENTER.getLanguage === 'function') {
+        return window.PETATOE_LOCALIZATION_CENTER.getLanguage() || 'ar';
+      }
+      return (window.PETATOE_I18N && window.PETATOE_I18N.getLanguage && window.PETATOE_I18N.getLanguage()) || document.documentElement.lang || 'ar';
+    } catch (e) { return 'ar'; }
+  }
+
+  function mt(key, fallback) {
+    try {
+      if (window.PETATOE_LOCALIZATION_CENTER && typeof window.PETATOE_LOCALIZATION_CENTER.t === 'function') {
+        return window.PETATOE_LOCALIZATION_CENTER.t('maintenanceSource.' + key, fallback);
+      }
+      var lang = maintenanceLang().toLowerCase().indexOf('en') === 0 ? 'en' : 'ar';
+      var dict = window.PETATOE_I18N_DICTIONARIES && window.PETATOE_I18N_DICTIONARIES[lang] && window.PETATOE_I18N_DICTIONARIES[lang].maintenanceSource;
+      return (dict && dict[key]) || fallback || key;
+    } catch (e) { return fallback || key; }
+  }
+
   function safeNow() {
-    try { return new Date().toLocaleString('ar-SA'); } catch (e) { return new Date().toISOString(); }
+    try { return new Date().toLocaleString(maintenanceLang().toLowerCase().indexOf('en') === 0 ? 'en-US' : 'ar-SA'); } catch (e) { return new Date().toISOString(); }
   }
 
   function esc(value) {
@@ -92,7 +112,7 @@
   }
 
   function formatBytes(bytes) {
-    if (bytes < 0) { return 'غير متاح'; }
+    if (bytes < 0) { return mt('unavailable', 'Unavailable'); }
     if (bytes < 1024) { return bytes + ' B'; }
     if (bytes < 1024 * 1024) { return Math.round(bytes / 1024) + ' KB'; }
     return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
@@ -2069,9 +2089,9 @@
       wrap.setAttribute('data-pet-mc-manual-copy', '1');
 
       var title = document.createElement('strong');
-      title.textContent = options.title || 'نسخ تقرير الصيانة';
+      title.textContent = options.title || mt('copyDialogTitle', 'Copy maintenance report');
       var hint = document.createElement('p');
-      hint.textContent = options.hint || 'تم تجهيز التقرير بالكامل وتحديده. اضغط Ctrl + C إذا لم يتم النسخ تلقائيًا.';
+      hint.textContent = options.hint || mt('copyDialogHint', 'The complete report is ready and selected. Press Ctrl + C if it is not copied automatically.');
       var area = document.createElement('textarea');
       area.value = text;
       area.setAttribute('readonly', 'readonly');
@@ -2082,7 +2102,7 @@
 
       var retry = document.createElement('button');
       retry.type = 'button';
-      retry.textContent = 'نسخ الآن';
+      retry.textContent = mt('copyNow', 'Copy now');
       retry.addEventListener('click', function () {
         var ok = false;
         try {
@@ -2093,13 +2113,13 @@
           ok = document.execCommand && document.execCommand('copy');
           area.setAttribute('readonly', 'readonly');
         } catch (e) { ok = false; }
-        if (ok) { showCopyStatus('تم نسخ التقرير بنجاح', true); }
-        else { showCopyStatus('لم يسمح المتصفح بالنسخ التلقائي — اضغط Ctrl + C', false); }
+        if (ok) { showCopyStatus(mt('copySuccess', 'Report copied successfully'), true); }
+        else { showCopyStatus(mt('copyAutoBlocked', 'The browser did not allow automatic copying — press Ctrl + C'), false); }
       });
 
       var close = document.createElement('button');
       close.type = 'button';
-      close.textContent = 'إغلاق';
+      close.textContent = mt('close', 'Close');
       close.addEventListener('click', function () {
         try { if (wrap && wrap.parentNode) { wrap.parentNode.removeChild(wrap); } } catch (e) { if (window.console && console.warn) console.warn('[PETATOE Maintenance] silent catch captured', e); }
       });
@@ -2155,17 +2175,17 @@
 
     function onSuccess(method) {
       log('info', 'maintenance-center.report.copy', { message: 'Maintenance report copied', method: method || 'clipboard' });
-      showCopyStatus('تم نسخ تقرير الصيانة بالكامل', true);
+      showCopyStatus(mt('copyComplete', 'The full maintenance report was copied'), true);
       return true;
     }
 
     function showManual(reason) {
       log('warn', 'maintenance-center.report.copy', { message: 'Clipboard copy fallback opened', reason: reason || 'unknown' });
       manualCopyFallback(text, {
-        title: 'نسخ تقرير الصيانة',
-        hint: 'لو لم يتم النسخ تلقائيًا، التقرير محدد بالكامل الآن. اضغط Ctrl + C أو زر "نسخ الآن".'
+        title: mt('copyDialogTitle', 'Copy maintenance report'),
+        hint: mt('copyManualHint', 'If the report was not copied automatically, it is fully selected now. Press Ctrl + C or the “Copy now” button.')
       });
-      showCopyStatus('تم فتح مربع النسخ اليدوي — اضغط Ctrl + C', false);
+      showCopyStatus(mt('copyManualOpened', 'The manual copy dialog is open — press Ctrl + C'), false);
       return false;
     }
 
@@ -2203,68 +2223,50 @@
     var health = snapshot.health || {};
     var latestEvents = snapshot.events.slice(-12).reverse();
     var latestErrors = snapshot.errors.slice(-8).reverse();
+    var isEnglish = maintenanceLang().toLowerCase().indexOf('en') === 0;
 
-    return '<div class="pet-mc-shell" dir="rtl">' +
+    return '<div class="pet-mc-shell" dir="' + (isEnglish ? 'ltr' : 'rtl') + '">' +
       '<div class="pet-mc-header">' +
-        '<div><h2>🛠️ مركز صيانة وتشخيص النظام</h2><p>Maintenance Center ' + esc(getCurrentMaintenanceVersion()) + ' — Final Enterprise Baseline / Router / Storage / Smart Reports / Security / Performance / Runtime Hardening / Regression Suite</p></div>' +
-        '<div class="pet-mc-actions"><button type="button" data-pet-mc-copy onclick="try{window.PETATOEMaintenanceCenter.copyReport()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch(&quot;maintenance/maintenance-center.js&quot;,e);}">نسخ التقرير</button><button type="button" data-pet-mc-export-txt>تصدير TXT</button><button type="button" data-pet-mc-export-json>تصدير JSON</button><button type="button" data-pet-mc-refresh>تحديث</button><button type="button" data-pet-mc-close>إغلاق</button></div>' +
+        '<div><h2>' + esc(mt('centerTitle', 'System Maintenance and Diagnostics Center')) + '</h2><p>Maintenance Center ' + esc(getCurrentMaintenanceVersion()) + ' — Final Enterprise Baseline / Router / Storage / Smart Reports / Security / Performance / Runtime Hardening / Regression Suite</p></div>' +
+        '<div class="pet-mc-actions"><button type="button" data-pet-mc-copy onclick="try{window.PETATOEMaintenanceCenter.copyReport()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch(&quot;maintenance/maintenance-center.js&quot;,e);}">' + esc(mt('copyReport','Copy report')) + '</button><button type="button" data-pet-mc-export-txt>' + esc(mt('exportTxt','Export TXT')) + '</button><button type="button" data-pet-mc-export-json>' + esc(mt('exportJson','Export JSON')) + '</button><button type="button" data-pet-mc-refresh>' + esc(mt('refresh','Refresh')) + '</button><button type="button" data-pet-mc-close>' + esc(mt('close','Close')) + '</button></div>' +
       '</div>' +
       '<div class="pet-mc-grid">' +
-        metricCard('حالة التشخيص', snapshot.diagnosticsAvailable ? 'Active' : 'Missing', health.status || '') +
-        metricCard('Optimized Baseline', snapshot.optimizedGoldenBaseline.certified ? 'Certified' : 'Review', snapshot.optimizedGoldenBaseline.version || getCurrentMaintenanceVersion()) +
-        metricCard('Green Baseline', snapshot.greenEnterpriseBaseline && snapshot.greenEnterpriseBaseline.certified ? 'Certified' : 'Review', (snapshot.greenEnterpriseBaseline && snapshot.greenEnterpriseBaseline.greenReadiness || 0) + '%') +
-        metricCard('Final Baseline', snapshot.finalEnterpriseBaseline && snapshot.finalEnterpriseBaseline.certified ? 'Certified' : 'Review', (snapshot.finalEnterpriseBaseline && snapshot.finalEnterpriseBaseline.finalReadiness || 0) + '%') +
-        metricCard('Health Level', snapshot.healthLevel, ((snapshot.healthAnalysis && snapshot.healthAnalysis.score) || 0) + '%') +
-        metricCard('Runtime Events', snapshot.events.length, 'آخر أحداث التشغيل') +
-        metricCard('Errors', snapshot.errors.length, 'داخلي ' + ((snapshot.healthAnalysis && snapshot.healthAnalysis.errorAnalysis && snapshot.healthAnalysis.errorAnalysis.internal) || 0) + ' / خارجي ' + ((snapshot.healthAnalysis && snapshot.healthAnalysis.errorAnalysis && snapshot.healthAnalysis.errorAnalysis.external) || 0)) +
-        metricCard('Scripts', snapshot.scripts, 'ملفات JS المحملة') +
-        metricCard('Blocking JS', snapshot.performance.scripts.blockingScripts, 'بدون defer/async/module') +
-        metricCard('Silent Catch', snapshot.silentCatch.totalEmptyCatch, snapshot.silentCatch.affectedFiles + ' ملف') +
-        metricCard('innerHTML Risk', snapshot.innerHTMLRisk.totalInnerHTMLAssignments, snapshot.innerHTMLRisk.highRisk + ' High') +
-        metricCard('Lazy Loading', snapshot.lazyLoading.mode || 'missing', ((snapshot.lazyLoading.prefetchedCandidates || 0) + ' prefetched')) +
-        metricCard('Structural Cleanup', (snapshot.structuralCleanup.summary.zeroReferenceJSFiles || 0) + ' مرشح', 'No deletion') +
-        metricCard('Runtime Guards', snapshot.runtimeHardening.enabled ? 'Active' : 'Missing', (snapshot.runtimeHardening.capturedExceptions || 0) + ' errors') +
-        metricCard('Regression Score', (snapshot.regressionSuite.readinessScore || 0) + '%', 'Pass ' + ((snapshot.regressionSuite.totals && snapshot.regressionSuite.totals.pass) || 0)) +
-        metricCard('Stylesheets', snapshot.stylesheets, 'ملفات CSS') +
-        metricCard('Storage Keys', snapshot.localStorageKeys + ' / ' + snapshot.sessionStorageKeys, 'local / session') +
+        metricCard(mt('diagnosticsStatus','Diagnostics status'), snapshot.diagnosticsAvailable ? 'Active' : 'Missing', health.status || '') +
+        metricCard(mt('optimizedBaseline','Optimized baseline'), snapshot.optimizedGoldenBaseline.certified ? 'Certified' : 'Review', snapshot.optimizedGoldenBaseline.version || getCurrentMaintenanceVersion()) +
+        metricCard(mt('greenBaseline','Green baseline'), snapshot.greenEnterpriseBaseline && snapshot.greenEnterpriseBaseline.certified ? 'Certified' : 'Review', (snapshot.greenEnterpriseBaseline && snapshot.greenEnterpriseBaseline.greenReadiness || 0) + '%') +
+        metricCard(mt('finalBaseline','Final baseline'), snapshot.finalEnterpriseBaseline && snapshot.finalEnterpriseBaseline.certified ? 'Certified' : 'Review', (snapshot.finalEnterpriseBaseline && snapshot.finalEnterpriseBaseline.finalReadiness || 0) + '%') +
+        metricCard(mt('healthLevel','Health level'), snapshot.healthLevel, ((snapshot.healthAnalysis && snapshot.healthAnalysis.score) || 0) + '%') +
+        metricCard(mt('runtimeEvents','Runtime events'), snapshot.events.length, mt('latestRuntimeEvents','Latest runtime events')) +
+        metricCard(mt('errors','Errors'), snapshot.errors.length, mt('internal','Internal') + ' ' + ((snapshot.healthAnalysis && snapshot.healthAnalysis.errorAnalysis && snapshot.healthAnalysis.errorAnalysis.internal) || 0) + ' / ' + mt('external','External') + ' ' + ((snapshot.healthAnalysis && snapshot.healthAnalysis.errorAnalysis && snapshot.healthAnalysis.errorAnalysis.external) || 0)) +
+        metricCard(mt('scripts','Scripts'), snapshot.scripts, mt('jsFilesLoaded','Loaded JavaScript files')) +
+        metricCard(mt('blockingJs','Blocking JavaScript'), snapshot.performance.scripts.blockingScripts, mt('noDeferAsyncModule','Without defer/async/module')) +
+        metricCard(mt('silentCatch','Silent catches'), snapshot.silentCatch.totalEmptyCatch, snapshot.silentCatch.affectedFiles + ' ' + mt('file','file')) +
+        metricCard(mt('innerHtmlRisk','innerHTML risk'), snapshot.innerHTMLRisk.totalInnerHTMLAssignments, snapshot.innerHTMLRisk.highRisk + ' High') +
+        metricCard(mt('lazyLoading','Lazy loading'), snapshot.lazyLoading.mode || 'missing', ((snapshot.lazyLoading.prefetchedCandidates || 0) + ' prefetched')) +
+        metricCard(mt('structuralCleanup','Structural cleanup'), (snapshot.structuralCleanup.summary.zeroReferenceJSFiles || 0) + ' ' + mt('candidate','candidate'), mt('noDeletion','No deletion')) +
+        metricCard(mt('runtimeGuards','Runtime guards'), snapshot.runtimeHardening.enabled ? 'Active' : 'Missing', (snapshot.runtimeHardening.capturedExceptions || 0) + ' errors') +
+        metricCard(mt('regressionScore','Regression score'), (snapshot.regressionSuite.readinessScore || 0) + '%', 'Pass ' + ((snapshot.regressionSuite.totals && snapshot.regressionSuite.totals.pass) || 0)) +
+        metricCard(mt('stylesheets','Stylesheets'), snapshot.stylesheets, mt('cssFiles','CSS files')) +
+        metricCard(mt('storageKeys','Storage keys'), snapshot.localStorageKeys + ' / ' + snapshot.sessionStorageKeys, mt('localSession','local / session')) +
       '</div>' +
-      '<div class="pet-mc-section"><h3>حالة المكونات الأساسية</h3><div class="pet-mc-status-grid">' +
-        statusBadge('Diagnostics Core', snapshot.diagnosticsAvailable, snapshot.diagnosticsAvailable ? 'متاح' : 'غير محمل') +
-        statusBadge('Router Presence', snapshot.routerAvailable, snapshot.routerAvailable ? 'موجود' : 'لم يتم رصده') +
-        statusBadge('Permissions Surface', snapshot.navigationRegistryAvailable, snapshot.navigationRegistryAvailable ? 'موجود' : 'لم يتم رصده') +
-        statusBadge('Browser Online', snapshot.online, snapshot.online ? 'Online' : 'Offline') +
-        statusBadge('Lazy Foundation', snapshot.lazyLoading && snapshot.lazyLoading.enabled, snapshot.lazyLoading && snapshot.lazyLoading.enabled ? 'Loaded' : 'Missing') +
-        statusBadge('Runtime Hardening', snapshot.runtimeHardening && snapshot.runtimeHardening.enabled, snapshot.runtimeHardening && snapshot.runtimeHardening.enabled ? 'Active' : 'Missing') +
-        statusBadge('Regression Suite', snapshot.regressionSuite && snapshot.regressionSuite.enabled, snapshot.regressionSuite && snapshot.regressionSuite.enabled ? 'Active' : 'Missing') +
-        statusBadge('Optimized Baseline', snapshot.optimizedGoldenBaseline && snapshot.optimizedGoldenBaseline.enabled, snapshot.optimizedGoldenBaseline && snapshot.optimizedGoldenBaseline.certified ? 'Certified' : 'Review') +
-        statusBadge('Green Baseline', snapshot.greenEnterpriseBaseline && snapshot.greenEnterpriseBaseline.enabled, snapshot.greenEnterpriseBaseline && snapshot.greenEnterpriseBaseline.certified ? 'Certified' : 'Review') +
-        statusBadge('Final Baseline', snapshot.finalEnterpriseBaseline && snapshot.finalEnterpriseBaseline.enabled, snapshot.finalEnterpriseBaseline && snapshot.finalEnterpriseBaseline.certified ? 'Certified' : 'Review') +
+      '<div class="pet-mc-section"><h3>' + esc(mt('coreComponentsStatus','Core components status')) + '</h3><div class="pet-mc-status-grid">' +
+        statusBadge(mt('diagnosticsCore','Diagnostics core'), snapshot.diagnosticsAvailable, snapshot.diagnosticsAvailable ? mt('available','Available') : mt('notLoaded','Not loaded')) +
+        statusBadge(mt('routerPresence','Router presence'), snapshot.routerAvailable, snapshot.routerAvailable ? mt('present','Present') : mt('notDetected','Not detected')) +
+        statusBadge(mt('permissionsSurface','Permissions surface'), snapshot.navigationRegistryAvailable, snapshot.navigationRegistryAvailable ? mt('present','Present') : mt('notDetected','Not detected')) +
+        statusBadge(mt('browserOnline','Browser online'), snapshot.online, snapshot.online ? 'Online' : 'Offline') +
+        statusBadge(mt('lazyFoundation','Lazy foundation'), snapshot.lazyLoading && snapshot.lazyLoading.enabled, snapshot.lazyLoading && snapshot.lazyLoading.enabled ? 'Loaded' : 'Missing') +
+        statusBadge(mt('runtimeHardening','Runtime hardening'), snapshot.runtimeHardening && snapshot.runtimeHardening.enabled, snapshot.runtimeHardening && snapshot.runtimeHardening.enabled ? 'Active' : 'Missing') +
+        statusBadge(mt('regressionSuite','Regression suite'), snapshot.regressionSuite && snapshot.regressionSuite.enabled, snapshot.regressionSuite && snapshot.regressionSuite.enabled ? 'Active' : 'Missing') +
+        statusBadge(mt('optimizedBaseline','Optimized baseline'), snapshot.optimizedGoldenBaseline && snapshot.optimizedGoldenBaseline.enabled, snapshot.optimizedGoldenBaseline && snapshot.optimizedGoldenBaseline.certified ? 'Certified' : 'Review') +
+        statusBadge(mt('greenBaseline','Green baseline'), snapshot.greenEnterpriseBaseline && snapshot.greenEnterpriseBaseline.enabled, snapshot.greenEnterpriseBaseline && snapshot.greenEnterpriseBaseline.certified ? 'Certified' : 'Review') +
+        statusBadge(mt('finalBaseline','Final baseline'), snapshot.finalEnterpriseBaseline && snapshot.finalEnterpriseBaseline.enabled, snapshot.finalEnterpriseBaseline && snapshot.finalEnterpriseBaseline.certified ? 'Certified' : 'Review') +
       '</div></div>' +
-      renderRouterSection(snapshot.router) +
-      renderStorageSection(snapshot.storage) +
-      renderSmartReportsSection(snapshot.smartReports) +
-      renderPerformanceSection(snapshot.performance) +
-      renderLazyLoadingSection(snapshot.lazyLoading) +
-      renderSilentCatchSection(snapshot.silentCatch) +
-      renderInnerHTMLRiskSection(snapshot.innerHTMLRisk) +
-      renderStructuralCleanupSection(snapshot.structuralCleanup) +
-      renderRuntimeHardeningSection(snapshot.runtimeHardening) +
-      renderEnterpriseRegressionSection(snapshot.regressionSuite) +
-      renderGoldenBaselineSection(snapshot.goldenBaseline) +
-      renderOptimizedGoldenBaselineSection(snapshot.optimizedGoldenBaseline) +
-      renderGreenEnterpriseBaselineSection(snapshot.greenEnterpriseBaseline) +
-      renderFinalEnterpriseBaselineSection(snapshot.finalEnterpriseBaseline) +
-      renderEnterpriseLTSBaselineSection(snapshot.enterpriseLTSBaseline) +
-      renderVehiclePermissionsVerificationSection(snapshot.vehiclePermissionsVerification) +
-      renderSecuritySection(snapshot.security) +
-      '<div class="pet-mc-section"><h3>آخر الأخطاء</h3>' +
-        (latestErrors.length ? '<div class="pet-mc-table-wrap"><table><thead><tr><th>الوقت</th><th>المستوى</th><th>المصدر</th><th>الرسالة</th></tr></thead><tbody>' + latestErrors.map(eventRow).join('') + '</tbody></table></div>' : '<p class="pet-mc-empty">لا توجد أخطاء ملتقطة حاليًا.</p>') +
-      '</div>' +
-      '<div class="pet-mc-section"><h3>آخر أحداث التشغيل</h3>' +
-        (latestEvents.length ? '<div class="pet-mc-table-wrap"><table><thead><tr><th>الوقت</th><th>المستوى</th><th>المصدر</th><th>الرسالة</th></tr></thead><tbody>' + latestEvents.map(eventRow).join('') + '</tbody></table></div>' : '<p class="pet-mc-empty">لا توجد أحداث بعد.</p>') +
-      '</div>' +
-      '<div class="pet-mc-footer">آخر فحص: ' + esc(snapshot.checkedAtLocal) + ' — هذه الشاشة لا تعدل بيانات البرنامج.</div>' +
-    '</div>';
+      renderRouterSection(snapshot.router) + renderStorageSection(snapshot.storage) + renderSmartReportsSection(snapshot.smartReports) + renderPerformanceSection(snapshot.performance) + renderLazyLoadingSection(snapshot.lazyLoading) + renderSilentCatchSection(snapshot.silentCatch) + renderInnerHTMLRiskSection(snapshot.innerHTMLRisk) + renderStructuralCleanupSection(snapshot.structuralCleanup) + renderRuntimeHardeningSection(snapshot.runtimeHardening) + renderEnterpriseRegressionSection(snapshot.regressionSuite) + renderGoldenBaselineSection(snapshot.goldenBaseline) + renderOptimizedGoldenBaselineSection(snapshot.optimizedGoldenBaseline) + renderGreenEnterpriseBaselineSection(snapshot.greenEnterpriseBaseline) + renderFinalEnterpriseBaselineSection(snapshot.finalEnterpriseBaseline) + renderEnterpriseLTSBaselineSection(snapshot.enterpriseLTSBaseline) + renderVehiclePermissionsVerificationSection(snapshot.vehiclePermissionsVerification) + renderSecuritySection(snapshot.security) +
+      '<div class="pet-mc-section"><h3>' + esc(mt('latestErrors','Latest errors')) + '</h3>' +
+        (latestErrors.length ? '<div class="pet-mc-table-wrap"><table><thead><tr><th>' + esc(mt('time','Time')) + '</th><th>' + esc(mt('level','Level')) + '</th><th>' + esc(mt('source','Source')) + '</th><th>' + esc(mt('message','Message')) + '</th></tr></thead><tbody>' + latestErrors.map(eventRow).join('') + '</tbody></table></div>' : '<p class="pet-mc-empty">' + esc(mt('noCapturedErrors','No captured errors at this time.')) + '</p>') + '</div>' +
+      '<div class="pet-mc-section"><h3>' + esc(mt('lastRuntimeEvents','Latest runtime events')) + '</h3>' +
+        (latestEvents.length ? '<div class="pet-mc-table-wrap"><table><thead><tr><th>' + esc(mt('time','Time')) + '</th><th>' + esc(mt('level','Level')) + '</th><th>' + esc(mt('source','Source')) + '</th><th>' + esc(mt('message','Message')) + '</th></tr></thead><tbody>' + latestEvents.map(eventRow).join('') + '</tbody></table></div>' : '<p class="pet-mc-empty">' + esc(mt('noRuntimeEvents','No runtime events yet.')) + '</p>') + '</div>' +
+      '<div class="pet-mc-footer">' + esc(mt('lastCheck','Last check')) + ': ' + esc(snapshot.checkedAtLocal) + ' — ' + esc(mt('readOnlyScreen','This screen does not modify application data.')) + '</div></div>';
   }
 
   function ensureStyle() {
@@ -2311,8 +2313,8 @@
     var btn = document.createElement('button');
     btn.id = BUTTON_ID;
     btn.type = 'button';
-    btn.textContent = '🛠️ صيانة';
-    btn.title = 'مركز صيانة وتشخيص النظام';
+    btn.textContent = mt('buttonLabel', '🛠️ Maintenance');
+    btn.title = mt('buttonTitle', 'System Maintenance and Diagnostics Center');
     btn.addEventListener('click', function () { center.open(); });
     document.body.appendChild(btn);
   }
@@ -2359,14 +2361,14 @@
           var btn = document.createElement('button');
           btn.id = BUTTON_ID;
           btn.type = 'button';
-          btn.textContent = '🛠️ صيانة';
-          btn.title = 'مركز صيانة وتشخيص النظام';
+          btn.textContent = mt('buttonLabel', '🛠️ Maintenance');
+          btn.title = mt('buttonTitle', 'System Maintenance and Diagnostics Center');
           btn.style.position = 'fixed';
           btn.style.left = '18px';
           btn.style.bottom = '18px';
           btn.style.zIndex = '99999';
           btn.addEventListener('click', function () {
-            try { center.open(); } catch (openError) { alert('تعذر فتح مركز الصيانة. راجع Console.'); }
+            try { center.open(); } catch (openError) { alert(mt('openFailed', 'Unable to open the Maintenance Center. Check the Console.')); }
           });
           document.body.appendChild(btn);
         }
