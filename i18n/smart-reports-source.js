@@ -528,6 +528,7 @@
   });
 
   window.PETATOE_SMART_REPORTS_TRANSLATIONS={ar:ar,en:en};
+  window.dispatchEvent(new CustomEvent('petatoe:smart-translations-ready',{detail:{languages:['ar','en'],version:'9.1.0'}}));
   if(!window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__){
     window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__=true;
     window.addEventListener('petatoe:language-changed',function(){

@@ -8,24 +8,9 @@
 
 
 function smartReportT(key, fallback, params){
-  const fullKey='smartReportsSource.'+key;
   try{
-    if(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.translate==='function'){
-      const value=window.PETATOE_LOCALIZATION_CENTER.translate(fullKey,'');
-      if(typeof value==='string'&&value.trim()&&value!==fullKey) return smartReportInterpolate(value,params);
-    }
-    if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.t==='function'){
-      const value=window.PETATOE_I18N.t(fullKey,params||{});
-      if(typeof value==='string'&&value.trim()&&value!==fullKey) return value;
-    }
-    const lang=(window.PETATOE_I18N&&window.PETATOE_I18N.getLanguage)?window.PETATOE_I18N.getLanguage():(document.documentElement.lang||'ar');
-    const pack=window.PETATOE_SMART_REPORTS_TRANSLATIONS;
-    const packed=pack&&pack[lang]&&pack[lang][key];
-    if(typeof packed==='string'&&packed.trim()) return smartReportInterpolate(packed,params);
-    if(lang==='en'&&window.PETATOE_I18N&&typeof window.PETATOE_I18N.translateRuntime==='function'){
-      const runtimeValue=window.PETATOE_I18N.translateRuntime(String(fallback==null?'':fallback));
-      if(typeof runtimeValue==='string'&&runtimeValue!==fallback) return smartReportInterpolate(runtimeValue,params);
-    }
+    var center=window.PETATOE_LOCALIZATION_CENTER;
+    if(center&&typeof center.t==='function') return center.t('smartReportsSource.'+key,params||{},{fallback:fallback,allowKeyFallback:true});
   }catch(_){ }
   return smartReportInterpolate(String(fallback==null?'':fallback),params);
 }
