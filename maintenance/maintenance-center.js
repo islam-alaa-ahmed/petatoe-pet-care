@@ -1320,7 +1320,7 @@
   function statusBadge(label, ok, note) {
     return '<div class="pet-mc-status ' + (ok ? 'ok' : 'warn') + '">' +
       '<b>' + esc(label) + '</b>' +
-      '<span>' + esc(note || (ok ? 'جاهز' : 'يحتاج مراجعة')) + '</span>' +
+      '<span>' + esc(note || (ok ? ''+mt('deep103','Ready')+'' : ''+mt('deep58','Needs review')+'')) + '</span>' +
       '</div>';
   }
 
@@ -1336,48 +1336,48 @@
   function renderRouterSection(router) {
     return '<div class="pet-mc-section"><h3>Router / Navigation</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('Legacy Router', router.routerPresent, router.routerPresent ? 'موجود' : 'غير موجود') +
-        statusBadge('Route Registry', router.routeRegistryPresent, router.routeRegistryPresent ? router.routeCount + ' route' : 'غير محمل') +
-        statusBadge('Navigation Controller', router.navigationControllerPresent, router.navigationControllerPresent ? 'موجود' : 'غير موجود') +
-        statusBadge('Guarded Pilot', router.guardedPilotPresent, router.guardedPilotPresent ? 'موجود' : 'غير مفعل') +
+        statusBadge('Legacy Router', router.routerPresent, router.routerPresent ? ''+mt('deep90','Present')+'' : ''+mt('deep69','Not present')+'') +
+        statusBadge('Route Registry', router.routeRegistryPresent, router.routeRegistryPresent ? router.routeCount + ' route' : ''+mt('deep75','Not loaded')+'') +
+        statusBadge('Navigation Controller', router.navigationControllerPresent, router.navigationControllerPresent ? ''+mt('deep90','Present')+'' : ''+mt('deep69','Not present')+'') +
+        statusBadge('Guarded Pilot', router.guardedPilotPresent, router.guardedPilotPresent ? ''+mt('deep90','Present')+'' : ''+mt('deep76','Not enabled')+'') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Protected Routes', router.protectedRoutes, 'مسارات عليها حماية داخل Registry') +
-        kvRow('Sensitive Routes', router.sensitiveRoutes, 'مسارات حساسة') +
-        kvRow('Lazy Candidates', router.lazyCandidates, 'مرشحة للتحميل الكسول لاحقًا') +
-        kvRow('Router Methods', router.routerMethods.join(', ') || '-', 'للقراءة فقط') +
+        kvRow('Protected Routes', router.protectedRoutes, ''+mt('deep13','Protected routes in the registry')+'') +
+        kvRow('Sensitive Routes', router.sensitiveRoutes, ''+mt('deep59','Sensitive routes')+'') +
+        kvRow('Lazy Candidates', router.lazyCandidates, ''+mt('deep18','Candidates for later lazy loading')+'') +
+        kvRow('Router Methods', router.routerMethods.join(', ') || '-', ''+mt('deep62','Read only')+'') +
       '</tbody></table></div></div>';
   }
 
   function renderStorageSection(storage) {
     return '<div class="pet-mc-section"><h3>Storage</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('Storage Adapter', storage.storageAdapterPresent, storage.storageAdapterPresent ? 'PETATOEStorage متاح' : 'غير متاح') +
+        statusBadge('Storage Adapter', storage.storageAdapterPresent, storage.storageAdapterPresent ? ''+mt('deep39','PETATOEStorage available')+'' : ''+mt('deep77','Unavailable')+'') +
         statusBadge('Mapped Keys', storage.mappedKeys > 0, storage.mappedKeys + ' key') +
-        statusBadge('Raw Snapshot', storage.hasRawSnapshot, storage.hasRawSnapshot ? 'متاح' : 'غير متاح') +
-        statusBadge('Export Snapshot', storage.hasExportSnapshot, storage.hasExportSnapshot ? 'متاح' : 'غير متاح') +
+        statusBadge('Raw Snapshot', storage.hasRawSnapshot, storage.hasRawSnapshot ? ''+mt('deep98','Available')+'' : ''+mt('deep77','Unavailable')+'') +
+        statusBadge('Export Snapshot', storage.hasExportSnapshot, storage.hasExportSnapshot ? ''+mt('deep98','Available')+'' : ''+mt('deep77','Unavailable')+'') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Mode', storage.storageMode || 'local/default', 'وضع التخزين الحالي') +
+        kvRow('Mode', storage.storageMode || 'local/default', ''+mt('deep40','Current storage mode')+'') +
         kvRow('LocalStorage Keys', storage.localStorageKeys, formatBytes(storage.localStorageApproxSize)) +
         kvRow('SessionStorage Keys', storage.sessionStorageKeys, formatBytes(storage.sessionStorageApproxSize)) +
-        kvRow('Critical Maps', Object.keys(storage.knownCriticalKeys || {}).filter(function(k){return storage.knownCriticalKeys[k];}).join(', ') || '-', 'مفاتيح أساسية مرصودة') +
+        kvRow('Critical Maps', Object.keys(storage.knownCriticalKeys || {}).filter(function(k){return storage.knownCriticalKeys[k];}).join(', ') || '-', ''+mt('deep35','Detected critical keys')+'') +
       '</tbody></table></div></div>';
   }
 
   function renderSmartReportsSection(smart) {
     return '<div class="pet-mc-section"><h3>Smart Reports</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('Facade', smart.facadePresent, smart.facadePresent ? 'موجود' : 'غير مرصود') +
-        statusBadge('Performance Optimizer', smart.optimizerPresent, smart.optimizerPresent ? 'موجود' : 'غير مرصود') +
-        statusBadge('Data Engine', smart.dataEnginePresent, smart.dataEnginePresent ? 'موجود' : 'غير مرصود') +
-        statusBadge('Tabs', smart.tabsPresent, smart.tabsPresent ? 'موجود' : 'غير مرصود') +
+        statusBadge('Facade', smart.facadePresent, smart.facadePresent ? ''+mt('deep90','Present')+'' : ''+mt('deep70','Not detected')+'') +
+        statusBadge('Performance Optimizer', smart.optimizerPresent, smart.optimizerPresent ? ''+mt('deep90','Present')+'' : ''+mt('deep70','Not detected')+'') +
+        statusBadge('Data Engine', smart.dataEnginePresent, smart.dataEnginePresent ? ''+mt('deep90','Present')+'' : ''+mt('deep70','Not detected')+'') +
+        statusBadge('Tabs', smart.tabsPresent, smart.tabsPresent ? ''+mt('deep90','Present')+'' : ''+mt('deep70','Not detected')+'') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Smart Scripts', smart.smartScriptCount, 'عدد ملفات التقارير الذكية المحملة') +
-        kvRow('Chart.js', smart.chartJsPresent ? 'Loaded' : 'Missing', 'مكتبة الرسوم') +
-        kvRow('XLSX', smart.xlsxPresent ? 'Loaded' : 'Missing', 'مكتبة Excel') +
-        kvRow('Facade Methods', smart.facadeMethods.join(', ') || '-', 'للقراءة فقط') +
+        kvRow('Smart Scripts', smart.smartScriptCount, ''+mt('deep11','Loaded Smart Reports scripts')+'') +
+        kvRow('Chart.js', smart.chartJsPresent ? 'Loaded' : 'Missing', ''+mt('deep60','Charts library')+'') +
+        kvRow('XLSX', smart.xlsxPresent ? 'Loaded' : 'Missing', ''+mt('deep63','Excel library')+'') +
+        kvRow('Facade Methods', smart.facadeMethods.join(', ') || '-', ''+mt('deep62','Read only')+'') +
       '</tbody></table></div></div>';
   }
 
@@ -1391,31 +1391,31 @@
       return '<tr><td>' + esc(item.src) + '</td><td><b>' + esc(formatBytes(item.decodedBodySize || item.transferSize || 0)) + '</b></td><td>' + esc(item.duration || 0) + ' ms</td><td>' + esc(item.blocking ? 'Blocking' : 'Non-blocking') + '</td><td>' + esc(item.reason || '') + '</td></tr>';
     }).join('');
     var candidateRows = (scripts.lazyLoadingCandidates || []).slice(0, 8).map(function (item) {
-      return '<tr><td>' + esc(item.src) + '</td><td>' + esc(item.reason || '') + '</td><td>' + esc(item.blocking ? 'يفضل فحص defer/lazy pilot' : 'مرشح لاحق') + '</td></tr>';
+      return '<tr><td>' + esc(item.src) + '</td><td>' + esc(item.reason || '') + '</td><td>' + esc(item.blocking ? ''+mt('deep21','Review defer/lazy pilot')+'' : ''+mt('deep71','Later candidate')+'') + '</td></tr>';
     }).join('');
     var recs = (perf.recommendations || []).map(function (text) { return '<li>' + esc(text) + '</li>'; }).join('');
     return '<div class="pet-mc-section"><h3>Performance / Loading</h3>' +
       '<div class="pet-mc-status-grid">' +
         statusBadge('Scripts Count', scripts.scriptCount <= 150, scripts.scriptCount + ' script') +
         statusBadge('Blocking Scripts', scripts.blockingScripts <= 100, scripts.blockingScripts + ' blocking') +
-        statusBadge('Async/Defer/Module', scripts.hasAnyAsyncDeferModule, scripts.hasAnyAsyncDeferModule ? 'موجود' : 'غير مستخدم') +
+        statusBadge('Async/Defer/Module', scripts.hasAnyAsyncDeferModule, scripts.hasAnyAsyncDeferModule ? ''+mt('deep90','Present')+'' : ''+mt('deep68','Not used')+'') +
         statusBadge('Resource Timing', scripts.timedScripts > 0, scripts.timedScripts + ' timed / ' + scripts.missingTiming + ' missing') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('JS Transfer Size', formatBytes(scripts.totalTransferSize || 0), 'من Performance API إن توفر') +
-        kvRow('JS Decoded Size', formatBytes(scripts.totalDecodedBodySize || 0), 'حجم فك الضغط داخل المتصفح إن توفر') +
-        kvRow('DOMContentLoaded', (nav.domContentLoaded || 0) + ' ms', 'قراءة متصفح فعلية') +
-        kvRow('Load Event', (nav.loadEventEnd || 0) + ' ms', 'قراءة متصفح فعلية') +
-        kvRow('DOM Nodes', (perf.dom && perf.dom.totalNodes) || 0, 'عدد عناصر الصفحة الحالية') +
-        kvRow('Memory Used', memory ? formatBytes(memory.usedJSHeapSize) : 'غير متاح', 'Chrome فقط غالبًا') +
+        kvRow('JS Transfer Size', formatBytes(scripts.totalTransferSize || 0), ''+mt('deep19','From Performance API when available')+'') +
+        kvRow('JS Decoded Size', formatBytes(scripts.totalDecodedBodySize || 0), ''+mt('deep12','Decoded size in the browser when available')+'') +
+        kvRow('DOMContentLoaded', (nav.domContentLoaded || 0) + ' ms', ''+mt('deep42','Actual browser measurement')+'') +
+        kvRow('Load Event', (nav.loadEventEnd || 0) + ' ms', ''+mt('deep42','Actual browser measurement')+'') +
+        kvRow('DOM Nodes', (perf.dom && perf.dom.totalNodes) || 0, ''+mt('deep24','Current page element count')+'') +
+        kvRow('Memory Used', memory ? formatBytes(memory.usedJSHeapSize) : ''+mt('deep77','Unavailable')+'', ''+mt('deep43','Usually Chrome only')+'') +
       '</tbody></table></div>' +
-      '<div class="pet-mc-table-wrap" style="margin-top:10px"><table><thead><tr><th>أثقل ملفات مرصودة</th><th>الحجم</th><th>المدة</th><th>الحالة</th><th>السبب</th></tr></thead><tbody>' +
-        (heavyRows || '<tr><td colspan="5">لا توجد بيانات resource timing كافية.</td></tr>') +
+      '<div class="pet-mc-table-wrap" style="margin-top:10px"><table><thead><tr><th>'+mt('deep44','Heaviest detected files')+'</th><th>'+mt('deep91','Size')+'</th><th>'+mt('deep92','Duration')+'</th><th>'+mt('deep86','Status')+'</th><th>'+mt('deep93','Reason')+'</th></tr></thead><tbody>' +
+        (heavyRows || '<tr><td colspan="5">'+mt('deep6','Insufficient resource timing data.')+'</td></tr>') +
       '</tbody></table></div>' +
-      '<div class="pet-mc-table-wrap" style="margin-top:10px"><table><thead><tr><th>مرشح Lazy Loading</th><th>سبب الترشيح</th><th>ملاحظة</th></tr></thead><tbody>' +
-        (candidateRows || '<tr><td colspan="3">لا توجد ترشيحات حالية.</td></tr>') +
+      '<div class="pet-mc-table-wrap" style="margin-top:10px"><table><thead><tr><th>'+mt('deep45','Lazy Loading candidate')+'</th><th>'+mt('deep64','Candidate reason')+'</th><th>'+mt('deep87','Note')+'</th></tr></thead><tbody>' +
+        (candidateRows || '<tr><td colspan="3">'+mt('deep29','No current candidates.')+'</td></tr>') +
       '</tbody></table></div>' +
-      '<div class="pet-mc-recommendations"><b>توصيات قراءة فقط:</b><ul>' + recs + '</ul></div>' +
+      '<div class="pet-mc-recommendations"><b>'+mt('deep46','Read-only recommendations:')+'</b><ul>' + recs + '</ul></div>' +
     '</div>';
   }
 
@@ -1428,59 +1428,59 @@
     }).join('');
     return '<div class="pet-mc-section"><h3>Lazy Loading Enterprise</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('Foundation Layer', !!lazy.enabled, lazy.enabled ? 'محمل' : 'غير محمل') +
-        statusBadge('Safe Mode', lazy.safeMode !== false, lazy.safeMode !== false ? 'فعال' : 'غير فعال') +
+        statusBadge('Foundation Layer', !!lazy.enabled, lazy.enabled ? ''+mt('deep99','Loaded')+'' : ''+mt('deep75','Not loaded')+'') +
+        statusBadge('Safe Mode', lazy.safeMode !== false, lazy.safeMode !== false ? ''+mt('deep100','Active')+'' : ''+mt('deep78','Inactive')+'') +
         statusBadge('Prefetch Pilot', (lazy.prefetchedCandidates || 0) > 0, (lazy.prefetchedCandidates || 0) + ' prefetched') +
         statusBadge('Initial Load Candidates', (lazy.candidatesStillInInitialLoad || 0) === 0, (lazy.candidatesStillInInitialLoad || 0) + ' still loaded') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Mode', lazy.mode || '-', 'وضع التشغيل الحالي') +
-        kvRow('Candidates', lazy.initialCandidateCount || 0, 'مرشحات التحميل الكسول') +
-        kvRow('Pending Loads', lazy.pendingLoads || 0, 'تحميل ديناميكي قيد التنفيذ') +
-        kvRow('Smart Reports Lazy Scripts', (lazy.smartReportsLazyLoadedCount || 0) + ' / ' + (lazy.smartReportsLazyScriptCount || 0), 'تحميل مؤجل لتقارير Smart Reports') +
-        kvRow('Initial Blocking Reduced By', lazy.initialBlockingScriptsReducedBy || 0, 'تقليل مبدئي في السكريبتات blocking') +
-        kvRow('Recommendation', lazy.recommendation || '-', 'توصية المرحلة') +
+        kvRow('Mode', lazy.mode || '-', ''+mt('deep41','Current operating mode')+'') +
+        kvRow('Candidates', lazy.initialCandidateCount || 0, ''+mt('deep31','Lazy loading candidates')+'') +
+        kvRow('Pending Loads', lazy.pendingLoads || 0, ''+mt('deep20','Dynamic load in progress')+'') +
+        kvRow('Smart Reports Lazy Scripts', (lazy.smartReportsLazyLoadedCount || 0) + ' / ' + (lazy.smartReportsLazyScriptCount || 0), ''+mt('deep14','Deferred loading for Smart Reports')+'') +
+        kvRow('Initial Blocking Reduced By', lazy.initialBlockingScriptsReducedBy || 0, ''+mt('deep9','Initial reduction in blocking scripts')+'') +
+        kvRow('Recommendation', lazy.recommendation || '-', ''+mt('deep52','Phase recommendation')+'') +
       '</tbody></table></div>' +
       '<div class="pet-mc-table-wrap" style="margin-top:10px"><table><thead><tr><th>Area</th><th>Script</th><th>Priority</th><th>Status</th><th>Reason</th></tr></thead><tbody>' +
-        (rows || '<tr><td colspan="5">لا توجد بيانات Lazy Loading.</td></tr>') +
+        (rows || '<tr><td colspan="5">'+mt('deep16','No Lazy Loading data.')+'</td></tr>') +
       '</tbody></table></div>' +
     '</div>';
   }
 
   function renderSilentCatchSection(silentCatch) {
     var rows = (silentCatch.topFiles || []).map(function (item) {
-      return '<tr><td>' + esc(item.file || '') + '</td><td><b>' + esc(item.emptyCatchCount || 0) + '</b></td><td>' + formatBytes(item.sizeBytes || 0) + '</td><td>مرشح Diagnostics تدريجي</td></tr>';
+      return '<tr><td>' + esc(item.file || '') + '</td><td><b>' + esc(item.emptyCatchCount || 0) + '</b></td><td>' + formatBytes(item.sizeBytes || 0) + '</td><td>'+mt('deep27','Gradual Diagnostics candidate')+'</td></tr>';
     }).join('');
     return '<div class="pet-mc-section"><h3>Silent Catch Diagnostics Map</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('Empty Catch Total', silentCatch.totalEmptyCatch <= 50, silentCatch.totalEmptyCatch + ' حالة') +
-        statusBadge('Affected Files', silentCatch.affectedFiles <= 30, silentCatch.affectedFiles + ' ملف') +
-        statusBadge('Runtime Events', true, silentCatch.runtimeEventsRelated + ' حدث مرتبط') +
+        statusBadge('Empty Catch Total', silentCatch.totalEmptyCatch <= 50, silentCatch.totalEmptyCatch + ' '+mt('deep101','case')+'') +
+        statusBadge('Affected Files', silentCatch.affectedFiles <= 30, silentCatch.affectedFiles + ' '+mt('deep104','file')+'') +
+        statusBadge('Runtime Events', true, silentCatch.runtimeEventsRelated + ' '+mt('deep72','related event')+'') +
         statusBadge('Mode', true, silentCatch.mode || 'read-only') +
       '</div>' +
-      '<div class="pet-mc-table-wrap"><table><thead><tr><th>الملف</th><th>عدد catch الصامت</th><th>الحجم</th><th>الإجراء المقترح</th></tr></thead><tbody>' +
-        (rows || '<tr><td colspan="4">لا توجد حالات مرصودة.</td></tr>') +
+      '<div class="pet-mc-table-wrap"><table><thead><tr><th>'+mt('deep94','File')+'</th><th>'+mt('deep47','Silent catch count')+'</th><th>'+mt('deep91','Size')+'</th><th>'+mt('deep48','Suggested action')+'</th></tr></thead><tbody>' +
+        (rows || '<tr><td colspan="4">'+mt('deep32','No detected cases.')+'</td></tr>') +
       '</tbody></table></div>' +
-      '<div class="pet-mc-recommendations"><b>توصية:</b><ul><li>' + esc(silentCatch.recommendation || '') + '</li><li>هذه الخريطة لا تغير أي catch حاليًا؛ هي تمهيد لإصلاحات Controlled لكل ملف على حدة.</li></ul></div>' +
+      '<div class="pet-mc-recommendations"><b>'+mt('deep88','Recommendation:')+'</b><ul><li>' + esc(silentCatch.recommendation || '') + '</li><li>'+mt('deep2','This map does not modify any catch currently; it prepares controlled per-file remediation.')+'</li></ul></div>' +
     '</div>';
   }
 
 
   function renderInnerHTMLRiskSection(innerHTMLRisk) {
     var rows = (innerHTMLRisk.topFiles || []).map(function (item) {
-      return '<tr><td>' + esc(item.file || '') + '</td><td><b>' + esc(item.count || 0) + '</b></td><td>' + esc(item.high || 0) + '</td><td>' + esc(item.review || 0) + '</td><td>' + esc(item.safe || 0) + '</td><td>' + formatBytes(item.sizeBytes || 0) + '</td><td>Safe Rendering تدريجي</td></tr>';
+      return '<tr><td>' + esc(item.file || '') + '</td><td><b>' + esc(item.count || 0) + '</b></td><td>' + esc(item.high || 0) + '</td><td>' + esc(item.review || 0) + '</td><td>' + esc(item.safe || 0) + '</td><td>' + formatBytes(item.sizeBytes || 0) + '</td><td>'+mt('deep33','Gradual Safe Rendering')+'</td></tr>';
     }).join('');
     return '<div class="pet-mc-section"><h3>innerHTML Risk Assessment Map</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('innerHTML Total', innerHTMLRisk.totalInnerHTMLAssignments <= 50, innerHTMLRisk.totalInnerHTMLAssignments + ' حالة') +
-        statusBadge('High Risk', innerHTMLRisk.highRisk === 0, innerHTMLRisk.highRisk + ' حالة') +
-        statusBadge('Review', innerHTMLRisk.reviewRisk <= 30, innerHTMLRisk.reviewRisk + ' حالة') +
-        statusBadge('Affected Files', innerHTMLRisk.affectedFiles <= 25, innerHTMLRisk.affectedFiles + ' ملف') +
+        statusBadge('innerHTML Total', innerHTMLRisk.totalInnerHTMLAssignments <= 50, innerHTMLRisk.totalInnerHTMLAssignments + ' '+mt('deep101','case')+'') +
+        statusBadge('High Risk', innerHTMLRisk.highRisk === 0, innerHTMLRisk.highRisk + ' '+mt('deep101','case')+'') +
+        statusBadge('Review', innerHTMLRisk.reviewRisk <= 30, innerHTMLRisk.reviewRisk + ' '+mt('deep101','case')+'') +
+        statusBadge('Affected Files', innerHTMLRisk.affectedFiles <= 25, innerHTMLRisk.affectedFiles + ' '+mt('deep104','file')+'') +
       '</div>' +
-      '<div class="pet-mc-table-wrap"><table><thead><tr><th>الملف</th><th>الإجمالي</th><th>High</th><th>Review</th><th>Safe</th><th>الحجم</th><th>الإجراء المقترح</th></tr></thead><tbody>' +
-        (rows || '<tr><td colspan="7">لا توجد حالات innerHTML مرصودة.</td></tr>') +
+      '<div class="pet-mc-table-wrap"><table><thead><tr><th>'+mt('deep94','File')+'</th><th>'+mt('deep79','Total')+'</th><th>High</th><th>Review</th><th>Safe</th><th>'+mt('deep91','Size')+'</th><th>'+mt('deep48','Suggested action')+'</th></tr></thead><tbody>' +
+        (rows || '<tr><td colspan="7">'+mt('deep15','No innerHTML cases detected.')+'</td></tr>') +
       '</tbody></table></div>' +
-      '<div class="pet-mc-recommendations"><b>توصية:</b><ul><li>' + esc(innerHTMLRisk.recommendation || '') + '</li><li>تم تنفيذ Batch 2 من Safe Rendering Migration: تحويل contract reason modal وBI KPI tooltip/select helpers إلى DOM API أو SafeRender boundary بدون تغيير منطق العرض.</li></ul></div>' +
+      '<div class="pet-mc-recommendations"><b>'+mt('deep88','Recommendation:')+'</b><ul><li>' + esc(innerHTMLRisk.recommendation || '') + '</li><li>'+mt('deep1','Safe Rendering Migration Batch 2 converted the contract reason modal and BI KPI tooltip/select helpers to DOM API or SafeRender boundaries without changing display logic.')+'</li></ul></div>' +
     '</div>';
   }
 
@@ -1495,26 +1495,26 @@
       return '<tr><td>' + esc(item.type || '') + '</td><td><b>' + esc(item.count || 0) + '</b></td><td>' + esc(item.recommendation || '') + '</td></tr>';
     }).join('');
     var dupRows = (structuralCleanup.topDuplicateFunctionNames || []).map(function (item) {
-      return '<tr><td>' + esc(item.name || '') + '</td><td><b>' + esc(item.count || 0) + '</b></td><td>اسم دالة متكرر؛ لا يعني خطأ مؤكدًا لكنه يحتاج مراجعة قبل consolidation.</td></tr>';
+      return '<tr><td>' + esc(item.name || '') + '</td><td><b>' + esc(item.count || 0) + '</b></td><td>'+mt('deep4','Repeated function name; not necessarily an error, but review is required before consolidation.')+'</td></tr>';
     }).join('');
     var applied = (structuralCleanup.appliedChanges || []).map(function (item) { return '<li>' + esc(item) + '</li>'; }).join('');
     return '<div class="pet-mc-section"><h3>Structural Cleanup Enterprise</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('Removed Files', (summary.removedFiles || 0) === 0, (summary.removedFiles || 0) + ' حذف آمن') +
-        statusBadge('Zero Reference JS', (summary.zeroReferenceJSFiles || 0) <= 2, (summary.zeroReferenceJSFiles || 0) + ' ملف') +
-        statusBadge('Transition Files', (summary.transitionFiles || 0) <= 60, (summary.transitionFiles || 0) + ' ملف') +
-        statusBadge('Duplicate Function Names', (summary.duplicateFunctionNames || 0) <= 400, (summary.duplicateFunctionNames || 0) + ' اسم') +
+        statusBadge('Removed Files', (summary.removedFiles || 0) === 0, (summary.removedFiles || 0) + ' '+mt('deep82','safe removal')+'') +
+        statusBadge('Zero Reference JS', (summary.zeroReferenceJSFiles || 0) <= 2, (summary.zeroReferenceJSFiles || 0) + ' '+mt('deep104','file')+'') +
+        statusBadge('Transition Files', (summary.transitionFiles || 0) <= 60, (summary.transitionFiles || 0) + ' '+mt('deep104','file')+'') +
+        statusBadge('Duplicate Function Names', (summary.duplicateFunctionNames || 0) <= 400, (summary.duplicateFunctionNames || 0) + ' '+mt('deep105','name')+'') +
       '</div>' +
-      '<h4>Zero-Reference JS Candidates</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>الملف</th><th>الإجراء</th><th>السبب</th></tr></thead><tbody>' +
-        (zeroRows || '<tr><td colspan="3">لا توجد ملفات مرشحة.</td></tr>') +
+      '<h4>Zero-Reference JS Candidates</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>'+mt('deep94','File')+'</th><th>'+mt('deepAction','Action')+'</th><th>'+mt('deep93','Reason')+'</th></tr></thead><tbody>' +
+        (zeroRows || '<tr><td colspan="3">'+mt('deep36','No candidate files.')+'</td></tr>') +
       '</tbody></table></div>' +
-      '<h4>Transition Buckets</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>النوع</th><th>العدد</th><th>التوصية</th></tr></thead><tbody>' +
-        (bucketRows || '<tr><td colspan="3">لا توجد بيانات انتقالية.</td></tr>') +
+      '<h4>Transition Buckets</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>'+mt('deep95','Type')+'</th><th>'+mt('deep96','Count')+'</th><th>'+mt('deep83','Recommendation')+'</th></tr></thead><tbody>' +
+        (bucketRows || '<tr><td colspan="3">'+mt('deep25','No transition data.')+'</td></tr>') +
       '</tbody></table></div>' +
-      '<h4>Top Duplicate Function Names</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>الاسم</th><th>التكرار</th><th>ملاحظة</th></tr></thead><tbody>' +
-        (dupRows || '<tr><td colspan="3">لا توجد تكرارات مرصودة.</td></tr>') +
+      '<h4>Top Duplicate Function Names</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>'+mt('deepName','Name')+'</th><th>'+mt('deep84','Occurrences')+'</th><th>'+mt('deep87','Note')+'</th></tr></thead><tbody>' +
+        (dupRows || '<tr><td colspan="3">'+mt('deep28','No duplicates detected.')+'</td></tr>') +
       '</tbody></table></div>' +
-      '<div class="pet-mc-recommendations"><b>ما تم تطبيقه:</b><ul>' + (applied || '<li>لا توجد تغييرات حذف.</li>') + '</ul><b>توصية:</b><ul><li>' + esc(structuralCleanup.recommendation || '') + '</li></ul></div>' +
+      '<div class="pet-mc-recommendations"><b>'+mt('deep53','Applied changes:')+'</b><ul>' + (applied || '<li>'+mt('deep37','No removal changes.')+'</li>') + '</ul><b>'+mt('deep88','Recommendation:')+'</b><ul><li>' + esc(structuralCleanup.recommendation || '') + '</li></ul></div>' +
     '</div>';
   }
 
@@ -1522,20 +1522,20 @@
     runtimeHardening = runtimeHardening || {};
     return '<div class="pet-mc-section"><h3>Runtime Hardening</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('Runtime Hardening Layer', !!runtimeHardening.enabled, runtimeHardening.enabled ? 'محمل' : 'غير محمل') +
-        statusBadge('Global Error Handler', !!runtimeHardening.globalErrorHandler, runtimeHardening.globalErrorHandler ? 'فعال' : 'غير فعال') +
-        statusBadge('Unhandled Rejection Handler', !!runtimeHardening.unhandledRejectionHandler, runtimeHardening.unhandledRejectionHandler ? 'فعال' : 'غير فعال') +
-        statusBadge('Diagnostics Bridge', !!runtimeHardening.diagnosticsAvailable, runtimeHardening.diagnosticsAvailable ? 'متصل' : 'غير متصل') +
+        statusBadge('Runtime Hardening Layer', !!runtimeHardening.enabled, runtimeHardening.enabled ? ''+mt('deep99','Loaded')+'' : ''+mt('deep75','Not loaded')+'') +
+        statusBadge('Global Error Handler', !!runtimeHardening.globalErrorHandler, runtimeHardening.globalErrorHandler ? ''+mt('deep100','Active')+'' : ''+mt('deep78','Inactive')+'') +
+        statusBadge('Unhandled Rejection Handler', !!runtimeHardening.unhandledRejectionHandler, runtimeHardening.unhandledRejectionHandler ? ''+mt('deep100','Active')+'' : ''+mt('deep78','Inactive')+'') +
+        statusBadge('Diagnostics Bridge', !!runtimeHardening.diagnosticsAvailable, runtimeHardening.diagnosticsAvailable ? ''+mt('deep102','Connected')+'' : ''+mt('deep80','Disconnected')+'') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Mode', runtimeHardening.mode || '-', 'وضع التشغيل') +
-        kvRow('Guarded Calls', runtimeHardening.guardedCalls || 0, 'استدعاءات محمية عبر safeCall') +
-        kvRow('Captured Exceptions', runtimeHardening.capturedExceptions || 0, 'أخطاء ملتقطة عبر Runtime Hardening') +
-        kvRow('Captured Warnings', runtimeHardening.capturedWarnings || 0, 'تحذيرات ملتقطة') +
-        kvRow('Last Error At', runtimeHardening.lastErrorAt || '-', 'آخر خطأ ملتقط') +
-        kvRow('Recommendation', runtimeHardening.recommendation || '-', 'توصية المرحلة') +
+        kvRow('Mode', runtimeHardening.mode || '-', ''+mt('deep65','Operating mode')+'') +
+        kvRow('Guarded Calls', runtimeHardening.guardedCalls || 0, ''+mt('deep17','Calls protected through safeCall')+'') +
+        kvRow('Captured Exceptions', runtimeHardening.capturedExceptions || 0, ''+mt('deep10','Exceptions captured through Runtime Hardening')+'') +
+        kvRow('Captured Warnings', runtimeHardening.capturedWarnings || 0, ''+mt('deep50','Captured warnings')+'') +
+        kvRow('Last Error At', runtimeHardening.lastErrorAt || '-', ''+mt('deep54','Last captured error')+'') +
+        kvRow('Recommendation', runtimeHardening.recommendation || '-', ''+mt('deep52','Phase recommendation')+'') +
       '</tbody></table></div>' +
-      '<div class="pet-mc-recommendations"><b>ملاحظة:</b><ul><li>هذه الطبقة Passive ولا تغير منطق Router أو Storage أو Permissions.</li><li>استخدم safeCall/captureException لاحقًا عند استكمال تحويل silent catch على دفعات.</li></ul></div>' +
+      '<div class="pet-mc-recommendations"><b>'+mt('deep87','Note')+':</b><ul><li>'+mt('deep5','This passive layer does not change Router, Storage, or Permissions logic.')+'</li><li>'+mt('deep3','Use safeCall/captureException later while migrating silent catches in controlled batches.')+'</li></ul></div>' +
     '</div>';
   }
 
@@ -1552,20 +1552,20 @@
     var checklist = (regression.manualChecklist || []).map(function (item) { return '<li>' + esc(item) + '</li>'; }).join('');
     return '<div class="pet-mc-section"><h3>Enterprise Regression Suite</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('Regression Suite', !!regression.enabled, regression.enabled ? 'فعال' : 'غير متاح') +
-        statusBadge('Ready For Golden', !!regression.readyForGolden, regression.readyForGolden ? 'نعم بعد الاختبار اليدوي' : 'يحتاج مراجعة') +
-        statusBadge('Critical Failures', (totals.criticalFailures || 0) === 0, (totals.criticalFailures || 0) + ' حالة') +
+        statusBadge('Regression Suite', !!regression.enabled, regression.enabled ? ''+mt('deep100','Active')+'' : ''+mt('deep77','Unavailable')+'') +
+        statusBadge('Ready For Golden', !!regression.readyForGolden, regression.readyForGolden ? ''+mt('deep26','Yes, after manual testing')+'' : ''+mt('deep58','Needs review')+'') +
+        statusBadge('Critical Failures', (totals.criticalFailures || 0) === 0, (totals.criticalFailures || 0) + ' '+mt('deep101','case')+'') +
         statusBadge('Readiness Score', (regression.readinessScore || 0) >= 75, (regression.readinessScore || 0) + '%') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Total Checks', totals.total || 0, 'إجمالي فحوصات القراءة فقط') +
-        kvRow('Passed / Warnings / Failed', (totals.pass || 0) + ' / ' + (totals.warn || 0) + ' / ' + (totals.fail || 0), 'نتائج الفحص') +
-        kvRow('Mode', regression.mode || '-', 'وضع الفحص') +
-        kvRow('Recommendation', regression.recommendation || '-', 'توصية الإصدار') +
+        kvRow('Total Checks', totals.total || 0, ''+mt('deep22','Total read-only checks')+'') +
+        kvRow('Passed / Warnings / Failed', (totals.pass || 0) + ' / ' + (totals.warn || 0) + ' / ' + (totals.fail || 0), ''+mt('deep66','Check results')+'') +
+        kvRow('Mode', regression.mode || '-', ''+mt('deep73','Check mode')+'') +
+        kvRow('Recommendation', regression.recommendation || '-', ''+mt('deep55','Release recommendation')+'') +
       '</tbody></table></div>' +
-      '<h4>Category Scores</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>المجال</th><th>Score</th><th>Pass</th><th>Warn</th><th>Fail</th></tr></thead><tbody>' + categoryRows + '</tbody></table></div>' +
-      '<h4>Top Checkpoints</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>ID</th><th>الفحص</th><th>الحالة</th><th>الأهمية</th><th>ملاحظة</th></tr></thead><tbody>' + checkpoints + '</tbody></table></div>' +
-      '<div class="pet-mc-recommendations"><b>Manual Checklist قبل Golden Baseline:</b><ul>' + checklist + '</ul></div>' +
+      '<h4>Category Scores</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>'+mt('deep89','Area')+'</th><th>Score</th><th>Pass</th><th>Warn</th><th>Fail</th></tr></thead><tbody>' + categoryRows + '</tbody></table></div>' +
+      '<h4>Top Checkpoints</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>ID</th><th>'+mt('deep97','Check')+'</th><th>'+mt('deep86','Status')+'</th><th>'+mt('deep85','Severity')+'</th><th>'+mt('deep87','Note')+'</th></tr></thead><tbody>' + checkpoints + '</tbody></table></div>' +
+      '<div class="pet-mc-recommendations"><b>'+mt('deep7','Manual checklist before Golden Baseline:')+'</b><ul>' + checklist + '</ul></div>' +
     '</div>';
   }
 
@@ -1581,17 +1581,17 @@
         statusBadge('Enterprise Readiness', (golden.enterpriseReadiness || 0) >= 80, (golden.enterpriseReadiness || 0) + '%') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('System Health Score', (golden.healthScore || 0) + '%', 'متوسط مؤشرات الاعتماد') +
-        kvRow('Architecture Score', (golden.architectureScore || 0) + '%', 'جاهزية البنية') +
-        kvRow('Maintainability Score', (golden.maintainabilityScore || 0) + '%', 'قابلية الصيانة') +
-        kvRow('Performance Score', (golden.performanceScore || 0) + '%', 'قياس نسبي بناءً على Baseline') +
-        kvRow('Security Score', (golden.securityScore || 0) + '%', 'تحقق Client-side الحالي') +
+        kvRow('System Health Score', (golden.healthScore || 0) + '%', ''+mt('deep34','Average certification indicators')+'') +
+        kvRow('Architecture Score', (golden.architectureScore || 0) + '%', ''+mt('deep56','Architecture readiness')+'') +
+        kvRow('Maintainability Score', (golden.maintainabilityScore || 0) + '%', mt('deepMaintainability','Maintainability')) +
+        kvRow('Performance Score', (golden.performanceScore || 0) + '%', mt('deepRelativeBaseline','Relative measurement based on baseline')) +
+        kvRow('Security Score', (golden.securityScore || 0) + '%', mt('deepClientSide','Current client-side verification')) +
         kvRow('Runtime Score', (golden.runtimeScore || 0) + '%', 'Diagnostics / Runtime Hardening') +
         kvRow('Regression Score', (golden.regressionScore || 0) + '%', 'Regression Suite') +
-        kvRow('Release Decision', golden.releaseDecision || '-', 'قرار الاعتماد') +
-        kvRow('Next Program', golden.nextProgram || '-', 'المرحلة التالية') +
+        kvRow('Release Decision', golden.releaseDecision || '-', ''+mt('deep57','Certification decision')+'') +
+        kvRow('Next Program', golden.nextProgram || '-', mt('deepNextPhase','Next phase')) +
       '</tbody></table></div>' +
-      '<div class="pet-mc-recommendations"><b>نطاق الاعتماد:</b><ul>' + (golden.lockedScopes || []).map(function (item) { return '<li>' + esc(item) + '</li>'; }).join('') + '</ul></div>' +
+      '<div class="pet-mc-recommendations"><b>'+mt('deep51','Certification scope:')+'</b><ul>' + (golden.lockedScopes || []).map(function (item) { return '<li>' + esc(item) + '</li>'; }).join('') + '</ul></div>' +
     '</div>';
   }
 
@@ -1606,14 +1606,14 @@
         statusBadge('Optimized Certification', !!optimized.certified, optimized.status || '-') +
         statusBadge('Optimized Version', true, optimized.version || getCurrentMaintenanceVersion()) +
         statusBadge('Optimized Readiness', (optimized.optimizedReadiness || 0) >= 85, (optimized.optimizedReadiness || 0) + '%') +
-        statusBadge('Internal Runtime Errors', true, '0 مطلوب للاعتماد') +
+        statusBadge('Internal Runtime Errors', true, mt('deepZeroRequired','0 required for certification')) +
       '</div>' +
-      '<div class="pet-mc-table-wrap"><table><thead><tr><th>المؤشر</th><th>قبل التحسين</th><th>الحالي</th><th>التحسن</th></tr></thead><tbody>' +
-        '<tr><td>Blocking Scripts</td><td>' + esc(baseline.blockingScripts || 0) + '</td><td>' + esc(current.blockingScripts || 0) + '</td><td>' + esc((imp.blockingScriptsReducedBy || 0) + ' ملف / ' + (imp.blockingScriptsPercent || 0) + '%') + '</td></tr>' +
-        '<tr><td>Silent Catch</td><td>' + esc(baseline.silentCatch || 0) + '</td><td>' + esc(current.silentCatch || 0) + '</td><td>' + esc((imp.silentCatchReducedBy || 0) + ' حالة / ' + (imp.silentCatchPercent || 0) + '%') + '</td></tr>' +
-        '<tr><td>innerHTML High Risk</td><td>' + esc(baseline.innerHTMLHighRisk || 0) + '</td><td>' + esc(current.innerHTMLHighRisk || 0) + '</td><td>' + esc((imp.innerHTMLHighRiskReducedBy || 0) + ' حالة / ' + (imp.innerHTMLHighRiskPercent || 0) + '%') + '</td></tr>' +
-        kvRow('Release Decision', optimized.releaseDecision || '-', 'قرار الاعتماد') +
-        kvRow('Next Program', optimized.nextProgram || '-', 'المرحلة التالية') +
+      '<div class="pet-mc-table-wrap"><table><thead><tr><th>'+mt('deepMetric','Metric')+'</th><th>'+mt('deepBefore','Before optimization')+'</th><th>'+mt('deepCurrent','Current')+'</th><th>'+mt('deepImprovement','Improvement')+'</th></tr></thead><tbody>' +
+        '<tr><td>Blocking Scripts</td><td>' + esc(baseline.blockingScripts || 0) + '</td><td>' + esc(current.blockingScripts || 0) + '</td><td>' + esc((imp.blockingScriptsReducedBy || 0) + ' '+mt('deep104','file')+' / ' + (imp.blockingScriptsPercent || 0) + '%') + '</td></tr>' +
+        '<tr><td>Silent Catch</td><td>' + esc(baseline.silentCatch || 0) + '</td><td>' + esc(current.silentCatch || 0) + '</td><td>' + esc((imp.silentCatchReducedBy || 0) + ' '+mt('deep101','case')+' / ' + (imp.silentCatchPercent || 0) + '%') + '</td></tr>' +
+        '<tr><td>innerHTML High Risk</td><td>' + esc(baseline.innerHTMLHighRisk || 0) + '</td><td>' + esc(current.innerHTMLHighRisk || 0) + '</td><td>' + esc((imp.innerHTMLHighRiskReducedBy || 0) + ' '+mt('deep101','case')+' / ' + (imp.innerHTMLHighRiskPercent || 0) + '%') + '</td></tr>' +
+        kvRow('Release Decision', optimized.releaseDecision || '-', ''+mt('deep57','Certification decision')+'') +
+        kvRow('Next Program', optimized.nextProgram || '-', mt('deepNextPhase','Next phase')) +
       '</tbody></table></div>' +
     '</div>';
   }
@@ -1628,12 +1628,12 @@
         statusBadge('Green Readiness', (green.greenReadiness || 0) >= 85, (green.greenReadiness || 0) + '%') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Internal Runtime Errors', green.internalRuntimeErrors || 0, 'الهدف: 0') +
-        kvRow('Blocking Scripts', green.blockingScripts || 0, 'تحسن تدريجي مع بقاء خطة Lazy Loading') +
-        kvRow('Silent Catch Remaining', green.silentCatchRemaining || 0, 'بعد التنظيف النهائي') +
-        kvRow('innerHTML High Risk Remaining', green.innerHTMLHighRiskRemaining || 0, 'ضمن خطة Safe Rendering لاحقة') +
-        kvRow('CDN Hardening', green.cdnHardening ? 'Active' : 'Review', 'مراقبة أخطاء Cross-Origin') +
-        kvRow('Release Decision', green.releaseDecision || '-', 'قرار الاعتماد') +
+        kvRow('Internal Runtime Errors', green.internalRuntimeErrors || 0, ''+mt('deep81','Target: 0')+'') +
+        kvRow('Blocking Scripts', green.blockingScripts || 0, ''+mt('deep8','Gradual improvement while retaining the Lazy Loading plan')+'') +
+        kvRow('Silent Catch Remaining', green.silentCatchRemaining || 0, mt('deepAfterCleanup','After final cleanup')) +
+        kvRow('innerHTML High Risk Remaining', green.innerHTMLHighRiskRemaining || 0, mt('deepSafePlan','Within a later Safe Rendering plan')) +
+        kvRow('CDN Hardening', green.cdnHardening ? 'Active' : 'Review', mt('deepCrossOrigin','Monitor cross-origin errors')) +
+        kvRow('Release Decision', green.releaseDecision || '-', ''+mt('deep57','Certification decision')+'') +
       '</tbody></table></div>' +
       '</div>';
   }
@@ -1653,16 +1653,16 @@
         statusBadge('Runtime', finalBaseline.runtimeStatus === 'Stable', finalBaseline.runtimeStatus || '-') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Architecture Status', finalBaseline.architectureStatus || '-', 'حالة البنية') +
-        kvRow('Security Status', finalBaseline.securityStatus || '-', 'حالة الحماية') +
-        kvRow('Performance Status', finalBaseline.performanceStatus || '-', 'حالة الأداء') +
-        kvRow('Technical Debt', finalBaseline.technicalDebtStatus || '-', 'ديون تقنية معروفة ومخططة') +
-        kvRow('Blocking Scripts', current.blockingScripts || 0, 'الحالة الحالية') +
-        kvRow('Silent Catch', current.silentCatch || 0, 'الحالة الحالية') +
-        kvRow('innerHTML High Risk', current.innerHTMLHighRisk || 0, 'الحالة الحالية') +
-        kvRow('Internal Runtime Errors', current.internalRuntimeErrors || 0, 'يجب أن تكون 0') +
-        kvRow('Release Decision', finalBaseline.releaseDecision || '-', 'قرار الإصدار') +
-        kvRow('Next Program', finalBaseline.nextProgram || '-', 'المرحلة التالية') +
+        kvRow('Architecture Status', finalBaseline.architectureStatus || '-', ''+mt('deep67','Architecture status')+'') +
+        kvRow('Security Status', finalBaseline.securityStatus || '-', ''+mt('deep61','Security status')+'') +
+        kvRow('Performance Status', finalBaseline.performanceStatus || '-', mt('deepPerformanceStatus','Performance status')) +
+        kvRow('Technical Debt', finalBaseline.technicalDebtStatus || '-', mt('deepTechnicalDebt','Known and planned technical debt')) +
+        kvRow('Blocking Scripts', current.blockingScripts || 0, mt('deepCurrentStatus','Current status')) +
+        kvRow('Silent Catch', current.silentCatch || 0, mt('deepCurrentStatus','Current status')) +
+        kvRow('innerHTML High Risk', current.innerHTMLHighRisk || 0, mt('deepCurrentStatus','Current status')) +
+        kvRow('Internal Runtime Errors', current.internalRuntimeErrors || 0, mt('deepMustBeZero','Must be 0')) +
+        kvRow('Release Decision', finalBaseline.releaseDecision || '-', mt('deepReleaseDecision','Release decision')) +
+        kvRow('Next Program', finalBaseline.nextProgram || '-', mt('deepNextPhase','Next phase')) +
       '</tbody></table></div>' +
       '<h4>Project Timeline</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>Version</th><th>Milestone</th><th>Blocking</th><th>Silent Catch</th><th>innerHTML High</th><th>Runtime</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
     '</div>';
@@ -1679,12 +1679,12 @@
         statusBadge('Architecture Freeze', !!lts.architectureFreeze, lts.architectureFreeze ? 'Frozen' : 'Review') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Support Mode', lts.supportMode || '-', 'وضع الدعم') +
-        kvRow('Feature Freeze Rule', lts.featureFreeze || '-', 'قاعدة التطوير القادم') +
-        kvRow('Current User', lts.currentUser || '-', 'مستخدم الاختبار الحالي') +
-        kvRow('Internal Runtime Errors', lts.internalRuntimeErrors || 0, 'يجب أن تكون 0') +
-        kvRow('Release Decision', lts.releaseDecision || '-', 'قرار الإصدار') +
-        kvRow('Next Program', lts.nextProgram || '-', 'المشروع التالي') +
+        kvRow('Support Mode', lts.supportMode || '-', ''+mt('deep74','Support mode')+'') +
+        kvRow('Feature Freeze Rule', lts.featureFreeze || '-', ''+mt('deep38','Future development rule')+'') +
+        kvRow('Current User', lts.currentUser || '-', ''+mt('deep30','Current test user')+'') +
+        kvRow('Internal Runtime Errors', lts.internalRuntimeErrors || 0, mt('deepMustBeZero','Must be 0')) +
+        kvRow('Release Decision', lts.releaseDecision || '-', mt('deepReleaseDecision','Release decision')) +
+        kvRow('Next Program', lts.nextProgram || '-', mt('deepNextProgram','Next program')) +
       '</tbody></table></div>' +
     '</div>';
   }
@@ -1699,18 +1699,18 @@
       return '<tr><td>' + esc(item.name || '') + '</td><td>' + (item.ok ? '✅' : '⚠️') + '</td><td>' + esc(item.note || '') + '</td></tr>';
     }).join('');
     var detailRows = Object.keys(details).map(function (key) {
-      return '<tr><td>' + esc(key) + '</td><td>' + (details[key] ? 'مسموح' : 'غير مسموح / غير محدد') + '</td></tr>';
+      return '<tr><td>' + esc(key) + '</td><td>' + (details[key] ? mt('deepAllowed','Allowed') : mt('deepNotAllowed','Not allowed / not specified')) + '</td></tr>';
     }).join('');
     return '<div class="pet-mc-section"><h3>🚐 Vehicle Permissions Final Verification</h3>' +
       '<div class="pet-mc-status-grid">' +
         statusBadge('Vehicle Permissions Certification', !!vehicleVerification.certified, vehicleVerification.certified ? 'Certified' : 'Review') +
         statusBadge('Readiness', (vehicleVerification.readiness || 0) >= 85, (vehicleVerification.readiness || 0) + '%') +
-        statusBadge('Vehicle Scope', !!scope, scope.allVehicles ? 'كل السيارات' : ((scope.vehicles || []).length + ' سيارة محددة')) +
+        statusBadge('Vehicle Scope', !!scope, scope.allVehicles ? mt('deepAllVehicles','All vehicles') : ((scope.vehicles || []).length + mt('deepSelectedVehicles',' selected vehicles'))) +
         statusBadge('Vehicles', (vehicleVerification.vehicleCount || 0) > 0, (vehicleVerification.vehicleCount || 0) + ' vehicle(s)') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Current User', vehicleVerification.currentUser || '-', 'مستخدم الاختبار الحالي') +
-        kvRow('Release Decision', vehicleVerification.releaseDecision || '-', 'قرار الاعتماد') +
+        kvRow('Current User', vehicleVerification.currentUser || '-', ''+mt('deep30','Current test user')+'') +
+        kvRow('Release Decision', vehicleVerification.releaseDecision || '-', ''+mt('deep57','Certification decision')+'') +
       '</tbody></table></div>' +
       '<h4>Verification Checks</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>Check</th><th>Status</th><th>Note</th></tr></thead><tbody>' + checkRows + '</tbody></table></div>' +
       '<h4>Detailed Vehicle Operation Permissions</h4><div class="pet-mc-table-wrap"><table><thead><tr><th>Permission</th><th>Status</th></tr></thead><tbody>' + detailRows + '</tbody></table></div>' +
@@ -1724,19 +1724,19 @@
     var user = security.currentUser || {};
     return '<div class="pet-mc-section"><h3>Security / Permissions</h3>' +
       '<div class="pet-mc-status-grid">' +
-        statusBadge('Password Security', security.passwordSecurityPresent, security.passwordSecurityPresent ? 'موجود' : 'غير مرصود') +
-        statusBadge('Security Helpers', security.securityHelperPresent, security.securityHelperPresent ? 'موجود' : 'غير مرصود') +
-        statusBadge('Permissions Surface', security.permissionsPresent, security.permissionsPresent ? 'موجود' : 'غير مرصود') +
-        statusBadge('Session Timeout', security.sessionTimeoutPresent, security.sessionTimeoutPresent ? 'موجود' : 'غير مرصود') +
+        statusBadge('Password Security', security.passwordSecurityPresent, security.passwordSecurityPresent ? ''+mt('deep90','Present')+'' : ''+mt('deep70','Not detected')+'') +
+        statusBadge('Security Helpers', security.securityHelperPresent, security.securityHelperPresent ? ''+mt('deep90','Present')+'' : ''+mt('deep70','Not detected')+'') +
+        statusBadge('Permissions Surface', security.permissionsPresent, security.permissionsPresent ? ''+mt('deep90','Present')+'' : ''+mt('deep70','Not detected')+'') +
+        statusBadge('Session Timeout', security.sessionTimeoutPresent, security.sessionTimeoutPresent ? ''+mt('deep90','Present')+'' : ''+mt('deep70','Not detected')+'') +
       '</div>' +
       '<div class="pet-mc-table-wrap"><table><tbody>' +
-        kvRow('Current User', user.present ? ((user.username || user.id || '-') + ' / ' + (user.role || '-')) : 'غير مرصود', user.source || '') +
-        kvRow('Security Script Count', security.securityScriptCount, 'ملفات حماية/صلاحيات محملة') +
-        kvRow('escapeHtml / sanitizeHtml / setInnerHTML', (security.hasEscapeHtml?'✓':'-') + ' / ' + (security.hasSanitizeHtml?'✓':'-') + ' / ' + (security.hasSetInnerHTML?'✓':'-'), 'مساعدات عرض آمن') +
-        kvRow('Permission Methods', permissionMethods, 'للقراءة فقط') +
-        kvRow('Password Methods', passwordMethods, 'للقراءة فقط') +
-        kvRow('Security Helper Methods', helperMethods, 'للقراءة فقط') +
-        kvRow('Router openTab', security.routerOpenTabPresent ? 'Present' : 'Missing', security.guardedPilotPresent ? 'Guarded pilot موجود' : 'يحتاج تحقق لاحق قبل أي hardening') +
+        kvRow('Current User', user.present ? ((user.username || user.id || '-') + ' / ' + (user.role || '-')) : ''+mt('deep70','Not detected')+'', user.source || '') +
+        kvRow('Security Script Count', security.securityScriptCount, ''+mt('deep23','Loaded security/permissions files')+'') +
+        kvRow('escapeHtml / sanitizeHtml / setInnerHTML', (security.hasEscapeHtml?'✓':'-') + ' / ' + (security.hasSanitizeHtml?'✓':'-') + ' / ' + (security.hasSetInnerHTML?'✓':'-'), mt('deepSafeDisplay','Safe display helpers')) +
+        kvRow('Permission Methods', permissionMethods, ''+mt('deep62','Read only')+'') +
+        kvRow('Password Methods', passwordMethods, ''+mt('deep62','Read only')+'') +
+        kvRow('Security Helper Methods', helperMethods, ''+mt('deep62','Read only')+'') +
+        kvRow('Router openTab', security.routerOpenTabPresent ? 'Present' : 'Missing', security.guardedPilotPresent ? 'Guarded pilot '+mt('deep90','Present')+'' : mt('deepNeedsVerification','Requires later verification before hardening')) +
       '</tbody></table></div></div>';
   }
 

@@ -1,0 +1,27 @@
+'use strict';
+const fs=require('fs');
+const vm=require('vm');
+function fail(msg){console.error('Source Migration Pack 6 Check: Failed\n'+msg);process.exit(1);}
+const center=fs.readFileSync('maintenance/maintenance-center.js','utf8');
+const start=center.indexOf('  function statusBadge');
+const end=center.indexOf('  function render()',start);
+if(start<0||end<0) fail('Maintenance deep-render range was not found.');
+const deep=center.slice(start,end);
+if(/[\u0600-\u06ff]/.test(deep)) fail('Direct Arabic remains in Maintenance deep render functions.');
+if(!/maintenanceSource/.test(fs.readFileSync('i18n/maintenance-source.js','utf8'))) fail('Maintenance dictionary module is missing.');
+const sandbox={window:{}}; sandbox.window.window=sandbox.window;
+vm.runInNewContext(fs.readFileSync('i18n/maintenance-source.js','utf8'),sandbox);
+const dict=sandbox.window.PETATOE_I18N_DICTIONARIES||{};
+const ar=(dict.ar&&dict.ar.maintenanceSource)||{};
+const en=(dict.en&&dict.en.maintenanceSource)||{};
+const arKeys=Object.keys(ar).sort(); const enKeys=Object.keys(en).sort();
+if(JSON.stringify(arKeys)!==JSON.stringify(enKeys)) fail('Arabic and English maintenance dictionaries are not structurally aligned.');
+const badEn=enKeys.filter(k=>/[\u0600-\u06ff]/.test(String(en[k]||'')));
+if(badEn.length) fail('Arabic characters found in English maintenance values: '+badEn.join(', '));
+const used=[...center.matchAll(/mt\(\s*['"]([^'"]+)['"]/g)].map(m=>m[1]);
+const missing=[...new Set(used.filter(k=>!Object.prototype.hasOwnProperty.call(en,k)))];
+if(missing.length) fail('Missing Maintenance dictionary keys: '+missing.join(', '));
+console.log('Source Migration Pack 6 Check: Passed');
+console.log('Maintenance dictionary keys:',enKeys.length);
+console.log('Maintenance runtime keys used:',new Set(used).size);
+console.log('Direct Arabic lines in deep render range: 0');

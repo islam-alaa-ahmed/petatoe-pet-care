@@ -3,7 +3,7 @@ function must(ok,msg){if(!ok){throw new Error(msg)}}
 const html=fs.readFileSync('index.html','utf8');
 const src=fs.readFileSync('maintenance/maintenance-center.js','utf8');
 const dict=fs.readFileSync('i18n/maintenance-source.js','utf8');
-must(html.indexOf('i18n/maintenance-source.js?v=9.2.6-source-migration-pack5')>=0,'maintenance dictionary is not loaded');
+must(/i18n\/maintenance-source\.js\?v=[^"']+/.test(html),'maintenance dictionary is not loaded');
 must(html.indexOf('i18n/maintenance-source.js')<html.indexOf('maintenance/maintenance-center.js'),'maintenance dictionary must load before center');
 must(src.indexOf("function mt(key, fallback)")>=0,'maintenance source helper missing');
 must(src.indexOf("dir=\"' + (isEnglish ? 'ltr' : 'rtl')")>=0,'dynamic maintenance direction missing');
