@@ -9,7 +9,7 @@
     if(type === 'pdf') return ns.pdf(config);
     if(type === 'print') return ns.print(config);
     if(type === 'excel' || type === 'xlsx' || type === 'csv') return ns.excel(config);
-    ns.notify && ns.notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('نوع التصدير غير معروف'):'نوع التصدير غير معروف');
+    ns.notify && ns.notify(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('نوع التصدير غير معروف'):'نوع التصدير غير معروف');
   };
   ns.attachButtons = function(scope){
     var root = ns.getNode ? (ns.getNode(scope) || document) : document;

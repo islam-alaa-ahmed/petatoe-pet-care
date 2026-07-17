@@ -48,7 +48,7 @@
   async function deleteOne(id){
     if(!canDeleteNow(false)) return false;
     var rec = findRecord(id) || {id:id};
-    if(!confirm(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حذف السجل من Supabase نهائيًا؟'):'حذف السجل من Supabase نهائيًا؟')) return false;
+    if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف السجل من Supabase نهائيًا؟'):'حذف السجل من Supabase نهائيًا؟')) return false;
     if(!window.PETATOEDataLayer || typeof window.PETATOEDataLayer.deleteSalesRecord!=='function'){
       toastMsg('DataLayer غير جاهز لحذف السجل من Supabase'); return false;
     }
@@ -65,8 +65,8 @@
   async function deleteAll(){
     if(!canDeleteNow(true)) return false;
     var n = getRows().length;
-    if(!confirm(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حذف كل بيانات المبيعات من Supabase؟\nعدد السجلات الحالية: '):'حذف كل بيانات المبيعات من Supabase؟\nعدد السجلات الحالية: '+n)) return false;
-    if(!confirm(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تأكيد نهائي: لن ترجع البيانات بعد التحديث إلا إذا رفعتها من Excel مرة أخرى.'):'تأكيد نهائي: لن ترجع البيانات بعد التحديث إلا إذا رفعتها من Excel مرة أخرى.')) return false;
+    if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف كل بيانات المبيعات من Supabase؟\nعدد السجلات الحالية: '):'حذف كل بيانات المبيعات من Supabase؟\nعدد السجلات الحالية: '+n)) return false;
+    if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تأكيد نهائي: لن ترجع البيانات بعد التحديث إلا إذا رفعتها من Excel مرة أخرى.'):'تأكيد نهائي: لن ترجع البيانات بعد التحديث إلا إذا رفعتها من Excel مرة أخرى.')) return false;
     if(!window.PETATOEDataLayer || typeof window.PETATOEDataLayer.deleteAllSalesRecords!=='function'){
       toastMsg('DataLayer غير جاهز لحذف كل السجلات من Supabase'); return false;
     }

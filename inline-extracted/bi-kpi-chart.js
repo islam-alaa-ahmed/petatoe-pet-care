@@ -198,7 +198,7 @@
   }
   window.exportPetatoeBIReport=function(type){
     try{
-      if(!window.XLSX){toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('مكتبة Excel غير محملة'):'مكتبة Excel غير محملة');return}
+      if(!window.XLSX){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('مكتبة Excel غير محملة'):'مكتبة Excel غير محملة');return}
       var d=biData(), wb=XLSX.utils.book_new(), rows=[];
       if(type==='health'){
         rows=d.clients.map(function(c){return [c.name,c.score,c.rec,c.value,c.inv]});
@@ -217,7 +217,7 @@
         petatoeBiSheet(wb,'Declining Services',['الخدمة','التغير %','آخر 3 شهور','قبلها','تسريب محتمل'],rows);
         XLSX.writeFile(wb,'PETATOE_Declining_Services_All.xlsx');
       }
-    }catch(e){console.error(e);toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر تصدير التقرير'):'تعذر تصدير التقرير')}
+    }catch(e){console.error(e);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر تصدير التقرير'):'تعذر تصدير التقرير')}
   };
   var biTableCache={key:'',risk:'',best:'',leak:'',services:''};
   function biTableKey(d,healthLimit,bestLimit,leakageLimit,svcLimit){
@@ -293,7 +293,7 @@
     };
     if(window.requestIdleCallback){biRenderState.raf=requestIdleCallback(run,{timeout:260});}else if(window.requestAnimationFrame){biRenderState.raf=requestAnimationFrame(run);}else{setTimeout(run,0);}
   };
-  window.exportBusinessIntelligenceExcel=function(){try{var d=biData(),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['المؤشر','القيمة'],['Customer Health',d.health],['At Risk Customers',d.atRisk],['Revenue Leakage',d.leak.totalLost],['Retention Rate',d.retention],['Revenue Per Customer',d.revPerClient],['Average Invoice',d.avgInvoice]]),'BI Summary');XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['العميل','Score','أيام الغياب','الإنفاق','الفواتير'],...d.clients.map(function(c){return [c.name,c.score,c.rec,c.value,c.inv]})]),'Customer Health');XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['العميل','Score','الإنفاق','الفواتير','أيام الغياب'],...(d.bestClients||d.clients||[]).map(function(c){return [c.name,c.score,c.value,c.inv,c.rec]})]),'Best Customers');XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['العميل','أيام الغياب','متوسط شهري','قيمة مفقودة'],...d.leak.inactive.map(function(c){return [c.name,c.rec,c.avg,c.lost]})]),'Revenue Leakage');XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['الخدمة','التغير %','آخر 3 شهور','قبلها','تسريب محتمل'],...d.leak.services.map(function(s){return [s.name,s.change,s.last3,s.prev3,s.loss]})]),'Declining Services');XLSX.writeFile(wb,'PETATOE_Business_Intelligence.xlsx')}catch(e){console.error(e);toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر تصدير ذكاء الأعمال'):'تعذر تصدير ذكاء الأعمال')}};
+  window.exportBusinessIntelligenceExcel=function(){try{var d=biData(),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['المؤشر','القيمة'],['Customer Health',d.health],['At Risk Customers',d.atRisk],['Revenue Leakage',d.leak.totalLost],['Retention Rate',d.retention],['Revenue Per Customer',d.revPerClient],['Average Invoice',d.avgInvoice]]),'BI Summary');XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['العميل','Score','أيام الغياب','الإنفاق','الفواتير'],...d.clients.map(function(c){return [c.name,c.score,c.rec,c.value,c.inv]})]),'Customer Health');XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['العميل','Score','الإنفاق','الفواتير','أيام الغياب'],...(d.bestClients||d.clients||[]).map(function(c){return [c.name,c.score,c.value,c.inv,c.rec]})]),'Best Customers');XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['العميل','أيام الغياب','متوسط شهري','قيمة مفقودة'],...d.leak.inactive.map(function(c){return [c.name,c.rec,c.avg,c.lost]})]),'Revenue Leakage');XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['الخدمة','التغير %','آخر 3 شهور','قبلها','تسريب محتمل'],...d.leak.services.map(function(s){return [s.name,s.change,s.last3,s.prev3,s.loss]})]),'Declining Services');XLSX.writeFile(wb,'PETATOE_Business_Intelligence.xlsx')}catch(e){console.error(e);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر تصدير ذكاء الأعمال'):'تعذر تصدير ذكاء الأعمال')}};
   window.injectBusinessIntelligence=injectBusinessIntelligence;
 
   function petBiDecodeHtml(v){var t=document.createElement('textarea');t.textContent=String(v||'');return t.value}

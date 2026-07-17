@@ -7,17 +7,9 @@
 
   function salesInvoiceT(key, fallback, params){
   try{
-    if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.t==='function'){
-      const value=window.PETATOE_I18N.t('smartReportsSource.salesInvoice.'+key,params||{});
-      if(typeof value==='string'&&value.trim()&&value!=='smartReportsSource.salesInvoice.'+key) return value;
-    }
-    const lang=(window.PETATOE_I18N&&window.PETATOE_I18N.getLanguage)?window.PETATOE_I18N.getLanguage():(document.documentElement.lang||'ar');
-    const pack=window.PETATOE_SMART_REPORTS_TRANSLATIONS;
-    const packed=pack&&pack[lang]&&pack[lang]['salesInvoice.'+key];
-    if(typeof packed==='string'&&packed.trim()){
-      let translated=packed;
-      Object.keys(params||{}).forEach(k=>{translated=translated.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
-      return translated;
+    var center=window.PETATOE_LOCALIZATION_CENTER;
+    if(center&&typeof center.t==='function'){
+      return center.t('smartReportsSource.salesInvoice.'+key,params||{},{fallback:fallback,allowKeyFallback:true});
     }
   }catch(_){ }
   let out=String(fallback==null?'':fallback);

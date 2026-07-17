@@ -19,7 +19,7 @@
       if (window.PETATOE_LOCALIZATION_CENTER && typeof window.PETATOE_LOCALIZATION_CENTER.getLanguage === 'function') {
         return window.PETATOE_LOCALIZATION_CENTER.getLanguage() || 'ar';
       }
-      return (window.PETATOE_I18N && window.PETATOE_I18N.getLanguage && window.PETATOE_I18N.getLanguage()) || document.documentElement.lang || 'ar';
+      return document.documentElement.lang || 'ar';
     } catch (e) { return 'ar'; }
   }
 
@@ -28,9 +28,7 @@
       if (window.PETATOE_LOCALIZATION_CENTER && typeof window.PETATOE_LOCALIZATION_CENTER.t === 'function') {
         return window.PETATOE_LOCALIZATION_CENTER.t('maintenanceSource.' + key, fallback);
       }
-      var lang = maintenanceLang().toLowerCase().indexOf('en') === 0 ? 'en' : 'ar';
-      var dict = window.PETATOE_I18N_DICTIONARIES && window.PETATOE_I18N_DICTIONARIES[lang] && window.PETATOE_I18N_DICTIONARIES[lang].maintenanceSource;
-      return (dict && dict[key]) || fallback || key;
+      return fallback || key;
     } catch (e) { return fallback || key; }
   }
 

@@ -155,8 +155,8 @@
   function handlePaymentAttachment(id, input){
     var file = input && input.files && input.files[0];
     if(!file) return;
-    if(!/^image\//.test(file.type || '')){ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('يمكن إرفاق صورة فقط لإثبات الدفع'):'يمكن إرفاق صورة فقط لإثبات الدفع'); input.value = ''; return; }
-    if(file.size > 1024 * 1024 * 2){ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('حجم الصورة كبير. الحد الأقصى 2MB'):'حجم الصورة كبير. الحد الأقصى 2MB'); input.value = ''; return; }
+    if(!/^image\//.test(file.type || '')){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('يمكن إرفاق صورة فقط لإثبات الدفع'):'يمكن إرفاق صورة فقط لإثبات الدفع'); input.value = ''; return; }
+    if(file.size > 1024 * 1024 * 2){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حجم الصورة كبير. الحد الأقصى 2MB'):'حجم الصورة كبير. الحد الأقصى 2MB'); input.value = ''; return; }
     var reader = new FileReader();
     reader.onload = function(){
       updateVehicleRow(id, function(row){
@@ -166,16 +166,16 @@
         row.updatedAt = new Date().toISOString();
         pushExecutionLog(row, 'collection', {oldStatus:normalizeStatus(row.status), status:normalizeStatus(row.status), paymentAttachmentName:file.name, notes:'تم إضافة/تغيير صورة إثبات الدفع. السابق: ' + oldName});
       });
-      toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم إرفاق صورة إثبات الدفع'):'تم إرفاق صورة إثبات الدفع');
+      toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم إرفاق صورة إثبات الدفع'):'تم إرفاق صورة إثبات الدفع');
     };
-    reader.onerror = function(){ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر قراءة صورة إثبات الدفع'):'تعذر قراءة صورة إثبات الدفع'); };
+    reader.onerror = function(){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر قراءة صورة إثبات الدفع'):'تعذر قراءة صورة إثبات الدفع'); };
     reader.readAsDataURL(file);
   }
 
   function saveVehicleSessionById(id){
     var row = rows().find(function(item){ return String(item.id) === String(id); });
     if(!row) return;
-    if(isLocked(row)){ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('هذه الجلسة مؤكدة ولا يمكن تعديلها بدون صلاحية تعديل جلسة مؤكدة'):'هذه الجلسة مؤكدة ولا يمكن تعديلها بدون صلاحية تعديل جلسة مؤكدة'); return; }
+    if(isLocked(row)){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('هذه الجلسة مؤكدة ولا يمكن تعديلها بدون صلاحية تعديل جلسة مؤكدة'):'هذه الجلسة مؤكدة ولا يمكن تعديلها بدون صلاحية تعديل جلسة مؤكدة'); return; }
 
     var hasPaymentInputs = !!byId('vehicleOpsPaid_' + id);
     var paid = hasPaymentInputs ? Number(String(val('vehicleOpsPaid_' + id) || 0).replace(/,/g, '')) : Number((row && row.paidAmount) || 0);
@@ -185,9 +185,9 @@
     var ref = hasPaymentInputs ? val('vehicleOpsRef_' + id) : (row.collectionReference || '');
     var base = calcFinancials(Object.assign({}, row, {paidAmount:paid, paymentMethod:method}));
 
-    if(paid < 0){ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('المبلغ المحصل لا يمكن أن يكون أقل من صفر'):'المبلغ المحصل لا يمكن أن يكون أقل من صفر'); return; }
-    if(Number(base.totalAmount || 0) > 0 && paid > Number(base.totalAmount || 0)){ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('المبلغ المحصل لا يمكن أن يكون أكبر من قيمة الجلسة'):'المبلغ المحصل لا يمكن أن يكون أكبر من قيمة الجلسة'); return; }
-    if(paid > 0 && !method){ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اختر طريقة السداد قبل حفظ التحصيل'):'اختر طريقة السداد قبل حفظ التحصيل'); return; }
+    if(paid < 0){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('المبلغ المحصل لا يمكن أن يكون أقل من صفر'):'المبلغ المحصل لا يمكن أن يكون أقل من صفر'); return; }
+    if(Number(base.totalAmount || 0) > 0 && paid > Number(base.totalAmount || 0)){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('المبلغ المحصل لا يمكن أن يكون أكبر من قيمة الجلسة'):'المبلغ المحصل لا يمكن أن يكون أكبر من قيمة الجلسة'); return; }
+    if(paid > 0 && !method){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اختر طريقة السداد قبل حفظ التحصيل'):'اختر طريقة السداد قبل حفظ التحصيل'); return; }
 
     var shouldMoveNext = false;
     updateVehicleRow(row.id, function(x){
@@ -210,7 +210,7 @@
       pushExecutionLog(x, 'collection', {oldStatus:oldStatus, status:normalizeStatus(x.status), paidAmount:x.paidAmount, paymentMethod:x.paymentMethod, collectionStatus:x.collectionStatus, collectionReference:x.collectionReference});
     });
     if(shouldMoveNext){ selectNextAfter(row.id); renderVehicleOperations(); }
-    toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم حفظ بيانات الجلسة والتحصيل'):'تم حفظ بيانات الجلسة والتحصيل');
+    toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حفظ بيانات الجلسة والتحصيل'):'تم حفظ بيانات الجلسة والتحصيل');
   }
 
   function saveVehicleSessionByIndex(index){

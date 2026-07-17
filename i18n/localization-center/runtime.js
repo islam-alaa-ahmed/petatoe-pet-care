@@ -1,7 +1,7 @@
 /* PETATOE v9.1 - Unified Enterprise Localization Center v2.0 */
 (function(){
   'use strict';
-  var VERSION='9.4.0-single-source-foundation';
+  var VERSION='9.4.1-screen-migration';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}
@@ -36,6 +36,7 @@
   function isLoading(){var l=window.PETATOE_LOCALIZATION_LOADER;return !!(l&&l.state&&l.state.loading);}
   function apply(root){var a=api();if(isLoading())return false;if(a&&a.applySubtree){a.applySubtree(root||document);return true;}return false;}
   function business(type,value,lang){var b=window.PETATOE_BUSINESS_DATA_I18N;return b&&b.resolve?b.resolve(type,value,lang):value;}
+  function localizeBusinessRecord(record,lang){var b=window.PETATOE_BUSINESS_DATA_I18N;return b&&b.localizeRecord?b.localizeRecord(record,lang):record;}
   function registerModule(name,dictionaries){var s=store();return !!(s&&s.registerModule&&s.registerModule(name,dictionaries));}
   function monthName(month,lang){
     var code=String(month||'');var idx=Number(month);
@@ -48,7 +49,7 @@
   function markReady(source){if(ready)return;ready=true;window.dispatchEvent(new CustomEvent('petatoe:localization-center-ready',{detail:{version:VERSION,source:source||'runtime'}}));listeners.splice(0).forEach(function(fn){try{fn();}catch(_){}});}
   function whenReady(fn){if(ready){fn();return;}listeners.push(fn);}
   function getStatus(){return {version:VERSION,ready:ready,currentLanguage:currentLanguage(),registry:registry()&&registry().list?registry().list({includeDisabled:true}):[],canonicalStoreReady:!!store(),smartPackReady:!!storeValue('smartReportsSource','ar'),businessReady:!!window.PETATOE_BUSINESS_DATA_I18N,loading:isLoading()};}
-  var center={version:VERSION,t:t,smart:smart,translate:translate,resolve:function(key,fallback,lang){return {key:key,value:translate(key,fallback,lang),language:lang||currentLanguage(),source:'unified-center'};},getLanguage:currentLanguage,setLanguage:setLanguage,apply:apply,business:business,registerModule:registerModule,monthName:monthName,formatDate:formatDate,reload:reload,whenReady:whenReady,getStatus:getStatus,listLanguages:function(o){var r=registry();return r&&r.list?r.list(o):[];},clearCache:function(){var c=window.PETATOE_LOCALIZATION_CACHE;if(c&&c.clear)c.clear();return reload();}};
+  var center={version:VERSION,t:t,smart:smart,translate:translate,resolve:function(key,fallback,lang){return {key:key,value:translate(key,fallback,lang),language:lang||currentLanguage(),source:'unified-center'};},getLanguage:currentLanguage,setLanguage:setLanguage,apply:apply,business:business,localizeBusinessRecord:localizeBusinessRecord,registerModule:registerModule,monthName:monthName,formatDate:formatDate,reload:reload,whenReady:whenReady,getStatus:getStatus,listLanguages:function(o){var r=registry();return r&&r.list?r.list(o):[];},clearCache:function(){var c=window.PETATOE_LOCALIZATION_CACHE;if(c&&c.clear)c.clear();return reload();}};
   window.PETATOE_LOCALIZATION_CENTER=center;
   window.localize=function(key,fallback,lang){return center.translate(key,fallback,lang);};
   window.petatoeLocalizationStatus=getStatus;

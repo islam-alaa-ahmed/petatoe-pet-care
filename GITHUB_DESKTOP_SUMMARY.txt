@@ -1,0 +1,9 @@
+PETATOE v9.4.1 — Screen Localization Migration
+
+- Migrated application screens and runtime messages to PETATOE_LOCALIZATION_CENTER.
+- Removed direct screen-level access to PETATOE_I18N, PETATOE_SMART_REPORTS_TRANSLATIONS, and PETATOE_BUSINESS_DATA_I18N.
+- Unified Smart Reports export, interactions, and sales invoice localization through the Center.
+- Routed Customer 360 and Smart Data Engine business localization through the Center.
+- Removed Maintenance Center legacy dictionary fallback.
+- Added screen localization migration validation script.
+- Updated release metadata to v9.4.1.

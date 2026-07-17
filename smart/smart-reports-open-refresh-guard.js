@@ -62,7 +62,7 @@
   }
   function loadingText(){
     var lang='ar';
-    try{ lang=(window.PETATOE_I18N&&window.PETATOE_I18N.getLanguage)?window.PETATOE_I18N.getLanguage():(document.documentElement.lang||'ar'); }catch(_e){}
+    try{ lang=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.getLanguage)?window.PETATOE_LOCALIZATION_CENTER.getLanguage():(document.documentElement.lang||'ar'); }catch(_e){}
     return lang === 'en' ? 'Loading Smart Reports data…' : 'جارٍ تحميل بيانات التقارير الذكية…';
   }
   function showLoading(){

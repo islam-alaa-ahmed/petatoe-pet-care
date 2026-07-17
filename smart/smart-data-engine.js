@@ -196,10 +196,11 @@
   function buildSmartData(records, options){
     const __perfStart = perfNow();
     const rawSource = asArray(records);
-    const source = (window.PETATOE_BUSINESS_DATA_I18N&&typeof window.PETATOE_BUSINESS_DATA_I18N.localizeRecord==='function')
-      ? rawSource.map(function(row){return window.PETATOE_BUSINESS_DATA_I18N.localizeRecord(row);})
+    const center=window.PETATOE_LOCALIZATION_CENTER;
+    const source = (center&&typeof center.localizeBusinessRecord==='function')
+      ? rawSource.map(function(row){return center.localizeBusinessRecord(row);})
       : rawSource;
-    const activeBusinessLang=(window.PETATOE_BUSINESS_DATA_I18N&&window.PETATOE_BUSINESS_DATA_I18N.getLanguage)?window.PETATOE_BUSINESS_DATA_I18N.getLanguage():(document.documentElement.lang||'ar');
+    const activeBusinessLang=(center&&typeof center.getLanguage==='function')?center.getLanguage():(document.documentElement.lang||'ar');
     const key = stableRecordsKey(rawSource)+'|bdl:'+activeBusinessLang;
     if(!options || !options.force){
       if(cacheValue && cacheKey === key){

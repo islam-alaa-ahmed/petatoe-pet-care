@@ -27,11 +27,11 @@
   window.petatoeExportContractCandidatesExcel=function(){
     var rows = contractExportRows();
     if(!rows.length){
-      try{ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير'); }catch(e){ alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير'); }
+      try{ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير'); }catch(e){ alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير'); }
       return;
     }
     if(!window.XLSX){
-      try{ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('مكتبة Excel غير محملة'):'مكتبة Excel غير محملة'); }catch(e){ alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('مكتبة Excel غير محملة'):'مكتبة Excel غير محملة'); }
+      try{ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('مكتبة Excel غير محملة'):'مكتبة Excel غير محملة'); }catch(e){ alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('مكتبة Excel غير محملة'):'مكتبة Excel غير محملة'); }
       return;
     }
     var ws = XLSX.utils.json_to_sheet(rows);
@@ -42,7 +42,7 @@
   window.petatoeExportContractCandidatesPdf=function(){
     var rows = contractExportRows();
     if(!rows.length){
-      try{ toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للطباعة'):'لا توجد بيانات للطباعة'); }catch(e){ alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للطباعة'):'لا توجد بيانات للطباعة'); }
+      try{ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات للطباعة'):'لا توجد بيانات للطباعة'); }catch(e){ alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات للطباعة'):'لا توجد بيانات للطباعة'); }
       return;
     }
     var esc = function(v){
@@ -73,7 +73,7 @@
       'tr:nth-child(even) td{background:rgba(255,255,255,.03)}.meta{display:flex;gap:12px;margin-bottom:10px}.pill{border:1px solid rgba(0,229,255,.5);border-radius:999px;padding:6px 12px;background:rgba(0,229,255,.09)}'+
       '</style></head><body><h1>⭐ عملاء مرشحون لعمل عقود معهم</h1><p>تصدير كامل بيانات العملاء المرشحين، بغض النظر عن عدد الصفوف المعروضة داخل الشاشة.</p><div class="meta"><span class="pill">إجمالي العملاء: '+rows.length+'</span></div><table><thead><tr><th>#</th><th>العميل</th><th>إجمالي الإنفاق</th><th>عدد الزيارات</th><th>شهور النشاط</th><th>آخر زيارة</th><th>أيام الغياب</th><th>Score</th><th>التوصية</th><th>تصنيف العميل</th></tr></thead><tbody>'+body+'</tbody></table><script>window.onload=function(){setTimeout(function(){window.print()},250)}<\/script></body></html>';
     var w=petatoeOpenPrintHtml(html,'width=1100,height=850');
-    if(!w){ try{toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('المتصفح منع نافذة الطباعة'):'المتصفح منع نافذة الطباعة');}catch(e){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('المتصفح منع نافذة الطباعة'):'المتصفح منع نافذة الطباعة');} return; }
+    if(!w){ try{toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('المتصفح منع نافذة الطباعة'):'المتصفح منع نافذة الطباعة');}catch(e){alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('المتصفح منع نافذة الطباعة'):'المتصفح منع نافذة الطباعة');} return; }
   };
   window.PETATOEContractCandidatesExportAudit=function(){
     var visible=document.querySelectorAll('#contractCandidatesTable tbody tr').length;

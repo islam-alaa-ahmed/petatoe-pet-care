@@ -591,7 +591,7 @@
     return '<label class="pet-auth-check"><input type="checkbox" id="petAuthEnableBiometric"> <span>تفعيل Face ID / بصمة الوجه بعد الدخول</span></label>';
   }
   function registerBiometric(user){
-    toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تم تعطيل التخزين المحلي للبصمة في نسخة Supabase.'):'تم تعطيل التخزين المحلي للبصمة في نسخة Supabase.');
+    toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم تعطيل التخزين المحلي للبصمة في نسخة Supabase.'):'تم تعطيل التخزين المحلي للبصمة في نسخة Supabase.');
     return Promise.resolve(false);
   }
   function loginWithBiometric(){

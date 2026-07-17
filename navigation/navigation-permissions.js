@@ -262,7 +262,7 @@
     var screen=screenFromButton(btn);
     if(!screen) return true;
     if(canOpen(screen)) return true;
-    notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('غير متاح للصلاحية الحالية'):'غير متاح للصلاحية الحالية');
+    notify(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('غير متاح للصلاحية الحالية'):'غير متاح للصلاحية الحالية');
     return false;
   }
   window.PETATOENavigationPermissions={currentUser:currentUser,isSuperUser:isSuperUser,normalizeScreen:normalizeScreen,canOpen:canOpen,hasAnyAction:hasAnyAction,apply:apply,guardClick:guardClick,__v:'erp-strict-supabase-phase20-auth-gated'};

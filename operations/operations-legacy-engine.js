@@ -2074,7 +2074,7 @@
     return {ok:true,paid:paid,method:method,financials:c};
   }
   function requireBackwardReason(oldStatus,newStatus){
-    var reason=prompt(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('أنت ترجع حالة الطلب من "'):'أنت ترجع حالة الطلب من "'+oldStatus+'" إلى "'+newStatus+'". اكتب سبب التراجع');
+    var reason=prompt(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('أنت ترجع حالة الطلب من "'):'أنت ترجع حالة الطلب من "'+oldStatus+'" إلى "'+newStatus+'". اكتب سبب التراجع');
     reason=String(reason||'').trim();
     if(!reason){toast(opT('rollbackReasonRequired'));return null;}
     return reason;
@@ -2167,7 +2167,7 @@
     if(!requireVehicleOpsAction('reopen','لا تملك صلاحية فتح رحلة تشغيل السيارات مرة أخرى'))return;
     var r=vehicleOpsRows().find(function(x){return String(x.id)===String(id)}); if(!r)return;
     if(!vehicleOpsCanReopen(r)){toast(opT('cannotReopenSession'));return;}
-    var reason=prompt(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('اكتب سبب إعادة فتح الجلسة'):'اكتب سبب إعادة فتح الجلسة');
+    var reason=prompt(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب سبب إعادة فتح الجلسة'):'اكتب سبب إعادة فتح الجلسة');
     if(!String(reason||'').trim()){toast(opT('reopenReasonRequired'));return;}
     updateVehicleRow(id,function(x){var oldStatus=normalizeStatus(x.status);x.status='تمت الجلسة';x.wasConfirmed=!!x.isConfirmed;x.isConfirmed=false;x.isClosed=false;x.reopenedAt=new Date().toISOString();x.reopenedBy=currentUserId();x.reopenReason=String(reason).trim();x.updatedAt=x.reopenedAt;pushExecutionLog(x,'reopen',{oldStatus:oldStatus,status:'تمت الجلسة',reason:x.reopenReason,reopenedBy:x.reopenedBy});});
     vehicleOpsSelectedId=String(id);vehicleOpsViewTab='current';

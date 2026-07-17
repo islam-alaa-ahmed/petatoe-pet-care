@@ -5,8 +5,8 @@
   function dateSafe(v){try{return v&&typeof fmtDateAr==='function'?fmtDateAr(v):(v?String(v):'')}catch(e){return v?String(v):''}}
   window.exportSmartAtRiskClients=function(){
     var rows=Array.isArray(window.PETATOEAtRiskClients)?window.PETATOEAtRiskClients:[];
-    if(!rows.length){notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير');return;}
-    if(!window.XLSX){notify(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('مكتبة Excel غير متاحة'):'مكتبة Excel غير متاحة');return;}
+    if(!rows.length){notify(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير');return;}
+    if(!window.XLSX){notify(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('مكتبة Excel غير متاحة'):'مكتبة Excel غير متاحة');return;}
     var data=rows.map(function(r,i){return {
       '#':i+1,
       'العميل':r.name||'',

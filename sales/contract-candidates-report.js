@@ -19,7 +19,7 @@
     var list=window.__petatoeContractCandidateDetails||[];
     var d=list[Number(idx)];
     if(!d){
-      alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لم يتم العثور على تفاصيل سبب الترشيح لهذا العميل. افتح التقرير مرة أخرى ثم جرّب.'):'لم يتم العثور على تفاصيل سبب الترشيح لهذا العميل. افتح التقرير مرة أخرى ثم جرّب.');
+      alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لم يتم العثور على تفاصيل سبب الترشيح لهذا العميل. افتح التقرير مرة أخرى ثم جرّب.'):'لم يتم العثور على تفاصيل سبب الترشيح لهذا العميل. افتح التقرير مرة أخرى ثم جرّب.');
       return;
     }
     var score=Number(d.score||0);
@@ -71,7 +71,7 @@
   window.petatoeExportContractCandidatesExcel=function(){
     try{
       var rows=contractRows();
-      if(!rows.length){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لا توجد بيانات لتصدير تقرير العملاء المرشحين للعقود.'):'لا توجد بيانات لتصدير تقرير العملاء المرشحين للعقود.');return;}
+      if(!rows.length){alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات لتصدير تقرير العملاء المرشحين للعقود.'):'لا توجد بيانات لتصدير تقرير العملاء المرشحين للعقود.');return;}
       var header=['#','العميل','إجمالي الإنفاق','عدد الزيارات','شهور النشاط','آخر زيارة','أيام الغياب','Score','التوصية','التصنيف','سبب الترشيح'];
       var lines=[header].concat(rows.map(function(r,i){return [i+1,r.name,moneyLocal(r.value),r.visits,r.months,r.lastDate,r.days,r.score,r.recommendation,r.tier,r.reason];}));
       var csv='\ufeff'+lines.map(function(row){return row.map(function(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
@@ -81,12 +81,12 @@
       a.download='PETATOE_Contract_Candidates_Top100.csv';
       document.body.appendChild(a);a.click();
       setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1000);
-    }catch(err){console.error(err);alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر تصدير تقرير العملاء المرشحين Excel.'):'تعذر تصدير تقرير العملاء المرشحين Excel.');}
+    }catch(err){console.error(err);alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر تصدير تقرير العملاء المرشحين Excel.'):'تعذر تصدير تقرير العملاء المرشحين Excel.');}
   };
   window.petatoeExportContractCandidatesPdf=function(){
     try{
       var table=document.getElementById('contractCandidatesTable');
-      if(!table){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تقرير العملاء المرشحين للعقود غير مفتوح حالياً.'):'تقرير العملاء المرشحين للعقود غير مفتوح حالياً.');return;}
+      if(!table){alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تقرير العملاء المرشحين للعقود غير مفتوح حالياً.'):'تقرير العملاء المرشحين للعقود غير مفتوح حالياً.');return;}
       var rows=contractRows();
       var now=new Date().toLocaleString('ar-SA');
       var style='<style>@page{size:A4 landscape;margin:8mm}body{font-family:Cairo,Arial,sans-serif;direction:rtl;color:#111827;background:#fff}h1{font-size:20px;margin:0 0 6px}.sub{color:#64748b;font-weight:700;margin-bottom:12px}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 14px}.kpi{border:1px solid #ddd;border-radius:10px;padding:10px}.kpi span{display:block;color:#64748b;font-size:11px}.kpi b{display:block;font-size:15px;margin-top:5px}table{width:100%;border-collapse:collapse;font-size:9.2px}th{background:#6d28d9;color:#fff;padding:7px;text-align:right}td{border-bottom:1px solid #e5e7eb;padding:6px;text-align:right;vertical-align:top}tr:nth-child(even) td{background:#f8fafc}.score{font-weight:900;color:#16a34a}.footer{margin-top:12px;text-align:center;color:#94a3b8;font-size:10px}</style>';
@@ -99,9 +99,9 @@
         +'<table><thead><tr><th>#</th><th>العميل</th><th>إجمالي الإنفاق</th><th>الزيارات</th><th>شهور النشاط</th><th>آخر زيارة</th><th>أيام الغياب</th><th>Score</th><th>التوصية</th><th>التصنيف</th><th>سبب الترشيح</th></tr></thead><tbody>'+bodyRows+'</tbody></table>'
         +'<div class="footer">تم إنشاء التقرير من PETATOE Analytics System</div></body></html>';
       var w=petatoeOpenPrintHtml(html,'width=1100,height=850');
-      if(!w){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('المتصفح منع نافذة الطباعة. اسمح بالنوافذ المنبثقة ثم جرّب مرة أخرى.'):'المتصفح منع نافذة الطباعة. اسمح بالنوافذ المنبثقة ثم جرّب مرة أخرى.');return;}
+      if(!w){alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('المتصفح منع نافذة الطباعة. اسمح بالنوافذ المنبثقة ثم جرّب مرة أخرى.'):'المتصفح منع نافذة الطباعة. اسمح بالنوافذ المنبثقة ثم جرّب مرة أخرى.');return;}
       setTimeout(function(){try{w.focus();}catch(_e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('sales/contract-candidates-report.js', _e, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }},350);
-    }catch(err){console.error(err);alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر تصدير تقرير العملاء المرشحين PDF.'):'تعذر تصدير تقرير العملاء المرشحين PDF.');}
+    }catch(err){console.error(err);alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر تصدير تقرير العملاء المرشحين PDF.'):'تعذر تصدير تقرير العملاء المرشحين PDF.');}
   };
 })();
 

@@ -49,7 +49,7 @@
   window.petatoeShowContractCandidateReason=function(idx){
     var list=window.__petatoeContractCandidateDetails||[];
     var d=list[Number(idx)];
-    if(!d){alert(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('لم يتم العثور على تفاصيل سبب الترشيح لهذا العميل. افتح التقرير مرة أخرى ثم جرّب.'):'لم يتم العثور على تفاصيل سبب الترشيح لهذا العميل. افتح التقرير مرة أخرى ثم جرّب.');return;}
+    if(!d){alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لم يتم العثور على تفاصيل سبب الترشيح لهذا العميل. افتح التقرير مرة أخرى ثم جرّب.'):'لم يتم العثور على تفاصيل سبب الترشيح لهذا العميل. افتح التقرير مرة أخرى ثم جرّب.');return;}
     var score=Number(d.score||0);
     var action=score>=80?'عرض عقد سنوي مباشر':(score>=60?'عرض اتفاقية توريد دوري':'متابعة تجارية قبل عرض العقد');
     var m=ensureReasonModal();

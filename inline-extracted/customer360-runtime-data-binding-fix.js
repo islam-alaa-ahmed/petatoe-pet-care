@@ -17,8 +17,6 @@
     try{
       var center=window.PETATOE_LOCALIZATION_CENTER;
       if(center&&typeof center.business==='function') return text(center.business(type,value));
-      var runtime=window.PETATOE_BUSINESS_DATA_I18N;
-      if(runtime&&typeof runtime.resolve==='function') return text(runtime.resolve(type,value));
     }catch(e){ warn('customer360 business localization fallback', e); }
     return text(value);
   }
@@ -162,12 +160,12 @@
       var q=lower((byId('customer360Search')||{}).value||'');
       var rows=getRuntimeRows();
       var customers=groupCustomers(rows).filter(function(c){ return !q || lower(c.name).indexOf(q)>=0; });
-      if(!window.XLSX){ if(typeof window.toast==='function') window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('XLSX غير متاح حاليًا'):'XLSX غير متاح حاليًا'); return; }
+      if(!window.XLSX){ if(typeof window.toast==='function') window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('XLSX غير متاح حاليًا'):'XLSX غير متاح حاليًا'); return; }
       var wb=XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([['العميل','إجمالي الإنفاق','الفواتير','العمليات','متوسط الفاتورة','آخر تعامل']].concat(customers.map(function(c){return [c.name,c.total,c.invoices,c.ops,c.avg,c.last];}))), 'Customer 360 Summary');
       XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),'Customer Records');
       XLSX.writeFile(wb,'PETATOE_Customer360.xlsx');
-    }catch(e){ warn('customer360 excel export failed',e); if(typeof window.toast==='function') window.toast(window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?window.PETATOE_I18N.translateRuntime('تعذر تصدير Customer 360'):'تعذر تصدير Customer 360'); }
+    }catch(e){ warn('customer360 excel export failed',e); if(typeof window.toast==='function') window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر تصدير Customer 360'):'تعذر تصدير Customer 360'); }
   }
   function bind(){
     if(window.__PETATOE_CUSTOMER360_RUNTIME_FIX_BOUND__) return;
