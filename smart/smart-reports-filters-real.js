@@ -9,7 +9,7 @@ function smartSafeHtml(target, html, reason){
 }
 
 function smartVehicleEfficiencyT(key,fallback){
-  try{if(typeof smartReportT==='function')return smartReportT('vehicleEfficiency.'+key,fallback);}catch(_){ }
+  try{var center=window.PETATOE_LOCALIZATION_CENTER;if(center&&typeof center.smart==='function')return center.smart('vehicleEfficiency.'+key,fallback);}catch(_){ }
   return String(fallback==null?'':fallback);
 }
 function smartGlobalFilterValue(id){

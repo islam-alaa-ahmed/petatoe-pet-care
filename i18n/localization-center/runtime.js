@@ -27,6 +27,7 @@
     return interpolate(value==null?'':value,options.params);
   }
   function t(key,params,options){options=options||{};options.params=params||{};return resolveValue(key,options);}
+  function smart(key,fallback,params){return resolveValue('smartReportsSource.'+key,{fallback:fallback,params:params||{},allowKeyFallback:true});}
   function translate(key,fallback,lang){return resolveValue(key,{fallback:fallback,lang:lang});}
   function setLanguage(lang,options){var a=api();return a&&a.setLanguage?a.setLanguage(lang,options):lang;}
   function apply(root){var a=api();if(a&&a.applySubtree)a.applySubtree(root||document);}
@@ -42,7 +43,7 @@
   function markReady(source){if(ready)return;ready=true;window.dispatchEvent(new CustomEvent('petatoe:localization-center-ready',{detail:{version:VERSION,source:source||'runtime'}}));listeners.splice(0).forEach(function(fn){try{fn();}catch(_){}});}
   function whenReady(fn){if(ready){fn();return;}listeners.push(fn);}
   function getStatus(){return {version:VERSION,ready:ready,currentLanguage:currentLanguage(),registry:registry()&&registry().list?registry().list({includeDisabled:true}):[],smartPackReady:!!window.PETATOE_SMART_REPORTS_TRANSLATIONS,businessReady:!!window.PETATOE_BUSINESS_DATA_I18N};}
-  var center={version:VERSION,t:t,translate:translate,resolve:function(key,fallback,lang){return {key:key,value:translate(key,fallback,lang),language:lang||currentLanguage(),source:'unified-center'};},getLanguage:currentLanguage,setLanguage:setLanguage,apply:apply,business:business,monthName:monthName,formatDate:formatDate,reload:reload,whenReady:whenReady,getStatus:getStatus,listLanguages:function(o){var r=registry();return r&&r.list?r.list(o):[];},clearCache:function(){var c=window.PETATOE_LOCALIZATION_CACHE;if(c&&c.clear)c.clear();return reload();}};
+  var center={version:VERSION,t:t,smart:smart,translate:translate,resolve:function(key,fallback,lang){return {key:key,value:translate(key,fallback,lang),language:lang||currentLanguage(),source:'unified-center'};},getLanguage:currentLanguage,setLanguage:setLanguage,apply:apply,business:business,monthName:monthName,formatDate:formatDate,reload:reload,whenReady:whenReady,getStatus:getStatus,listLanguages:function(o){var r=registry();return r&&r.list?r.list(o):[];},clearCache:function(){var c=window.PETATOE_LOCALIZATION_CACHE;if(c&&c.clear)c.clear();return reload();}};
   window.PETATOE_LOCALIZATION_CENTER=center;
   window.localize=function(key,fallback,lang){return center.translate(key,fallback,lang);};
   window.petatoeLocalizationStatus=getStatus;
