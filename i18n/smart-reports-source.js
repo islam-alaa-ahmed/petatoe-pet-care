@@ -566,8 +566,37 @@
     'advanced.centerTitle':'📑 Advanced Reports Center','advanced.centerDescription':'Comprehensive comparisons and detailed data to support your decisions.'
   });
 
+
+  /* PETATOE v9.2.2 - Smart Reports source migration pack 1.
+     Covers every literal localization key used by smart-reports-core.js so
+     English rendering never falls back to Arabic source text. */
+  Object.assign(ar,{
+    'ai.actualPlusForecast':'فعلي + متوقع','ai.adjustedNextMonth':'التوقع المعدل للشهر القادم','ai.averageInvoiceChange':'تغيير متوسط الفاتورة','ai.backtestConfidence':'ثقة الاختبار الخلفي','ai.basedOnModel':'حسب نموذج {model}','ai.confidenceScore':'درجة الثقة','ai.customerChange':'تغيير عدد العملاء','ai.executiveIntelligence':'ذكاء الأعمال التنفيذي','ai.firstThreeFutureMonths':'أول 3 شهور مستقبلية','ai.heroDescription':'توقعات مطورة باستخدام نماذج إحصائية متعددة، واختيار تلقائي لأفضل نموذج، وشرح ذكي لمخاطر وفرص الفترة القادمة.','ai.heroTitle':'🤖 توقعات الذكاء الاصطناعي داخل التقارير الذكية','ai.nextMonthForecast':'توقع الشهر القادم','ai.nextQuarterForecast':'توقع الربع القادم','ai.riskFollowUp':'كلما ارتفع المؤشر زادت الحاجة إلى المتابعة','ai.riskIndex':'مؤشر المخاطر','ai.salesChange':'تغيير المبيعات','ai.whatIfDescription':'حرّك السيناريوهات وشاهد تأثيرها فورًا على توقع الشهر القادم.','ai.whatIfTitle':'🧮 تحليل ماذا لو','ai.yearEndForecast':'توقع نهاية السنة',
+    'compare.comparisonType':'نوع المقارنة','compare.display':'عرض','compare.vehicle':'السيارة',
+    'customers.becameInactive':'أصبحوا غير نشطين','customers.customerCount':'عدد العملاء','customers.newCustomers':'عملاء جدد',
+    'empty.balancedActivity':'النشاط موزع بشكل متوازن','empty.noChartDifferences':'لا توجد فروق كافية لعرض الرسم البياني.','empty.noClearServiceDecline':'لم يظهر هبوط واضح في الخدمات الحالية','empty.noContractCandidateData':'لا توجد بيانات كافية لعرض مرشحي العقود.','empty.noCriticalServices':'لا توجد خدمات حرجة','empty.noCustomerData':'لا توجد بيانات عملاء للعرض.','empty.noCustomerRisks':'لا توجد مخاطر عملاء واضحة','empty.noData':'لا توجد بيانات كافية لعرض التقارير الذكية. ارفع ملف Excel أو اختر سنة أخرى.','empty.noDeclineData':'لا توجد بيانات انخفاض للعرض.','empty.noDormantMajorCustomers':'لا يوجد عملاء كبار متوقفون لفترة طويلة','empty.noExceptionalGrowth':'لا يوجد نمو استثنائي','empty.noGrowthData':'لا توجد بيانات نمو للعرض.','empty.noMonthlyComparisonData':'لا توجد بيانات كافية للمقارنة الشهرية.','empty.noYearComparisonData':'لا توجد بيانات كافية للمقارنة السنوية.',
+    'export.allCustomersDetailed':'كل العملاء — تقرير تفصيلي','export.excel':'تصدير Excel','export.lastYearOnly':'آخر سنة فقط','export.lostCustomers':'العملاء المفقودون',
+    'filters.allYears':'كل السنوات','filters.year':'السنة','heatmap.noInvoices':'لا توجد فواتير','heatmap.noInvoicesAfter':'لا توجد فواتير بعد تطبيق الفلاتر',
+    'labels.daysAbsent':'يوم غياب','labels.estimatedDecline':'تراجع تقديري','labels.estimatedError':'خطأ تقديري','labels.estimatedGrowth':'نمو تقديري',
+    'metrics.gross':'الإجمالي شامل الضريبة','metrics.net':'الصافي قبل الضريبة','metrics.sales':'المبيعات','metrics.vat':'ضريبة القيمة المضافة',
+    'status.customerAtRisk':'عميل معرض للخطر','status.declineRisk':'خطر هبوط','status.growthCandidate':'مرشحة للنمو','status.neutral':'محايد','status.reassuring':'مطمئن',
+    'summary.basedOn':'بناءً على','summary.followUp':'متابعة','summary.goodActivity':'نشاط جيد','summary.operation':'عملية','summary.recommendationCount':'عدد التوصيات','summary.strongSpend':'إنفاق قوي'
+  });
+  Object.assign(en,{
+    'ai.actualPlusForecast':'Actual + Forecast','ai.adjustedNextMonth':'Adjusted Next-Month Forecast','ai.averageInvoiceChange':'Average Invoice Change','ai.backtestConfidence':'Backtest Confidence','ai.basedOnModel':'Based on {model}','ai.confidenceScore':'Confidence Score','ai.customerChange':'Customer Count Change','ai.executiveIntelligence':'Executive Business Intelligence','ai.firstThreeFutureMonths':'First 3 Forecast Months','ai.heroDescription':'Advanced forecasts using multiple statistical models, automatic best-model selection, and intelligent explanations of upcoming risks and opportunities.','ai.heroTitle':'🤖 AI Forecasting in Smart Reports','ai.nextMonthForecast':'Next-Month Forecast','ai.nextQuarterForecast':'Next-Quarter Forecast','ai.riskFollowUp':'Higher values require closer follow-up','ai.riskIndex':'Risk Index','ai.salesChange':'Sales Change','ai.whatIfDescription':'Adjust the scenarios and see their immediate effect on next month’s forecast.','ai.whatIfTitle':'🧮 What-If Analysis','ai.yearEndForecast':'Year-End Forecast',
+    'compare.comparisonType':'Comparison Type','compare.display':'View','compare.vehicle':'Vehicle',
+    'customers.becameInactive':'Became Inactive','customers.customerCount':'Customer Count','customers.newCustomers':'New Customers',
+    'empty.balancedActivity':'Activity is distributed evenly','empty.noChartDifferences':'There are not enough differences to display the chart.','empty.noClearServiceDecline':'No clear decline appears in the current services','empty.noContractCandidateData':'There is not enough data to display contract candidates.','empty.noCriticalServices':'No critical services','empty.noCustomerData':'No customer data is available.','empty.noCustomerRisks':'No clear customer risks','empty.noData':'There is not enough data to display Smart Reports. Upload an Excel file or select another year.','empty.noDeclineData':'No decline data is available.','empty.noDormantMajorCustomers':'No major customers have been inactive for an extended period','empty.noExceptionalGrowth':'No exceptional growth','empty.noGrowthData':'No growth data is available.','empty.noMonthlyComparisonData':'There is not enough data for the monthly comparison.','empty.noYearComparisonData':'There is not enough data for the yearly comparison.',
+    'export.allCustomersDetailed':'All Customers — Detailed Report','export.excel':'Export Excel','export.lastYearOnly':'Latest Year Only','export.lostCustomers':'Lost Customers',
+    'filters.allYears':'All Years','filters.year':'Year','heatmap.noInvoices':'No invoices','heatmap.noInvoicesAfter':'No invoices after applying the filters',
+    'labels.daysAbsent':'inactive days','labels.estimatedDecline':'Estimated Decline','labels.estimatedError':'Estimated Error','labels.estimatedGrowth':'Estimated Growth',
+    'metrics.gross':'Gross Including VAT','metrics.net':'Net Before VAT','metrics.sales':'Sales','metrics.vat':'VAT',
+    'status.customerAtRisk':'Customer at Risk','status.declineRisk':'Decline Risk','status.growthCandidate':'Growth Candidate','status.neutral':'Neutral','status.reassuring':'Reassuring',
+    'summary.basedOn':'Based on','summary.followUp':'Follow-up','summary.goodActivity':'Good Activity','summary.operation':'operation','summary.recommendationCount':'Recommendation Count','summary.strongSpend':'Strong Spending'
+  });
+
   window.PETATOE_SMART_REPORTS_TRANSLATIONS={ar:ar,en:en};
-  window.dispatchEvent(new CustomEvent('petatoe:smart-translations-ready',{detail:{languages:['ar','en'],version:'9.1.3'}}));
+  window.dispatchEvent(new CustomEvent('petatoe:smart-translations-ready',{detail:{languages:['ar','en'],version:'9.2.2-source-migration-pack1'}}));
   if(!window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__){
     window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__=true;
     window.addEventListener('petatoe:language-changed',function(){
