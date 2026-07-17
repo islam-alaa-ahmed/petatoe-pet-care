@@ -109,15 +109,15 @@
       'h4b3b3de6':'Unable to open the Maintenance Center. Check the Console.'
     },
     runtimeTemplates:{
-      pdfPrepareError:{mode:'prefix',target:'An error occurred while preparing the PDF: {rest}' },
-      deleteChildExpense:{mode:'prefix',target:'Delete expense {rest}' },
-      deleteChildBudget:{mode:'prefix',target:'Delete budget {rest}' },
-      deleteInvoice:{mode:'prefix',target:'Delete invoice number {rest}' },
-      appointmentConflict:{mode:'prefix',target:'Appointment conflict detected:\n{rest}' },
-      writeLabel:{mode:'prefix',target:'Enter {rest}' },
-      deleteLabel:{mode:'prefix',target:'Delete {rest}' },
-      customersUploadSuccess:{mode:'prefix',target:'Customer data uploaded successfully: {rest}' },
-      customerFileReadFailed:{mode:'prefix',target:'Unable to read the customer file. Make sure the columns are: {rest}' }
+      pdfPrepareError:{mode:'prefix',source:'حدث خطأ أثناء تجهيز PDF: ',target:'An error occurred while preparing the PDF: {rest}' },
+      deleteChildExpense:{mode:'prefix',source:'حذف مصروف ',target:'Delete expense {rest}' },
+      deleteChildBudget:{mode:'prefix',source:'حذف ميزانية ',target:'Delete budget {rest}' },
+      deleteInvoice:{mode:'prefix',source:'حذف الفاتورة رقم ',target:'Delete invoice number {rest}' },
+      appointmentConflict:{mode:'prefix',source:'⚠️ يوجد تعارض في الموعد:\n',target:'Appointment conflict detected:\n{rest}' },
+      writeLabel:{mode:'prefix',source:'اكتب ',target:'Enter {rest}' },
+      deleteLabel:{mode:'prefix',source:'حذف ',target:'Delete {rest}' },
+      customersUploadSuccess:{mode:'prefix',source:'تم رفع بيانات العملاء بنجاح: ',target:'Customer data uploaded successfully: {rest}' },
+      customerFileReadFailed:{mode:'prefix',source:'تعذر قراءة ملف العملاء. تأكد أن الأعمدة: ',target:'Unable to read the customer file. Make sure the columns are: {rest}' }
     },
     autoPhrases:{
       "h7b5c435d":"Not enough data to display Smart Reports. Upload an Excel file or choose another year.",

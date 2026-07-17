@@ -5,17 +5,25 @@
   if(window.__PETATOE_SALES_INVOICE_REPORT_PATCH__)return;
   window.__PETATOE_SALES_INVOICE_REPORT_PATCH__=true;
 
-  function salesInvoiceT(key,fallback,params){
-    try{
-      if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.t==='function'){
-        var value=window.PETATOE_I18N.t('smartReportsSource.salesInvoice.'+key,params||{});
-        if(typeof value==='string'&&value.trim()) return value;
-      }
-    }catch(_){ }
-    var out=String(fallback==null?'':fallback);
-    Object.keys(params||{}).forEach(function(k){out=out.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
-    return out;
-  }
+  function salesInvoiceT(key, fallback, params){
+  try{
+    if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.t==='function'){
+      const value=window.PETATOE_I18N.t('smartReportsSource.salesInvoice.'+key,params||{});
+      if(typeof value==='string'&&value.trim()&&value!=='smartReportsSource.salesInvoice.'+key) return value;
+    }
+    const lang=(window.PETATOE_I18N&&window.PETATOE_I18N.getLanguage)?window.PETATOE_I18N.getLanguage():(document.documentElement.lang||'ar');
+    const pack=window.PETATOE_SMART_REPORTS_TRANSLATIONS;
+    const packed=pack&&pack[lang]&&pack[lang]['salesInvoice.'+key];
+    if(typeof packed==='string'&&packed.trim()){
+      let translated=packed;
+      Object.keys(params||{}).forEach(k=>{translated=translated.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
+      return translated;
+    }
+  }catch(_){ }
+  let out=String(fallback==null?'':fallback);
+  Object.keys(params||{}).forEach(k=>{out=out.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
+  return out;
+}
   function salesInvoiceLocale(){return String(document.documentElement.lang||'ar').toLowerCase().indexOf('en')===0?'en-SA':'ar-SA';}
   function salesInvoiceDir(){return String(document.documentElement.lang||'ar').toLowerCase().indexOf('en')===0?'ltr':'rtl';}
 

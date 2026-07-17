@@ -437,6 +437,66 @@
     'salesInvoice.daysAvailableInMonth':'Days available in {month}'
   });
 
+
+  Object.assign(ar,{
+    'export.printedAt':'طُبع',
+    'export.footer':'PETATOE Analytics System v2.2 — تقرير تلقائي — جميع القيم بالريال السعودي (SAR)',
+    'export.printZoneError':'تعذر تجهيز منطقة الطباعة',
+    'export.copySuccess':'✅ تم نسخ البيانات إلى الحافظة',
+    'export.copyError':'❌ فشل النسخ — حاول مرة أخرى',
+    'export.dashboardTitle':'لوحة التحكم',
+    'export.dashboardSubtitle':'ملخص المبيعات الكلي',
+    'export.customerCount':'عدد العملاء',
+    'export.monthlySummary':'ملخص شهري',
+    'export.topCustomers':'أفضل 10 عملاء',
+    'export.topServices':'أفضل 10 خدمات',
+    'export.vehicles':'السيارات',
+    'interactions.backToRecommendations':'رجوع لتقرير التوصيات',
+    'interactions.linkedReport':'التقرير المرتبط',
+    'interactions.openedFromRecommendations':'تم فتح {report} من شاشة التوصيات.',
+    'interactions.noItems':'لا توجد عناصر في هذا القسم حاليًا.',
+    'interactions.searchStart':'ابدأ الكتابة للبحث في العملاء والخدمات والسيارات والفواتير...',
+    'interactions.searchMinChars':'ابدأ الكتابة للبحث — حرفان على الأقل',
+    'interactions.searchNoData':'لا توجد بيانات مرفوعة بعد',
+    'interactions.searchNoResults':'لا توجد نتائج لـ "{query}"',
+    'interactions.customers':'العملاء',
+    'interactions.transactions':'معاملة',
+    'interactions.services':'الخدمات',
+    'interactions.operations':'عملية',
+    'interactions.vehicles':'السيارات',
+    'interactions.invoices':'الفواتير',
+    'interactions.invoiceNumber':'فاتورة رقم {number}'
+  });
+  Object.assign(en,{
+    'export.printedAt':'Printed',
+    'export.footer':'PETATOE Analytics System v2.2 — Automated Report — All values are in Saudi Riyals (SAR)',
+    'export.printZoneError':'Unable to prepare the print area',
+    'export.copySuccess':'✅ Data copied to the clipboard',
+    'export.copyError':'❌ Copy failed — please try again',
+    'export.dashboardTitle':'Dashboard',
+    'export.dashboardSubtitle':'Overall Sales Summary',
+    'export.customerCount':'Customer Count',
+    'export.monthlySummary':'Monthly Summary',
+    'export.topCustomers':'Top 10 Customers',
+    'export.topServices':'Top 10 Services',
+    'export.vehicles':'Vehicles',
+    'interactions.backToRecommendations':'Back to Recommendations Report',
+    'interactions.linkedReport':'Linked Report',
+    'interactions.openedFromRecommendations':'Opened {report} from the recommendations screen.',
+    'interactions.noItems':'There are currently no items in this section.',
+    'interactions.searchStart':'Start typing to search customers, services, vehicles, and invoices...',
+    'interactions.searchMinChars':'Start typing to search — at least two characters',
+    'interactions.searchNoData':'No data has been uploaded yet',
+    'interactions.searchNoResults':'No results for "{query}"',
+    'interactions.customers':'Customers',
+    'interactions.transactions':'transaction',
+    'interactions.services':'Services',
+    'interactions.operations':'operation',
+    'interactions.vehicles':'Vehicles',
+    'interactions.invoices':'Invoices',
+    'interactions.invoiceNumber':'Invoice No. {number}'
+  });
+
   window.PETATOE_SMART_REPORTS_TRANSLATIONS={ar:ar,en:en};
   if(!window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__){
     window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__=true;

@@ -1,13 +1,13 @@
-PETATOE v9.0.0 — ELC_PHASE6A_DASHBOARD_RUNTIME_MIGRATION_PILOT
+PETATOE v9.0.0 — ELC_PHASE8G_MISSING_RUNTIME_KEYS_RECOVERY
 
-Release Type: Enterprise Localization Runtime Migration Pilot
-Base: PETATOE v9 Enterprise cumulative ELC Phase 5.2 baseline
+Release Type: Enterprise Localization Missing Runtime Keys Recovery
+Base: petatoe-pet-care(9).zip
 
 Purpose:
-- Migrate Dashboard translation resolution to the Enterprise Localization Center runtime.
-- Keep Supabase approved values as the primary source with cache and local-file fallback.
-- Measure Dashboard localization apply and visual rerender timing without reloading business data.
+- Restore missing Smart Reports export and interaction runtime keys.
+- Route export, interaction, and sales-invoice helpers through the dedicated translation pack.
+- Complete English runtime-template source symmetry for the nine certified gaps.
 
 Scope:
-- Dashboard localization runtime only.
-- No Smart Reports, payroll, sales, operations, permissions, or database schema changes.
+- Localization runtime and dictionaries only.
+- No calculations, filters, datasets, Supabase, database, or business-logic changes.
