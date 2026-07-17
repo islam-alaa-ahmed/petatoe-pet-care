@@ -1,4 +1,4 @@
-/* PETATOE v9.3.6 - Localization Center Consolidation
+/* PETATOE v9.4.0 - Localization Center Consolidation Adapter
    Single translation source with backward-compatible adapters. */
 (function(){
   'use strict';
@@ -208,5 +208,5 @@
   if(window.PETATOE_OPERATIONS_I18N){window.PETATOE_OPERATIONS_I18N.t=function(key,params){return center.t('operationsSource.'+key,params,{fallback:key});};}
   if(window.PETATOE_WAREHOUSE_I18N){window.PETATOE_WAREHOUSE_I18N.t=function(key,params){return center.t('warehouseSource.'+key,params,{fallback:key});};}
   center.__consolidated=true;
-  window.dispatchEvent(new CustomEvent('petatoe:localization-center-consolidated',{detail:{version:'9.3.6',modules:Object.keys(modules),runtimeEntries:Object.keys(runtimeMap).length}}));
+  window.dispatchEvent(new CustomEvent('petatoe:localization-center-consolidated',{detail:{version:'9.4.0',modules:Object.keys(modules),runtimeEntries:Object.keys(runtimeMap).length}}));
 })();
