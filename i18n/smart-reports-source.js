@@ -111,7 +111,7 @@
     'sales.yearOverYearTitle':'مقارنة سنة بسنة','sales.yearOverYearSubtitle':'{previousYear} مقابل {currentYear} شهريًا.','sales.quarterDetails':'تفاصيل الأرباع',
     'compare.baseYear':'سنة الأساس','compare.targetYear':'سنة المقارنة',
     'vehicles.details':'تفاصيل السيارات','vehicles.monthlySales':'مبيعات السيارات شهرياً','vehicles.valuesIncludeVat':'جميع القيم بالريال السعودي وتشمل ضريبة القيمة المضافة','vehicles.salesDistribution':'توزيع مبيعات السيارات','vehicles.monthlyPerformance':'أداء السيارات الشهري',
-    'advanced.compareMonths':'مقارنة الشهور','advanced.compareQuarters':'مقارنة الأرباع','advanced.monthlyPayments':'طرق الدفع شهرياً'
+    'advanced.compareMonths':'مقارنة الشهور','advanced.compareQuarters':'مقارنة الأرباع','advanced.monthlyPayments':'طرق الدفع شهرياً','format.listSeparator':'، ','period.throughDate':'حتى {date}','period.yearEnd':'نهاية السنة','customers.noRecoveryOpportunities':'لا توجد فرص استرجاع حسب شرط الغياب الحالي.','customers.noInactiveCustomersByRule':'لا يوجد عملاء غير نشطين حسب شرط أكثر من 60 يوم بدون زيارة صافية.'
   });
   Object.assign(en,{
     'period.fullYear':'Full Year','period.currentPeriod':'Year to Date','period.fullYearComparison':'Comparison mode: full year — from January 1 to December 31, {targetYear}, versus the full year {baseYear}.','period.ytdComparison':'Comparison mode: year to date — from January 1, {targetYear}, to {targetEnd}, versus the same period in {baseYear} through {baseEnd} — latest uploaded invoice: {invoice}','period.noDatedInvoices':'Comparison mode: year to date — no dated invoices were found in comparison year {targetYear} under the current filters.','period.days0to30':'0-30 days','period.days31to60':'31-60 days','period.days61to90':'61-90 days','period.days91to120':'91-120 days','period.days120Plus':'120+ days',
@@ -119,7 +119,7 @@
     'sales.yearOverYearTitle':'Year-over-Year Comparison','sales.yearOverYearSubtitle':'{previousYear} versus {currentYear} by month.','sales.quarterDetails':'Quarter Details',
     'compare.baseYear':'Base Year','compare.targetYear':'Comparison Year',
     'vehicles.details':'Vehicle Details','vehicles.monthlySales':'Monthly Vehicle Sales','vehicles.valuesIncludeVat':'All values are in SAR and include VAT','vehicles.salesDistribution':'Vehicle Sales Distribution','vehicles.monthlyPerformance':'Monthly Vehicle Performance',
-    'advanced.compareMonths':'Compare Months','advanced.compareQuarters':'Compare Quarters','advanced.monthlyPayments':'Monthly Payment Methods'
+    'advanced.compareMonths':'Compare Months','advanced.compareQuarters':'Compare Quarters','advanced.monthlyPayments':'Monthly Payment Methods','format.listSeparator':', ','period.throughDate':'Through {date}','period.yearEnd':'Year End','customers.noRecoveryOpportunities':'No recovery opportunities match the current inactivity rule.','customers.noInactiveCustomersByRule':'No inactive customers match the rule of more than 60 days without a net visit.'
   });
 
   const months={january:['يناير','January'],february:['فبراير','February'],march:['مارس','March'],april:['أبريل','April'],may:['مايو','May'],june:['يونيو','June'],july:['يوليو','July'],august:['أغسطس','August'],september:['سبتمبر','September'],october:['أكتوبر','October'],november:['نوفمبر','November'],december:['ديسمبر','December']};

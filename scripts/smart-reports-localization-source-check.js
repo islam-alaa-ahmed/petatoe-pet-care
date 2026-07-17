@@ -57,5 +57,24 @@ for(const key of required){
   if(!source.includes(`'${key}'`)) fail(`Missing Pack 3 key in Smart Reports locale source: ${key}`);
 });
 
+
+// PETATOE v9.1.4 - locale-aware formatting guards.
+if((core.match(/fmtDateAr\(/g)||[]).length>1) fail('Direct Arabic date formatting returned outside smartFormatDate compatibility fallback.');
+[
+  "join('، ')",
+  "|| '<tr><td colspan=\"9\">لا توجد فرص استرجاع حسب شرط الغياب الحالي.</td></tr>'",
+  "|| '<tr><td colspan=\"9\">لا يوجد عملاء غير نشطين حسب شرط أكثر من 60 يوم بدون زيارة صافية.</td></tr>'",
+  "<small>حتى ${customerCompareLatestDate?"
+].forEach((legacyLiteral)=>{
+  if(core.includes(legacyLiteral)) fail(`Pack 4 locale-formatting literal returned: ${legacyLiteral}`);
+});
+[
+  'format.listSeparator','period.throughDate','period.yearEnd',
+  'customers.noRecoveryOpportunities','customers.noInactiveCustomersByRule'
+].forEach((key)=>{
+  const count=(source.match(new RegExp(`'${key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}'`,'g'))||[]).length;
+  if(count<2) fail(`Pack 4 key is not present in both AR and EN dictionaries: ${key}`);
+});
+
 if(process.exitCode) process.exit(process.exitCode);
 console.log('Smart Reports source localization check passed.');
