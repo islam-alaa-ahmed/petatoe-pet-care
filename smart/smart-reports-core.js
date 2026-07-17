@@ -395,27 +395,30 @@ function renderSmartReports(){
     return `--hm-bg:${rgbToCss(fill,.82)};--hm-bg2:${rgbToCss(fill,.58)};--hm-border:${rgbToCss(border,.92)};--hm-glow:${rgbToCss(glow,.28)};--hm-text:${textDark};`;
   };
   const heatLegendHtml=`<div class="heat-month-gradient-legend"><span>${smartReportHtml('heatmap.withinEachMonth','داخل كل شهر')}</span><b>${smartReportHtml('heatmap.lighterLower','أفتح = الأقل مبيعات')}</b><div class="heat-month-gradient-strip">${heatMonthPalettes.map((p,i)=>`<i style="--l:${p.light};--d:${p.dark}" title="${p.name}"></i>`).join('')}</div><b>${smartReportHtml('heatmap.darkerHigher','أغمق = الأكثر مبيعات')}</b></div>`;
-  const heatHtml=`<div class="heatmap-control-row">${heatmapVehicleFilter()}${heatmapYearButtons(heatmapActiveYear)}</div><div class="smart-heatmap-scroll"><div class="heatmap-wrap heatmap-wrap-monthly"><div></div>${MONTHS.map((m,mi)=>`<div class="heatmap-head heatmap-month-${mi}" style="--month-light:${heatMonthPalettes[mi].light};--month-dark:${heatMonthPalettes[mi].dark}">${heatMonthButtonHtml(heatmapActiveYear,m,mi,isFutureHeatMonth(mi))}</div>`).join('')}${dayNames.map((dn,di)=>`<div class="heatmap-day">${dn}</div>${MONTHS.map((m,mi)=>{let disabled=isFutureHeatMonth(mi);let val=disabled?0:(heat[di+'-'+mi]||0);let title=disabled?`${dn} - ${smartReportT('calendar.months.'+m,MAR[m])} ${heatmapActiveYear}: ${smartReportT('heatmap.noInvoicesAfter','لا توجد فواتير بعد')} ${fmtDateAr(heatCutoffDate)}`:(heatmapActiveYear==='all'?`${dn} - ${smartReportT('calendar.months.'+m,MAR[m])} - ${smartReportT('filters.allYears','كل السنوات')}: ${money(val)}`:`${dn} - ${smartReportT('calendar.months.'+m,MAR[m])} ${heatmapActiveYear}: ${money(val)}`);return `<div class="heat-cell heat-month-cell${disabled?' heat-disabled':''}" style="${heatCellStyle(mi,val,disabled)}" title="${title}">${val?shortMoney(val):''}</div>`}).join('')}`).join('')}</div></div>${heatLegendHtml}`;
+  const heatHtml=`<div class="heatmap-control-row">${heatmapVehicleFilter()}${heatmapYearButtons(heatmapActiveYear)}</div><div class="smart-heatmap-scroll"><div class="heatmap-wrap heatmap-wrap-monthly"><div></div>${MONTHS.map((m,mi)=>`<div class="heatmap-head heatmap-month-${mi}" style="--month-light:${heatMonthPalettes[mi].light};--month-dark:${heatMonthPalettes[mi].dark}">${heatMonthButtonHtml(heatmapActiveYear,m,mi,isFutureHeatMonth(mi))}</div>`).join('')}${dayNames.map((dn,di)=>`<div class="heatmap-day">${dn}</div>${MONTHS.map((m,mi)=>{let disabled=isFutureHeatMonth(mi);let val=disabled?0:(heat[di+'-'+mi]||0);let title=disabled?`${dn} - ${smartReportT('calendar.months.'+m,MAR[m])} ${heatmapActiveYear}: ${smartReportT('heatmap.noInvoicesAfter','لا توجد فواتير بعد')} ${window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.formatDate?window.PETATOE_LOCALIZATION_CENTER.formatDate(heatCutoffDate):fmtDateAr(heatCutoffDate)}`:(heatmapActiveYear==='all'?`${dn} - ${smartReportT('calendar.months.'+m,MAR[m])} - ${smartReportT('filters.allYears','كل السنوات')}: ${money(val)}`:`${dn} - ${smartReportT('calendar.months.'+m,MAR[m])} ${heatmapActiveYear}: ${money(val)}`);return `<div class="heat-cell heat-month-cell${disabled?' heat-disabled':''}" style="${heatCellStyle(mi,val,disabled)}" title="${title}">${val?shortMoney(val):''}</div>`}).join('')}`).join('')}</div></div>${heatLegendHtml}`;
 
 
   const customerValueTierHtml=(cls,badgeClass,stats)=>{
-    const icon=cls==='VIP'?'👑':cls==='At Risk'?'⚠️':'✅';
-    const title=cls==='VIP'?'VIP':cls==='At Risk'?'At Risk':'Active';
+    const titleKey=cls==='VIP'?'classification.vip':cls==='At Risk'?'classification.atRisk':'classification.active';
+    const title=smartReportT(titleKey,cls==='VIP'?'VIP':cls==='At Risk'?'معرض للخطر':'نشط');
     const reasons=[];
     if(cls==='VIP'){
-      reasons.push(`عدد الزيارات ${fmt0(stats.visits)} زيارة، وهو أكبر من أو يساوي 5 زيارات`);
-      reasons.push(`إجمالي الإنفاق ${money(stats.value)} يساوي أو يتجاوز متوسط النشاط المتوقع لهذا العميل`);
-      reasons.push(`آخر زيارة منذ ${fmt0(stats.daysSince)} يوم، أي خلال آخر 45 يوم`);
+      reasons.push(smartReportT('classification.reason.vipVisits','عدد الزيارات {visits} زيارة، وهو أكبر من أو يساوي 5 زيارات',{visits:fmt0(stats.visits)}));
+      reasons.push(smartReportT('classification.reason.vipSpend','إجمالي الإنفاق {value} يساوي أو يتجاوز متوسط النشاط المتوقع لهذا العميل',{value:money(stats.value)}));
+      reasons.push(smartReportT('classification.reason.vipRecency','آخر زيارة منذ {days} يوم، أي خلال آخر 45 يوم',{days:fmt0(stats.daysSince)}));
     }else if(cls==='At Risk'){
-      if(stats.daysSince>60) reasons.push(`آخر زيارة منذ ${fmt0(stats.daysSince)} يوم، أي أكثر من 60 يوم`);
-      if(stats.visits<=1) reasons.push(`عدد الزيارات ${fmt0(stats.visits)} فقط، لذلك العميل لم يظهر عليه تكرار كافٍ`);
-      if(stats.daysSince<=60 && stats.visits>1) reasons.push(`العميل يحتاج متابعة لأنه خارج شروط VIP / Active المثالية`);
+      if(stats.daysSince>60) reasons.push(smartReportT('classification.reason.riskAbsence','آخر زيارة منذ {days} يوم، أي أكثر من 60 يوم',{days:fmt0(stats.daysSince)}));
+      if(stats.visits<=1) reasons.push(smartReportT('classification.reason.riskLowVisits','عدد الزيارات {visits} فقط، لذلك العميل لم يظهر عليه تكرار كافٍ',{visits:fmt0(stats.visits)}));
+      if(stats.daysSince<=60 && stats.visits>1) reasons.push(smartReportT('classification.reason.riskFollowup','العميل يحتاج متابعة لأنه خارج شروط VIP / Active المثالية'));
     }else{
-      reasons.push(`آخر زيارة منذ ${fmt0(stats.daysSince)} يوم، لذلك العميل ما زال نشطًا`);
-      reasons.push(`عدد الزيارات ${fmt0(stats.visits)} زيارة بإجمالي إنفاق ${money(stats.value)}`);
-      reasons.push(`العميل ليس ضمن At Risk، ولم يحقق كل شروط VIP الحالية`);
+      reasons.push(smartReportT('classification.reason.activeRecency','آخر زيارة منذ {days} يوم، لذلك العميل ما زال نشطًا',{days:fmt0(stats.daysSince)}));
+      reasons.push(smartReportT('classification.reason.activeVisitsSpend','عدد الزيارات {visits} زيارة بإجمالي إنفاق {value}',{visits:fmt0(stats.visits),value:money(stats.value)}));
+      reasons.push(smartReportT('classification.reason.activeConditions','العميل ليس ضمن At Risk، ولم يحقق كل شروط VIP الحالية'));
     }
-    return `<span class="new-cust-tier-wrap cust-value-tier-wrap" tabindex="0"><span class="smart-tag ${badgeClass} cust-value-tier-badge">${title}</span><span class="cust-value-info-icon">ⓘ</span><span class="new-cust-tier-tooltip"><b>سبب تصنيف العميل: ${title}</b><span>تم تصنيف العميل بناءً على بيانات الفترة المختارة:</span>${reasons.map(r=>`<span class="ok">✓ ${r}</span>`).join('')}<span>المعادلة تستخدم نفس القيم الظاهرة في الجدول بدون تعديل أي رقم أو إجمالي.</span></span></span>`;
+    const tooltipTitle=smartReportT('classification.reasonTitle','سبب تصنيف العميل: {classification}',{classification:title});
+    const tooltipIntro=smartReportT('classification.reasonIntro','تم تصنيف العميل بناءً على بيانات الفترة المختارة:');
+    const tooltipNote=smartReportT('classification.reasonNote','المعادلة تستخدم نفس القيم الظاهرة في الجدول بدون تعديل أي رقم أو إجمالي.');
+    return `<span class="new-cust-tier-wrap cust-value-tier-wrap" tabindex="0"><span class="smart-tag ${badgeClass} cust-value-tier-badge">${htmlSafe(title)}</span><span class="cust-value-info-icon">ⓘ</span><span class="new-cust-tier-tooltip"><b>${htmlSafe(tooltipTitle)}</b><span>${htmlSafe(tooltipIntro)}</span>${reasons.map(r=>`<span class="ok">✓ ${htmlSafe(r)}</span>`).join('')}<span>${htmlSafe(tooltipNote)}</span></span></span>`;
   };
 
   // CASH_CUSTOMER_EXCLUSION_PATCH:
