@@ -1,7 +1,7 @@
-/* PETATOE v9.1 - Unified Enterprise Localization Center v2.0 */
+/* PETATOE v9.4.4 — Production Localization Lockdown Runtime */
 (function(){
   'use strict';
-  var VERSION='9.4.3-single-source-enforcement';
+  var VERSION='9.4.4-production-lockdown';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}
@@ -50,9 +50,6 @@
   function getStatus(){return {version:VERSION,ready:ready,currentLanguage:currentLanguage(),registry:registry()&&registry().list?registry().list({includeDisabled:true}):[],canonicalStoreReady:!!store(),smartPackReady:!!storeValue('smartReportsSource','ar'),businessReady:!!window.PETATOE_LOCALIZATION_CENTER_BUSINESS,loading:isLoading()};}
   var center={version:VERSION,t:t,smart:smart,translate:translate,resolve:function(key,fallback,lang){return {key:key,value:translate(key,fallback,lang),language:lang||currentLanguage(),source:'unified-center'};},getLanguage:currentLanguage,setLanguage:setLanguage,apply:apply,business:business,localizeBusinessRecord:localizeBusinessRecord,registerModule:registerModule,monthName:monthName,formatDate:formatDate,reload:reload,whenReady:whenReady,getStatus:getStatus,listLanguages:function(o){var r=registry();return r&&r.list?r.list(o):[];},clearCache:function(){var c=window.PETATOE_LOCALIZATION_CACHE;if(c&&c.clear)c.clear();return reload();}};
   window.PETATOE_LOCALIZATION_CENTER=center;
-  window.localize=function(key,fallback,lang){return center.translate(key,fallback,lang);};
-  window.petatoeLocalizationStatus=getStatus;
-  window.petatoeLocalizationReload=reload;
   ['petatoe:localization-ready','petatoe:smart-translations-ready','DOMContentLoaded'].forEach(function(evt){window.addEventListener(evt,function(){if(store())markReady(evt);},{once:evt==='DOMContentLoaded'});});
   if(store())markReady('immediate');
 })();

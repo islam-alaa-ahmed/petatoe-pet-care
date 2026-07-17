@@ -1,4 +1,4 @@
-/* PETATOE v9.4.3 — Warehouse localization compatibility adapter.
+/* PETATOE v9.4.4 — Warehouse localization compatibility adapter.
  * Canonical translations live only in localization-center/dictionary-store.js.
  */
 (function(){
@@ -6,5 +6,5 @@
   function center(){return window.PETATOE_LOCALIZATION_CENTER;}
   function t(key,params){var c=center();return c&&c.t?c.t('warehouseSource.'+key,params,{fallback:key}):key;}
   function locale(){var c=center(),l=c&&c.getLanguage?c.getLanguage():(document.documentElement.lang||'ar');return l==='en'?'en-GB':'ar-EG';}
-  window.PETATOE_WAREHOUSE_I18N={version:'9.4.3-center-adapter',t:t,locale:locale,dictionaries:null,source:'PETATOE_LOCALIZATION_CENTER'};
+  window.PETATOE_WAREHOUSE_I18N={version:'9.4.4-lockdown-adapter',t:t,locale:locale,dictionaries:null,source:'PETATOE_LOCALIZATION_CENTER'};
 })();

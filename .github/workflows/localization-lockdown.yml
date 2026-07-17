@@ -1,0 +1,26 @@
+name: Localization Lockdown
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  localization-lockdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Enterprise localization certification
+        run: node scripts/enterprise-localization-certification-check.js
+      - name: Production localization lockdown
+        run: node scripts/localization-production-lockdown-check.js
+      - name: JavaScript syntax validation
+        shell: bash
+        run: |
+          while IFS= read -r -d '' file; do
+            node --check "$file"
+          done < <(find . -type f -name '*.js' -not -path './.git/*' -print0)

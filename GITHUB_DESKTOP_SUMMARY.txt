@@ -1,10 +1,8 @@
-PETATOE v9.4.3 — Enterprise Localization Certification
+PETATOE v9.4.4 — Production Localization Lockdown
 
-- Completed full-project Enterprise Localization Certification scan.
-- Removed remaining direct PETATOE_I18N usage from index screen helpers.
-- Added 130 missing Arabic/English UI and runtime phrases to the canonical Localization Center.
-- Verified 3,336 Arabic and 3,336 English translation entries with zero missing counterparts.
-- Verified zero direct legacy localization calls outside the i18n compatibility layer.
-- Added enterprise localization certification validator and machine-readable results.
-- Passed 270 JavaScript syntax checks with zero failures.
-- Updated release metadata to PETATOE v9.4.3.
+- Locked the canonical translation store as the only translation-data owner.
+- Removed unused global localization aliases from the runtime API.
+- Kept Operations, Warehouse, Smart Reports, Business Data, and Maintenance compatibility modules as data-free Center adapters.
+- Added repository-wide production localization lockdown validation.
+- Added GitHub Actions checks for localization certification, lockdown enforcement, and JavaScript syntax.
+- Synchronized release version, release name, runtime version, store version, and localization cache tokens.

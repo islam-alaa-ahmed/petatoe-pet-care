@@ -1,4 +1,4 @@
-/* PETATOE v9.4.3 — Smart Reports compatibility adapter.
+/* PETATOE v9.4.4 — Smart Reports compatibility adapter.
  * No dictionary is stored here. Canonical translations live in the Localization Center store.
  */
 (function(){

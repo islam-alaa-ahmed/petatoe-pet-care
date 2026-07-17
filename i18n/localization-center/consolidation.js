@@ -1,4 +1,4 @@
-/* PETATOE v9.4.3 — Enterprise Single Source Localization Enforcement.
+/* PETATOE v9.4.4 — Enterprise Single Source Localization Enforcement.
  * This bridge contains no translations. Every compatibility API resolves through the canonical store.
  */
 (function(){
@@ -30,5 +30,5 @@
   if(window.PETATOE_OPERATIONS_I18N)window.PETATOE_OPERATIONS_I18N.t=function(key,params){return center.t('operationsSource.'+key,params,{fallback:key});};
   if(window.PETATOE_WAREHOUSE_I18N)window.PETATOE_WAREHOUSE_I18N.t=function(key,params){return center.t('warehouseSource.'+key,params,{fallback:key});};
 
-  window.dispatchEvent(new CustomEvent('petatoe:localization-single-source-enforced',{detail:{version:'9.4.3',storeVersion:store.version,runtimeEntries:center.runtimeDictionary.count}}));
+  window.dispatchEvent(new CustomEvent('petatoe:localization-single-source-enforced',{detail:{version:'9.4.4',storeVersion:store.version,runtimeEntries:center.runtimeDictionary.count}}));
 })();
