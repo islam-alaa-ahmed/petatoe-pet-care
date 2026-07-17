@@ -3,6 +3,8 @@
    Source of truth remains invoice/manual sales records only via the Smart Data Engine when available. */
 
 
+function petatoeSmartVehiclesT(key,fallback,params){try{if(typeof window.smartReportT==='function')return window.smartReportT(key,fallback,params);}catch(_){ }return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,k){return params&&params[k]!=null?params[k]:_;});}
+
 function petatoeSmartVehiclesEscHTML(value){
   if(window.PETATOESafeRender && typeof window.PETATOESafeRender.escapeHTML === 'function') return window.PETATOESafeRender.escapeHTML(value);
   if(typeof window.htmlSafe === 'function') return window.htmlSafe(value);
@@ -70,7 +72,7 @@ function renderSmartVans(data){
   const pieTotalsObj=aggVehicles(pieRows,pieY);
   const pieKeys=Object.keys(pieTotalsObj);
   const pieTotal=pieKeys.reduce(function(s,k){return s+pieTotalsObj[k].total;},0);
-  $('smartVansDistSub').textContent='إجمالي المبيعات: '+money(pieTotal);
+  $('smartVansDistSub').textContent=petatoeSmartVehiclesT('vehicles.totalSalesLabel','إجمالي المبيعات: {amount}',{amount:money(pieTotal)});
   petatoeSmartVehiclesSetHTML($('smartVanPieValues'), pieKeys.map((k,i)=>`<div class="value-item"><i class="value-dot" style="background:${[css('--cyan'),css('--purple'),css('--green'),css('--orange')][i%4]}"></i><span>${petatoeSmartVehiclesEscHTML(k)}</span><b>${money(pieTotalsObj[k].total)}<br><small class="metric-up">${pieTotal?(pieTotalsObj[k].total/pieTotal*100).toFixed(2):0}%</small></b></div>`).join(''), 'smart vehicles pie values');
   chart('smartVansPieChart',{type:'doughnut',data:{labels:pieKeys,datasets:[{data:pieKeys.map(k=>pieTotalsObj[k].total),backgroundColor:[css('--cyan'),css('--purple'),css('--green'),css('--orange')],borderWidth:0}]},options:{...baseOpts('none'),cutout:'44%',plugins:{legend:{display:false},petatoeLabels:{enabled:true,fullMoney:true,color:'#fff'}}}});
 
@@ -88,7 +90,7 @@ function renderSmartVans(data){
 
   const barMatrix=matrixFor(barY);
   let datasets=barMatrix.vehicles.map((v,i)=>({label:v,data:barMatrix.months.map(m=>m.byVehicle[v]||0),backgroundColor:[css('--cyan'),css('--purple'),css('--green'),css('--orange')][i%4],borderRadius:7}));
-  datasets.push({label:'إجمالي المبيعات',data:barMatrix.months.map(m=>m.total||0),backgroundColor:'#94a3b8',borderRadius:7});
+  datasets.push({label:petatoeSmartVehiclesT('overview.totalSales','إجمالي المبيعات'),data:barMatrix.months.map(m=>m.total||0),backgroundColor:'#94a3b8',borderRadius:7});
   chart('smartVansMonthlyBars',{type:'bar',data:{labels:barMatrix.months.map(x=>x.label),datasets},options:{...baseOpts(),layout:{padding:{top:36}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:true,font:'800 10px Cairo'}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'700'},maxRotation:0,minRotation:0},grid:{display:false}},y:{ticks:{color:css('--muted')},grid:{color:'rgba(148,163,184,.13)'}}}}});
 
   const detailsRows=invRows(detailsY);
@@ -97,7 +99,7 @@ function renderSmartVans(data){
   const smartVanDetailsTotal=smartVanEntries.reduce((a,b)=>a+b[1],0);
   const smartVanTableRows=smartVanEntries.map(x=>`<tr><td>${petatoeSmartVehiclesEscHTML(x[0])}</td><td>${money(x[1])}</td><td>${x[2]}</td><td>${money(x[1]/(x[2]||1))}</td></tr>`).join('');
   const smartVanTotalOps=smartVanEntries.reduce((sum,x)=>sum+x[2],0);
-  const smartVanTotalRow=`<tfoot><tr class="smart-vans-total-row"><td>الإجمالي</td><td>${money(smartVanDetailsTotal)}</td><td>${fmt0(smartVanTotalOps)}</td><td>${money(smartVanDetailsTotal/(smartVanTotalOps||1))}</td></tr></tfoot>`;
-  petatoeSmartVehiclesSetHTML($('smartVansTable'), '<thead><tr><th>السيارة</th><th>المبيعات</th><th>العمليات</th><th>متوسط العملية</th></tr></thead><tbody>'+smartVanTableRows+'</tbody>'+smartVanTotalRow, 'smart vehicles table');
+  const smartVanTotalRow=`<tfoot><tr class="smart-vans-total-row"><td>${petatoeSmartVehiclesT('vehicleEfficiency.total','الإجمالي')}</td><td>${money(smartVanDetailsTotal)}</td><td>${fmt0(smartVanTotalOps)}</td><td>${money(smartVanDetailsTotal/(smartVanTotalOps||1))}</td></tr></tfoot>`;
+  petatoeSmartVehiclesSetHTML($('smartVansTable'), `<thead><tr><th>${petatoeSmartVehiclesT('vehicleEfficiency.vehicle','السيارة')}</th><th>${petatoeSmartVehiclesT('metrics.sales','المبيعات')}</th><th>${petatoeSmartVehiclesT('vehicleEfficiency.operationsCount','العمليات')}</th><th>${petatoeSmartVehiclesT('vehicleEfficiency.averageTransaction','متوسط العملية')}</th></tr></thead><tbody>`+smartVanTableRows+'</tbody>'+smartVanTotalRow, 'smart vehicles table');
 }
 try{ window.renderSmartVans = renderSmartVans; }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-vehicles.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }

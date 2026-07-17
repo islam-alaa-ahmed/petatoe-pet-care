@@ -1188,4 +1188,6 @@
       'status_missing': 'ناقص'
 }
   };
+;try{Object.assign(window.PETATOE_I18N_DICTIONARIES.ar.dashboard,{"ytdTitle": "المقارنة تتم بنفس مدى الأيام من السنة السابقة (Year-To-Date)", "ytdLatestInvoice": "آخر فاتورة في {year}: {invoice} بتاريخ {date}", "ytdCurrentPeriod": "البيانات الحالية: من 01 يناير {year} إلى {endDate} ({days} يوم)", "ytdComparisonPeriod": "فترة المقارنة: من 01 يناير {year} إلى {endDate} ({days} يوم)"});}catch(_){ }
+
 })();

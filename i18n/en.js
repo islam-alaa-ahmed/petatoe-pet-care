@@ -1188,4 +1188,6 @@
       'status_missing': 'Missing'
 }
   };
+;try{Object.assign(window.PETATOE_I18N_DICTIONARIES.en.dashboard,{"ytdTitle": "Comparison uses the same day range from the previous year (Year-To-Date)", "ytdLatestInvoice": "Latest invoice in {year}: {invoice}, dated {date}", "ytdCurrentPeriod": "Current data: from January 1, {year}, to {endDate} ({days} days)", "ytdComparisonPeriod": "Comparison period: from January 1, {year}, to {endDate} ({days} days)"});}catch(_){ }
+
 })();
