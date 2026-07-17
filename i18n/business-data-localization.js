@@ -47,11 +47,52 @@
     cache={signature:signature,maps:maps};
     return maps;
   }
+  var SERVICE_EXACT_EN=Object.freeze({
+    'الشاملة - كلب متوسط':'Comprehensive - Medium Dog',
+    'الشاملة - قط متوسط':'Comprehensive - Medium Cat',
+    'الشاملة - كلب كبير':'Comprehensive - Large Dog',
+    'الشاملة - قط كبير':'Comprehensive - Large Cat',
+    'السعيدة - كلب متوسط':'Happy - Medium Dog',
+    'السعيدة - قط متوسط':'Happy - Medium Cat',
+    'السعيدة - كلب كبير':'Happy - Large Dog',
+    'السعيدة - قط كبير':'Happy - Large Cat',
+    'الأساسية - كلب متوسط':'Basic - Medium Dog',
+    'الأساسية - قط متوسط':'Basic - Medium Cat',
+    'الأساسية - كلب كبير':'Basic - Large Dog',
+    'الأساسية - قط كبير':'Basic - Large Cat',
+    'قص الشعر وسط':'Medium Haircut',
+    'قص الشعر متوسط':'Medium Haircut',
+    'قص الشعر كبير':'Large Haircut',
+    'قص الشعر صغير':'Small Haircut'
+  });
+  var SERVICE_TOKEN_EN=Object.freeze({
+    'الشاملة':'Comprehensive','السعيدة':'Happy','الأساسية':'Basic','الاساسية':'Basic',
+    'قص الشعر':'Haircut','قص':'Haircut','الشعر':'Hair','استحمام':'Bath','تنظيف':'Cleaning',
+    'كلب':'Dog','قط':'Cat','كبير':'Large','متوسط':'Medium','وسط':'Medium','صغير':'Small',
+    'ساسينو':'SASINO','ساس':'SAS'
+  });
+  var ARABIC_CHAR_LATIN={
+    'ا':'a','أ':'a','إ':'i','آ':'a','ب':'b','ت':'t','ث':'th','ج':'j','ح':'h','خ':'kh','د':'d','ذ':'dh','ر':'r','ز':'z','س':'s','ش':'sh','ص':'s','ض':'d','ط':'t','ظ':'z','ع':'a','غ':'gh','ف':'f','ق':'q','ك':'k','ل':'l','م':'m','ن':'n','ه':'h','ة':'a','و':'w','ؤ':'w','ي':'y','ى':'a','ئ':'y','ء':'','ـ':''
+  };
+  function transliterateArabic(value){
+    return text(value).split('').map(function(ch){return Object.prototype.hasOwnProperty.call(ARABIC_CHAR_LATIN,ch)?ARABIC_CHAR_LATIN[ch]:ch;}).join('').replace(/\s+/g,' ').trim();
+  }
+  function translateServiceName(value,code){
+    var original=text(value); if(!original)return original;
+    var c=text(code||lang()).toLowerCase(); if(c!=='en')return original;
+    if(SERVICE_EXACT_EN[original])return SERVICE_EXACT_EN[original];
+    var out=original;
+    Object.keys(SERVICE_TOKEN_EN).sort(function(a,b){return b.length-a.length;}).forEach(function(token){out=out.split(token).join(SERVICE_TOKEN_EN[token]);});
+    out=out.replace(/\s*-\s*/g,' - ').replace(/\s+/g,' ').trim();
+    if(/[\u0600-\u06FF]/.test(out))out=transliterateArabic(out);
+    return out;
+  }
   function resolve(type,value,code){
     var original=text(value); if(!original)return original;
     var map=build()[type]||{}; var item=map[original.toLowerCase()];
     var c=text(code||lang()).toLowerCase();
     if(!item){
+      if(type==='service'&&c==='en'){var serviceValue=translateServiceName(original,c);if(serviceValue&&serviceValue!==original)return serviceValue;}
       try{
         if(c!=='ar'&&window.PETATOE_I18N&&typeof window.PETATOE_I18N.translateRuntime==='function'){
           var runtimeValue=text(window.PETATOE_I18N.translateRuntime(original));
@@ -62,6 +103,7 @@
     }
     var localized=text(c==='fil'||c==='tl'?item.fil:item[c]);
     if(localized)return localized;
+    if(type==='service'&&c==='en'){var translatedService=translateServiceName(item.canonical||original,c);if(translatedService&&translatedService!==(item.canonical||original))return translatedService;}
     try{
       if(c!=='ar'&&window.PETATOE_I18N&&typeof window.PETATOE_I18N.translateRuntime==='function'){
         var fallbackValue=text(window.PETATOE_I18N.translateRuntime(item.canonical||original));
@@ -87,7 +129,7 @@
     return out;
   }
   function invalidate(){cache={signature:'',maps:null};return true;}
-  window.PETATOE_BUSINESS_DATA_I18N={version:VERSION,resolve:resolve,canonical:canonical,localizeRecord:localizeRecord,invalidate:invalidate,getLanguage:lang};
+  window.PETATOE_BUSINESS_DATA_I18N={version:'9.0.0-bdl-phase3',resolve:resolve,canonical:canonical,localizeRecord:localizeRecord,translateServiceName:translateServiceName,invalidate:invalidate,getLanguage:lang};
   window.businessDataT=window.businessDataT||function(type,value,code){return resolve(type,value,code);};
   ['petatoe:language-changed','petatoe:reference-registry-updated','petatoe:operations-storage-change'].forEach(function(evt){window.addEventListener(evt,function(){invalidate();try{if(window.PETATOESmartReports&&typeof window.PETATOESmartReports.clearCache==='function')window.PETATOESmartReports.clearCache('business-data-localization');}catch(_e){}try{if(typeof window.renderSmartReports==='function'&&document.getElementById('smartReportsArea'))window.renderSmartReports();}catch(_e2){}});});
 })();

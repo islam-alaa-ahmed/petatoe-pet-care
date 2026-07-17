@@ -40,7 +40,9 @@
     'الفواتير':'Invoices',
     'ريال سعودي':'Saudi Riyal',
     'شامل الضريبة':'Including VAT',
-    'قبل الضريبة':'Before VAT'
+    'قبل الضريبة':'Before VAT',
+    'الشاملة':'Comprehensive','السعيدة':'Happy','الأساسية':'Basic','الاساسية':'Basic',
+    'قص الشعر':'Haircut','كلب':'Dog','قط':'Cat','كبير':'Large','متوسط':'Medium','وسط':'Medium','صغير':'Small'
   });
   var enToAr = {};
   Object.keys(arToEn).forEach(function(key){ enToAr[arToEn[key]] = key; });

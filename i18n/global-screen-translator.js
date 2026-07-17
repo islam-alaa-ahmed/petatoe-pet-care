@@ -34,7 +34,22 @@
     'الأحد':'Sunday','الاحد':'Sunday','الاثنين':'Monday','الإثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday',
     'الاربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday','السبت':'Saturday',
     'يناير إلى':'January to','حتى':'through','خلال':'during','لهذا الشهر':'for this month','لهذا العام':'for this year',
-    'الهدف الشهري':'Monthly Target','مبيعات الشهر':'Monthly Sales','عدد العملاء':'Customer Count','عدد العمليات':'Transaction Count'
+    'الهدف الشهري':'Monthly Target','مبيعات الشهر':'Monthly Sales','عدد العملاء':'Customer Count','عدد العمليات':'Transaction Count',
+    'كل السنوات 🌐':'All Years 🌐','المبيعات شاملة الضريبة':'Sales Including VAT','المبيعات قبل الضريبة':'Sales Before VAT',
+    'مقارنة مخصصة':'Custom Comparison','مبيعات العملاء الجدد':'New Customer Sales','متوسط العميل الجديد':'Average New Customer',
+    'إجمالي / عدد العملاء':'Total / Customer Count','عادوا أو نفذوا أكثر من عملية':'Returned or completed more than one transaction',
+    'قيمة':'Value','بالشهور':'by Month','مقارنة العملاء الجدد بالشهور':'Monthly New Customer Comparison',
+    'اتجاه اكتساب العملاء الجدد خلال شهور السنة المختارة':'New customer acquisition trend across the selected year',
+    'طريقة احتساب العملاء الجدد':'How New Customers Are Calculated','توزيع العملاء الجدد أسبوعياً':'Weekly New Customer Distribution',
+    'أعلى 10 عملاء جدد قيمة':'Top 10 New Customers by Value','ترتيب العملاء الجدد حسب إجمالي مبيعاتهم في الشهر المختار':'Ranking new customers by total sales in the selected month',
+    'تفاصيل احتساب عدد الزيارات':'Visit Count Calculation Details','محسوبة':'Counted','عرض التفاصيل':'View Details','عرض التفاصيل 👁️':'View Details 👁️',
+    'مرتفع':'High','متوسط':'Medium','منخفض':'Low','نشاط منتظم':'Regular Activity','زيارات متكررة':'Frequent Visits',
+    'زيارة قريبة':'Recent Visit','إنفاق قوي':'Strong Spending','عقد سنوي':'Annual Contract','عقد توريد دوري':'Recurring Supply Contract',
+    'متابعة تعاقدية':'Contract Follow-up','ملخص الترشيح':'Recommendation Summary','التوصية':'Recommendation','شهور النشاط':'Active Months',
+    'المرشحين':'Candidates','العملاء المرشحين':'Candidate Customers','إجمالي العملاء المرشحين':'Total Candidate Customers',
+    'إجمالي المبيعات المحتملة':'Total Potential Sales','أفضل مرشح':'Best Candidate','درجة الترشيح':'Recommendation Score',
+    'جميع القيم بالريال السعودي وتشمل ضريبة القيمة المضافة':'All values are in SAR and include VAT',
+    'أفضل شهر':'Best Month','أفضل خدمة':'Best Service','إجمالي المبيعات':'Total Sales'
   };
   var MONTHS={jan:'January',feb:'February',mar:'March',apr:'April',may:'May',jun:'June',jul:'July',aug:'August',sep:'September',oct:'October',nov:'November',dec:'December',
     '01':'January','02':'February','03':'March','04':'April','05':'May','06':'June','07':'July','08':'August','09':'September','10':'October','11':'November','12':'December'};

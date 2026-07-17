@@ -1,6 +1,7 @@
 /* PETATOE v6.4.52 Phase G2 - Smart Reports New Customers Real Extraction.
    Extracted from smart-reports-core.js without changing formulas, filters, or rendered markup. */
 (function(){
+  function serviceDisplay(v){try{var value=window.businessDataT?window.businessDataT('service',v):v;return typeof htmlSafe==='function'?htmlSafe(value):String(value==null?'':value);}catch(_){return typeof htmlSafe==='function'?htmlSafe(v):String(v==null?'':v);}}
   function buildSmartReportsNewCustomersState(ctx){
     const records=ctx.records||[];
     const data=ctx.data||[];
@@ -165,7 +166,7 @@ function newCustomerTierMeta(x){
 const newCustomerTableRows=newCustomerDisplayedRows.map((x,i)=>{const tm=newCustomerTierMeta(x);return `
   <tr>
     <td>${i+1}</td><td>${x.name}</td><td>${fmtDateAr(x.firstDate)}</td><td>${String(x.first.invoice||'-')}</td>
-    <td>${x.topService}</td><td>${x.topPay}</td><td>${fmt0(x.transCount)}</td><td>${money(x.totalValue)}</td>
+    <td>${serviceDisplay(x.topService)}</td><td>${x.topPay}</td><td>${fmt0(x.transCount)}</td><td>${money(x.totalValue)}</td>
     <td>${money(x.avgValue)}</td><td>${fmtDateAr(x.lastDate)}</td><td>${fmt0(x.daysSince)}</td>
     <td class="new-cust-tier-cell"><span class="new-cust-tier-wrap"><span class="new-cust-tier-icon ${tm.cls}">${tm.icon}</span><span class="new-cust-tier-label">${tm.t}</span><span class="new-cust-tier-tooltip"><b>سبب التصنيف: ${tm.t}</b><span>العميل مصنف ضمن هذا التصنيف بناءً على:</span>${tm.rules.map(r=>`<span class="ok">✓ ${r}</span>`).join('')}<span>يتم حساب التصنيف من بيانات الشهر المختار فقط بدون تغيير أي قيم أصلية.</span></span></span></td>
   </tr>`}).join('') || '<tr><td colspan="12">لا يوجد عملاء جدد في هذا الشهر حسب أول معاملة مسجلة في كل قاعدة البيانات.</td></tr>';
@@ -173,7 +174,7 @@ const newCustomerMoreButton=newCustomerRows.length>newCustTableLimit
   ? `<div class="new-cust-table-footer"><button class="new-cust-more-btn" data-smart-action="new-customer-more" data-limit="${newCustTableLimit+10}" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">${smartReportHtml('common.loadMore','اضغط لعرض المزيد ⌄')}</button><span>${smartReportHtml('common.showingCustomers','عرض {shown} من أصل {total} عميل',{shown:fmt0(Math.min(newCustTableLimit,newCustomerRows.length)),total:fmt0(newCustomerRows.length)})}</span></div>`
   : `<div class="new-cust-table-footer"><span>${smartReportHtml('common.shownCustomers','تم عرض {shown} من أصل {total} عميل',{shown:fmt0(newCustomerRows.length),total:fmt0(newCustomerRows.length)})}</span></div>`;
 const newCustomerInactiveRows=newCustomerRows.filter(x=>!x.repeatedAfterFirst && x.transCount<=1).sort((a,b)=>b.daysSince-a.daysSince).slice(0,12).map((x,i)=>`
-  <tr><td>${i+1}</td><td>${x.name}</td><td>${fmtDateAr(x.firstDate)}</td><td>${String(x.first.invoice||'-')}</td><td>${money(x.totalValue)}</td><td>${fmt0(x.daysSince)}</td><td>${x.topService}</td></tr>`).join('') || '<tr><td colspan="7">لا يوجد عملاء جدد غير نشطين في الفترة المختارة.</td></tr>';
+  <tr><td>${i+1}</td><td>${x.name}</td><td>${fmtDateAr(x.firstDate)}</td><td>${String(x.first.invoice||'-')}</td><td>${money(x.totalValue)}</td><td>${fmt0(x.daysSince)}</td><td>${serviceDisplay(x.topService)}</td></tr>`).join('') || '<tr><td colspan="7">لا يوجد عملاء جدد غير نشطين في الفترة المختارة.</td></tr>';
 const newCustYearButtons=`<button class="new-cust-year-btn ${newCustSelectedYear==='all'?'active':''}" data-smart-action="new-customer-year" data-year="all" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">كل السنوات</button>`+newCustAvailableYears.slice().sort((a,b)=>b-a).map(yy=>`<button class="new-cust-year-btn ${String(newCustSelectedYear)===String(yy)?'active':''}" data-smart-action="new-customer-year" data-year="${yy}" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">${yy}</button>`).join('');
 const newCustMonthButtons=newCustPeriods.map(k=>{
   const [yy,mm]=k.split('-');
