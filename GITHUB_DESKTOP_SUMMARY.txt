@@ -1,12 +1,8 @@
-PETATOE v9.4.5 — Localization Performance Stabilization
+PETATOE v9.4.6 — Settings Localization Phase 1
 
-- Removed the global DOM setter translation bridge from runtime initialization.
-- Added token-indexed phrase candidate lookup instead of scanning the full translation phrase list for every text node.
-- Removed recursive full-language reapplication from English hydration.
-- Consolidated language-change translation into a single active-surface pass.
-- Changed tab navigation localization from full-document scans to active-root translation.
-- Limited navigation rebuild localization to the navigation container.
-- Preserved dynamic MutationObserver translation for newly rendered content.
-- Added localization performance regression validation.
-- Passed Enterprise Localization Certification, Production Lockdown, and 272 JavaScript syntax checks.
-- Updated release metadata to PETATOE v9.4.5.
+- Added a Settings-scoped localization pass for dynamically generated HTML.
+- Translated Settings text nodes and UI attributes without restoring full-page DOM scans.
+- Re-rendered only the active Settings screen after language changes.
+- Added canonical Arabic/English phrases for the Settings header, tabs, KPIs, and system summary.
+- Synchronized release metadata and cache tokens to v9.4.6.
+- Added a dedicated Settings localization validator; 10/10 checks passed.

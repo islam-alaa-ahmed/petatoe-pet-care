@@ -40,6 +40,39 @@
     try{ if(Object.prototype.hasOwnProperty.call(__settingsMemoryState,k)) delete __settingsMemoryState[k]; }catch(_){}
   }
   function tr(key,fallback){try{return window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.t==='function'?window.PETATOE_LOCALIZATION_CENTER.t(key,{}, {fallback:fallback,allowKeyFallback:true}):fallback}catch(_){return fallback}}
+  function currentLanguage(){try{return String((window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.getLanguage&&window.PETATOE_LOCALIZATION_CENTER.getLanguage())||(window.PETATOE_I18N&&window.PETATOE_I18N.getLanguage&&window.PETATOE_I18N.getLanguage())||document.documentElement.lang||'ar').toLowerCase().slice(0,2)}catch(_){return 'ar'}}
+  function translateSettingsText(value){
+    var text=String(value==null?'':value);
+    if(currentLanguage()!=='en'||!/[\u0600-\u06ff]/.test(text))return text;
+    try{
+      var gst=window.PETATOE_GLOBAL_SCREEN_TRANSLATOR;
+      if(gst&&typeof gst.translate==='function'){var mixed=gst.translate(text);if(mixed!==text)return mixed;}
+      var center=window.PETATOE_LOCALIZATION_CENTER;
+      if(center&&typeof center.translateRuntime==='function'){var runtime=center.translateRuntime(text,'en');if(runtime!==text)return runtime;}
+    }catch(_){}
+    return text;
+  }
+  function localizeSettingsHtml(html){
+    var source=String(html==null?'':html);
+    if(currentLanguage()!=='en'||!/[\u0600-\u06ff]/.test(source))return source;
+    try{
+      var template=document.createElement('template');
+      template.innerHTML=source;
+      var attrs=['placeholder','title','aria-label','data-title','data-label'];
+      var walker=document.createTreeWalker(template.content,NodeFilter.SHOW_ELEMENT|NodeFilter.SHOW_TEXT);
+      var node;
+      while((node=walker.nextNode())){
+        if(node.nodeType===3){
+          if(/[\u0600-\u06ff]/.test(node.nodeValue||''))node.nodeValue=translateSettingsText(node.nodeValue);
+        }else if(node.nodeType===1){
+          attrs.forEach(function(name){if(node.hasAttribute(name)){var value=node.getAttribute(name);if(/[\u0600-\u06ff]/.test(value||''))node.setAttribute(name,translateSettingsText(value));}});
+          if(node.tagName==='OPTION'&&/[\u0600-\u06ff]/.test(node.textContent||''))node.textContent=translateSettingsText(node.textContent);
+          if(node.matches&&node.matches('input[type=button],input[type=submit],input[type=reset]')&&/[\u0600-\u06ff]/.test(node.value||''))node.value=translateSettingsText(node.value);
+        }
+      }
+      return template.innerHTML;
+    }catch(_){return source}
+  }
   function toast(msg){try{if(typeof window.toast==='function')window.toast(msg);else alert(msg)}catch(e){alert(msg)}}
   function records(){try{var fb=(window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[];return Array.isArray(fb)?fb:[]}catch(e){return []}}
   function seed(){var sec=window.PETATOEPasswordSecurity;var u=read(USERS_KEY,null);if(!Array.isArray(u)||!u.length){u=[{id:'u_admin',username:'Admin',fullName:'Admin',job:'Super Admin',phone:'',email:'',role:'superadmin',status:'active',createdAt:new Date().toISOString(),lastLogin:''}];write(USERS_KEY,u);setText(CURRENT_KEY,'u_admin')}else if(sec&&sec.sanitizeUsers&&sec.sanitizeUsers(u)){write(USERS_KEY,u)}var r=read(ROLES_KEY,null);if(!r)write(ROLES_KEY,defaults)}
@@ -164,7 +197,8 @@
     el.setAttribute('data-v110-render','1');
     el.setAttribute('data-v110-main',main);
     el.setAttribute('data-v110-sub',sub||'');
-    (window.PETATOESecurity||{setInnerHTML:function(el,h){el.replaceChildren(document.createRange().createContextualFragment(String(h==null?'':h)));}}).setInnerHTML(el, '<div class="pet-v110-wrap"><div class="pet-v110-hero"><div><h3>⚙️ مركز الإعدادات والصلاحيات</h3><p>القائمة الرئيسية: النظام، الإعدادات، الصلاحيات، المستخدمين — بدون التأثير على التقارير القديمة.</p></div></div>'+mainTabs(main)+(main==='permissions'?'':kpis(q))+body+'</div>');
+    var settingsHtml='<div class="pet-v110-wrap"><div class="pet-v110-hero"><div><h3>⚙️ مركز الإعدادات والصلاحيات</h3><p>القائمة الرئيسية: النظام، الإعدادات، الصلاحيات، المستخدمين — بدون التأثير على التقارير القديمة.</p></div></div>'+mainTabs(main)+(main==='permissions'?'':kpis(q))+body+'</div>';
+    (window.PETATOESecurity||{setInnerHTML:function(el,h){el.replaceChildren(document.createRange().createContextualFragment(String(h==null?'':h)));}}).setInnerHTML(el, localizeSettingsHtml(settingsHtml));
     if(main==='localization'&&window.PETATOELocalizationDashboard&&typeof window.PETATOELocalizationDashboard.mount==='function'){window.PETATOELocalizationDashboard.mount(byId('petatoeLocalizationDashboardMount'));}
     if(main==='settings' && sub==='security') setTimeout(function(){ if(typeof window.petV9LoadTrustedDevices==='function') window.petV9LoadTrustedDevices(); if(typeof window.petV9LoadActiveSessions==='function') window.petV9LoadActiveSessions(); if(typeof window.petV9LoadSecurityActivity==='function') window.petV9LoadSecurityActivity(); }, 120);
   }
@@ -207,6 +241,10 @@
   }
   document.addEventListener('click',function(e){var m=e.target.closest&&e.target.closest('[data-pet-v110-main]');if(m){var main=m.getAttribute('data-pet-v110-main'),sub=(main==='settings'?(m.getAttribute('data-pet-v110-sub')||getText(SUB_KEY,'backup')||'backup'):'');if(!settingsCanOpen(main)){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('غير متاح للصلاحية الحالية'):'غير متاح للصلاحية الحالية');return}setText(MAIN_KEY,main);if(sub)setText(SUB_KEY,sub);render(main,sub);return}var s=e.target.closest&&e.target.closest('[data-pet-v110-sub]');if(s){var sub=s.getAttribute('data-pet-v110-sub');setText(MAIN_KEY,'settings');setText(SUB_KEY,sub);render('settings',sub);return}var b=e.target.closest&&e.target.closest('[data-tab="settings"]');if(b)setTimeout(function(){render(getText(MAIN_KEY,'system')||'system',getText(SUB_KEY,'')||'')},320)},true);
   hook();
+  window.addEventListener('petatoe:language-changed',function(){
+    __lastRenderKey='';__lastRenderAt=0;
+    if(document.querySelector('#settings.panel.active,#settings.active'))queueRender(getText(MAIN_KEY,'system')||'system',getText(SUB_KEY,'')||'',20);
+  });
   if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(document.querySelector('#settings.panel.active,#settings.active'))render(getText(MAIN_KEY,'system')||'system',getText(SUB_KEY,'backup')||'backup')},800)})}else{setTimeout(function(){if(document.querySelector('#settings.panel.active,#settings.active'))render(getText(MAIN_KEY,'system')||'system',getText(SUB_KEY,'backup')||'backup')},800)}
 })();
 
