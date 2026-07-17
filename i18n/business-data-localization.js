@@ -50,9 +50,25 @@
   function resolve(type,value,code){
     var original=text(value); if(!original)return original;
     var map=build()[type]||{}; var item=map[original.toLowerCase()];
-    if(!item)return original;
     var c=text(code||lang()).toLowerCase();
-    return text(c==='fil'||c==='tl'?item.fil:item[c])||item.canonical||original;
+    if(!item){
+      try{
+        if(c!=='ar'&&window.PETATOE_I18N&&typeof window.PETATOE_I18N.translateRuntime==='function'){
+          var runtimeValue=text(window.PETATOE_I18N.translateRuntime(original));
+          if(runtimeValue&&runtimeValue!==original)return runtimeValue;
+        }
+      }catch(_e){}
+      return original;
+    }
+    var localized=text(c==='fil'||c==='tl'?item.fil:item[c]);
+    if(localized)return localized;
+    try{
+      if(c!=='ar'&&window.PETATOE_I18N&&typeof window.PETATOE_I18N.translateRuntime==='function'){
+        var fallbackValue=text(window.PETATOE_I18N.translateRuntime(item.canonical||original));
+        if(fallbackValue&&fallbackValue!==(item.canonical||original))return fallbackValue;
+      }
+    }catch(_e2){}
+    return item.canonical||original;
   }
   function canonical(type,value){
     var original=text(value); if(!original)return original;

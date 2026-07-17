@@ -107,7 +107,7 @@
       btn.setAttribute('data-smart-tab','salesInvoices');
       btn.dataset.smartTab='salesInvoices';
       btn.type='button';
-      btn.textContent='تقرير فواتير المبيعات';
+      btn.textContent=(typeof window.smartReportT==='function'?window.smartReportT('tabs.salesInvoices','تقرير فواتير المبيعات'):'تقرير فواتير المبيعات');
       btn.onclick=function(){ if(typeof window.setSmartTab==='function') window.setSmartTab('salesInvoices'); };
       var business=tabs.querySelector('[data-smart-tab="forecast"]');
       if(business && business.nextSibling) tabs.insertBefore(btn,business.nextSibling); else tabs.appendChild(btn);

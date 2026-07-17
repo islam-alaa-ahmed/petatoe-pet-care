@@ -37,6 +37,11 @@ function smartReportInterpolate(value,params){
 function smartReportHtml(key, fallback, params){
   return htmlSafe(smartReportT(key,fallback,params));
 }
+function smartReportMonth(monthName, fallback){
+  var raw=String(monthName==null?'':monthName);
+  var normalized=raw?raw.charAt(0).toUpperCase()+raw.slice(1).toLowerCase():raw;
+  return smartReportT('calendar.months.'+normalized, fallback==null?(MAR[normalized]||raw):fallback);
+}
 
 function smartSafeHTML(target, html, reason){
   const el=(typeof target==='string')?$(target):target;
@@ -205,7 +210,7 @@ function renderSmartReports(){
     const parts=String(key||'').split('-');
     const yy=+parts[0]||'';
     const mi=(+parts[1]||1)-1;
-    return `${MAR[MONTHS[mi]]||parts[1]} ${yy}`;
+    return `${smartReportMonth(MONTHS[mi],MAR[MONTHS[mi]]||parts[1])} ${yy}`;
   }
   const salesComparisonLatestKey=Object.keys(salesComparisonMonthMap).sort().slice(-1)[0]||'';
   const salesComparisonKeys=salesComparisonLatestKey?[4,3,2,1,0].map(back=>petatoeShiftMonthKey(salesComparisonLatestKey,-back)):[];
@@ -217,7 +222,7 @@ function renderSmartReports(){
     return {
       key:k,
       previousKey:prevKey,
-      label:[MAR[MONTHS[cur.monthIndex]]||String(k),String(cur.year||'')],
+      label:[smartReportMonth(MONTHS[cur.monthIndex],MAR[MONTHS[cur.monthIndex]]||String(k)),String(cur.year||'')],
       tableLabel:petatoeMonthYearLabel(k),
       currentSubLabel:petatoeMonthYearLabel(k),
       previousSubLabel:petatoeMonthYearLabel(prevKey),
@@ -1103,8 +1108,8 @@ function renderSmartReports(){
 
 
       <div class="sales-intel-grid">
-        <div class="sales-intel-panel"><div class="chart-head sales-intel-monthly-head" style="align-items:flex-start;gap:12px;flex-wrap:wrap"><div><h3>📈 اتجاه المبيعات الشهري</h3></div>${salesIntelMonthlyFilterHtml()}<div class="report-control-group sales-intel-monthly-modes" style="margin-inline-start:auto">${salesIntelMonthlyMetricButtons()}</div></div><div class="sales-intel-chart tall"><canvas id="salesIntelMonthly"></canvas></div></div>
-        <div class="sales-intel-panel"><div class="chart-head sales-intel-month-compare-head" style="align-items:flex-start;gap:12px;flex-wrap:wrap"><div><h3>📊 مقارنة شهر بشهر</h3></div><div class="report-control-group sales-intel-month-compare-modes" style="margin-inline-start:auto">${salesIntelMonthCompareMetricButtons()}</div></div><div class="sales-intel-chart"><canvas id="salesIntelMonthCompare"></canvas></div><div class="sales-intel-table" style="margin-top:10px"><table><thead><tr><th>الفترة</th><th>الحالي</th><th>السابق</th><th>الفرق</th><th>%</th></tr></thead><tbody>${salesComparisonRows.map(r=>`<tr><td>${r.tableLabel}</td><td>${money(r.current)}</td><td>${money(r.previous)}</td><td>${money(r.diff)}</td><td class="${r.diff>=0?'metric-up':'metric-down'}" style="color:${r.diff>=0?'#22c55e':'#ef4444'};font-weight:900">${r.pct.toFixed(1)}%</td></tr>`).join('')}</tbody></table></div></div>
+        <div class="sales-intel-panel"><div class="chart-head sales-intel-monthly-head" style="align-items:flex-start;gap:12px;flex-wrap:wrap"><div><h3>📈 ${smartReportHtml('sales.monthlyTrendTitle','اتجاه المبيعات الشهري')}</h3></div>${salesIntelMonthlyFilterHtml()}<div class="report-control-group sales-intel-monthly-modes" style="margin-inline-start:auto">${salesIntelMonthlyMetricButtons()}</div></div><div class="sales-intel-chart tall"><canvas id="salesIntelMonthly"></canvas></div></div>
+        <div class="sales-intel-panel"><div class="chart-head sales-intel-month-compare-head" style="align-items:flex-start;gap:12px;flex-wrap:wrap"><div><h3>📊 ${smartReportHtml('sales.monthOverMonthTitle','مقارنة شهر بشهر')}</h3></div><div class="report-control-group sales-intel-month-compare-modes" style="margin-inline-start:auto">${salesIntelMonthCompareMetricButtons()}</div></div><div class="sales-intel-chart"><canvas id="salesIntelMonthCompare"></canvas></div><div class="sales-intel-table" style="margin-top:10px"><table><thead><tr><th>${smartReportHtml('table.period','الفترة')}</th><th>${smartReportHtml('compare.current','الحالي')}</th><th>${smartReportHtml('compare.previous','السابق')}</th><th>${smartReportHtml('compare.difference','الفرق')}</th><th>%</th></tr></thead><tbody>${salesComparisonRows.map(r=>`<tr><td>${r.tableLabel}</td><td>${money(r.current)}</td><td>${money(r.previous)}</td><td>${money(r.diff)}</td><td class="${r.diff>=0?'metric-up':'metric-down'}" style="color:${r.diff>=0?'#22c55e':'#ef4444'};font-weight:900">${r.pct.toFixed(1)}%</td></tr>`).join('')}</tbody></table></div></div>
         <div class="sales-intel-panel">
           <h3>📅 مقارنة سنة بسنة</h3>
           <p>${salesPrevYear} مقابل ${salesCurrentYear} شهريًا.</p>
@@ -1113,7 +1118,7 @@ function renderSmartReports(){
             <div class="yoy-custom-row">
               <label class="yoy-check" data-smart-action="sales-yoy-custom-toggle">
                 <input id="salesYoYCustomCheck" type="checkbox" ${salesYoYCustomMode?'checked':''}>
-                مقارنة مخصصة بين سنتين
+                ${smartReportHtml('compare.customTwoYears','مقارنة مخصصة بين سنتين')}
               </label>
               <div class="yoy-selects ${salesYoYCustomMode?'show':''}">
                 <label>سنة الأساس
@@ -1124,7 +1129,7 @@ function renderSmartReports(){
                 </label>
               </div>
             </div>
-            <div class="yoy-active-badge">المقارنة النشطة: ${salesPrevYear} ↔ ${salesCurrentYear}</div>
+            <div class="yoy-active-badge">${smartReportHtml('compare.activeComparison','المقارنة النشطة')}: ${salesPrevYear} ↔ ${salesCurrentYear}</div>
           </div>
           <div class="sales-intel-chart"><canvas id="salesIntelYoY"></canvas></div>
         </div>
@@ -1316,7 +1321,7 @@ function renderSmartReports(){
   renderReportsCenter(data);
 
   const palette=[css('--purple'),css('--blue'),css('--cyan'),css('--green'),css('--yellow'),css('--orange'),css('--pink')];
-  chart('smartForecastChart',{type:'line',data:{labels:MONTHS.map(m=>MAR[m]),datasets:[{label:'Actual',data:monthly.map(x=>x.idx<=lastActual?x.sales:null),borderColor:css('--green'),backgroundColor:'rgba(34,197,94,.18)',tension:.35,pointRadius:4,fill:false},{label:'Forecast',data:forecast,borderColor:css('--purple'),backgroundColor:'rgba(139,92,246,.16)',borderDash:[7,5],tension:.35,pointRadius:3,fill:false}]},options:{...baseOpts(),layout:{padding:{top:28}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 10px Cairo'}}}});
+  chart('smartForecastChart',{type:'line',data:{labels:MONTHS.map(m=>smartReportMonth(m,MAR[m])),datasets:[{label:'Actual',data:monthly.map(x=>x.idx<=lastActual?x.sales:null),borderColor:css('--green'),backgroundColor:'rgba(34,197,94,.18)',tension:.35,pointRadius:4,fill:false},{label:'Forecast',data:forecast,borderColor:css('--purple'),backgroundColor:'rgba(139,92,246,.16)',borderDash:[7,5],tension:.35,pointRadius:3,fill:false}]},options:{...baseOpts(),layout:{padding:{top:28}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 10px Cairo'}}}});
   setTimeout(petatoeUpdateWhatIf,0);
   // v6.4.144: smartServiceDonut is rendered lazily by renderSmartServicesReport() only.
 
@@ -1325,7 +1330,7 @@ function renderSmartReports(){
   const salesIntelMonthlyNet=MONTHS.map(m=>salesIntelMonthlyScopedRows.filter(r=>normalizeMonth(r.month,r.date)===m).reduce((s,r)=>s+parseNum(r.totalEx),0));
   const salesIntelMonthlyTax=MONTHS.map(m=>salesIntelMonthlyScopedRows.filter(r=>normalizeMonth(r.month,r.date)===m).reduce((s,r)=>s+parseNum(r.tax),0));
   const salesIntelMonthlyConfig={gross:{label:smartReportT('metrics.gross','شامل الضريبة'),data:salesIntelMonthlyGross,color:css('--purple'),bg:'rgba(139,92,246,.16)'},net:{label:smartReportT('metrics.net','قبل الضريبة'),data:salesIntelMonthlyNet,color:css('--blue'),bg:'rgba(59,130,246,.14)'},tax:{label:smartReportT('metrics.vat','الضريبة'),data:salesIntelMonthlyTax,color:css('--green'),bg:'rgba(34,197,94,.14)'}}[salesIntelMonthlyMode]||{label:smartReportT('metrics.gross','شامل الضريبة'),data:salesIntelMonthlyGross,color:css('--purple'),bg:'rgba(139,92,246,.16)'};
-  chart('salesIntelMonthly',{type:'line',data:{labels:MONTHS.map(m=>MAR[m]),datasets:[{label:salesIntelMonthlyConfig.label,data:salesIntelMonthlyConfig.data,borderColor:salesIntelMonthlyConfig.color,backgroundColor:salesIntelMonthlyConfig.bg,tension:.35,pointRadius:5,pointHoverRadius:7,fill:false}]},options:{...baseOpts(),layout:{padding:{top:30,right:28,left:18,bottom:26}},plugins:{...baseOpts().plugins,legend:{display:false},petatoeLabels:{enabled:true,money:true,font:'900 11px Cairo'}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'900'},autoSkip:false,maxRotation:0,minRotation:0,padding:10},grid:{color:'rgba(148,163,184,.13)'}},y:{ticks:{color:css('--muted')},grid:{color:'rgba(148,163,184,.13)'}}}}});
+  chart('salesIntelMonthly',{type:'line',data:{labels:MONTHS.map(m=>smartReportMonth(m,MAR[m])),datasets:[{label:salesIntelMonthlyConfig.label,data:salesIntelMonthlyConfig.data,borderColor:salesIntelMonthlyConfig.color,backgroundColor:salesIntelMonthlyConfig.bg,tension:.35,pointRadius:5,pointHoverRadius:7,fill:false}]},options:{...baseOpts(),layout:{padding:{top:30,right:28,left:18,bottom:26}},plugins:{...baseOpts().plugins,legend:{display:false},petatoeLabels:{enabled:true,money:true,font:'900 11px Cairo'}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'900'},autoSkip:false,maxRotation:0,minRotation:0,padding:10},grid:{color:'rgba(148,163,184,.13)'}},y:{ticks:{color:css('--muted')},grid:{color:'rgba(148,163,184,.13)'}}}}});
   chart('salesIntelMonthCompare',{
     type:'bar',
     plugins:[{
@@ -1402,7 +1407,7 @@ function renderSmartReports(){
       }
     }
   });
-  chart('salesIntelYoY',{type:'bar',data:{labels:MONTHS.map(m=>MAR[m]),datasets:[{label:String(salesPrevYear),data:salesYoYMonths.map(x=>x.prev),backgroundColor:'#94a3b8',borderRadius:8},{label:String(salesCurrentYear),data:salesYoYMonths.map(x=>x.cur),backgroundColor:css('--purple'),borderRadius:8}]},options:{...baseOpts(),layout:{padding:{top:28}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:true,font:'800 10px Cairo'}}}});
+  chart('salesIntelYoY',{type:'bar',data:{labels:MONTHS.map(m=>smartReportMonth(m,MAR[m])),datasets:[{label:String(salesPrevYear),data:salesYoYMonths.map(x=>x.prev),backgroundColor:'#94a3b8',borderRadius:8},{label:String(salesCurrentYear),data:salesYoYMonths.map(x=>x.cur),backgroundColor:css('--purple'),borderRadius:8}]},options:{...baseOpts(),layout:{padding:{top:28}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:true,font:'800 10px Cairo'}}}});
   syncSalesYoYControls();
   // PETATOE v5.1.41: Smart Reports > Overview payment method report removed; no chart draw needed.
   chart('salesIntelNewReturning',{type:'doughnut',data:{labels:[smartReportT('customers.oneTime','عملاء مرة واحدة'),smartReportT('customers.returning','عملاء متكررون')],datasets:[{label:smartReportT('customers.classification','تصنيف العملاء'),data:[salesNewReturning.new,salesNewReturning.returning],backgroundColor:[css('--blue'),css('--gold')||'#FFD54A'],borderWidth:0}]},options:{...baseOpts('bottom'),cutout:'58%',plugins:{...baseOpts('bottom').plugins,tooltip:{enabled:false},legend:{position:'bottom',labels:{color:'#fff',font:{family:'Cairo',weight:'900'},generateLabels:function(chart){return [{text:smartReportT('customers.oneTime','عملاء مرة واحدة'),fillStyle:css('--blue')||'#18E7F9',strokeStyle:css('--blue')||'#18E7F9',fontColor:'#fff',hidden:false,index:0},{text:smartReportT('customers.returning','عملاء متكررون'),fillStyle:css('--gold')||'#FFD54A',strokeStyle:css('--gold')||'#FFD54A',fontColor:'#fff',hidden:false,index:1}];}}},petatoeLabels:{enabled:true,money:false,color:'#fff',font:'900 11px Cairo'}}}});
