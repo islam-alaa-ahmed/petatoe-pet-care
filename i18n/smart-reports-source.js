@@ -596,6 +596,7 @@
   });
 
   window.PETATOE_SMART_REPORTS_TRANSLATIONS={ar:ar,en:en};
+  try{if(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.registerModule==='function')window.PETATOE_LOCALIZATION_CENTER.registerModule('smartReportsSource',{ar:ar,en:en});}catch(_e){}
   window.dispatchEvent(new CustomEvent('petatoe:smart-translations-ready',{detail:{languages:['ar','en'],version:'9.2.2-source-migration-pack1'}}));
   if(!window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__){
     window.__PETATOE_SMART_REPORTS_LANGUAGE_SYNC_BOUND__=true;

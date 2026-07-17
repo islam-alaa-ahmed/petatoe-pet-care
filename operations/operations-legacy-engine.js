@@ -17,7 +17,7 @@
 
 (function(){
   'use strict';
-  function opT(key,params){return window.PETATOE_OPERATIONS_I18N?window.PETATOE_OPERATIONS_I18N.t(key,params):key;}
+  function opT(key,params){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsSource.'+key,params,{fallback:key}):key;}
   function opStatusT(status){var map={'مجدول':'statusScheduled','في الطريق':'statusOnTheWay','وصل العميل':'statusArrived','بدأت الجلسة':'statusStarted','تمت الجلسة':'statusCompleted','تم التحصيل':'statusCollected','مغلق':'statusClosed','مؤكد':'statusConfirmed','غير مكتملة':'statusIncomplete','مؤجل':'statusPostponed','ملغي':'statusCancelled','تم':'statusCompleted'};return opT(map[String(status||'')]||'statusUnknown');}
   if(window.PETATOEAppointments) return;
   var KEY='petatoe_appointments_v1';

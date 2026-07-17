@@ -28,7 +28,7 @@
 (function(){
   'use strict';
   if(window.__PETATOE_WAREHOUSE_CORE_MAIN_RUNTIME_BOUND__) return;
-  function whT(k,p){return window.PETATOE_WAREHOUSE_I18N?window.PETATOE_WAREHOUSE_I18N.t(k,p):k;}
+  function whT(k,p){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('warehouseSource.'+k,p,{fallback:k}):k;}
   function whLocale(){return window.PETATOE_WAREHOUSE_I18N?window.PETATOE_WAREHOUSE_I18N.locale():'ar-EG';}
   window.__PETATOE_WAREHOUSE_CORE_MAIN_RUNTIME_BOUND__ = true;
 

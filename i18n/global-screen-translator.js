@@ -168,8 +168,8 @@
     if(translationCache.has(original))return translationCache.get(original);
     var exact=original;
     try{
-      exact=window.PETATOE_I18N&&window.PETATOE_I18N.translateRuntime?
-        window.PETATOE_I18N.translateRuntime(original,'en'):original;
+      exact=window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?
+        window.PETATOE_LOCALIZATION_CENTER.translateRuntime(original,'en'):original;
     }catch(_){}
     if(typeof exact==='string'&&exact!==original&&!hasArabic(exact)){
       setCache(original,exact);return exact;

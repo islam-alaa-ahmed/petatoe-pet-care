@@ -140,8 +140,8 @@
       if(staticValue!==original)return staticValue;
       if(type==='service'&&c==='en'){var serviceValue=translateServiceName(original,c);if(serviceValue&&serviceValue!==original)return serviceValue;}
       try{
-        if(c!=='ar'&&window.PETATOE_I18N&&typeof window.PETATOE_I18N.translateRuntime==='function'){
-          var runtimeValue=text(window.PETATOE_I18N.translateRuntime(original));
+        if(c!=='ar'&&window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.translateRuntime==='function'){
+          var runtimeValue=text(window.PETATOE_LOCALIZATION_CENTER.translateRuntime(original));
           if(runtimeValue&&runtimeValue!==original)return runtimeValue;
         }
       }catch(_e){}
@@ -151,8 +151,8 @@
     if(localized)return localized;
     if(type==='service'&&c==='en'){var translatedService=translateServiceName(item.canonical||original,c);if(translatedService&&translatedService!==(item.canonical||original))return translatedService;}
     try{
-      if(c!=='ar'&&window.PETATOE_I18N&&typeof window.PETATOE_I18N.translateRuntime==='function'){
-        var fallbackValue=text(window.PETATOE_I18N.translateRuntime(item.canonical||original));
+      if(c!=='ar'&&window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.translateRuntime==='function'){
+        var fallbackValue=text(window.PETATOE_LOCALIZATION_CENTER.translateRuntime(item.canonical||original));
         if(fallbackValue&&fallbackValue!==(item.canonical||original))return fallbackValue;
       }
     }catch(_e2){}

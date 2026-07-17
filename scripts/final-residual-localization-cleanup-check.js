@@ -13,7 +13,7 @@ const required=[
 ];
 const missing=required.filter(x=>!runtime.includes(x));
 if(missing.length){console.error('Missing runtime bridge markers:',missing);process.exit(1);}
-if(!html.includes("PETATOE_RELEASE_VERSION='v9.3.5'"))throw new Error('index release version not synchronized');
-if(!html.includes('9.3.5-final-residual-localization-cleanup'))throw new Error('cache token not synchronized');
-if(!version.includes('PETATOE v9.3.5'))throw new Error('RELEASE_VERSION not synchronized');
+if(!(html.includes("PETATOE_RELEASE_VERSION='v9.3.5'")||html.includes("PETATOE_RELEASE_VERSION='v9.3.6'")))throw new Error('index release version not synchronized');
+if(!(html.includes('9.3.5-final-residual-localization-cleanup')||html.includes('9.3.6-localization-center-consolidation')))throw new Error('cache token not synchronized');
+if(!(version.includes('PETATOE v9.3.5')||version.includes('PETATOE v9.3.6')))throw new Error('RELEASE_VERSION not synchronized');
 console.log('PASS final residual localization cleanup guard');

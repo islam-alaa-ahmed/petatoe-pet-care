@@ -10,4 +10,5 @@
   function lang(){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.getLanguage?c.getLanguage():(document.documentElement.lang||'ar');}
   function fill(v,p){return String(v==null?'':v).replace(/\{(\w+)\}/g,function(_,k){return p&&p[k]!=null?p[k]:'';});}
   window.PETATOE_OPERATIONS_I18N={version:'9.2.9-source-migration-pack8',t:function(key,params){var d=lang()==='en'?en:ar;return fill(d[key]||en[key]||key,params||{});},dictionaries:{ar:ar,en:en}};
-}());
+}());  try{if(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.registerModule==='function')window.PETATOE_LOCALIZATION_CENTER.registerModule('operationsSource',window.PETATOE_OPERATIONS_I18N.dictionaries);}catch(_e){}
+
