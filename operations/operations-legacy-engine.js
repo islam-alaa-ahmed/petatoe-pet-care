@@ -312,18 +312,18 @@
   function refreshMasterDrivenSelects(){
     var master=readMasterData();
     var animal=byId('appointmentAnimalType'), breed=byId('appointmentBreed'), size=byId('appointmentSize'), service=byId('appointmentService'), breedType=byId('appointmentBreedAnimalType');
-    if(animal){var old=animal.value;safeHtml(animal,masterSelectHtml(master.animalTypes,'اختر النوع',old),'operations master animal select')}
-    if(size){var oldSize=size.value;safeHtml(size,masterSelectHtml(master.sizes,'اختر الحجم',oldSize),'operations master size select')}
-    if(service){var oldService=service.value;safeHtml(service,masterSelectHtml(serviceNames(master.services),'اختر الخدمة',oldService),'operations master service hidden select')}
+    if(animal){var old=animal.value;safeHtml(animal,masterSelectHtml(master.animalTypes,opT('selectType'),old),'operations master animal select')}
+    if(size){var oldSize=size.value;safeHtml(size,masterSelectHtml(master.sizes,opT('selectSize'),oldSize),'operations master size select')}
+    if(service){var oldService=service.value;safeHtml(service,masterSelectHtml(serviceNames(master.services),opT('selectService'),oldService),'operations master service hidden select')}
     refreshAppointmentServiceSelects();
-    if(breedType){var oldType=breedType.value;safeHtml(breedType,masterSelectHtml(master.animalTypes,'اختر نوع الحيوان',oldType),'operations breed type select')}
+    if(breedType){var oldType=breedType.value;safeHtml(breedType,masterSelectHtml(master.animalTypes,opT('selectAnimalType'),oldType),'operations breed type select')}
     refreshBreedOptions();
   }
   function refreshBreedOptions(){
     var sel=byId('appointmentBreed'); if(!sel)return;
     var master=readMasterData(), type=val('appointmentAnimalType'), old=sel.value;
     var items=type?(master.breeds[type]||[]):Object.keys(master.breeds||{}).reduce(function(a,k){return a.concat(master.breeds[k]||[])},[]);
-    safeHtml(sel, masterSelectHtml(items,'اختر السلالة',old), 'operations legacy render');
+    safeHtml(sel, masterSelectHtml(items,opT('selectBreed'),old), 'operations legacy render');
   }
   function masterInputId(type){return type==='animalTypes'?'appointmentNewAnimalType':(type==='sizes'?'appointmentNewSize':'appointmentNewService')}
   function addMasterItem(type){
@@ -390,7 +390,7 @@
       toast(opT('serviceLoadedForEdit'));
       return;
     }
-    var next=prompt('اكتب الاسم الجديد',value); if(next==null)return; next=String(next).trim(); if(!next)return;
+    var next=prompt(opT('enterNewName'),value); if(next==null)return; next=String(next).trim(); if(!next)return;
     if(type==='breeds'&&animalType){master.breeds[animalType]=(master.breeds[animalType]||[]).map(function(x){return x===value?next:x})}
     else if(type==='animalTypes'){
       master.animalTypes=(master.animalTypes||[]).map(function(x){return x===value?next:x});
@@ -402,7 +402,7 @@
   function resetMasterData(){if(confirm(opT('confirmRestoreDefaults'))){writeMasterData(cloneDefaultMaster());toast(opT('restored'))}}
   function renderMasterPills(list,type,animalType){
     list=uniqueSorted(list||[]);
-    return list.length?list.map(function(x){return '<span class="appointments-master-pill"><b>'+esc(x)+'</b><button type="button" data-op-click="editMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">تعديل</button><button type="button" data-op-click="removeMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">حذف</button></span>'}).join(''):'<div class="appointments-empty appointments-master-empty">لا توجد بيانات</div>';
+    return list.length?list.map(function(x){return '<span class="appointments-master-pill"><b>'+esc(x)+'</b><button type="button" data-op-click="editMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">'+esc(opT('edit'))+'</button><button type="button" data-op-click="removeMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">'+esc(opT('delete'))+'</button></span>'}).join(''):'<div class="appointments-empty appointments-master-empty">لا توجد بيانات</div>';
   }
   function setMasterSection(section){
     currentMasterSection=String(section||val('appointmentMasterSection')||'animalTypes');
@@ -443,9 +443,9 @@
   }
   function editMasterCustomer(code){
     var row=masterCustomerRows().find(function(c){return String(c.code)===String(code)}); if(!row)return;
-    var name=prompt('اسم العميل',row.name||''); if(name==null)return;
-    var phone=prompt('الجوال',row.phone||''); if(phone==null)return;
-    var address=prompt('العنوان',row.address||''); if(address==null)return;
+    var name=prompt(opT('customerName'),row.name||''); if(name==null)return;
+    var phone=prompt(opT('mobile'),row.phone||''); if(phone==null)return;
+    var address=prompt(opT('address'),row.address||''); if(address==null)return;
     upsertMasterCustomer({code:row.code,name:name,phone:phone,address:address});
   }
   function removeMasterCustomer(code){
@@ -455,7 +455,7 @@
     writeMasterData(master);toast(opT('customerDeleted'));
   }
   function masterCustomersExportRows(){
-    return [['الكود','الاسم','العنوان','الجوال']].concat(masterCustomerRows().map(function(c){
+    return [[opT('code'),opT('name'),opT('address'),opT('mobile')]].concat(masterCustomerRows().map(function(c){
       return [c.code||'',c.name||'',c.address||'',c.phone||''];
     }));
   }
@@ -582,7 +582,7 @@
       return v;
     }).filter(Boolean);
     if(!found){toast(opT('assignmentNotFound'));return;}
-    writeMasterData(master);renderMasterData();refreshLookupSelects();toast(disabled?'تم تعطيل الربط':'تم إلغاء تعطيل الربط');
+    writeMasterData(master);renderMasterData();refreshLookupSelects();toast(disabled?opT('assignmentDisabled'):opT('assignmentEnabled'));
   }
   function removeVehicleAssignment(vehicle){
     if(!confirm(opT('confirmDeleteAssignment')))return;
@@ -591,7 +591,7 @@
   }
   function masterServicesExportRows(){
     var rows=(readMasterData().services||[]).map(function(s){s=cleanMasterService(s);return s?[s.code||'',s.name,s.price===''?'' : s.price]:null}).filter(Boolean);
-    return [['الكود','اسم الخدمة','السعر']].concat(rows);
+    return [[opT('code'),opT('serviceName'),opT('price')]].concat(rows);
   }
   function exportMasterServicesExcel(){
     var rows=masterServicesExportRows();
@@ -655,14 +655,14 @@
   function renderMasterServices(){
     var body=byId('appointmentServicesList'); if(!body)return;
     var rows=(readMasterData().services||[]).map(cleanMasterService).filter(Boolean).sort(masterServiceSort);
-    var html=rows.length?rows.map(function(s){var key=s.code||s.name;return '<tr><td>'+esc(s.code||'-')+'</td><td>'+esc(s.name||'-')+'</td><td>'+esc(s.price===''?'-':money(s.price))+'</td><td><button type="button" class="appointments-master-action" data-op-click="editMasterItem" data-op-arg1="services" data-op-arg2="'+esc(key)+'">تعديل</button><button type="button" class="appointments-master-action danger" data-op-click="removeMasterItem" data-op-arg1="services" data-op-arg2="'+esc(key)+'">حذف</button></td></tr>'}).join(''):'<tr><td colspan="4" class="appointments-empty appointments-master-empty">لا توجد خدمات. ارفع ملف Excel أو أضف خدمة يدويًا.</td></tr>';
+    var html=rows.length?rows.map(function(s){var key=s.code||s.name;return '<tr><td>'+esc(s.code||'-')+'</td><td>'+esc(s.name||'-')+'</td><td>'+esc(s.price===''?'-':money(s.price))+'</td><td><button type="button" class="appointments-master-action" data-op-click="editMasterItem" data-op-arg1="services" data-op-arg2="'+esc(key)+'">'+esc(opT('edit'))+'</button><button type="button" class="appointments-master-action danger" data-op-click="removeMasterItem" data-op-arg1="services" data-op-arg2="'+esc(key)+'">'+esc(opT('delete'))+'</button></td></tr>'}).join(''):'<tr><td colspan="4" class="appointments-empty appointments-master-empty">'+esc(opT('noServicesUploadOrAdd'))+'</td></tr>';
     safeHtml(body,html,'operations master services table');
   }
   function renderMasterCustomers(){
     var body=byId('appointmentMasterCustomersList'); if(!body)return;
     var q=String(val('appointmentMasterCustomerSearch')||'').toLowerCase();
     var rows=masterCustomerRows().filter(function(c){return !q||[c.code,c.name,c.address,c.phone].join(' ').toLowerCase().indexOf(q)>-1});
-    var html=rows.length?rows.map(function(c){return '<tr><td>'+esc(c.code||'-')+'</td><td>'+esc(c.name||'-')+'</td><td>'+esc(c.address||'-')+'</td><td>'+esc(c.phone||'-')+'</td><td><button type="button" class="appointments-master-action" data-op-click="editMasterCustomer" data-op-arg1="'+esc(c.code)+'">تعديل</button><button type="button" class="appointments-master-action danger" data-op-click="removeMasterCustomer" data-op-arg1="'+esc(c.code)+'">حذف</button></td></tr>'}).join(''):'<tr><td colspan="5" class="appointments-empty appointments-master-empty">لا توجد بيانات عملاء</td></tr>';
+    var html=rows.length?rows.map(function(c){return '<tr><td>'+esc(c.code||'-')+'</td><td>'+esc(c.name||'-')+'</td><td>'+esc(c.address||'-')+'</td><td>'+esc(c.phone||'-')+'</td><td><button type="button" class="appointments-master-action" data-op-click="editMasterCustomer" data-op-arg1="'+esc(c.code)+'">'+esc(opT('edit'))+'</button><button type="button" class="appointments-master-action danger" data-op-click="removeMasterCustomer" data-op-arg1="'+esc(c.code)+'">'+esc(opT('delete'))+'</button></td></tr>'}).join(''):'<tr><td colspan="5" class="appointments-empty appointments-master-empty">'+esc(opT('noCustomerData'))+'</td></tr>';
     safeHtml(body,html,'operations master customers table');
   }
   function setupVehicleNamesForAppointments(){
@@ -708,15 +708,15 @@
     legacyAssignmentVehicles.forEach(function(x){if(cars.indexOf(x)===-1)cars.push(x)});
     cars=normalizeNamedList(cars);
     var v=byId('appointmentMasterVehicle'), g=byId('appointmentMasterGroomer'), d=byId('appointmentMasterDriver');
-    if(v){var ov=v.value;safeHtml(v,optionList(cars,'اختر السيارة',ov),'operations master vehicle select')}
-    if(g){var og=g.value;safeHtml(g,optionList(groomers,'اختر الجرومر',og),'operations master groomer select')}
-    if(d){var od=d.value;safeHtml(d,optionList(drivers,'اختر السائق',od),'operations master driver select')}
+    if(v){var ov=v.value;safeHtml(v,optionList(cars,opT('selectVehicle'),ov),'operations master vehicle select')}
+    if(g){var og=g.value;safeHtml(g,optionList(groomers,opT('selectGroomerOption'),og),'operations master groomer select')}
+    if(d){var od=d.value;safeHtml(d,optionList(drivers,opT('selectDriverOption'),od),'operations master driver select')}
     var body=byId('appointmentMasterVehicleStaffList'); if(!body)return;
     var assignmentRows=(master.vehicleAssignments||[]).map(cleanVehicleAssignment).filter(Boolean);
     var html=assignmentRows.length?assignmentRows.map(function(r){
-      var disabled=!!r.disabled, status=disabled?'معطل':'نشط', toggleLabel=disabled?'إلغاء التعطيل':'تعطيل';
-      return '<tr class="'+(disabled?'appointments-master-disabled':'')+'"><td>'+esc(r.vehicle||'-')+'</td><td>'+esc(r.groomer||'-')+'</td><td>'+esc(r.driver||'-')+'</td><td>'+esc(status)+'</td><td><button type="button" class="appointments-master-action" data-op-click="editVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">تعديل</button><button type="button" class="appointments-master-action" data-op-click="toggleVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">'+toggleLabel+'</button><button type="button" class="appointments-master-action danger" data-op-click="removeVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">حذف الربط</button></td></tr>';
-    }).join(''):'<tr><td colspan="5" class="appointments-empty appointments-master-empty">لا توجد ربط سيارات حتى الآن</td></tr>';
+      var disabled=!!r.disabled, status=disabled?opT('disabled'):opT('active'), toggleLabel=disabled?opT('enable'):opT('disable');
+      return '<tr class="'+(disabled?'appointments-master-disabled':'')+'"><td>'+esc(r.vehicle||'-')+'</td><td>'+esc(r.groomer||'-')+'</td><td>'+esc(r.driver||'-')+'</td><td>'+esc(status)+'</td><td><button type="button" class="appointments-master-action" data-op-click="editVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">'+esc(opT('edit'))+'</button><button type="button" class="appointments-master-action" data-op-click="toggleVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">'+toggleLabel+'</button><button type="button" class="appointments-master-action danger" data-op-click="removeVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">'+esc(opT('deleteAssignment'))+'</button></td></tr>';
+    }).join(''):'<tr><td colspan="5" class="appointments-empty appointments-master-empty">'+esc(opT('noVehicleAssignments'))+'</td></tr>';
     safeHtml(body,html,'operations master vehicle assignments table');
   }
   function renderMasterData(){
@@ -730,7 +730,7 @@
     if(svc)renderMasterServices();
     if(b){
       var html=Object.keys(master.breeds||{}).sort(function(x,y){return x.localeCompare(y,'ar')}).map(function(type){return '<div class="appointments-breed-group"><strong>'+esc(type)+'</strong><div>'+renderMasterPills(master.breeds[type]||[],'breeds',type)+'</div></div>'}).join('');
-      safeHtml(b, html||'<div class="appointments-empty appointments-master-empty">لا توجد سلالات</div>', 'operations legacy render');
+      safeHtml(b, html||'<div class="appointments-empty appointments-master-empty">'+esc(opT('noBreeds'))+'</div>', 'operations legacy render');
     }
     renderMasterCustomers();
     renderVehicleAssignments();
@@ -752,7 +752,7 @@
   function optionList(items,placeholder,selected){
     selected=String(selected||'');
     var exists=false;
-    var html='<option value="">'+esc(placeholder||'اختر')+'</option>'+(items||[]).map(function(x){x=String(x||'').trim();var sel=x===selected;if(sel)exists=true;return '<option value="'+esc(x)+'" '+(sel?'selected':'')+'>'+esc(x)+'</option>'}).join('');
+    var html='<option value="">'+esc(placeholder||opT('select'))+'</option>'+(items||[]).map(function(x){x=String(x||'').trim();var sel=x===selected;if(sel)exists=true;return '<option value="'+esc(x)+'" '+(sel?'selected':'')+'>'+esc(x)+'</option>'}).join('');
     if(selected&&!exists)html+='<option value="'+esc(selected)+'" selected>'+esc(selected)+'</option>';
     return html;
   }
@@ -761,7 +761,7 @@
   function serviceOptionHtml(selected){
     selected=String(selected||'');
     var rows=serviceRowsMaster(), exists=false;
-    var html='<option value="">اختر الخدمة</option>';
+    var html='<option value="">'+esc(opT('selectService'))+'</option>';
     rows.forEach(function(s){var key=String(s.code||s.name||'');var name=String(s.name||s.code||'');var sel=key===selected||name===selected;if(sel)exists=true;html+='<option value="'+esc(key)+'" data-price="'+esc(s.price||0)+'" data-name="'+esc(name)+'" '+(sel?'selected':'')+'>'+esc(name)+'</option>'});
     if(selected&&!exists)html+='<option value="'+esc(selected)+'" selected>'+esc(selected)+'</option>';
     return html;
@@ -779,7 +779,7 @@
   }
   function animalTargetLabel(animal,idx){
     animal=animal||{};
-    return [animal.petName||('حيوان '+(idx+1)),animal.animalType,animal.breed,animal.size].filter(Boolean).join(' - ');
+    return [animal.petName||(opT('animalNumber',{number:idx+1})),animal.animalType,animal.breed,animal.size].filter(Boolean).join(' - ');
   }
   function normalizeServiceTargets(row){
     var targets=row&&Array.isArray(row.animalTargets)?row.animalTargets:(row&&row.animalTarget?[row.animalTarget]:[]);
@@ -793,7 +793,7 @@
   function serviceTargetOptionsHtml(selectedTargets){
     var selectedTarget=normalizeServiceTargetValue(selectedTargets);
     var animals=collectAppointmentAnimals();
-    var html='<option value="__all__" '+(selectedTarget==='__all__'?'selected':'')+'>كل الحيوانات</option>';
+    var html='<option value="__all__" '+(selectedTarget==='__all__'?'selected':'')+'>'+esc(opT('allAnimals'))+'</option>';
     animals.forEach(function(a,idx){
       var key=animalTargetKey(a,idx), sel=selectedTarget===key;
       html+='<option value="'+esc(key)+'" '+(sel?'selected':'')+'>'+esc(animalTargetLabel(a,idx))+'</option>';
@@ -831,11 +831,11 @@
     var net=Math.max(0,gross-discount);
     return '<div class="appointment-services-grid appointment-service-row" data-service-row-id="'+esc(rowId)+'">'
       +'<select class="appointment-service-select" data-op-change="onAppointmentServiceChange" data-op-pass-self="true">'+serviceOptionHtml(selected)+'</select>'
-      +'<select class="appointment-service-targets" data-op-change="recalculateAppointmentServices" title="تطبيق الخدمة على">'+serviceTargetOptionsHtml(row.animalTargets||row.targets||[])+'</select>'
-      +'<input class="appointment-service-price" type="number" min="0" step="0.01" value="'+esc(unitPrice||0)+'" readonly title="سعر الخدمة للوحدة"/>'
+      +'<select class="appointment-service-targets" data-op-change="recalculateAppointmentServices" title="'+esc(opT('applyServiceTo'))+'">'+serviceTargetOptionsHtml(row.animalTargets||row.targets||[])+'</select>'
+      +'<input class="appointment-service-price" type="number" min="0" step="0.01" value="'+esc(unitPrice||0)+'" readonly title="'+esc(opT('unitServicePrice'))+'"/>'
       +'<input class="appointment-service-discount" type="number" min="0" step="0.01" value="'+esc(discount||0)+'" data-op-input="recalculateAppointmentServices"/>'
-      +'<input class="appointment-service-net" type="number" min="0" step="0.01" value="'+esc(net||0)+'" readonly title="الصافي بعد ضرب عدد الحيوانات وخصم الخدمة"/>'
-      +'<button type="button" class="appointments-master-action danger" data-op-click="removeAppointmentServiceRow" data-op-pass-self="true">حذف</button>'
+      +'<input class="appointment-service-net" type="number" min="0" step="0.01" value="'+esc(net||0)+'" readonly title="'+esc(opT('serviceNetAfterDiscount'))+'"/>'
+      +'<button type="button" class="appointments-master-action danger" data-op-click="removeAppointmentServiceRow" data-op-pass-self="true">'+esc(opT('delete'))+'</button>'
       +'</div>';
   }
   function renderAppointmentServicesRows(rows){
@@ -912,28 +912,28 @@
   }
   function animalTypeOptions(selected){
     selected=String(selected||'');
-    return optionList(readMasterData().animalTypes||[],'اختر النوع',selected);
+    return optionList(readMasterData().animalTypes||[],opT('selectType'),selected);
   }
   function breedOptionsForType(type,selected){
     selected=String(selected||'');
     var breeds=(readMasterData().breeds||{})[String(type||'')]||[];
-    return optionList(breeds,'اختر السلالة',selected);
+    return optionList(breeds,opT('selectBreed'),selected);
   }
   function sizeOptions(selected){
     selected=String(selected||'');
-    return optionList(readMasterData().sizes||[],'اختر الحجم',selected);
+    return optionList(readMasterData().sizes||[],opT('selectSize'),selected);
   }
   function appointmentAnimalRowHtml(row){
     row=row||{};
     var rowId=String(row.rowId||('pet-'+Date.now()+'-'+Math.floor(Math.random()*10000)));
     var type=String(row.animalType||row.type||'');
     return '<div class="appointment-animals-grid appointment-animal-row" data-animal-row-id="'+esc(rowId)+'">'
-      +'<input class="appointment-animal-name" list="appointmentPetSuggestions" value="'+esc(row.petName||row.name||'')+'" placeholder="مثال: Max" data-op-input="applyPetSuggestion" data-op-blur="applyPetSuggestion"/>'
+      +'<input class="appointment-animal-name" list="appointmentPetSuggestions" value="'+esc(row.petName||row.name||'')+'" placeholder="'+esc(opT('petNameExample'))+'" data-op-input="applyPetSuggestion" data-op-blur="applyPetSuggestion"/>'
       +'<select class="appointment-animal-type" data-op-change="onAppointmentAnimalTypeChange" data-op-pass-self="true">'+animalTypeOptions(type)+'</select>'
       +'<select class="appointment-animal-breed" data-op-change="recalculateAppointmentServices">'+breedOptionsForType(type,row.breed||'')+'</select>'
       +'<select class="appointment-animal-size" data-op-change="recalculateAppointmentServices">'+sizeOptions(row.size||'')+'</select>'
       +'<input class="appointment-animal-count" type="number" min="1" step="1" value="'+esc(row.petCount||row.count||1)+'" data-op-input="recalculateAppointmentServices"/>'
-      +'<button type="button" class="appointments-master-action danger" data-op-click="removeAppointmentAnimalRow" data-op-pass-self="true">حذف</button>'
+      +'<button type="button" class="appointments-master-action danger" data-op-click="removeAppointmentAnimalRow" data-op-pass-self="true">'+esc(opT('delete'))+'</button>'
       +'</div>';
   }
   function syncLegacyAnimalFields(animals){
@@ -997,7 +997,7 @@
   }
   function hourOptions(selected){
     selected=normalizeHourValue(selected);
-    var html='<option value="">اختر الساعة</option>';
+    var html='<option value="">'+esc(opT('selectTime'))+'</option>';
     for(var i=0;i<24;i++){var h=pad(i)+':00';html+='<option value="'+h+'" '+(h===selected?'selected':'')+'>'+pad(i)+'</option>';}
     return html;
   }
@@ -1021,9 +1021,9 @@
   function refreshLookupSelects(){
     var g=byId('appointmentGroomer'), d=byId('appointmentDriver'), v=byId('appointmentVehicle');
     var activeLinks=activeVehicleAssignments(), groomers=normalizeNamedList(activeLinks.map(function(x){return x.groomer}).filter(Boolean)), drivers=normalizeNamedList(activeLinks.map(function(x){return x.driver}).filter(Boolean)), assignedCars=assignedVehicleNames();
-    if(g){var old=g.value;safeHtml(g,optionList(groomers,'اختر الجرومر',old),'operations groomer select')}
-    if(d){var oldd=d.value;safeHtml(d,optionList(drivers,'اختر السائق',oldd),'operations driver select')}
-    if(v){var oldv=v.value;safeHtml(v,optionList(assignedCars,'اختر السيارة',oldv),'operations vehicle select')}
+    if(g){var old=g.value;safeHtml(g,optionList(groomers,opT('selectGroomerOption'),old),'operations groomer select')}
+    if(d){var oldd=d.value;safeHtml(d,optionList(drivers,opT('selectDriverOption'),oldd),'operations driver select')}
+    if(v){var oldv=v.value;safeHtml(v,optionList(assignedCars,opT('selectVehicle'),oldv),'operations vehicle select')}
     applyVehicleStaffAssignment();
     refreshTimeSelects();
   }
@@ -1051,7 +1051,7 @@
   function fill(r){
     refreshLookupSelects();
     setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerKey(r));setVal('appointmentClient',r.client);setVal('appointmentPhone',r.phone);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentStart',r.start);setVal('appointmentEnd',r.end);setVal('appointmentGroomer',r.groomer);setVal('appointmentDriver',r.driver);setVal('appointmentVehicle',r.vehicle);setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',r.address);setVal('appointmentGoogleMapUrl',appointmentMapUrl(r));setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
-    var t=byId('appointmentFormTitle');if(t)t.textContent='✏️ تعديل موعد';
+    var t=byId('appointmentFormTitle');if(t)t.textContent=opT('editAppointmentTitle');
   }
   function setTab(tab){
     currentTab=tab||'add';
@@ -1068,7 +1068,7 @@
     ['appointmentId','appointmentCustomerId','appointmentClient','appointmentPhone','appointmentPetName','appointmentAddress','appointmentGoogleMapUrl','appointmentNotes'].forEach(function(id){setVal(id,'')});
     refreshLookupSelects();
     setVal('appointmentAnimalType','');setVal('appointmentBreed','');setVal('appointmentSize','');setVal('appointmentService','');setVal('appointmentPetCount','1');renderAppointmentAnimalsRows([{}]);setVal('appointmentDate',today());setVal('appointmentStart','');setVal('appointmentEnd','');renderAppointmentServicesRows([{}]);setVal('appointmentGroomer','');setVal('appointmentDriver','');setVal('appointmentVehicle','');setVal('appointmentPaymentMethod','');setVal('appointmentSessionPrice','0');setVal('appointmentDiscount','0');setVal('appointmentPaidAmount','0');setVal('appointmentCollectionStatus','غير محصل');setVal('appointmentStatus','مجدول'); refreshPetSuggestions();
-    var t=byId('appointmentFormTitle');if(t)t.textContent='➕ إضافة موعد جديد';
+    var t=byId('appointmentFormTitle');if(t)t.textContent=opT('addAppointmentTitle');
   }
   function saveAppointment(){
     if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.saveAppointment==='function'&&!saveAppointment._opsDelegating){
@@ -1097,7 +1097,7 @@
       pushExecutionLog(rows[idx],'edit',{oldStatus:normalizeStatus(oldRow.status),status:normalizeStatus(rows[idx].status),changes:summarizeAppointmentChanges(oldRow,rows[idx])});
     }else{
       rows.unshift(r);
-      pushExecutionLog(rows[0],'create',{status:normalizeStatus(rows[0].status),notes:'تم إنشاء الموعد من إدارة المواعيد'});
+      pushExecutionLog(rows[0],'create',{status:normalizeStatus(rows[0].status),notes:opT('appointmentCreatedFromManagement')});
     }
     upsertMasterCustomer({code:r.customerId||customerKey(r),name:r.client,phone:r.phone,address:r.address,googleMapUrl:appointmentMapUrl(r)});
     write(rows);clearForm();setTab('log');toast(opT('appointmentSaved'));
@@ -1863,7 +1863,7 @@
     safeHtml(el,rows.map(function(r){
       var st=normalizeStatus(r.status), ns=nextStatus(st);
       var quick=ns!==st?'<button class="appointments-status-step" type="button" data-op-click="changeStatus" data-op-arg1="'+esc(r.id)+'" data-op-arg2="'+esc(ns)+'">التالي: '+esc(ns)+'</button>':'';
-      return '<div class="appointments-today-item '+statusClass(st)+'"><div class="appointments-time"><b>'+esc(r.start||'--:--')+'</b><small>'+esc(r.end||'')+'</small></div><div class="appointments-event"><b>'+esc(r.client||'عميل غير محدد')+'</b><p>'+esc([r.service,r.animalType,r.breed,r.size,r.petName].filter(Boolean).join(' - '))+'</p><div class="appointments-event-meta"><span>✂️ '+esc(r.groomer||'-')+'</span><span>🚗 '+esc(r.driver||'-')+'</span><span>🚐 '+esc(r.vehicle||'-')+'</span><span class="appointments-status '+statusClass(st)+'">'+esc(st)+'</span></div><small>'+esc(r.address||'')+'</small></div><div class="appointments-today-actions">'+quick+'<button class="appointments-status-step ghost" type="button" data-op-click="edit" data-op-arg1="'+esc(r.id)+'">تعديل</button></div></div>'
+      return '<div class="appointments-today-item '+statusClass(st)+'"><div class="appointments-time"><b>'+esc(r.start||'--:--')+'</b><small>'+esc(r.end||'')+'</small></div><div class="appointments-event"><b>'+esc(r.client||'عميل غير محدد')+'</b><p>'+esc([r.service,r.animalType,r.breed,r.size,r.petName].filter(Boolean).join(' - '))+'</p><div class="appointments-event-meta"><span>✂️ '+esc(r.groomer||'-')+'</span><span>🚗 '+esc(r.driver||'-')+'</span><span>🚐 '+esc(r.vehicle||'-')+'</span><span class="appointments-status '+statusClass(st)+'">'+esc(st)+'</span></div><small>'+esc(r.address||'')+'</small></div><div class="appointments-today-actions">'+quick+'<button class="appointments-status-step ghost" type="button" data-op-click="edit" data-op-arg1="'+esc(r.id)+'">'+esc(opT('edit'))+'</button></div></div>'
     }).join(''),'operations today timeline');
   }
 
