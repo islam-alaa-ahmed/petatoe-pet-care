@@ -2,7 +2,7 @@
    Localizes user-maintained master-data display names without changing canonical stored values. */
 (function(){
   'use strict';
-  var VERSION='9.1.7-enterprise-business-localization';
+  var VERSION='9.1.7-enterprise-business-localization-pack2';
   var cache={signature:'',maps:null};
 
   function text(v){return String(v==null?'':v).trim();}
@@ -59,6 +59,16 @@
     }),
     appointmentStatus:Object.freeze({
       'مؤكد':'Confirmed','ملغي':'Cancelled','مكتمل':'Completed','قيد التنفيذ':'In Progress','جديد':'New','غير محدد':'Unspecified'
+    }),
+    vehicleStatus:Object.freeze({
+      'نشط':'Active','جاهز':'Ready','متوقف':'Stopped','متوقفة':'Stopped','في الصيانة':'In Maintenance','صيانة':'Maintenance','غير محدد':'Unspecified'
+    }),
+    vehicleType:Object.freeze({
+      'سيارة':'Vehicle','فان':'Van','شاحنة':'Truck','سيارة خدمة':'Service Vehicle','غير محدد':'Unspecified'
+    }),
+    customerCategory:Object.freeze({
+      'VIP':'VIP','كبار العملاء':'VIP','عادي':'Regular','منتظم':'Regular','عميل جديد':'New Customer','جديد':'New',
+      'نشط':'Active','غير نشط':'Inactive','مفقود':'Lost','متنامي':'Growing','نمو':'Growing','متراجع':'Declining','تراجع':'Declining','غير محدد':'Unspecified'
     }),
     generic:Object.freeze({'غير محدد':'Unspecified'})
   });
@@ -149,15 +159,26 @@
     var customer=text(row.client||row.customer||row.customerName||row.clientName||row['العميل']||row['اسم العميل']);
     var payment=text(row.pay||row.payment||row.paymentMethod||row.payment_method||row['طريقة الدفع']);
     var customerStatus=text(row.customerStatus||row.customer_status||row.status||row['الحالة']);
+    var appointmentStatus=text(row.appointmentStatus||row.appointment_status||row.bookingStatus||row.booking_status);
+    var vehicleStatus=text(row.vehicleStatus||row.vehicle_status||row.carStatus||row.car_status);
+    var vehicleType=text(row.vehicleType||row.vehicle_type||row.carType||row.car_type);
+    var customerCategory=text(row.customerCategory||row.customer_category||row.clientCategory||row.client_category||row.segment||row.classification);
     if(service){out.__serviceCanonical=service;out.item=resolve('service',service,code);if('service' in out)out.service=out.item;if('serviceName' in out)out.serviceName=out.item;}
     if(vehicle){out.__vehicleCanonical=vehicle;out.van=resolve('vehicle',vehicle,code);if('vehicle' in out)out.vehicle=out.van;if('car' in out)out.car=out.van;}
     if(customer){out.__customerCanonical=customer;out.client=resolve('customer',customer,code);if('customer' in out)out.customer=out.client;if('customerName' in out)out.customerName=out.client;}
     if(payment){out.__paymentCanonical=payment;out.pay=resolve('payment',payment,code);if('payment' in out)out.payment=out.pay;if('paymentMethod' in out)out.paymentMethod=out.pay;if('payment_method' in out)out.payment_method=out.pay;}
     if(customerStatus){out.__statusCanonical=customerStatus;var localizedStatus=resolve('customerStatus',customerStatus,code);if('customerStatus' in out)out.customerStatus=localizedStatus;if('customer_status' in out)out.customer_status=localizedStatus;if('status' in out)out.status=localizedStatus;}
+    if(appointmentStatus){out.__appointmentStatusCanonical=appointmentStatus;var localizedAppointmentStatus=resolve('appointmentStatus',appointmentStatus,code);if('appointmentStatus' in out)out.appointmentStatus=localizedAppointmentStatus;if('appointment_status' in out)out.appointment_status=localizedAppointmentStatus;if('bookingStatus' in out)out.bookingStatus=localizedAppointmentStatus;if('booking_status' in out)out.booking_status=localizedAppointmentStatus;}
+    if(vehicleStatus){out.__vehicleStatusCanonical=vehicleStatus;var localizedVehicleStatus=resolve('vehicleStatus',vehicleStatus,code);if('vehicleStatus' in out)out.vehicleStatus=localizedVehicleStatus;if('vehicle_status' in out)out.vehicle_status=localizedVehicleStatus;if('carStatus' in out)out.carStatus=localizedVehicleStatus;if('car_status' in out)out.car_status=localizedVehicleStatus;}
+    if(vehicleType){out.__vehicleTypeCanonical=vehicleType;var localizedVehicleType=resolve('vehicleType',vehicleType,code);if('vehicleType' in out)out.vehicleType=localizedVehicleType;if('vehicle_type' in out)out.vehicle_type=localizedVehicleType;if('carType' in out)out.carType=localizedVehicleType;if('car_type' in out)out.car_type=localizedVehicleType;}
+    if(customerCategory){out.__customerCategoryCanonical=customerCategory;var localizedCustomerCategory=resolve('customerCategory',customerCategory,code);if('customerCategory' in out)out.customerCategory=localizedCustomerCategory;if('customer_category' in out)out.customer_category=localizedCustomerCategory;if('clientCategory' in out)out.clientCategory=localizedCustomerCategory;if('client_category' in out)out.client_category=localizedCustomerCategory;if('segment' in out)out.segment=localizedCustomerCategory;if('classification' in out)out.classification=localizedCustomerCategory;}
     return out;
   }
+  function render(type,value,code){return resolve(type,value,code);}
+  function renderRecord(row,code){return localizeRecord(row,code);}
+  function renderList(type,values,code){return (Array.isArray(values)?values:[]).map(function(value){return resolve(type,value,code);});}
   function invalidate(){cache={signature:'',maps:null};return true;}
-  window.PETATOE_BUSINESS_DATA_I18N={version:VERSION,resolve:resolve,canonical:canonical,localizeRecord:localizeRecord,translateServiceName:translateServiceName,invalidate:invalidate,getLanguage:lang};
+  window.PETATOE_BUSINESS_DATA_I18N={version:VERSION,resolve:resolve,canonical:canonical,localizeRecord:localizeRecord,render:render,renderRecord:renderRecord,renderList:renderList,translateServiceName:translateServiceName,invalidate:invalidate,getLanguage:lang};
   window.businessDataT=window.businessDataT||function(type,value,code){return resolve(type,value,code);};
   ['petatoe:language-changed','petatoe:reference-registry-updated','petatoe:operations-storage-change'].forEach(function(evt){window.addEventListener(evt,function(){invalidate();try{if(window.PETATOESmartReports&&typeof window.PETATOESmartReports.clearCache==='function')window.PETATOESmartReports.clearCache('business-data-localization');}catch(_e){}try{if(typeof window.renderSmartReports==='function'&&document.getElementById('smartReportsArea'))window.renderSmartReports();}catch(_e2){}});});
 })();

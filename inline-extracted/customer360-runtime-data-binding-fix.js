@@ -13,6 +13,15 @@
   function byId(id){ return document.getElementById(id); }
   function text(v){ return String(v == null ? '' : v).trim(); }
   function lower(v){ return text(v).toLowerCase(); }
+  function business(type, value){
+    try{
+      var center=window.PETATOE_LOCALIZATION_CENTER;
+      if(center&&typeof center.business==='function') return text(center.business(type,value));
+      var runtime=window.PETATOE_BUSINESS_DATA_I18N;
+      if(runtime&&typeof runtime.resolve==='function') return text(runtime.resolve(type,value));
+    }catch(e){ warn('customer360 business localization fallback', e); }
+    return text(value);
+  }
   function num(v){
     if(typeof window.parseNum === 'function') return window.parseNum(v);
     var n = parseFloat(String(v == null ? '' : v).replace(/,/g,'').replace(/[^0-9.\-]/g,''));
@@ -33,11 +42,11 @@
     var t = Date.parse(d);
     return isFinite(t) ? t : 0;
   }
-  function clientName(r){ return text((r && (r.client || r.customer || r.customerName)) || 'غير محدد') || 'غير محدد'; }
-  function serviceName(r){ return text((r && (r.item || r.service || r.serviceName || r.product)) || 'غير محدد') || 'غير محدد'; }
+  function clientName(r){ var raw=text((r && (r.client || r.customer || r.customerName)) || 'غير محدد') || 'غير محدد'; return business('customer',raw)||raw; }
+  function serviceName(r){ var raw=text((r && (r.item || r.service || r.serviceName || r.product)) || 'غير محدد') || 'غير محدد'; return business('service',raw)||raw; }
   function invoiceNo(r){ return text((r && (r.invoice || r.invoiceNo || r.billNo || r.number)) || '-'); }
-  function vehicleName(r){ return text((r && (r.van || r.vehicle || r.car || r.carName)) || '-'); }
-  function payName(r){ return text((r && (r.pay || r.payment || r.paymentMethod)) || '-'); }
+  function vehicleName(r){ var raw=text((r && (r.van || r.vehicle || r.car || r.carName)) || '-'); return raw==='-'?raw:(business('vehicle',raw)||raw); }
+  function payName(r){ var raw=text((r && (r.pay || r.payment || r.paymentMethod)) || '-'); return raw==='-'?raw:(business('payment',raw)||raw); }
   function totalInc(r){ return num(r && (r.totalInc != null ? r.totalInc : r.total)); }
   function totalEx(r){ return num(r && r.totalEx); }
   function tax(r){ return num(r && r.tax); }
@@ -177,6 +186,7 @@
     document.addEventListener('keydown', function(e){ var card=e.target.closest && e.target.closest('.customer360-card'); if(card && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); renderDetail(card.getAttribute('data-customer360-name') || ''); } }, true);
     document.addEventListener('petatoe:tabchange', function(e){ var d=e.detail||{}; if(d.tabId==='customer360') setTimeout(function(){ renderPanel(); }, 80); }, true);
     window.addEventListener('petatoe:records-changed', function(){ var tab=byId('customer360'); if(tab && tab.classList.contains('active')) renderPanel(); });
+    window.addEventListener('petatoe:language-changed', function(){ var tab=byId('customer360'); if(tab && tab.classList.contains('active')) renderPanel(); });
   }
 
   window.renderCustomer360Panel = renderPanel;
