@@ -51,6 +51,41 @@
     'جميع القيم بالريال السعودي وتشمل ضريبة القيمة المضافة':'All values are in SAR and include VAT',
     'أفضل شهر':'Best Month','أفضل خدمة':'Best Service','إجمالي المبيعات':'Total Sales'
   };
+
+  // FINAL8: persistent English safety net for Smart Reports dynamic/narrative text.
+  // Kept in one central layer so later report edits cannot silently reintroduce Arabic UI.
+  Object.assign(UI_GLOSSARY,{
+    'كل السنوات':'All Years','المبيعات شاملة الضريبة':'Sales Including VAT','المبيعات قبل الضريبة':'Sales Before VAT','مقارنة مخصصة':'Custom Comparison','النمو':'Growth',
+    'مبيعات العملاء الجدد':'New Customer Sales','متوسط العميل الجديد':'Average New Customer','إجمالي / عدد العملاء':'Total / Customer Count','عادوا أو نفذوا أكثر من عملية':'Returned or completed more than one transaction',
+    'الزيارة = فاتورة بيع فعلية لم يتم إلغاؤها بمرتجع كامل.':'A visit is an actual sales invoice that was not fully cancelled by a return.',
+    'فواتير البيع':'Sales invoices','فواتير المرتجع المطابقة':'Matched return invoices','الزيارات الصافية المحتسبة':'Calculated net visits',
+    'المعادلة: الزيارات الصافية = فواتير البيع - فواتير البيع الملغاة بمرتجع كامل في نفس اليوم تقريباً.':'Formula: net visits = sales invoices minus sales invoices fully cancelled by a return on approximately the same day.',
+    'تقريباً Day البيع الملغاة بمرتجع كامل في نفس Invoices البيع - Invoices = Visits Net المعادلة:':'Formula: net visits = sales invoices minus sales invoices fully cancelled by a return on approximately the same day.',
+    'تفاصيل احتساب عدد الزيارات':'Visit Count Calculation Details','الفاتورة':'Invoice','التاريخ':'Date','القيمة':'Value','الحالة':'Status','محسوبة':'Counted',
+    'العملاء المرشحين للعقود':'Customers Recommended for Contracts','عملاء مرشحون لعمل عقود معهم':'Customers Recommended for Contracts',
+    'يرتب أفضل العملاء المرشحين لعقد سنوي أو توريد دوري بنفس منطق تحليل العملاء الحالي، مع حداثة آخر زيارة وتصنيف العميل.':'Ranks the best candidates for an annual or recurring supply contract using current customer-analysis logic, recent activity, last visit, and customer classification.',
+    'إجمالي العملاء المرشحين':'Total Candidate Customers','إجمالي المبيعات المحتملة':'Total Potential Sales','أفضل مرشح':'Best Candidate','للعملاء المرشحين':'for candidate customers','عميل مرشح':'candidate customers',
+    'نشاط جيد + فرصة توريد دوري':'Good activity + recurring supply opportunity','قبل التعاقد: متابعة فرصة':'Before contracting: follow up on the opportunity','قبل التعاقد Follow-up فرصة':'Before contracting: follow up on the opportunity',
+    'التوصية التجارية':'Business Recommendation','التوصية التجارية الذكية':'Smart Business Recommendation','درجة الترشيح':'Recommendation Score',
+    'تفاصيل سبب الترشيح':'Recommendation Reason Details','متابعة للتعاقد':'Contract Follow-up','مرشح للمتابعة قبل عرض عقد رسمي':'Candidate for follow-up before presenting a formal contract',
+    'سبب الترشيح الكامل':'Full recommendation rationale','الإجراء المقترح':'Recommended action','متابعة تجارية قبل عرض العقد':'Commercial follow-up before presenting the contract',
+    'مع مراجعة آخر الخدمات والزيارات قبل التواصل.':'Review the latest services and visits before contacting the customer.',
+    'شهور النشاط':'Active Months','التصنيف الحالي':'Current Classification','أيام الغياب':'Inactive Days','متوسط الفاتورة':'Average Invoice','عدد الزيارات':'Visit Count','إجمالي الإنفاق':'Total Spend',
+    'يقارن التقرير مبيعات كل عميل بين سنتين حتى تاريخ آخر فاتورة مرفوعة في سنة المقارنة، مع حساب كامل البيانات أو أول 10 فقط في كل جدول مع زر عرض المزيد. الفلاتر مرتبطة بكل الأقسام: الملخص، النمو، التراجع، المفقودين، الترتيب، والرسم.':'The report compares each customer’s sales across two years through the latest uploaded invoice date in the comparison year. It calculates the full dataset while showing the first 10 rows in each table with a Load More option. Filters apply to the summary, growth, decline, lost customers, ranking, and charts.',
+    'اشتروا في فترة الأساس ولم يشتروا في نفس فترة المقارنة':'Purchased in the base period but not in the same comparison period','ظهروا في نفس فترة المقارنة':'Appeared in the same comparison period','زادوا عن سنة الأساس':'Increased versus the base year','انخفضوا ومازالوا نشطين':'Declined but remain active',
+    'أكثر من 60 يوم بدون زيارة صافية':'More than 60 days without a net visit','من آخر زيارة صافية':'From the last net visit','تقدير حسب متوسط الإنفاق الشهري للعميل':'Estimated from the customer’s average monthly spending',
+    'توزيع العملاء حسب مدة الغياب':'Customer Distribution by Inactivity Duration','يوضح أين تتركز مخاطر فقد العملاء بناءً على تاريخ آخر زيارة صافية.':'Shows where customer-loss risk is concentrated based on the last net visit date.',
+    'عملاء أصبحوا غير نشطين':'Customers Becoming Inactive','جدول العملاء غير النشطين':'Inactive Customers Table','يمكن تغيير ترتيب الجدول من الأزرار بدون تغيير أي قيم. الترتيب الحالي حسب إجمالي الإنفاق.':'Use the buttons to change table ranking without changing any values. The current ranking is by total spending.',
+    'ترتيب حسب إجمالي الإنفاق':'Rank by Total Spending','ترتيب حسب تصنيف العميل':'Rank by Customer Classification','ترتيب حسب مستوى المخاطر':'Rank by Risk Level','ترتيب حسب أيام الغياب':'Rank by Inactive Days',
+    'فرص الاسترجاع':'Recovery Opportunities','تحديد العملاء الأولى بالمتابعة حسب قيمة الإنفاق ومتوسط الإنفاق الشهري ومدة الغياب.':'Prioritizes customers for follow-up based on spending value, average monthly spending, and inactivity duration.',
+    'متوسط الإنفاق الشهري':'Average Monthly Spending','القيمة المفقودة المتوقعة':'Expected Lost Value','فرصة الاسترجاع':'Recovery Opportunity',
+    'آخر فاتورة':'Last Invoice','رقم آخر فاتورة':'Last Invoice Number','التصنيف':'Category',
+    'كل السنوات 🌐':'All Years 🌐','كل السنوات':'All Years','المبيعات':'Sales','تفاصيل الأرباع':'Quarter Details','المبيعات شاملة الضريبة - 2025':'Sales Including VAT - 2025','المبيعات شاملة الضريبة - 2026':'Sales Including VAT - 2026',
+    'متابعة العملاء الجدد':'Follow-up New Customers','العملاء الجدد وقيمة العملاء':'New Customers and Customer Value','العملاء المرشحون للعقود':'Customers Recommended for Contracts','مقارنة العملاء بين عامين':'Two-Year Customer Comparison','متابعة نشاط العملاء':'Customer Activity Follow-up',
+    'العملاء الجدد':'New Customers','مبيعات العملاء الجدد':'New Customer Sales','متوسط العميل الجديد':'Average New Customer','إجمالي / عدد العملاء':'Total / Customer Count','عادوا أو نفذوا أكثر من عملية':'Returned or completed more than one transaction',
+    'العملاء غير النشطين':'Inactive Customers','العملاء الحرجون':'Critical Customers','متوسط الغياب':'Average Absence','المبيعات المفقودة المتوقعة':'Expected Lost Sales','أعلى عميل خطورة':'Highest-Risk Customer'
+  });
+
   var MONTHS={jan:'January',feb:'February',mar:'March',apr:'April',may:'May',jun:'June',jul:'July',aug:'August',sep:'September',oct:'October',nov:'November',dec:'December',
     '01':'January','02':'February','03':'March','04':'April','05':'May','06':'June','07':'July','08':'August','09':'September','10':'October','11':'November','12':'December'};
 
@@ -238,7 +273,7 @@
       fullScanHandle=0;
       if(!runtimeEnabled()) return;
       var roots=[];
-      ['header','.topbar','.top-bar','#nav','.sidebar','.panel.active','main .active'].forEach(function(selector){
+      ['header','.topbar','.top-bar','#nav','.sidebar','.panel.active','main .active','#smartTabs','.smart-tab-section.active','.contract-reason-modal-overlay.show','.new-cust-tier-tooltip','.smart-modal-overlay.show'].forEach(function(selector){
         try{ document.querySelectorAll(selector).forEach(function(el){ if(roots.indexOf(el)===-1) roots.push(el); }); }catch(_e){}
       });
       if(!roots.length) roots.push(document.body||document.documentElement);
@@ -321,6 +356,8 @@
     }
   });
   document.addEventListener('petatoe:tabchange',function(){requestFullScan(90);});
+  document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-smart-action],[data-contract-reason-index],[data-contract-reason-close]'))requestFullScan(120);},true);
+  window.addEventListener('petatoe:records-changed',function(){requestFullScan(120);});
   document.addEventListener('petatoe:navbuilt',function(){requestFullScan(90);});
   window.addEventListener('petatoe:localization-ready',function(){if(runtimeEnabled()){buildIndex();requestFullScan(50);}});
   window.addEventListener('load',function(){if(runtimeEnabled()){buildIndex();requestFullScan(180);}});
