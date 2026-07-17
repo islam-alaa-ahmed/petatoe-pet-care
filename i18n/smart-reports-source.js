@@ -45,6 +45,65 @@
     ,'sales.monthlyTrendTitle':'Monthly Sales Trend','sales.monthOverMonthTitle':'Month-over-Month Comparison','table.period':'Period','compare.current':'Current','compare.previous':'Previous','compare.difference':'Difference','compare.customTwoYears':'Custom Comparison Between Two Years','compare.activeComparison':'Active Comparison','tabs.salesInvoices':'Sales Invoice Report'
   });
 
+  Object.assign(ar,{
+    'recommendations.advancedTitle':'🧠 التوصيات الذكية المتقدمة',
+    'recommendations.advisorDescription':'Business Advisor تفاعلي مبني على بيانات المبيعات والعملاء والسيارات والخدمات داخل PETATOE.',
+    'recommendations.categories.revenue':'الإيرادات',
+    'recommendations.categories.customers':'العملاء',
+    'recommendations.categories.vehicles':'السيارات',
+    'recommendations.categories.services':'الخدمات',
+    'recommendations.categories.pets':'الحيوانات الأليفة',
+    'recommendations.categories.profit':'الربحية',
+    'recommendations.categories.capacity':'الطاقة التشغيلية',
+    'recommendations.categories.management':'إدارية',
+    'recommendations.categories.forecast':'التوقعات',
+    'customerCompare.title':'🔁 مقارنة مبيعات العملاء خلال عامين',
+    'customerCompare.currentMode':'الوضع الحالي:',
+    'customerCompare.activeBothYears':'العملاء النشطون في السنتين',
+    'customerCompare.growthCustomers':'عملاء نمو',
+    'customerCompare.decliningCustomers':'عملاء تراجع',
+    'customerCompare.lostCustomers':'عملاء مفقودون',
+    'customerCompare.salesDifference':'فرق المبيعات',
+    'customerCompare.newCustomers':'عملاء جدد',
+    'customerCompare.growthPercent':'النمو %',
+    'customerCompare.declinePercent':'التراجع %',
+    'customerCompare.lostCustomersTitle':'🚨 العملاء المفقودون',
+    'customerCompare.lostCustomerCount':'عدد العملاء المفقودين',
+    'customerCompare.lostSalesValue':'قيمة المبيعات المفقودة',
+    'customerCompare.lostInvoiceCount':'عدد الفواتير المفقودة',
+    'customerCompare.lossRate':'نسبة الفقد',
+    'customerCompare.allCustomersDetailed':'📋 كل العملاء - مقارنة تفصيلية'
+  });
+  Object.assign(en,{
+    'recommendations.advancedTitle':'🧠 Advanced Smart Recommendations',
+    'recommendations.advisorDescription':'An interactive Business Advisor based on PETATOE sales, customer, vehicle, and service data.',
+    'recommendations.categories.revenue':'Revenue',
+    'recommendations.categories.customers':'Customers',
+    'recommendations.categories.vehicles':'Vehicles',
+    'recommendations.categories.services':'Services',
+    'recommendations.categories.pets':'Pets',
+    'recommendations.categories.profit':'Profitability',
+    'recommendations.categories.capacity':'Operating Capacity',
+    'recommendations.categories.management':'Management',
+    'recommendations.categories.forecast':'Forecasts',
+    'customerCompare.title':'🔁 Two-Year Customer Sales Comparison',
+    'customerCompare.currentMode':'Current Mode:',
+    'customerCompare.activeBothYears':'Customers Active in Both Years',
+    'customerCompare.growthCustomers':'Growth Customers',
+    'customerCompare.decliningCustomers':'Declining Customers',
+    'customerCompare.lostCustomers':'Lost Customers',
+    'customerCompare.salesDifference':'Sales Difference',
+    'customerCompare.newCustomers':'New Customers',
+    'customerCompare.growthPercent':'Growth %',
+    'customerCompare.declinePercent':'Decline %',
+    'customerCompare.lostCustomersTitle':'🚨 Lost Customers',
+    'customerCompare.lostCustomerCount':'Lost Customer Count',
+    'customerCompare.lostSalesValue':'Lost Sales Value',
+    'customerCompare.lostInvoiceCount':'Lost Invoice Count',
+    'customerCompare.lossRate':'Loss Rate',
+    'customerCompare.allCustomersDetailed':'📋 All Customers - Detailed Comparison'
+  });
+
   const months={january:['يناير','January'],february:['فبراير','February'],march:['مارس','March'],april:['أبريل','April'],may:['مايو','May'],june:['يونيو','June'],july:['يوليو','July'],august:['أغسطس','August'],september:['سبتمبر','September'],october:['أكتوبر','October'],november:['نوفمبر','November'],december:['ديسمبر','December']};
   Object.keys(months).forEach(function(k){ar['calendar.months.'+k]=months[k][0];en['calendar.months.'+k]=months[k][1];ar['calendar.months.'+(k[0].toUpperCase()+k.slice(1))]=months[k][0];en['calendar.months.'+(k[0].toUpperCase()+k.slice(1))]=months[k][1];});
   window.PETATOE_SMART_REPORTS_TRANSLATIONS={ar:ar,en:en};

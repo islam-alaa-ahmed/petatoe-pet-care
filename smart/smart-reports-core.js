@@ -628,7 +628,7 @@ function renderSmartReports(){
   const customerCompareAllDetailedTableHtml=(function(){
     const shouldVirtualize=!!(window.PETATOETables && typeof window.PETATOETables.render==='function' && customerCompareMainRows.length>0 && customerCompareMainLimit>=customerCompareMainRows.length);
     if(!shouldVirtualize){
-      return `<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>العميل</th><th>${customerCompareBaseYear}</th><th>${customerCompareTargetYear}</th><th>الفرق</th><th>النمو %</th><th>فواتير ${customerCompareBaseYear}</th><th>فواتير ${customerCompareTargetYear}</th><th>آخر تعامل</th><th>تغير الترتيب</th><th>الحالة</th></tr></thead><tbody>${customerCompareMainTable}</tbody></table></div>`;
+      return `<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>${customerCompareBaseYear}</th><th>${customerCompareTargetYear}</th><th>${smartReportHtml('table.difference','الفرق')}</th><th>${smartReportHtml('customerCompare.growthPercent','النمو %')}</th><th>فواتير ${customerCompareBaseYear}</th><th>فواتير ${customerCompareTargetYear}</th><th>آخر تعامل</th><th>تغير الترتيب</th><th>الحالة</th></tr></thead><tbody>${customerCompareMainTable}</tbody></table></div>`;
     }
     const customerCompareMainVirtualRows=customerCompareMainRows.map(function(x,i){return Object.assign({__petIndex:i+1},x);});
     return window.PETATOETables.render({
@@ -697,7 +697,7 @@ function renderSmartReports(){
     });
   };
   const customerCompareLostLimit=customerCompareLimitOf('customerCompareLostLimit');
-  const customerCompareLostSimpleFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>العميل</th><th>آخر فاتورة</th><th>رقم آخر فاتورة</th><th>قيمة ${customerCompareBaseYear}</th></tr></thead><tbody>${customerCompareLostRows.slice(0,customerCompareLostLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${x.baseLast?fmtDateAr(x.baseLast):'—'}</td><td>${htmlSafe(x.baseLastInvoice||'—')}</td><td>${money(x.base)}</td></tr>`).join('') || '<tr><td colspan="5">لا توجد عملاء مفقودون في الفترة المختارة.</td></tr>'}</tbody></table></div>`;
+  const customerCompareLostSimpleFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>آخر فاتورة</th><th>رقم آخر فاتورة</th><th>قيمة ${customerCompareBaseYear}</th></tr></thead><tbody>${customerCompareLostRows.slice(0,customerCompareLostLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${x.baseLast?fmtDateAr(x.baseLast):'—'}</td><td>${htmlSafe(x.baseLastInvoice||'—')}</td><td>${money(x.base)}</td></tr>`).join('') || '<tr><td colspan="5">لا توجد عملاء مفقودون في الفترة المختارة.</td></tr>'}</tbody></table></div>`;
   const customerCompareLostSimpleTableHtml=customerCompareRenderVirtualTable('customerCompareLostSimpleVirtualTable',customerCompareLostRows,customerCompareLostLimit,[
     {label:'#',render:(x)=>String((customerCompareLostRows.indexOf(x)||0)+1)},
     {label:'العميل',render:(x)=>htmlSafe(x.name)},
@@ -705,7 +705,7 @@ function renderSmartReports(){
     {label:'رقم آخر فاتورة',render:(x)=>htmlSafe(x.baseLastInvoice||'—')},
     {label:`قيمة ${customerCompareBaseYear}`,render:(x)=>money(x.base)}
   ],customerCompareLostSimpleFallbackTable);
-  const customerCompareLostFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>العميل</th><th>مبيعات السنة السابقة</th><th>عدد الفواتير</th><th>آخر فاتورة</th><th>آخر زيارة</th><th>القيمة المفقودة</th><th>تصنيف الخطورة</th><th>عرض التفاصيل</th></tr></thead><tbody>${customerCompareLostRows.slice(0,customerCompareLostLimit).map((x,i)=>{const risk=customerCompareLostRiskMeta(x.base||0);return `<tr><td>${i+1}</td><td><b>${htmlSafe(x.name)}</b></td><td>${money(x.base)}</td><td>${fmt0(x.baseInv)}</td><td>${htmlSafe(x.baseLastInvoice||'—')}</td><td>${x.baseLast?fmtDateAr(x.baseLast):'—'}</td><td>${money(x.base)}</td><td><span class="smart-tag ${risk.cls}">${risk.icon} ${risk.label}</span></td><td>${customerCompareLostDetailsButton(x)}</td></tr>`}).join('') || '<tr><td colspan="9">لا توجد عملاء ظهروا في سنة الأساس ولم يظهروا في سنة المقارنة.</td></tr>'}</tbody></table></div>`;
+  const customerCompareLostFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>مبيعات السنة السابقة</th><th>عدد الفواتير</th><th>آخر فاتورة</th><th>آخر زيارة</th><th>القيمة المفقودة</th><th>تصنيف الخطورة</th><th>عرض التفاصيل</th></tr></thead><tbody>${customerCompareLostRows.slice(0,customerCompareLostLimit).map((x,i)=>{const risk=customerCompareLostRiskMeta(x.base||0);return `<tr><td>${i+1}</td><td><b>${htmlSafe(x.name)}</b></td><td>${money(x.base)}</td><td>${fmt0(x.baseInv)}</td><td>${htmlSafe(x.baseLastInvoice||'—')}</td><td>${x.baseLast?fmtDateAr(x.baseLast):'—'}</td><td>${money(x.base)}</td><td><span class="smart-tag ${risk.cls}">${risk.icon} ${risk.label}</span></td><td>${customerCompareLostDetailsButton(x)}</td></tr>`}).join('') || '<tr><td colspan="9">لا توجد عملاء ظهروا في سنة الأساس ولم يظهروا في سنة المقارنة.</td></tr>'}</tbody></table></div>`;
   const customerCompareLostTableHtml=customerCompareRenderVirtualTable('customerCompareLostDetailedVirtualTable',customerCompareLostRows,customerCompareLostLimit,[
     {label:'#',render:(x)=>String((customerCompareLostRows.indexOf(x)||0)+1)},
     {label:'العميل',render:(x)=>`<b>${htmlSafe(x.name)}</b>`},
@@ -719,7 +719,7 @@ function renderSmartReports(){
   ],customerCompareLostFallbackTable);
 
   const customerCompareRankLimit=customerCompareLimitOf('customerCompareRankLimit');
-  const customerCompareRankFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>العميل</th><th>ترتيب ${customerCompareBaseYear}</th><th>ترتيب ${customerCompareTargetYear}</th><th>التغير</th><th>فرق المبيعات</th></tr></thead><tbody>${customerCompareRankRows.slice(0,customerCompareRankLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>#${fmt0(x.baseRank)}</td><td>#${fmt0(x.targetRank)}</td><td>${customerCompareRankHtml(x)}</td><td>${money(x.diff)}</td></tr>`).join('') || '<tr><td colspan="6">لا يوجد تغير واضح في ترتيب العملاء.</td></tr>'}</tbody></table></div>`;
+  const customerCompareRankFallbackTable=`<div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>ترتيب ${customerCompareBaseYear}</th><th>ترتيب ${customerCompareTargetYear}</th><th>التغير</th><th>فرق المبيعات</th></tr></thead><tbody>${customerCompareRankRows.slice(0,customerCompareRankLimit).map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>#${fmt0(x.baseRank)}</td><td>#${fmt0(x.targetRank)}</td><td>${customerCompareRankHtml(x)}</td><td>${money(x.diff)}</td></tr>`).join('') || '<tr><td colspan="6">لا يوجد تغير واضح في ترتيب العملاء.</td></tr>'}</tbody></table></div>`;
   const customerCompareRankTableHtml=customerCompareRenderVirtualTable('customerCompareRankShiftVirtualTable',customerCompareRankRows,customerCompareRankLimit,[
     {label:'#',render:(x)=>String((customerCompareRankRows.indexOf(x)||0)+1)},
     {label:'العميل',render:(x)=>htmlSafe(x.name)},
@@ -751,34 +751,34 @@ function renderSmartReports(){
   const customerCompareInsightsHtml=`<div class="customer-yoy-insights"><h4>🧠 Executive Insights</h4><div class="insights"><div class="insight good"><b>نمو العملاء</b><span>ارتفع إنفاق ${fmt0(customerCompareGrowth)} عميل مقارنة بسنة الأساس بإجمالي نمو ${money(customerCompareGrowthRows.reduce((s,x)=>s+x.diff,0))}.</span></div><div class="insight ${customerCompareLost?'bad':'good'}"><b>العملاء المفقودون</b><span>${fmt0(customerCompareLost)} عميل توقفوا بالكامل في سنة المقارنة بقيمة مبيعات مفقودة ${money(customerCompareLostRows.reduce((s,x)=>s+x.base,0))}${customerCompareTopLost?'، وأكبرهم '+htmlSafe(customerCompareTopLost.name):''}.</span></div><div class="insight ${customerCompareTotalDiff>=0?'good':'bad'}"><b>صافي الفرق</b><span>صافي فرق المبيعات بين فترتي ${customerCompareBaseYear} و ${customerCompareTargetYear} هو ${customerCompareTotalDiff>=0?'+':''}${money(customerCompareTotalDiff)} حسب وضع ${customerCompareValueLabel()}.</span></div><div class="insight info"><b>أكبر فرصة</b><span>${customerCompareTopGrowth?'أكبر عميل نمو هو '+htmlSafe(customerCompareTopGrowth.name)+' بنسبة '+customerCompareTopGrowth.pct.toFixed(1)+'%.':(customerCompareTopDecline?'أكبر تراجع يحتاج متابعة هو '+htmlSafe(customerCompareTopDecline.name)+'.':'لا توجد فرصة نمو واضحة في الفترة المختارة.')}</span></div></div></div>`;
   const customerCompareHtml=`
       <div class="smart-panel customer-yoy-panel">
-        <div class="new-cust-report-head"><h3>🔁 مقارنة مبيعات العملاء خلال عامين</h3><div class="customer-yoy-controls">${customerCompareFiltersHtml}</div></div>
-        <div class="advanced-tax-actions customer-yoy-tax-actions">${customerCompareModeButtons}<div class="advanced-tax-badge"><span>الوضع الحالي:</span><b>${customerCompareValueLabel()}</b></div></div>
+        <div class="new-cust-report-head"><h3>${smartReportHtml('customerCompare.title','🔁 مقارنة مبيعات العملاء خلال عامين')}</h3><div class="customer-yoy-controls">${customerCompareFiltersHtml}</div></div>
+        <div class="advanced-tax-actions customer-yoy-tax-actions">${customerCompareModeButtons}<div class="advanced-tax-badge"><span>${smartReportHtml('customerCompare.currentMode','الوضع الحالي:')}</span><b>${customerCompareValueLabel()}</b></div></div>
         <div class="customer-yoy-period-banner"><b>📅 ${customerComparePeriodLabel}</b><span>نوع المقارنة الحالي: ${customerComparePeriodModeLabel} — يتم تطبيق نفس المنطق على الملخص التنفيذي، النمو، التراجع، العملاء المفقودين، ترتيب العملاء، Tornado Chart، وExecutive Insights.</span></div>
         <p>يقارن التقرير مبيعات كل عميل بين سنتين حتى تاريخ آخر فاتورة مرفوعة في سنة المقارنة، مع حساب كامل البيانات أولاً ثم عرض أول 10 صفوف في كل جدول مع زر عرض المزيد. الفلاتر مرتبطة بكل الأقسام: الملخص، النمو، التراجع، المفقودين، الترتيب، والرسم.</p>
         <div class="customer-yoy-kpis executive">
-          <div class="new-cust-kpi"><span>العملاء النشطون في السنتين</span><b>${fmt0(customerCompareActiveBoth)}</b><small>${customerCompareBaseYear} و ${customerCompareTargetYear}</small></div>
-          <div class="new-cust-kpi"><span>عملاء نمو</span><b>${fmt0(customerCompareGrowth)}</b><small>زادوا عن سنة الأساس</small></div>
-          <div class="new-cust-kpi"><span>عملاء تراجع</span><b>${fmt0(customerCompareDecline)}</b><small>انخفضوا ومازالوا نشطين</small></div>
-          <div class="new-cust-kpi"><span>عملاء مفقودون</span><b>${fmt0(customerCompareLost)}</b><small>اشتروا في فترة الأساس ولم يشتروا في نفس فترة المقارنة</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.activeBothYears','العملاء النشطون في السنتين')}</span><b>${fmt0(customerCompareActiveBoth)}</b><small>${customerCompareBaseYear} و ${customerCompareTargetYear}</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.growthCustomers','عملاء نمو')}</span><b>${fmt0(customerCompareGrowth)}</b><small>زادوا عن سنة الأساس</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.decliningCustomers','عملاء تراجع')}</span><b>${fmt0(customerCompareDecline)}</b><small>انخفضوا ومازالوا نشطين</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.lostCustomers','عملاء مفقودون')}</span><b>${fmt0(customerCompareLost)}</b><small>اشتروا في فترة الأساس ولم يشتروا في نفس فترة المقارنة</small></div>
         </div>
         <div class="customer-yoy-kpis">
           <div class="new-cust-kpi"><span>إجمالي ${customerCompareBaseYear}</span><b>${money(customerCompareBaseTotal)}</b><small>${customerCompareValueLabel()}</small></div>
           <div class="new-cust-kpi"><span>إجمالي ${customerCompareTargetYear}</span><b>${money(customerCompareTargetTotal)}</b><small>${customerCompareValueLabel()}</small></div>
-          <div class="new-cust-kpi"><span>فرق المبيعات</span><b class="${customerCompareTotalDiff>=0?'metric-up':'metric-down'}">${customerCompareTotalDiff>=0?'+':''}${money(customerCompareTotalDiff)}</b><small>حتى ${customerCompareLatestDate?fmtDateAr(customerCompareTargetEnd):'نهاية السنة'}</small></div>
-          <div class="new-cust-kpi"><span>عملاء جدد</span><b>${fmt0(customerCompareNew)}</b><small>ظهروا في نفس فترة المقارنة</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.salesDifference','فرق المبيعات')}</span><b class="${customerCompareTotalDiff>=0?'metric-up':'metric-down'}">${customerCompareTotalDiff>=0?'+':''}${money(customerCompareTotalDiff)}</b><small>حتى ${customerCompareLatestDate?fmtDateAr(customerCompareTargetEnd):'نهاية السنة'}</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.newCustomers','عملاء جدد')}</span><b>${fmt0(customerCompareNew)}</b><small>ظهروا في نفس فترة المقارنة</small></div>
         </div>
         <div class="customer-yoy-sections customer-yoy-stack">
-          <div class="smart-panel"><h4>📈 Top Growth Customers ${customerCompareExportBtn('growth')}</h4><div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>العميل</th><th>${customerCompareBaseYear}</th><th>${customerCompareTargetYear}</th><th>الفرق</th><th>النمو %</th></tr></thead><tbody>${customerCompareGrowthTable}</tbody></table></div>${customerCompareMore('customerCompareGrowthLimit',customerCompareGrowthRows,'عميل نمو')}</div>
-          <div class="smart-panel"><h4>📉 Top Declining Customers ${customerCompareExportBtn('decline')}</h4><div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>العميل</th><th>${customerCompareBaseYear}</th><th>${customerCompareTargetYear}</th><th>الفرق</th><th>التراجع %</th></tr></thead><tbody>${customerCompareDeclineTable}</tbody></table></div>${customerCompareMore('customerCompareDeclineLimit',customerCompareDeclineRows,'عميل تراجع')}</div>
+          <div class="smart-panel"><h4>📈 Top Growth Customers ${customerCompareExportBtn('growth')}</h4><div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>${customerCompareBaseYear}</th><th>${customerCompareTargetYear}</th><th>${smartReportHtml('table.difference','الفرق')}</th><th>${smartReportHtml('customerCompare.growthPercent','النمو %')}</th></tr></thead><tbody>${customerCompareGrowthTable}</tbody></table></div>${customerCompareMore('customerCompareGrowthLimit',customerCompareGrowthRows,'عميل نمو')}</div>
+          <div class="smart-panel"><h4>📉 Top Declining Customers ${customerCompareExportBtn('decline')}</h4><div class="smart-table-clean customer-yoy-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>${customerCompareBaseYear}</th><th>${customerCompareTargetYear}</th><th>${smartReportHtml('table.difference','الفرق')}</th><th>${smartReportHtml('customerCompare.declinePercent','التراجع %')}</th></tr></thead><tbody>${customerCompareDeclineTable}</tbody></table></div>${customerCompareMore('customerCompareDeclineLimit',customerCompareDeclineRows,'عميل تراجع')}</div>
         </div>
-        <div class="smart-panel"><h4>🚨 العملاء المفقودون ${customerCompareExportBtn('lostSimple')}</h4><p>العملاء الذين اشتروا في سنة الأساس ولم يظهر لهم أي تعامل في سنة المقارنة طبقًا للفلاتر الحالية.</p>${customerCompareLostSimpleTableHtml}${customerCompareMore('customerCompareLostLimit',customerCompareLostRows,'عميل مفقود')}</div>
+        <div class="smart-panel"><h4>${smartReportHtml('customerCompare.lostCustomersTitle','🚨 العملاء المفقودون')} ${customerCompareExportBtn('lostSimple')}</h4><p>العملاء الذين اشتروا في سنة الأساس ولم يظهر لهم أي تعامل في سنة المقارنة طبقًا للفلاتر الحالية.</p>${customerCompareLostSimpleTableHtml}${customerCompareMore('customerCompareLostLimit',customerCompareLostRows,'عميل مفقود')}</div>
         <div class="smart-panel customer-yoy-lost-panel">
           <div class="new-cust-report-head"><div><h4>🔴 ظهروا في العام الماضي ولم يظهروا هذا العام ${customerCompareExportBtn('lostDetailed')}</h4><p>العملاء الذين كان لهم تعاملات في سنة الأساس ولم يقوموا بأي تعامل في سنة المقارنة الحالية، مع استبعاد العميل النقدي من الحساب.</p></div><span class="smart-tag bad">Lost Customers</span></div>
           <div class="customer-yoy-kpis executive">
-            <div class="new-cust-kpi"><span>عدد العملاء المفقودين</span><b>${fmt0(customerCompareLostRows.length)}</b><small>من عملاء ${customerCompareBaseYear}</small></div>
-            <div class="new-cust-kpi"><span>قيمة المبيعات المفقودة</span><b>${money(customerCompareLostValueTotal)}</b><small>${customerCompareValueLabel()}</small></div>
-            <div class="new-cust-kpi"><span>عدد الفواتير المفقودة</span><b>${fmt0(customerCompareLostInvoicesTotal)}</b><small>فواتير سنة الأساس</small></div>
-            <div class="new-cust-kpi"><span>نسبة الفقد</span><b class="metric-down">${customerCompareLostPct.toFixed(1)}%</b><small>من إجمالي عملاء سنة الأساس</small></div>
+            <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.lostCustomerCount','عدد العملاء المفقودين')}</span><b>${fmt0(customerCompareLostRows.length)}</b><small>من عملاء ${customerCompareBaseYear}</small></div>
+            <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.lostSalesValue','قيمة المبيعات المفقودة')}</span><b>${money(customerCompareLostValueTotal)}</b><small>${customerCompareValueLabel()}</small></div>
+            <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.lostInvoiceCount','عدد الفواتير المفقودة')}</span><b>${fmt0(customerCompareLostInvoicesTotal)}</b><small>فواتير سنة الأساس</small></div>
+            <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.lossRate','نسبة الفقد')}</span><b class="metric-down">${customerCompareLostPct.toFixed(1)}%</b><small>من إجمالي عملاء سنة الأساس</small></div>
           </div>
           ${customerCompareLostTableHtml}${customerCompareMore('customerCompareLostLimit',customerCompareLostRows,'عميل مفقود')}
         </div>
@@ -787,7 +787,7 @@ function renderSmartReports(){
           <div class="smart-panel"><h4>🏆 Customer Ranking Shift ${customerCompareExportBtn('rank')}</h4>${customerCompareRankTableHtml}${customerCompareMore('customerCompareRankLimit',customerCompareRankRows,'عميل تغير ترتيبه')}</div>
           <div class="smart-panel"><h4>🌪️ Tornado Chart</h4><div class="customer-yoy-tornado">${customerCompareTornadoHtml}</div></div>
         </div>
-        <div class="smart-panel"><h4>📋 كل العملاء - مقارنة تفصيلية ${customerCompareExportBtn('all')}</h4>${customerCompareAllDetailedTableHtml}${customerCompareMore('customerCompareTableLimit',customerCompareMainRows,'عميل')}</div>
+        <div class="smart-panel"><h4>${smartReportHtml('customerCompare.allCustomersDetailed','📋 كل العملاء - مقارنة تفصيلية')} ${customerCompareExportBtn('all')}</h4>${customerCompareAllDetailedTableHtml}${customerCompareMore('customerCompareTableLimit',customerCompareMainRows,'عميل')}</div>
         ${customerCompareInsightsHtml}
       </div>`;
 
@@ -1187,11 +1187,11 @@ function renderSmartReports(){
         <div class="smart-panel"><h3>📅 مقارنة العملاء الجدد بالشهور</h3><p>اتجاه اكتساب العملاء الجدد خلال شهور السنة المختارة.</p><div class="new-cust-chart sm"><canvas id="newCustomersTrendChart"></canvas></div></div>
       </div>
 
-      <div class="smart-panel"><h3>📋 تفاصيل العملاء الجدد والمعاملات</h3><p>العميل، تاريخ أول معاملة، رقم الفاتورة، الخدمة، طريقة الدفع، عدد العمليات، إجمالي المبيعات، وآخر زيارة.</p><div class="smart-table-clean new-cust-table"><table><thead><tr><th>#</th><th>العميل</th><th>أول معاملة</th><th>رقم الفاتورة</th><th>أهم خدمة</th><th>أهم طريقة دفع</th><th>عدد العمليات</th><th>إجمالي المبيعات</th><th>متوسط العملية</th><th>آخر معاملة</th><th>أيام منذ آخر زيارة</th><th>التصنيف</th></tr></thead><tbody>${newCustomerTableRows}</tbody></table></div>${newCustomerMoreButton}</div>
+      <div class="smart-panel"><h3>📋 تفاصيل العملاء الجدد والمعاملات</h3><p>العميل، تاريخ أول معاملة، رقم الفاتورة، الخدمة، طريقة الدفع، عدد العمليات، إجمالي المبيعات، وآخر زيارة.</p><div class="smart-table-clean new-cust-table"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>أول معاملة</th><th>رقم الفاتورة</th><th>أهم خدمة</th><th>أهم طريقة دفع</th><th>عدد العمليات</th><th>إجمالي المبيعات</th><th>متوسط العملية</th><th>آخر معاملة</th><th>أيام منذ آخر زيارة</th><th>التصنيف</th></tr></thead><tbody>${newCustomerTableRows}</tbody></table></div>${newCustomerMoreButton}</div>
 
-      <div class="smart-panel"><h3>🚨 العملاء الجدد غير النشطين</h3><p>عملاء قاموا بأول معاملة ولم يظهر لهم نشاط لاحق واضح حتى تاريخ آخر بيانات متاحة.</p><div class="smart-table-clean"><table><thead><tr><th>#</th><th>العميل</th><th>أول معاملة</th><th>رقم الفاتورة</th><th>قيمة المعاملة</th><th>أيام منذ آخر زيارة</th><th>الخدمة</th></tr></thead><tbody>${newCustomerInactiveRows}</tbody></table></div></div>
+      <div class="smart-panel"><h3>🚨 العملاء الجدد غير النشطين</h3><p>عملاء قاموا بأول معاملة ولم يظهر لهم نشاط لاحق واضح حتى تاريخ آخر بيانات متاحة.</p><div class="smart-table-clean"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>أول معاملة</th><th>رقم الفاتورة</th><th>قيمة المعاملة</th><th>أيام منذ آخر زيارة</th><th>الخدمة</th></tr></thead><tbody>${newCustomerInactiveRows}</tbody></table></div></div>
 
-      <div class="smart-panel"><h3>🏆 تحليل قيمة العملاء</h3><p>أعلى العملاء حسب صافي الإنفاق بعد استبعاد فواتير البيع الملغاة بمرتجع كامل، مع تفاصيل الزيارات وتصنيف العميل.</p><div class="smart-table-clean"><table><thead><tr><th>العميل</th><th>إجمالي الإنفاق</th><th>عدد الزيارات</th><th>متوسط الفاتورة</th><th>تاريخ آخر زيارة</th><th>قيمة آخر فاتورة</th><th>شهور الزيارة</th><th>أيام منذ آخر زيارة</th><th>تصنيف العميل</th></tr></thead><tbody>${customerInsightRows}</tbody></table></div>${customerInsightMoreButton}</div>
+      <div class="smart-panel"><h3>🏆 تحليل قيمة العملاء</h3><p>أعلى العملاء حسب صافي الإنفاق بعد استبعاد فواتير البيع الملغاة بمرتجع كامل، مع تفاصيل الزيارات وتصنيف العميل.</p><div class="smart-table-clean"><table><thead><tr><th>${smartReportHtml('table.customer','العميل')}</th><th>إجمالي الإنفاق</th><th>عدد الزيارات</th><th>متوسط الفاتورة</th><th>تاريخ آخر زيارة</th><th>قيمة آخر فاتورة</th><th>شهور الزيارة</th><th>أيام منذ آخر زيارة</th><th>تصنيف العميل</th></tr></thead><tbody>${customerInsightRows}</tbody></table></div>${customerInsightMoreButton}</div>
       
         </div>
       </div>
@@ -1208,7 +1208,7 @@ function renderSmartReports(){
           <div class="contract-kpi" style="--accent:var(--blue)"><span>عدد الزيارات/الفواتير</span><b>${fmt0(contractInvoicesCount)}</b><small>للعملاء المرشحين</small></div>
           <div class="contract-kpi" style="--accent:var(--cyan)"><span>متوسط Score</span><b>${fmt0(contractAvgScore)}</b><small>درجة الترشيح</small></div>
         </div>
-        <div class="smart-table-clean contract-table"><table id="contractCandidatesTable"><thead><tr><th>#</th><th>العميل</th><th>إجمالي الإنفاق</th><th>عدد الزيارات</th><th>شهور النشاط</th><th>آخر زيارة</th><th>أيام الغياب</th><th>Score</th><th>التوصية</th><th>ملخص الترشيح</th><th>تصنيف العميل</th></tr></thead><tbody>${contractCandidateRows}</tbody></table></div>${contractCandidateMoreButton}
+        <div class="smart-table-clean contract-table"><table id="contractCandidatesTable"><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>إجمالي الإنفاق</th><th>عدد الزيارات</th><th>شهور النشاط</th><th>آخر زيارة</th><th>أيام الغياب</th><th>Score</th><th>التوصية</th><th>ملخص الترشيح</th><th>تصنيف العميل</th></tr></thead><tbody>${contractCandidateRows}</tbody></table></div>${contractCandidateMoreButton}
         <div class="contract-rec-grid">
           <div class="contract-gauge"><div class="contract-gauge-ring" style="--p:${Math.max(0,Math.min(100,topContractCandidate.contractScore||0))}%"><div><b>${fmt0(topContractCandidate.contractScore||0)}</b><span>درجة الترشيح</span></div></div></div>
           <div class="contract-ai-card"><b>🤖 توصية الذكاء التجاري</b><span>أفضل مرشح حاليًا: <b>${htmlSafe(topContractCandidate.name)}</b> — ${htmlSafe(topContractCandidate.contractMeta.desc||'')}. يوصى بمراجعة آخر الخدمات والزيارات قبل التواصل، ثم عرض اتفاقية مناسبة لحجم تعامل العميل بدل خصم عام.</span><div class="contract-actions"><span class="smart-tag good">Score عالي</span><span class="smart-tag info">قرار مبيعات</span><span class="smart-tag warn">متابعة دورية</span></div></div>
@@ -1238,8 +1238,8 @@ function renderSmartReports(){
         </div>
         <div class="smart-panel">${inactiveActivityPanelHead('📊 توزيع العملاء حسب مدة الغياب','aging')}<p>يوضح أين تتركز مخاطر فقد العملاء بناءً على تاريخ آخر زيارة صافية.</p><div class="inactive-cust-chart"><canvas id="inactiveAgingChart"></canvas></div></div>
         <div class="smart-panel"><h3>📈 اتجاه العملاء الذين أصبحوا غير نشطين</h3><p>حسب شهر آخر زيارة صافية للعملاء الذين تجاوزوا 60 يوم بدون عودة.</p><div class="inactive-cust-chart sm inactive-lost-trend-chart"><canvas id="inactiveLostTrendChart"></canvas></div></div>
-        <div class="smart-panel">${inactiveActivityPanelHead('📋 جدول العملاء غير النشطين','inactive')}<p>الترتيب الحالي حسب: <b>${inactiveSortLabel}</b>. الأزرار تغير طريقة عرض الجدول فقط بدون تغيير أي قيم أو معادلات.</p>${inactiveSortControls}<div class="smart-table-clean"><table><thead><tr><th>#</th><th>العميل</th><th>آخر زيارة صافية</th><th>رقم آخر فاتورة</th><th>أيام الغياب</th><th>عدد الزيارات</th><th>إجمالي الإنفاق</th><th>مستوى الخطورة</th><th>تصنيف العميل</th></tr></thead><tbody>${inactiveTableRows}</tbody></table></div>${inactiveMoreButton}</div>
-        <div class="smart-panel">${inactiveActivityPanelHead('💰 فرص الاسترجاع Recovery Opportunities','recovery')}<p>تحديد العملاء الأولى بالمتابعة حسب قيمة الإنفاق ومتوسط الإنفاق الشهري ومدة الغياب.</p><div class="smart-table-clean"><table><thead><tr><th>#</th><th>العميل</th><th>آخر فاتورة</th><th>رقم آخر فاتورة</th><th>أيام الغياب</th><th>متوسط الإنفاق الشهري</th><th>القيمة المفقودة المتوقعة</th><th>التصنيف</th><th>فرصة الاسترجاع</th></tr></thead><tbody>${recoveryRows}</tbody></table></div>${recoveryMoreButton}</div>
+        <div class="smart-panel">${inactiveActivityPanelHead('📋 جدول العملاء غير النشطين','inactive')}<p>الترتيب الحالي حسب: <b>${inactiveSortLabel}</b>. الأزرار تغير طريقة عرض الجدول فقط بدون تغيير أي قيم أو معادلات.</p>${inactiveSortControls}<div class="smart-table-clean"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>آخر زيارة صافية</th><th>رقم آخر فاتورة</th><th>أيام الغياب</th><th>عدد الزيارات</th><th>إجمالي الإنفاق</th><th>مستوى الخطورة</th><th>تصنيف العميل</th></tr></thead><tbody>${inactiveTableRows}</tbody></table></div>${inactiveMoreButton}</div>
+        <div class="smart-panel">${inactiveActivityPanelHead('💰 فرص الاسترجاع Recovery Opportunities','recovery')}<p>تحديد العملاء الأولى بالمتابعة حسب قيمة الإنفاق ومتوسط الإنفاق الشهري ومدة الغياب.</p><div class="smart-table-clean"><table><thead><tr><th>#</th><th>${smartReportHtml('table.customer','العميل')}</th><th>آخر فاتورة</th><th>رقم آخر فاتورة</th><th>أيام الغياب</th><th>متوسط الإنفاق الشهري</th><th>القيمة المفقودة المتوقعة</th><th>التصنيف</th><th>فرصة الاسترجاع</th></tr></thead><tbody>${recoveryRows}</tbody></table></div>${recoveryMoreButton}</div>
       </div>
         </div>
       </div>
@@ -1296,20 +1296,20 @@ function renderSmartReports(){
 
     <div class="smart-tab-section" data-smart-section="recommendations">
       <div class="smart-panel">
-        <h3>🧠 التوصيات الذكية المتقدمة</h3>
-        <p>Business Advisor تفاعلي مبني على بيانات المبيعات والعملاء والسيارات والخدمات داخل PETATOE.</p>
+        <h3>${smartReportHtml('recommendations.advancedTitle','🧠 التوصيات الذكية المتقدمة')}</h3>
+        <p>${smartReportHtml('recommendations.advisorDescription','Business Advisor تفاعلي مبني على بيانات المبيعات والعملاء والسيارات والخدمات داخل PETATOE.')}</p>
         ${ceoBriefHtml}
         <div class="smart-rec-pro-toolbar">
           <div class="smart-rec-filter-row">
-            <button class="smart-rec-filter active" data-rec-filter="revenue" data-smart-action="recommendation-filter" data-filter="revenue">الإيرادات</button>
-            <button class="smart-rec-filter" data-rec-filter="customers" data-smart-action="recommendation-filter" data-filter="customers">العملاء</button>
-            <button class="smart-rec-filter" data-rec-filter="vehicles" data-smart-action="recommendation-filter" data-filter="vehicles">السيارات</button>
-            <button class="smart-rec-filter" data-rec-filter="services" data-smart-action="recommendation-filter" data-filter="services">الخدمات</button>
-            <button class="smart-rec-filter" data-rec-filter="pets" data-smart-action="recommendation-filter" data-filter="pets">الحيوانات الأليفة</button>
-            <button class="smart-rec-filter" data-rec-filter="profit" data-smart-action="recommendation-filter" data-filter="profit">الربحية</button>
-            <button class="smart-rec-filter" data-rec-filter="capacity" data-smart-action="recommendation-filter" data-filter="capacity">الطاقة التشغيلية</button>
-            <button class="smart-rec-filter" data-rec-filter="management" data-smart-action="recommendation-filter" data-filter="management">إدارية</button>
-            <button class="smart-rec-filter" data-rec-filter="forecast" data-smart-action="recommendation-filter" data-filter="forecast">التوقعات</button>
+            <button class="smart-rec-filter active" data-rec-filter="revenue" data-smart-action="recommendation-filter" data-filter="revenue">${smartReportHtml('recommendations.categories.revenue','الإيرادات')}</button>
+            <button class="smart-rec-filter" data-rec-filter="customers" data-smart-action="recommendation-filter" data-filter="customers">${smartReportHtml('recommendations.categories.customers','العملاء')}</button>
+            <button class="smart-rec-filter" data-rec-filter="vehicles" data-smart-action="recommendation-filter" data-filter="vehicles">${smartReportHtml('recommendations.categories.vehicles','السيارات')}</button>
+            <button class="smart-rec-filter" data-rec-filter="services" data-smart-action="recommendation-filter" data-filter="services">${smartReportHtml('recommendations.categories.services','الخدمات')}</button>
+            <button class="smart-rec-filter" data-rec-filter="pets" data-smart-action="recommendation-filter" data-filter="pets">${smartReportHtml('recommendations.categories.pets','الحيوانات الأليفة')}</button>
+            <button class="smart-rec-filter" data-rec-filter="profit" data-smart-action="recommendation-filter" data-filter="profit">${smartReportHtml('recommendations.categories.profit','الربحية')}</button>
+            <button class="smart-rec-filter" data-rec-filter="capacity" data-smart-action="recommendation-filter" data-filter="capacity">${smartReportHtml('recommendations.categories.capacity','الطاقة التشغيلية')}</button>
+            <button class="smart-rec-filter" data-rec-filter="management" data-smart-action="recommendation-filter" data-filter="management">${smartReportHtml('recommendations.categories.management','إدارية')}</button>
+            <button class="smart-rec-filter" data-rec-filter="forecast" data-smart-action="recommendation-filter" data-filter="forecast">${smartReportHtml('recommendations.categories.forecast','التوقعات')}</button>
           </div>
           <div class="smart-rec-summary"><span>${smartReportHtml('summary.recommendationCount','عدد توصيات القسم:')}</span><b id="smartRecVisibleCount">${smartRecommendations.filter(r=>r.cat==='revenue').length}</b><span>${smartReportHtml('summary.basedOn','مبنية على:')}</span><b>${fmt0(count)} ${smartReportHtml('summary.operation','عملية')}</b></div>
         </div>
