@@ -5,87 +5,7 @@
 
   var ARABIC_RE=/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/;
   var ATTRS=['title','aria-label','aria-description','placeholder','data-label','data-title','data-tooltip','data-original-title','alt'];
-  var UI_GLOSSARY={
-    'تقرير فواتير المبيعات':'Sales Invoice Report','ملخص الأداء':'Performance Summary','التقارير الذكية':'Smart Reports',
-    'لوحة التحكم':'Dashboard','إدارة المواعيد':'Appointment Management','إدارة العملاء':'Customer Management',
-    'اتجاه المبيعات الشهري':'Monthly Sales Trend','مقارنة شهر بشهر':'Month-over-Month Comparison',
-    'مقارنة مخصصة بين سنتين':'Custom Two-Year Comparison','المقارنة النشطة':'Active Comparison',
-    'تقرير':'Report','تقارير':'Reports','التقرير':'Report','التقارير':'Reports','الرئيسية':'Home','الرئيسيه':'Home',
-    'الإعدادات':'Settings','الاعدادات':'Settings','حفظ':'Save','إلغاء':'Cancel','الغاء':'Cancel','حذف':'Delete','تعديل':'Edit',
-    'إضافة':'Add','اضافة':'Add','بحث':'Search','طباعة':'Print','تصدير':'Export','تحميل':'Download','رفع':'Upload','فتح':'Open',
-    'إغلاق':'Close','اغلاق':'Close','عرض':'View','المزيد':'More','عرض المزيد':'Show More','إعادة تعيين':'Reset','تحديث':'Refresh',
-    'رجوع':'Back','التالي':'Next','السابق':'Previous','تأكيد':'Confirm','اختيار':'Select','تطبيق':'Apply','مسح':'Clear',
-    'الكل':'All','كل السنوات':'All Years','كل الشهور':'All Months','كل السيارات':'All Vehicles','كل طرق الدفع':'All Payment Methods',
-    'السنة':'Year','الشهر':'Month','اليوم':'Day','الأسبوع':'Week','الفترة':'Period','من':'From','إلى':'To','الى':'To',
-    'الحالي':'Current','السابقة':'Previous','الفرق':'Difference','الإجمالي':'Total','اجمالي':'Total','إجمالي':'Total','المتوسط':'Average',
-    'المبيعات':'Sales','العملاء':'Customers','العميل':'Customer','الخدمات':'Services','الخدمة':'Service','الأصناف':'Items','الصنف':'Item',
-    'السيارات':'Vehicles','السيارة':'Vehicle','الفواتير':'Invoices','الفاتورة':'Invoice','العمليات':'Operations','العملية':'Operation',
-    'المبلغ':'Amount','القيمة':'Value','الكمية':'Quantity','العدد':'Count','الحالة':'Status','التاريخ':'Date','الوقت':'Time',
-    'الاسم':'Name','الوصف':'Description','التفاصيل':'Details','ملاحظات':'Notes','الملاحظات':'Notes','النوع':'Type','الفئة':'Category',
-    'رقم الفاتورة':'Invoice Number','رقم العملية':'Transaction Number','طريقة الدفع':'Payment Method','طرق الدفع':'Payment Methods',
-    'تاريخ الفاتورة':'Invoice Date','تاريخ العملية':'Transaction Date','آخر زيارة':'Last Visit','أول معاملة':'First Transaction',
-    'نشط':'Active','غير نشط':'Inactive','معلق':'Pending','معتمد':'Approved','مرفوض':'Rejected','مسودة':'Draft','مدفوع':'Paid','آجل':'Credit',
-    'نعم':'Yes','لا':'No','لا توجد بيانات':'No data available','لا توجد نتائج':'No results','غير محدد':'Not specified','غير معروف':'Unknown',
-    'ريال سعودي':'SAR','ريال':'SAR','عملية':'operation','عميل':'customer','خدمة':'service','سيارة':'vehicle','فاتورة':'invoice',
-    'صافي':'Net','الضريبة':'Tax','شامل الضريبة':'Including VAT','قبل الضريبة':'Before VAT','نسبة':'Percentage','معدل':'Rate',
-    'أعلى':'Top','أقل':'Lowest','أفضل':'Best','الأفضل':'Best','الأكثر':'Most','الأقل':'Least','جديد':'New','جدد':'New',
-    'يناير':'January','فبراير':'February','مارس':'March','أبريل':'April','ابريل':'April','مايو':'May','يونيو':'June',
-    'يوليو':'July','أغسطس':'August','اغسطس':'August','سبتمبر':'September','أكتوبر':'October','اكتوبر':'October','نوفمبر':'November','ديسمبر':'December',
-    'الأحد':'Sunday','الاحد':'Sunday','الاثنين':'Monday','الإثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday',
-    'الاربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday','السبت':'Saturday',
-    'يناير إلى':'January to','حتى':'through','خلال':'during','لهذا الشهر':'for this month','لهذا العام':'for this year',
-    'الهدف الشهري':'Monthly Target','مبيعات الشهر':'Monthly Sales','عدد العملاء':'Customer Count','عدد العمليات':'Transaction Count',
-    'كل السنوات 🌐':'All Years 🌐','المبيعات شاملة الضريبة':'Sales Including VAT','المبيعات قبل الضريبة':'Sales Before VAT',
-    'مقارنة مخصصة':'Custom Comparison','مبيعات العملاء الجدد':'New Customer Sales','متوسط العميل الجديد':'Average New Customer',
-    'إجمالي / عدد العملاء':'Total / Customer Count','عادوا أو نفذوا أكثر من عملية':'Returned or completed more than one transaction',
-    'قيمة':'Value','بالشهور':'by Month','مقارنة العملاء الجدد بالشهور':'Monthly New Customer Comparison',
-    'اتجاه اكتساب العملاء الجدد خلال شهور السنة المختارة':'New customer acquisition trend across the selected year',
-    'طريقة احتساب العملاء الجدد':'How New Customers Are Calculated','توزيع العملاء الجدد أسبوعياً':'Weekly New Customer Distribution',
-    'أعلى 10 عملاء جدد قيمة':'Top 10 New Customers by Value','ترتيب العملاء الجدد حسب إجمالي مبيعاتهم في الشهر المختار':'Ranking new customers by total sales in the selected month',
-    'تفاصيل احتساب عدد الزيارات':'Visit Count Calculation Details','محسوبة':'Counted','عرض التفاصيل':'View Details','عرض التفاصيل 👁️':'View Details 👁️',
-    'مرتفع':'High','متوسط':'Medium','منخفض':'Low','نشاط منتظم':'Regular Activity','زيارات متكررة':'Frequent Visits',
-    'زيارة قريبة':'Recent Visit','إنفاق قوي':'Strong Spending','عقد سنوي':'Annual Contract','عقد توريد دوري':'Recurring Supply Contract',
-    'متابعة تعاقدية':'Contract Follow-up','ملخص الترشيح':'Recommendation Summary','التوصية':'Recommendation','شهور النشاط':'Active Months',
-    'المرشحين':'Candidates','العملاء المرشحين':'Candidate Customers','إجمالي العملاء المرشحين':'Total Candidate Customers',
-    'إجمالي المبيعات المحتملة':'Total Potential Sales','أفضل مرشح':'Best Candidate','درجة الترشيح':'Recommendation Score',
-    'جميع القيم بالريال السعودي وتشمل ضريبة القيمة المضافة':'All values are in SAR and include VAT',
-    'أفضل شهر':'Best Month','أفضل خدمة':'Best Service','إجمالي المبيعات':'Total Sales'
-  };
-
-  // FINAL8: persistent English safety net for Smart Reports dynamic/narrative text.
-  // Kept in one central layer so later report edits cannot silently reintroduce Arabic UI.
-  Object.assign(UI_GLOSSARY,{
-    'كل السنوات':'All Years','المبيعات شاملة الضريبة':'Sales Including VAT','المبيعات قبل الضريبة':'Sales Before VAT','مقارنة مخصصة':'Custom Comparison','النمو':'Growth',
-    'مبيعات العملاء الجدد':'New Customer Sales','متوسط العميل الجديد':'Average New Customer','إجمالي / عدد العملاء':'Total / Customer Count','عادوا أو نفذوا أكثر من عملية':'Returned or completed more than one transaction',
-    'الزيارة = فاتورة بيع فعلية لم يتم إلغاؤها بمرتجع كامل.':'A visit is an actual sales invoice that was not fully cancelled by a return.',
-    'فواتير البيع':'Sales invoices','فواتير المرتجع المطابقة':'Matched return invoices','الزيارات الصافية المحتسبة':'Calculated net visits',
-    'المعادلة: الزيارات الصافية = فواتير البيع - فواتير البيع الملغاة بمرتجع كامل في نفس اليوم تقريباً.':'Formula: net visits = sales invoices minus sales invoices fully cancelled by a return on approximately the same day.',
-    'تقريباً Day البيع الملغاة بمرتجع كامل في نفس Invoices البيع - Invoices = Visits Net المعادلة:':'Formula: net visits = sales invoices minus sales invoices fully cancelled by a return on approximately the same day.',
-    'تفاصيل احتساب عدد الزيارات':'Visit Count Calculation Details','الفاتورة':'Invoice','التاريخ':'Date','القيمة':'Value','الحالة':'Status','محسوبة':'Counted',
-    'العملاء المرشحين للعقود':'Customers Recommended for Contracts','عملاء مرشحون لعمل عقود معهم':'Customers Recommended for Contracts',
-    'يرتب أفضل العملاء المرشحين لعقد سنوي أو توريد دوري بنفس منطق تحليل العملاء الحالي، مع حداثة آخر زيارة وتصنيف العميل.':'Ranks the best candidates for an annual or recurring supply contract using current customer-analysis logic, recent activity, last visit, and customer classification.',
-    'إجمالي العملاء المرشحين':'Total Candidate Customers','إجمالي المبيعات المحتملة':'Total Potential Sales','أفضل مرشح':'Best Candidate','للعملاء المرشحين':'for candidate customers','عميل مرشح':'candidate customers',
-    'نشاط جيد + فرصة توريد دوري':'Good activity + recurring supply opportunity','قبل التعاقد: متابعة فرصة':'Before contracting: follow up on the opportunity','قبل التعاقد Follow-up فرصة':'Before contracting: follow up on the opportunity',
-    'التوصية التجارية':'Business Recommendation','التوصية التجارية الذكية':'Smart Business Recommendation','درجة الترشيح':'Recommendation Score',
-    'تفاصيل سبب الترشيح':'Recommendation Reason Details','متابعة للتعاقد':'Contract Follow-up','مرشح للمتابعة قبل عرض عقد رسمي':'Candidate for follow-up before presenting a formal contract',
-    'سبب الترشيح الكامل':'Full recommendation rationale','الإجراء المقترح':'Recommended action','متابعة تجارية قبل عرض العقد':'Commercial follow-up before presenting the contract',
-    'مع مراجعة آخر الخدمات والزيارات قبل التواصل.':'Review the latest services and visits before contacting the customer.',
-    'شهور النشاط':'Active Months','التصنيف الحالي':'Current Classification','أيام الغياب':'Inactive Days','متوسط الفاتورة':'Average Invoice','عدد الزيارات':'Visit Count','إجمالي الإنفاق':'Total Spend',
-    'يقارن التقرير مبيعات كل عميل بين سنتين حتى تاريخ آخر فاتورة مرفوعة في سنة المقارنة، مع حساب كامل البيانات أو أول 10 فقط في كل جدول مع زر عرض المزيد. الفلاتر مرتبطة بكل الأقسام: الملخص، النمو، التراجع، المفقودين، الترتيب، والرسم.':'The report compares each customer’s sales across two years through the latest uploaded invoice date in the comparison year. It calculates the full dataset while showing the first 10 rows in each table with a Load More option. Filters apply to the summary, growth, decline, lost customers, ranking, and charts.',
-    'اشتروا في فترة الأساس ولم يشتروا في نفس فترة المقارنة':'Purchased in the base period but not in the same comparison period','ظهروا في نفس فترة المقارنة':'Appeared in the same comparison period','زادوا عن سنة الأساس':'Increased versus the base year','انخفضوا ومازالوا نشطين':'Declined but remain active',
-    'أكثر من 60 يوم بدون زيارة صافية':'More than 60 days without a net visit','من آخر زيارة صافية':'From the last net visit','تقدير حسب متوسط الإنفاق الشهري للعميل':'Estimated from the customer’s average monthly spending',
-    'توزيع العملاء حسب مدة الغياب':'Customer Distribution by Inactivity Duration','يوضح أين تتركز مخاطر فقد العملاء بناءً على تاريخ آخر زيارة صافية.':'Shows where customer-loss risk is concentrated based on the last net visit date.',
-    'عملاء أصبحوا غير نشطين':'Customers Becoming Inactive','جدول العملاء غير النشطين':'Inactive Customers Table','يمكن تغيير ترتيب الجدول من الأزرار بدون تغيير أي قيم. الترتيب الحالي حسب إجمالي الإنفاق.':'Use the buttons to change table ranking without changing any values. The current ranking is by total spending.',
-    'ترتيب حسب إجمالي الإنفاق':'Rank by Total Spending','ترتيب حسب تصنيف العميل':'Rank by Customer Classification','ترتيب حسب مستوى المخاطر':'Rank by Risk Level','ترتيب حسب أيام الغياب':'Rank by Inactive Days',
-    'فرص الاسترجاع':'Recovery Opportunities','تحديد العملاء الأولى بالمتابعة حسب قيمة الإنفاق ومتوسط الإنفاق الشهري ومدة الغياب.':'Prioritizes customers for follow-up based on spending value, average monthly spending, and inactivity duration.',
-    'متوسط الإنفاق الشهري':'Average Monthly Spending','القيمة المفقودة المتوقعة':'Expected Lost Value','فرصة الاسترجاع':'Recovery Opportunity',
-    'آخر فاتورة':'Last Invoice','رقم آخر فاتورة':'Last Invoice Number','التصنيف':'Category',
-    'كل السنوات 🌐':'All Years 🌐','كل السنوات':'All Years','المبيعات':'Sales','تفاصيل الأرباع':'Quarter Details','المبيعات شاملة الضريبة - 2025':'Sales Including VAT - 2025','المبيعات شاملة الضريبة - 2026':'Sales Including VAT - 2026',
-    'متابعة العملاء الجدد':'Follow-up New Customers','العملاء الجدد وقيمة العملاء':'New Customers and Customer Value','العملاء المرشحون للعقود':'Customers Recommended for Contracts','مقارنة العملاء بين عامين':'Two-Year Customer Comparison','متابعة نشاط العملاء':'Customer Activity Follow-up',
-    'العملاء الجدد':'New Customers','مبيعات العملاء الجدد':'New Customer Sales','متوسط العميل الجديد':'Average New Customer','إجمالي / عدد العملاء':'Total / Customer Count','عادوا أو نفذوا أكثر من عملية':'Returned or completed more than one transaction',
-    'العملاء غير النشطين':'Inactive Customers','العملاء الحرجون':'Critical Customers','متوسط الغياب':'Average Absence','المبيعات المفقودة المتوقعة':'Expected Lost Sales','أعلى عميل خطورة':'Highest-Risk Customer'
-  });
-
+  var UI_GLOSSARY={}; // v9.4.2: canonical phrases are read from Localization Center only.
   var MONTHS={jan:'January',feb:'February',mar:'March',apr:'April',may:'May',jun:'June',jul:'July',aug:'August',sep:'September',oct:'October',nov:'November',dec:'December',
     '01':'January','02':'February','03':'March','04':'April','05':'May','06':'June','07':'July','08':'August','09':'September','10':'October','11':'November','12':'December'};
 
@@ -143,12 +63,10 @@
     phraseMap=Object.create(null);
     translationCache.clear();
     try{
-      var d=window.PETATOE_I18N_DICTIONARIES||{},ar=flatten(d.ar||{}),en=flatten(d.en||{});
+      var store=window.PETATOE_LOCALIZATION_CENTER_STORE||{};
+      var dictionaries=store.dictionaries||{};
+      var ar=flatten(dictionaries.ar||{}),en=flatten(dictionaries.en||{});
       Object.keys(ar).forEach(function(k){if(typeof en[k]==='string')addPair(ar[k],en[k]);});
-    }catch(_){}
-    try{
-      var s=window.PETATOE_SMART_REPORTS_TRANSLATIONS||{},sa=flatten(s.ar||{}),se=flatten(s.en||{});
-      Object.keys(sa).forEach(function(k){if(typeof se[k]==='string')addPair(sa[k],se[k]);});
     }catch(_){}
     Object.keys(UI_GLOSSARY).forEach(function(k){addPair(k,UI_GLOSSARY[k]);});
     phrasePairs=Object.keys(phraseMap).map(function(source){return{source:source,target:phraseMap[source]};})
@@ -368,13 +286,9 @@
 
   function dictionarySignature(){
     try{
-      var d=window.PETATOE_I18N_DICTIONARIES||{};
-      var s=window.PETATOE_SMART_REPORTS_TRANSLATIONS||{};
-      return [
-        Object.keys(d.ar||{}).length,Object.keys(d.en||{}).length,
-        Object.keys(s.ar||{}).length,Object.keys(s.en||{}).length,
-        !!window.PETATOE_I18N,!!window.PETATOE_BUSINESS_DATA_LOCALIZATION
-      ].join('|');
+      var store=window.PETATOE_LOCALIZATION_CENTER_STORE||{};
+      var d=store.dictionaries||{};
+      return [store.version||'',Object.keys(d.ar||{}).length,Object.keys(d.en||{}).length,!!window.PETATOE_LOCALIZATION_CENTER].join('|');
     }catch(_e){ return ''; }
   }
   function ensureIndexFresh(force){

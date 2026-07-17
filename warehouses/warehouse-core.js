@@ -29,7 +29,7 @@
   'use strict';
   if(window.__PETATOE_WAREHOUSE_CORE_MAIN_RUNTIME_BOUND__) return;
   function whT(k,p){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('warehouseSource.'+k,p,{fallback:k}):k;}
-  function whLocale(){return window.PETATOE_WAREHOUSE_I18N?window.PETATOE_WAREHOUSE_I18N.locale():'ar-EG';}
+  function whLocale(){var c=window.PETATOE_LOCALIZATION_CENTER,l=c&&c.getLanguage?c.getLanguage():(document.documentElement.lang||'ar');return l==='en'?'en-GB':'ar-EG';}
   window.__PETATOE_WAREHOUSE_CORE_MAIN_RUNTIME_BOUND__ = true;
 
   /* PETATOE v6.1.217 - Warehouse performance guard: avoid heavy background renders when warehouse panel is closed. */
