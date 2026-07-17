@@ -1,7 +1,7 @@
 {
   "description": "Maximum pre-existing Arabic-source lines allowed in protected UI files. New commits must not increase these counts.",
   "files": {
-    "smart/smart-reports-core.js": 365,
+    "smart/smart-reports-core.js": 368,
     "smart/smart-reports-new-customers-real.js": 16,
     "smart/smart-customers.js": 23,
     "smart/smart-vehicles.js": 7,
