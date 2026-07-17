@@ -93,7 +93,7 @@ function exportToolbar(reportId, pdfFn, excelFn, copyFn){ return ``; }
 function exportDashPdf(){
   const data=filtered();
   const y=selectedDashboardYear();
-  const label=y==='all'?smartExportT('allYears','كل السنوات'):y;
+  const label=y==='all'?smartExportT('allYears',smartExportT('allYears','كل السنوات')):y;
   const total=data.reduce((s,r)=>s+parseNum(r.totalInc),0);
   const avg=data.length?total/data.length:0;
   const vans=Object.entries(groupSum(data,'van')).sort((a,b)=>b[1]-a[1]);
@@ -102,19 +102,19 @@ function exportDashPdf(){
   _printZone(
     _pzHeader(smartExportT('dashboardTitle','لوحة التحكم'),smartExportT('dashboardSubtitle','ملخص المبيعات الكلي'))+
     _pzKpis([
-      [smartExportT('year','السنة'),label],[smartExportT('totalSales','إجمالي المبيعات'),money(total)],
-      [smartExportT('invoiceCount','عدد الفواتير'),fmt0(data.length)],[smartExportT('averageInvoice','متوسط الفاتورة'),money(avg)],
+      [smartExportT('year',smartExportT('year','السنة')),label],[smartExportT('totalSales',smartExportT('totalSales','إجمالي المبيعات')),money(total)],
+      [smartExportT('invoiceCount',smartExportT('invoiceCount','عدد الفواتير')),fmt0(data.length)],[smartExportT('averageInvoice',smartExportT('averageInvoice','متوسط الفاتورة')),money(avg)],
       [smartExportT('customerCount','عدد العملاء'),fmt0(new Set(data.map(r=>r.client)).size)],
-      [smartExportT('vehicleCount','عدد السيارات'),fmt0(new Set(data.map(r=>r.van)).size)]
+      [smartExportT('vehicleCount',smartExportT('vehicleCount','عدد السيارات')),fmt0(new Set(data.map(r=>r.van)).size)]
     ])+
-    '<div class="pz-section">'+smartExportT('vehiclePerformance','أداء السيارات')+'</div>'+
-    _pzTable([smartExportT('vehicle','السيارة'),smartExportT('salesSar','المبيعات (SAR)'),smartExportT('operationCount','عدد العمليات'),smartExportT('contribution','المساهمة %')],
+    '<div class="pz-section">'+smartExportT('vehiclePerformance',smartExportT('vehiclePerformance','أداء السيارات'))+'</div>'+
+    _pzTable([smartExportT('vehicle',smartExportT('vehicle','السيارة')),smartExportT('salesSar','المبيعات (SAR)'),smartExportT('operationCount',smartExportT('operationCount','عدد العمليات')),smartExportT('contribution',smartExportT('contribution','المساهمة %'))],
       vans.map(([v,s])=>[v,fmt(s),fmt0(data.filter(r=>r.van===v).length),(total?s/total*100:0).toFixed(2)+'%'])
     )+
     '<div class="pz-section">'+smartExportT('topCustomers','أفضل 10 عملاء')+'</div>'+
-    _pzTable([smartExportT('customer','العميل'),smartExportT('salesSar','المبيعات (SAR)')],clients.slice(0,10).map(([c,s])=>[c,fmt(s)]))+
+    _pzTable([smartExportT('customer',smartExportT('customer','العميل')),smartExportT('salesSar','المبيعات (SAR)')],clients.slice(0,10).map(([c,s])=>[c,fmt(s)]))+
     '<div class="pz-section">'+smartExportT('topServices','أفضل 10 خدمات')+'</div>'+
-    _pzTable([smartExportT('service','الخدمة'),smartExportT('salesSar','المبيعات (SAR)')],svcs.slice(0,10).map(([s,v])=>[s,fmt(v)]))+
+    _pzTable([smartExportT('service',smartExportT('service','الخدمة')),smartExportT('salesSar','المبيعات (SAR)')],svcs.slice(0,10).map(([s,v])=>[s,fmt(v)]))+
     _pzFooter()
   );
 }
@@ -127,10 +127,10 @@ function exportDashExcel(){
   const months=monthAgg(data,y);
   const wb=XLSX.utils.book_new();
   const addSh=(name,hdr,rows)=>{const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);ws['!cols']=hdr.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,name)};
-  addSh(smartExportT('monthlySummary','ملخص شهري'),[smartExportT('month','الشهر'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات'),smartExportT('averageInvoice','متوسط الفاتورة')],months.map(m=>[m.label,m.total,m.count,m.avg.toFixed(2)]));
-  addSh(smartExportT('vehicles','السيارات'),[smartExportT('vehicle','السيارة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات')],vans.map(([v,s])=>[v,s,data.filter(r=>r.van===v).length]));
-  addSh(smartExportT('customers','العملاء'),[smartExportT('customer','العميل'),smartExportT('salesSar','المبيعات SAR')],clients.map(([c,s])=>[c,s]));
-  addSh(smartExportT('services','الخدمات'),[smartExportT('service','الخدمة'),smartExportT('salesSar','المبيعات SAR')],svcs.map(([s,v])=>[s,v]));
+  addSh(smartExportT('monthlySummary','ملخص شهري'),[smartExportT('month',smartExportT('month','الشهر')),smartExportT('salesSar',smartExportT('salesSar','المبيعات SAR')),smartExportT('operationCount',smartExportT('operationCount','عدد العمليات')),smartExportT('averageInvoice',smartExportT('averageInvoice','متوسط الفاتورة'))],months.map(m=>[m.label,m.total,m.count,m.avg.toFixed(2)]));
+  addSh(smartExportT('vehicles','السيارات'),[smartExportT('vehicle',smartExportT('vehicle','السيارة')),smartExportT('salesSar',smartExportT('salesSar','المبيعات SAR')),smartExportT('operationCount',smartExportT('operationCount','عدد العمليات'))],vans.map(([v,s])=>[v,s,data.filter(r=>r.van===v).length]));
+  addSh(smartExportT('customers',smartExportT('customers','العملاء')),[smartExportT('customer',smartExportT('customer','العميل')),smartExportT('salesSar',smartExportT('salesSar','المبيعات SAR'))],clients.map(([c,s])=>[c,s]));
+  addSh(smartExportT('services',smartExportT('services','الخدمات')),[smartExportT('service',smartExportT('service','الخدمة')),smartExportT('salesSar',smartExportT('salesSar','المبيعات SAR'))],svcs.map(([s,v])=>[s,v]));
   XLSX.writeFile(wb,`PETATOE_Dashboard_${y}.xlsx`);
 }
 window.exportDashPdf=exportDashPdf; window.exportDashExcel=exportDashExcel;
@@ -144,19 +144,19 @@ function exportSalesPdf(){
   const months=monthAgg(records,y);
   const qs=['Q1','Q2','Q3','Q4'];
   _printZone(
-    _pzHeader('تقرير المبيعات الشهري','تحليل المبيعات الشهرية والربعية')+
+    _pzHeader(smartExportT('monthlySalesReport','تقرير المبيعات الشهري'),smartExportT('monthlyQuarterlyAnalysis','تحليل المبيعات الشهرية والربعية'))+
     _pzKpis([
-      ['السنة',y==='all'?'كل السنوات':y],
-      ['إجمالي المبيعات',money(data.reduce((s,r)=>s+parseNum(r.totalInc),0))],
-      ['عدد الفواتير',fmt0(data.length)],
-      ['أفضل شهر',(months.slice().sort((a,b)=>b.total-a.total)[0]||{}).label||'-'],
-      ['أعلى ربع',qs.map(q=>([q,qSum(records,y,q)])).sort((a,b)=>b[1]-a[1])[0][0]]
+      [smartExportT('year','السنة'),y==='all'?smartExportT('allYears','كل السنوات'):y],
+      [smartExportT('totalSales','إجمالي المبيعات'),money(data.reduce((s,r)=>s+parseNum(r.totalInc),0))],
+      [smartExportT('invoiceCount','عدد الفواتير'),fmt0(data.length)],
+      [smartExportT('bestMonth','أفضل شهر'),(months.slice().sort((a,b)=>b.total-a.total)[0]||{}).label||'-'],
+      [smartExportT('topQuarter','أعلى ربع'),qs.map(q=>([q,qSum(records,y,q)])).sort((a,b)=>b[1]-a[1])[0][0]]
     ])+
-    '<div class="pz-section">المبيعات الشهرية</div>'+
-    _pzTable(['الشهر','المبيعات SAR','عدد العمليات','متوسط الفاتورة SAR'],
+    '<div class="pz-section">'+smartExportT('monthlySales','المبيعات الشهرية')+'</div>'+
+    _pzTable([smartExportT('month','الشهر'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات'),smartExportT('averageInvoiceSar','متوسط الفاتورة SAR')],
       months.map(m=>[m.label,fmt(m.total),fmt0(m.count),fmt(m.avg)]))+
-    '<div class="pz-section">المقارنة الربعية</div>'+
-    (()=>{const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; return _pzTable(['الربع',y1+' (SAR)',y2+' (SAR)','الفرق','النمو %'], qs.map(q=>{const a=qSum(records,y1,q),b=qSum(records,y2,q),d=b-a,g=a?d/a*100:0; return[q,fmt(a),fmt(b),(d>=0?'+':'')+fmt(d),g.toFixed(2)+'%']}))})()+
+    '<div class="pz-section">'+smartExportT('quarterlyComparison','المقارنة الربعية')+'</div>'+
+    (()=>{const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; return _pzTable([smartExportT('quarter','الربع'),y1+' (SAR)',y2+' (SAR)',smartExportT('difference','الفرق'),smartExportT('growthPercent','النمو %')], qs.map(q=>{const a=qSum(records,y1,q),b=qSum(records,y2,q),d=b-a,g=a?d/a*100:0; return[q,fmt(a),fmt(b),(d>=0?'+':'')+fmt(d),g.toFixed(2)+'%']}))})()+
     _pzFooter()
   );
 }
@@ -166,9 +166,9 @@ function exportSalesExcel(){
   const qs=['Q1','Q2','Q3','Q4'];
   const wb=XLSX.utils.book_new();
   const addSh=(name,hdr,rows)=>{const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);ws['!cols']=hdr.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,name)};
-  addSh('شهري',['الشهر','المبيعات SAR','عدد العمليات','متوسط الفاتورة'],months.map(m=>[m.label,m.total,m.count,+m.avg.toFixed(2)]));
-  {const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; addSh('ربعي',['الربع',String(y1),String(y2),'الفرق','النمو%'],qs.map(q=>{const a=qSum(records,y1,q),b=qSum(records,y2,q);return[q,a,b,b-a,a?(((b-a)/a)*100).toFixed(2)+'%':'—']}));}
-  addSh('طرق الدفع',['طريقة الدفع','المبيعات SAR'],Object.entries(groupSum(byYear(records,y),'pay')).sort((a,b)=>b[1]-a[1]).map(([p,s])=>[p,s]));
+  addSh(smartExportT('monthly','شهري'),[smartExportT('month','الشهر'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات'),smartExportT('averageInvoice','متوسط الفاتورة')],months.map(m=>[m.label,m.total,m.count,+m.avg.toFixed(2)]));
+  {const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; addSh(smartExportT('quarterly','ربعي'),[smartExportT('quarter','الربع'),String(y1),String(y2),smartExportT('difference','الفرق'),smartExportT('growthPercentCompact','النمو%')],qs.map(q=>{const a=qSum(records,y1,q),b=qSum(records,y2,q);return[q,a,b,b-a,a?(((b-a)/a)*100).toFixed(2)+'%':'—']}));}
+  addSh(smartExportT('paymentMethods','طرق الدفع'),[smartExportT('paymentMethod','طريقة الدفع'),smartExportT('salesSar','المبيعات SAR')],Object.entries(groupSum(byYear(records,y),'pay')).sort((a,b)=>b[1]-a[1]).map(([p,s])=>[p,s]));
   XLSX.writeFile(wb,`PETATOE_Sales_${y}.xlsx`);
 }
 window.exportSalesPdf=exportSalesPdf; window.exportSalesExcel=exportSalesExcel;
@@ -182,20 +182,20 @@ function exportVansPdf(){
   const vans=Object.entries(groupSum(data,'van')).sort((a,b)=>b[1]-a[1]);
   const total=vans.reduce((s,[,v])=>s+v,0);
   _printZone(
-    _pzHeader('أداء السيارات','تحليل مبيعات وأداء كل سيارة')+
+    _pzHeader(smartExportT('vehiclePerformance','أداء السيارات'),smartExportT('vehicleSalesPerformanceAnalysis','تحليل مبيعات وأداء كل سيارة'))+
     _pzKpis([
-      ['السنة',y==='all'?'كل السنوات':y],
-      ['إجمالي المبيعات',money(total)],
-      ['عدد السيارات',fmt0(vans.length)],
-      ['أفضل سيارة',vans[0]?vans[0][0]:'-'],
-      ['إجمالي العمليات',fmt0(data.length)]
+      [smartExportT('year','السنة'),y==='all'?smartExportT('allYears','كل السنوات'):y],
+      [smartExportT('totalSales','إجمالي المبيعات'),money(total)],
+      [smartExportT('vehicleCount','عدد السيارات'),fmt0(vans.length)],
+      [smartExportT('bestVehicle','أفضل سيارة'),vans[0]?vans[0][0]:'-'],
+      [smartExportT('totalOperations','إجمالي العمليات'),fmt0(data.length)]
     ])+
-    '<div class="pz-section">تفاصيل كل سيارة</div>'+
-    _pzTable(['السيارة','المبيعات SAR','العمليات','متوسط العملية SAR','المساهمة %'],
+    '<div class="pz-section">'+smartExportT('vehicleDetails','تفاصيل كل سيارة')+'</div>'+
+    _pzTable([smartExportT('vehicle','السيارة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operations','العمليات'),smartExportT('averageOperationSar','متوسط العملية SAR'),smartExportT('contribution','المساهمة %')],
       vans.map(([v,s])=>{const cnt=data.filter(r=>r.van===v).length;return[v,fmt(s),fmt0(cnt),fmt(cnt?s/cnt:0),(total?s/total*100:0).toFixed(2)+'%']}))+
-    '<div class="pz-section">مبيعات السيارات شهرياً</div>'+
+    '<div class="pz-section">'+smartExportT('monthlyVehicleSales','مبيعات السيارات شهرياً')+'</div>'+
     (()=>{const months=monthAgg(data,y),vanNames=vans.map(([v])=>v);
-      return _pzTable(['الشهر',...vanNames.map(v=>v+' (SAR)')],
+      return _pzTable([smartExportT('month','الشهر'),...vanNames.map(v=>v+' (SAR)')],
         months.map(m=>[m.label,...vanNames.map(v=>fmt(data.filter(r=>r.van===v&&normalizeMonth(r.month,r.date)===m.month).reduce((s,r)=>s+parseNum(r.totalInc),0)))]))
     })()+
     _pzFooter()
@@ -208,9 +208,9 @@ function exportVansExcel(){
   const months=monthAgg(data,y);
   const wb=XLSX.utils.book_new();
   const addSh=(n,h,r)=>{const ws=XLSX.utils.aoa_to_sheet([h,...r]);ws['!cols']=h.map(()=>({wch:18}));XLSX.utils.book_append_sheet(wb,ws,n)};
-  addSh('ملخص السيارات',['السيارة','المبيعات SAR','عدد العمليات','متوسط العملية SAR'],vans.map(([v,s])=>{const c=data.filter(r=>r.van===v).length;return[v,s,c,+(c?s/c:0).toFixed(2)]}));
+  addSh(smartExportT('vehicleSummary','ملخص السيارات'),[smartExportT('vehicle','السيارة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات'),smartExportT('averageOperationSar','متوسط العملية SAR')],vans.map(([v,s])=>{const c=data.filter(r=>r.van===v).length;return[v,s,c,+(c?s/c:0).toFixed(2)]}));
   const vanNames=vans.map(([v])=>v);
-  addSh('شهري لكل سيارة',['الشهر',...vanNames],months.map(m=>[m.label,...vanNames.map(v=>+data.filter(r=>r.van===v&&normalizeMonth(r.month,r.date)===m.month).reduce((s,r)=>s+parseNum(r.totalInc),0).toFixed(2))]));
+  addSh(smartExportT('monthlyPerVehicle','شهري لكل سيارة'),[smartExportT('month','الشهر'),...vanNames],months.map(m=>[m.label,...vanNames.map(v=>+data.filter(r=>r.van===v&&normalizeMonth(r.month,r.date)===m.month).reduce((s,r)=>s+parseNum(r.totalInc),0).toFixed(2))]));
   XLSX.writeFile(wb,`PETATOE_Vans_${y}.xlsx`);
 }
 window.exportVansPdf=exportVansPdf; window.exportVansExcel=exportVansExcel;
@@ -223,15 +223,15 @@ function exportServicesPdf(){
   const svcs=Object.entries(groupSum(data,'item')).sort((a,b)=>b[1]-a[1]);
   const total=svcs.reduce((s,[,v])=>s+v,0);
   _printZone(
-    _pzHeader('تحليل الخدمات','أكثر الخدمات طلباً وأعلاها قيمة')+
+    _pzHeader(smartExportT('servicesAnalysis','تحليل الخدمات'),smartExportT('servicesAnalysisSubtitle','أكثر الخدمات طلباً وأعلاها قيمة'))+
     _pzKpis([
-      ['إجمالي المبيعات',money(total)],
-      ['عدد الخدمات',fmt0(svcs.length)],
-      ['أعلى خدمة قيمة',svcs[0]?svcs[0][0]:'-'],
-      ['إجمالي العمليات',fmt0(data.length)]
+      [smartExportT('totalSales','إجمالي المبيعات'),money(total)],
+      [smartExportT('serviceCount','عدد الخدمات'),fmt0(svcs.length)],
+      [smartExportT('topValueService','أعلى خدمة قيمة'),svcs[0]?svcs[0][0]:'-'],
+      [smartExportT('totalOperations','إجمالي العمليات'),fmt0(data.length)]
     ])+
-    '<div class="pz-section">ترتيب الخدمات</div>'+
-    _pzTable(['#','الخدمة','المبيعات SAR','عدد العمليات','متوسط SAR','المساهمة %'],
+    '<div class="pz-section">'+smartExportT('servicesRanking','ترتيب الخدمات')+'</div>'+
+    _pzTable(['#',smartExportT('service','الخدمة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات'),smartExportT('averageSar','متوسط SAR'),smartExportT('contribution','المساهمة %')],
       svcs.map(([s,v],i)=>{const c=data.filter(r=>r.item===s).length;return[i+1,s,fmt(v),fmt0(c),fmt(c?v/c:0),(total?v/total*100:0).toFixed(2)+'%']}))+
     _pzFooter()
   );
@@ -240,8 +240,8 @@ function exportServicesExcel(){
   const data=filtered();
   const svcs=Object.entries(groupSum(data,'item')).sort((a,b)=>b[1]-a[1]);
   const total=svcs.reduce((s,[,v])=>s+v,0);
-  _toExcel('الخدمات',
-    ['#','الخدمة','المبيعات SAR','عدد العمليات','متوسط SAR','المساهمة %'],
+  _toExcel(smartExportT('services','الخدمات'),
+    ['#',smartExportT('service','الخدمة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات'),smartExportT('averageSar','متوسط SAR'),smartExportT('contribution','المساهمة %')],
     svcs.map(([s,v],i)=>{const c=data.filter(r=>r.item===s).length;return[i+1,s,+v.toFixed(2),c,+(c?v/c:0).toFixed(2),(total?v/total*100:0).toFixed(2)+'%']}),
     'PETATOE_Services.xlsx'
   );
@@ -257,16 +257,16 @@ function exportOverviewPdf(){
   const ys=years(data);
   const rows=ys.map(y=>{const d=byYear(data,y),t=d.reduce((s,r)=>s+parseNum(r.totalInc),0);return[y,fmt(t),fmt0(d.length),fmt(d.length?t/d.length:0)]});
   _printZone(
-    _pzHeader('ملخص الأداء الشامل','نظرة عامة على كل السنوات')+
+    _pzHeader(smartExportT('overallPerformanceSummary','ملخص الأداء الشامل'),smartExportT('allYearsOverview','نظرة عامة على كل السنوات'))+
     _pzKpis([
-      ['إجمالي كل السنوات',money(total)],
-      ['عدد السجلات',fmt0(data.length)],
-      ['عدد السنوات',fmt0(ys.length)],
+      [smartExportT('allYearsTotal','إجمالي كل السنوات'),money(total)],
+      [smartExportT('recordCount','عدد السجلات'),fmt0(data.length)],
+      [smartExportT('yearCount','عدد السنوات'),fmt0(ys.length)],
       [smartExportT('customerCount','عدد العملاء'),fmt0(new Set(data.map(r=>r.client)).size)],
-      ['عدد الخدمات',fmt0(new Set(data.map(r=>r.item)).size)]
+      [smartExportT('serviceCount','عدد الخدمات'),fmt0(new Set(data.map(r=>r.item)).size)]
     ])+
-    '<div class="pz-section">مقارنة الأداء السنوي</div>'+
-    _pzTable(['السنة','المبيعات SAR','عدد الفواتير','متوسط الفاتورة SAR'],rows)+
+    '<div class="pz-section">'+smartExportT('annualPerformanceComparison','مقارنة الأداء السنوي')+'</div>'+
+    _pzTable([smartExportT('year','السنة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('invoiceCount','عدد الفواتير'),smartExportT('averageInvoiceSar','متوسط الفاتورة SAR')],rows)+
     _pzFooter()
   );
 }
@@ -274,8 +274,8 @@ function exportOverviewExcel(){
   const ys=years(records);
   const wb=XLSX.utils.book_new();
   const addSh=(n,h,r)=>{const ws=XLSX.utils.aoa_to_sheet([h,...r]);ws['!cols']=h.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,n)};
-  addSh('سنوي',['السنة','المبيعات SAR','الفواتير','متوسط SAR'],ys.map(y=>{const d=byYear(records,y),t=d.reduce((s,r)=>s+parseNum(r.totalInc),0);return[y,+t.toFixed(2),d.length,+(d.length?t/d.length:0).toFixed(2)]}));
-  addSh('شهري كل السنوات',['الشهر/السنة','المبيعات SAR','الفواتير'],monthAgg(records,'all').map(m=>[m.label,+m.total.toFixed(2),m.count]));
+  addSh(smartExportT('annual','سنوي'),[smartExportT('year','السنة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('invoices','الفواتير'),smartExportT('averageSar','متوسط SAR')],ys.map(y=>{const d=byYear(records,y),t=d.reduce((s,r)=>s+parseNum(r.totalInc),0);return[y,+t.toFixed(2),d.length,+(d.length?t/d.length:0).toFixed(2)]}));
+  addSh(smartExportT('monthlyAllYears','شهري كل السنوات'),[smartExportT('monthYear','الشهر/السنة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('invoices','الفواتير')],monthAgg(records,'all').map(m=>[m.label,+m.total.toFixed(2),m.count]));
   XLSX.writeFile(wb,'PETATOE_Overview_AllYears.xlsx');
 }
 window.exportOverviewPdf=exportOverviewPdf; window.exportOverviewExcel=exportOverviewExcel;
@@ -289,17 +289,17 @@ function exportSmartSalesPdf(){
   const months=monthAgg(records,y);
   const isTax=smartSalesTaxMode==='net';
   const val=r=>isTax?parseNum(r.totalEx):parseNum(r.totalInc);
-  const modeLabel=isTax?'بدون ضريبة':'شامل الضريبة';
+  const modeLabel=isTax?smartExportT('excludingVat','بدون ضريبة'):smartExportT('includingVat','شامل الضريبة');
   _printZone(
-    _pzHeader('تحليل المبيعات الذكي',`السنة: ${y==='all'?'كل السنوات':y} — ${modeLabel}`)+
+    _pzHeader(smartExportT('smartSalesAnalysis','تحليل المبيعات الذكي'),smartExportT('yearVatMode','السنة: {year} — {mode}',{year:y==='all'?smartExportT('allYears','كل السنوات'):y,mode:modeLabel}))+
     _pzKpis([
-      ['إجمالي المبيعات',money(data.reduce((s,r)=>s+val(r),0))],
-      ['عدد الفواتير',fmt0(data.length)],
-      ['أعلى شهر',(months.slice().sort((a,b)=>b.total-a.total)[0]||{}).label||'-'],
-      ['وضع الضريبة',modeLabel]
+      [smartExportT('totalSales','إجمالي المبيعات'),money(data.reduce((s,r)=>s+val(r),0))],
+      [smartExportT('invoiceCount','عدد الفواتير'),fmt0(data.length)],
+      [smartExportT('topMonth','أعلى شهر'),(months.slice().sort((a,b)=>b.total-a.total)[0]||{}).label||'-'],
+      [smartExportT('vatMode','وضع الضريبة'),modeLabel]
     ])+
-    '<div class="pz-section">المبيعات الشهرية</div>'+
-    _pzTable(['الشهر','القيمة SAR','الفواتير','المتوسط SAR'],
+    '<div class="pz-section">'+smartExportT('monthlySales','المبيعات الشهرية')+'</div>'+
+    _pzTable([smartExportT('month','الشهر'),smartExportT('valueSar','القيمة SAR'),smartExportT('invoices','الفواتير'),smartExportT('averageSar','المتوسط SAR')],
       months.map(m=>[m.label,fmt(m.total),fmt0(m.count),fmt(m.avg)]))+
     _pzFooter()
   );
@@ -310,8 +310,8 @@ function exportSmartSalesExcel(){
   const clients=Object.entries(groupSum(byYear(records,y),'client')).sort((a,b)=>b[1]-a[1]);
   const wb=XLSX.utils.book_new();
   const addSh=(n,h,r)=>{const ws=XLSX.utils.aoa_to_sheet([h,...r]);ws['!cols']=h.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,n)};
-  addSh('شهري',['الشهر','المبيعات SAR','الفواتير','المتوسط'],months.map(m=>[m.label,+m.total.toFixed(2),m.count,+m.avg.toFixed(2)]));
-  addSh(smartExportT('customers','العملاء'),[smartExportT('customer','العميل'),smartExportT('salesSar','المبيعات SAR')],clients.map(([c,s])=>[c,+s.toFixed(2)]));
+  addSh(smartExportT('monthly','شهري'),[smartExportT('month','الشهر'),smartExportT('salesSar','المبيعات SAR'),smartExportT('invoices','الفواتير'),'المتوسط'],months.map(m=>[m.label,+m.total.toFixed(2),m.count,+m.avg.toFixed(2)]));
+  addSh(smartExportT('customers',smartExportT('customers','العملاء')),[smartExportT('customer',smartExportT('customer','العميل')),smartExportT('salesSar',smartExportT('salesSar','المبيعات SAR'))],clients.map(([c,s])=>[c,+s.toFixed(2)]));
   XLSX.writeFile(wb,`PETATOE_SmartSales_${y}.xlsx`);
 }
 window.exportSmartSalesPdf=exportSmartSalesPdf; window.exportSmartSalesExcel=exportSmartSalesExcel;
@@ -325,12 +325,12 @@ function exportSmartVansPdf(){
   const vans=Object.entries(groupSum(data,'van')).sort((a,b)=>b[1]-a[1]);
   const total=vans.reduce((s,[,v])=>s+v,0);
   _printZone(
-    _pzHeader('تحليل السيارات الذكي',`السنة: ${y==='all'?'كل السنوات':y}`)+
+    _pzHeader(smartExportT('smartVehicleAnalysis','تحليل السيارات الذكي'),smartExportT('yearLabel','السنة: {year}',{year:y==='all'?smartExportT('allYears','كل السنوات'):y}))+
     _pzKpis([
-      ['الإجمالي',money(total)],['عدد السيارات',fmt0(vans.length)],['الأفضل',vans[0]?vans[0][0]:'-']
+      [smartExportT('total','الإجمالي'),money(total)],[smartExportT('vehicleCount','عدد السيارات'),fmt0(vans.length)],[smartExportT('best','الأفضل'),vans[0]?vans[0][0]:'-']
     ])+
-    '<div class="pz-section">أداء كل سيارة</div>'+
-    _pzTable(['السيارة','المبيعات SAR','العمليات','المتوسط SAR','المساهمة %'],
+    '<div class="pz-section">'+smartExportT('performanceByVehicle','أداء كل سيارة')+'</div>'+
+    _pzTable([smartExportT('vehicle','السيارة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operations','العمليات'),smartExportT('averageSar','المتوسط SAR'),smartExportT('contribution','المساهمة %')],
       vans.map(([v,s])=>{const c=data.filter(r=>r.van===v).length;return[v,fmt(s),fmt0(c),fmt(c?s/c:0),(total?s/total*100:0).toFixed(2)+'%']}))+
     _pzFooter()
   );
@@ -342,9 +342,9 @@ function exportSmartVansExcel(){
   const months=monthAgg(data,y);
   const wb=XLSX.utils.book_new();
   const addSh=(n,h,r)=>{const ws=XLSX.utils.aoa_to_sheet([h,...r]);ws['!cols']=h.map(()=>({wch:18}));XLSX.utils.book_append_sheet(wb,ws,n)};
-  addSh('ملخص السيارات',['السيارة','المبيعات SAR','عدد العمليات','متوسط العملية SAR'],vans.map(([v,s])=>{const c=data.filter(r=>r.van===v).length;return[v,+s.toFixed(2),c,+(c?s/c:0).toFixed(2)]}));
+  addSh(smartExportT('vehicleSummary','ملخص السيارات'),[smartExportT('vehicle','السيارة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات'),smartExportT('averageOperationSar','متوسط العملية SAR')],vans.map(([v,s])=>{const c=data.filter(r=>r.van===v).length;return[v,+s.toFixed(2),c,+(c?s/c:0).toFixed(2)]}));
   const vanNames=vans.map(([v])=>v);
-  addSh('شهري لكل سيارة',['الشهر',...vanNames],months.map(m=>[m.label,...vanNames.map(v=>+data.filter(r=>r.van===v&&normalizeMonth(r.month,r.date)===m.month).reduce((s,r)=>s+parseNum(r.totalInc),0).toFixed(2))]));
+  addSh(smartExportT('monthlyPerVehicle','شهري لكل سيارة'),[smartExportT('month','الشهر'),...vanNames],months.map(m=>[m.label,...vanNames.map(v=>+data.filter(r=>r.van===v&&normalizeMonth(r.month,r.date)===m.month).reduce((s,r)=>s+parseNum(r.totalInc),0).toFixed(2))]));
   XLSX.writeFile(wb,`PETATOE_SmartVans_${y}.xlsx`);
 }
 window.exportSmartVansPdf=exportSmartVansPdf; window.exportSmartVansExcel=exportSmartVansExcel;
@@ -357,22 +357,22 @@ function exportCustomersPdf(){
   const model=typeof buildCustomerVisitModel==='function'?buildCustomerVisitModel(data):[];
   const rows=model.slice(0,100).map(c=>[c.client,c.tier||'-',fmt(c.totalSpend||0),fmt0(c.visits||0),fmt(c.avgSpend||0),c.lastVisitLabel||'-']);
   _printZone(
-    _pzHeader('تحليل العملاء','تصنيف العملاء وقيمتهم')+
+    _pzHeader(smartExportT('customersAnalysis','تحليل العملاء'),smartExportT('customersAnalysisSubtitle','تصنيف العملاء وقيمتهم'))+
     _pzKpis([
-      ['إجمالي العملاء',fmt0(model.length)],
+      [smartExportT('totalCustomers','إجمالي العملاء'),fmt0(model.length)],
       ['VIP',fmt0(model.filter(c=>c.tier==='VIP').length)],
-      ['نشط',fmt0(model.filter(c=>c.tier==='Active').length)],
-      ['غير نشط',fmt0(model.filter(c=>c.tier==='At Risk'||c.tier==='Inactive').length)]
+      [smartExportT('active','نشط'),fmt0(model.filter(c=>c.tier==='Active').length)],
+      [smartExportT('inactive','غير نشط'),fmt0(model.filter(c=>c.tier==='At Risk'||c.tier==='Inactive').length)]
     ])+
-    '<div class="pz-section">قائمة العملاء (أعلى 100)</div>'+
-    _pzTable(['العميل','التصنيف','الإجمالي SAR','الزيارات','متوسط SAR','آخر زيارة'],rows)+
+    '<div class="pz-section">'+smartExportT('top100Customers','قائمة العملاء (أعلى 100)')+'</div>'+
+    _pzTable([smartExportT('customer','العميل'),smartExportT('classification','التصنيف'),smartExportT('totalSar','الإجمالي SAR'),smartExportT('visits','الزيارات'),smartExportT('averageSar','متوسط SAR'),smartExportT('lastVisit','آخر زيارة')],rows)+
     _pzFooter()
   );
 }
 function exportCustomersExcel(){
   const model=typeof buildCustomerVisitModel==='function'?buildCustomerVisitModel(records):[];
-  _toExcel('العملاء',
-    ['العميل','التصنيف','الإجمالي SAR','الزيارات','متوسط SAR','آخر زيارة'],
+  _toExcel(smartExportT('customers','العملاء'),
+    [smartExportT('customer','العميل'),smartExportT('classification','التصنيف'),smartExportT('totalSar','الإجمالي SAR'),smartExportT('visits','الزيارات'),smartExportT('averageSar','متوسط SAR'),smartExportT('lastVisit','آخر زيارة')],
     model.map(c=>[c.client,c.tier||'-',+(c.totalSpend||0).toFixed(2),c.visits||0,+(c.avgSpend||0).toFixed(2),c.lastVisitLabel||'-']),
     'PETATOE_Customers.xlsx'
   );
@@ -388,13 +388,13 @@ function exportSmartServicesPdf(){
   const svcs=Object.entries(groupSum(data,'item')).sort((a,b)=>b[1]-a[1]);
   const total=svcs.reduce((s,[,v])=>s+v,0);
   _printZone(
-    _pzHeader('تحليل الخدمات الذكي',`السنة: ${y==='all'?'كل السنوات':y}`)+
+    _pzHeader(smartExportT('smartServicesAnalysis','تحليل الخدمات الذكي'),smartExportT('yearLabel','السنة: {year}',{year:y==='all'?smartExportT('allYears','كل السنوات'):y}))+
     _pzKpis([
-      ['إجمالي',money(total)],['عدد الخدمات',fmt0(svcs.length)],
-      ['الأعلى قيمة',svcs[0]?svcs[0][0]:'-'],['عدد العمليات',fmt0(data.length)]
+      [smartExportT('total','إجمالي'),money(total)],[smartExportT('serviceCount','عدد الخدمات'),fmt0(svcs.length)],
+      [smartExportT('highestValue','الأعلى قيمة'),svcs[0]?svcs[0][0]:'-'],[smartExportT('operationCount','عدد العمليات'),fmt0(data.length)]
     ])+
-    '<div class="pz-section">الخدمات</div>'+
-    _pzTable(['#','الخدمة','المبيعات SAR','العمليات','المتوسط SAR','المساهمة %'],
+    '<div class="pz-section">'+smartExportT('services','الخدمات')+'</div>'+
+    _pzTable(['#',smartExportT('service','الخدمة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operations','العمليات'),smartExportT('averageSar','المتوسط SAR'),smartExportT('contribution','المساهمة %')],
       svcs.map(([s,v],i)=>{const c=data.filter(r=>r.item===s).length;return[i+1,s,fmt(v),fmt0(c),fmt(c?v/c:0),(total?v/total*100:0).toFixed(2)+'%']}))+
     _pzFooter()
   );
@@ -404,8 +404,8 @@ function exportSmartServicesExcel(){
   const data=byYear(records,y);
   const svcs=Object.entries(groupSum(data,'item')).sort((a,b)=>b[1]-a[1]);
   const total=svcs.reduce((s,[,v])=>s+v,0);
-  _toExcel('الخدمات',
-    ['#','الخدمة','المبيعات SAR','عدد العمليات','متوسط SAR','المساهمة %'],
+  _toExcel(smartExportT('services','الخدمات'),
+    ['#',smartExportT('service','الخدمة'),smartExportT('salesSar','المبيعات SAR'),smartExportT('operationCount','عدد العمليات'),smartExportT('averageSar','متوسط SAR'),smartExportT('contribution','المساهمة %')],
     svcs.map(([s,v],i)=>{const c=data.filter(r=>r.item===s).length;return[i+1,s,+v.toFixed(2),c,+(c?v/c:0).toFixed(2),(total?v/total*100:0).toFixed(2)+'%']}),
     `PETATOE_SmartServices_${y}.xlsx`
   );
@@ -423,26 +423,26 @@ function exportAdvancedPdf(){
   const qs=['Q1','Q2','Q3','Q4'];
   let body='';
   if(mode==='months'){
-    body='<div class="pz-section">المبيعات الشهرية</div>'+
-      _pzTable(['الشهر','المبيعات SAR','الفواتير','المتوسط SAR'],months.map(m=>[m.label,fmt(m.total),fmt0(m.count),fmt(m.avg)]));
+    body='<div class="pz-section">'+smartExportT('monthlySales','المبيعات الشهرية')+'</div>'+
+      _pzTable([smartExportT('month','الشهر'),smartExportT('salesSar','المبيعات SAR'),smartExportT('invoices','الفواتير'),smartExportT('averageSar','المتوسط SAR')],months.map(m=>[m.label,fmt(m.total),fmt0(m.count),fmt(m.avg)]));
   } else if(mode==='quarters'){
-    body='<div class="pz-section">الأرباع</div>'+
-      _pzTable(['الربع','المبيعات SAR','الفواتير'],qs.map(q=>[q,fmt(qSum(records,y,q)),fmt0(qCount(records,y,q))]));
+    body='<div class="pz-section">'+smartExportT('quarters','الأرباع')+'</div>'+
+      _pzTable([smartExportT('quarter','الربع'),smartExportT('salesSar','المبيعات SAR'),smartExportT('invoices','الفواتير')],qs.map(q=>[q,fmt(qSum(records,y,q)),fmt0(qCount(records,y,q))]));
   } else if(mode==='yoyq'){
-    {const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; body='<div class="pz-section">مقارنة '+y1+' vs '+y2+'</div>'+
-      _pzTable(['الربع',y1+' SAR',y2+' SAR','الفرق','النمو %'],qs.map(q=>{const a=qSum(records,y1,q),b=qSum(records,y2,q),d=b-a,g=a?d/a*100:0;return[q,fmt(a),fmt(b),(d>=0?'+':'')+fmt(d),g.toFixed(2)+'%']}));}
+    {const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; body='<div class="pz-section">'+smartExportT('comparisonBetween','مقارنة {first} vs {second}',{first:y1,second:y2})+'</div>'+
+      _pzTable([smartExportT('quarter','الربع'),y1+' SAR',y2+' SAR',smartExportT('difference','الفرق'),smartExportT('growthPercent','النمو %')],qs.map(q=>{const a=qSum(records,y1,q),b=qSum(records,y2,q),d=b-a,g=a?d/a*100:0;return[q,fmt(a),fmt(b),(d>=0?'+':'')+fmt(d),g.toFixed(2)+'%']}));}
   } else if(mode==='payment'){
     const pays=Object.entries(groupSum(data,'pay')).sort((a,b)=>b[1]-a[1]);
-    body='<div class="pz-section">طرق الدفع</div>'+
-      _pzTable(['طريقة الدفع','المبيعات SAR','المساهمة %'],pays.map(([p,s])=>{const t=pays.reduce((x,[,v])=>x+v,0);return[p,fmt(s),(t?s/t*100:0).toFixed(2)+'%']}));
+    body='<div class="pz-section">'+smartExportT('paymentMethods','طرق الدفع')+'</div>'+
+      _pzTable([smartExportT('paymentMethod','طريقة الدفع'),smartExportT('salesSar','المبيعات SAR'),smartExportT('contribution','المساهمة %')],pays.map(([p,s])=>{const t=pays.reduce((x,[,v])=>x+v,0);return[p,fmt(s),(t?s/t*100:0).toFixed(2)+'%']}));
   }
-  const modeNames={months:'شهري',quarters:'ربعي',yoyq:'مقارنة سنوية',payment:'طرق الدفع'};
+  const modeNames={months:smartExportT('monthly','شهري'),quarters:smartExportT('quarterly','ربعي'),yoyq:smartExportT('annualComparison','مقارنة سنوية'),payment:smartExportT('paymentMethods','طرق الدفع')};
   _printZone(
-    _pzHeader('مركز التقارير المتقدمة',`الوضع: ${modeNames[mode]||mode} — السنة: ${y==='all'?'كل السنوات':y}`)+
+    _pzHeader(smartExportT('advancedReportsCenter','مركز التقارير المتقدمة'),smartExportT('modeYearLabel','الوضع: {mode} — السنة: {year}',{mode:modeNames[mode]||mode,year:y==='all'?smartExportT('allYears','كل السنوات'):y}))+
     _pzKpis([
-      ['الإجمالي',money(data.reduce((s,r)=>s+parseNum(r.totalInc),0))],
-      ['الفواتير',fmt0(data.length)],
-      ['النمو Q1',`${(()=>{const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; const a=qSum(records,y1,'Q1'),b=qSum(records,y2,'Q1');return a?(((b-a)/a)*100).toFixed(2)+'%':'—'})()}`]
+      [smartExportT('total','الإجمالي'),money(data.reduce((s,r)=>s+parseNum(r.totalInc),0))],
+      [smartExportT('invoices','الفواتير'),fmt0(data.length)],
+      [smartExportT('q1Growth','النمو Q1'),`${(()=>{const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; const a=qSum(records,y1,'Q1'),b=qSum(records,y2,'Q1');return a?(((b-a)/a)*100).toFixed(2)+'%':'—'})()}`]
     ])+body+_pzFooter()
   );
 }
@@ -452,10 +452,10 @@ function exportAdvancedExcel(){
   const qs=['Q1','Q2','Q3','Q4'];
   const wb=XLSX.utils.book_new();
   const addSh=(n,h,r)=>{const ws=XLSX.utils.aoa_to_sheet([h,...r]);ws['!cols']=h.map(()=>({wch:20}));XLSX.utils.book_append_sheet(wb,ws,n)};
-  addSh('شهري',['الشهر','SAR','الفواتير','المتوسط'],months.map(m=>[m.label,+m.total.toFixed(2),m.count,+m.avg.toFixed(2)]));
-  addSh('ربعي',['الربع','SAR','الفواتير'],qs.map(q=>[q,+qSum(records,y,q).toFixed(2),qCount(records,y,q)]));
-  {const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; addSh('YoY',['الربع',String(y1),String(y2),'الفرق','%'],qs.map(q=>{const a=qSum(records,y1,q),b=qSum(records,y2,q);return[q,+a.toFixed(2),+b.toFixed(2),+(b-a).toFixed(2),(a?((b-a)/a*100).toFixed(2)+'%':'—')]}));}
-  addSh('الدفع',['طريقة الدفع','SAR'],Object.entries(groupSum(byYear(records,y),'pay')).sort((a,b)=>b[1]-a[1]).map(([p,s])=>[p,+s.toFixed(2)]));
+  addSh(smartExportT('monthly','شهري'),[smartExportT('month','الشهر'),'SAR',smartExportT('invoices','الفواتير'),'المتوسط'],months.map(m=>[m.label,+m.total.toFixed(2),m.count,+m.avg.toFixed(2)]));
+  addSh(smartExportT('quarterly','ربعي'),[smartExportT('quarter','الربع'),'SAR',smartExportT('invoices','الفواتير')],qs.map(q=>[q,+qSum(records,y,q).toFixed(2),qCount(records,y,q)]));
+  {const dy=reportQuarterDynamicYears(records), y1=dy.previous, y2=dy.current; addSh('YoY',[smartExportT('quarter','الربع'),String(y1),String(y2),smartExportT('difference','الفرق'),'%'],qs.map(q=>{const a=qSum(records,y1,q),b=qSum(records,y2,q);return[q,+a.toFixed(2),+b.toFixed(2),+(b-a).toFixed(2),(a?((b-a)/a*100).toFixed(2)+'%':'—')]}));}
+  addSh(smartExportT('payments','الدفع'),[smartExportT('paymentMethod','طريقة الدفع'),'SAR'],Object.entries(groupSum(byYear(records,y),'pay')).sort((a,b)=>b[1]-a[1]).map(([p,s])=>[p,+s.toFixed(2)]));
   XLSX.writeFile(wb,`PETATOE_Advanced_${y}.xlsx`);
 }
 window.exportAdvancedPdf=exportAdvancedPdf; window.exportAdvancedExcel=exportAdvancedExcel;
