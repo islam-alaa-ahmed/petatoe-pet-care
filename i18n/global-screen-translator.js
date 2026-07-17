@@ -308,6 +308,84 @@
       proto.__petatoeI18nPatched=true;
     }catch(_){}
   }
+
+  // FINAL9: initial English hydration coordinator.
+  // Some report builders finish after the saved language is restored. Manual language toggling
+  // used to fix those surfaces because it reran the full language application lifecycle.
+  // This coordinator performs the same lifecycle once, silently, after auth/data/render readiness.
+  var hydrationTimer=0;
+  var hydrationRunning=false;
+  var lastHydrationAt=0;
+  var lastDictionarySignature='';
+
+  function dictionarySignature(){
+    try{
+      var d=window.PETATOE_I18N_DICTIONARIES||{};
+      var s=window.PETATOE_SMART_REPORTS_TRANSLATIONS||{};
+      return [
+        Object.keys(d.ar||{}).length,Object.keys(d.en||{}).length,
+        Object.keys(s.ar||{}).length,Object.keys(s.en||{}).length,
+        !!window.PETATOE_I18N,!!window.PETATOE_BUSINESS_DATA_LOCALIZATION
+      ].join('|');
+    }catch(_e){ return ''; }
+  }
+  function ensureIndexFresh(force){
+    var sig=dictionarySignature();
+    if(force||!phrasePairs.length||sig!==lastDictionarySignature){
+      buildIndex();
+      lastDictionarySignature=sig;
+    }
+  }
+  function activeEnglishRoots(){
+    var roots=[];
+    ['header','.topbar','.top-bar','#nav','.sidebar','.panel.active','main .active','#smartTabs','.smart-tab-section.active','.contract-reason-modal-overlay.show','.new-cust-tier-tooltip','.smart-modal-overlay.show'].forEach(function(selector){
+      try{document.querySelectorAll(selector).forEach(function(el){if(roots.indexOf(el)===-1)roots.push(el);});}catch(_e){}
+    });
+    return roots.length?roots:[document.body||document.documentElement];
+  }
+  function activeSurfaceHasArabic(){
+    var roots=activeEnglishRoots();
+    for(var r=0;r<roots.length;r++){
+      var root=roots[r];
+      if(!root)continue;
+      try{
+        var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);
+        while(walker.nextNode()){
+          var node=walker.currentNode;
+          if(node.parentElement&&!skip(node.parentElement)&&hasArabic(node.nodeValue))return true;
+        }
+      }catch(_e){}
+    }
+    return false;
+  }
+  function runInitialEnglishHydration(reason){
+    hydrationTimer=0;
+    if(hydrationRunning||!runtimeEnabled())return;
+    ensureIndexFresh(false);
+    // Avoid needless work after the active surface is already clean.
+    if(!activeSurfaceHasArabic()){requestFullScan(0);return;}
+    var now=Date.now();
+    if(now-lastHydrationAt<700)return;
+    lastHydrationAt=now;
+    hydrationRunning=true;
+    try{
+      if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.apply==='function'){
+        window.PETATOE_I18N.apply('en',{renderDashboard:false,source:'initial-hydration',silent:true});
+      }
+    }catch(_e){}
+    finally{
+      hydrationRunning=false;
+      ensureIndexFresh(false);
+      requestFullScan(20);
+      try{window.dispatchEvent(new CustomEvent('petatoe:english-hydrated',{detail:{reason:reason||'unknown'}}));}catch(_e2){}
+    }
+  }
+  function scheduleInitialEnglishHydration(reason,delay){
+    if(!runtimeEnabled())return;
+    clearTimeout(hydrationTimer);
+    hydrationTimer=setTimeout(function(){runInitialEnglishHydration(reason);},typeof delay==='number'?delay:180);
+  }
+
   function residuals(){
     var rows=[];if(!document.body)return rows;
     function inspect(root){
@@ -332,7 +410,8 @@
     translate:translateMixed,
     monthName:englishMonth,
     scan:function(){requestFullScan(0);},
-    rebuild:function(){buildIndex();requestFullScan(0);},
+    rebuild:function(){ensureIndexFresh(true);requestFullScan(0);},
+    hydrate:function(){scheduleInitialEnglishHydration('manual-api',0);},
     remainingArabic:residuals,
     stats:function(){return{authenticated:isAuthenticated(),runtimeEnabled:runtimeEnabled(),queuedNodes:mutationQueue.length,cacheSize:translationCache.size,phrases:phrasePairs.length,processing:processing};},
     assertEnglishClean:function(){
@@ -344,23 +423,23 @@
   };
 
   window.addEventListener('petatoe:language-changed',function(){
-    if(runtimeEnabled()){buildIndex();resumeObserver();requestFullScan(30);}else{pauseObserver();mutationQueue.length=0;queuedNodes.clear();}
+    if(runtimeEnabled()){ensureIndexFresh(true);resumeObserver();requestFullScan(30);}else{pauseObserver();mutationQueue.length=0;queuedNodes.clear();}
   });
   document.addEventListener('petatoe:userchanged',function(e){
     var user=e&&e.detail&&e.detail.user;
     if(user&&(user.id||user.username)){
-      buildIndex();resumeObserver();requestFullScan(40);
+      ensureIndexFresh(true);resumeObserver();requestFullScan(40);scheduleInitialEnglishHydration('userchanged',260);
     }else{
       pauseObserver();cancelIdle(flushHandle);cancelIdle(fullScanHandle);flushHandle=0;fullScanHandle=0;
       mutationQueue.length=0;queuedNodes.clear();processing=false;
     }
   });
-  document.addEventListener('petatoe:tabchange',function(){requestFullScan(90);});
+  document.addEventListener('petatoe:tabchange',function(e){requestFullScan(90);var d=e&&e.detail||{};if(d.tabId==='smart'||document.querySelector('.smart-tab-section.active'))scheduleInitialEnglishHydration('smart-tabchange',220);});
   document.addEventListener('click',function(e){if(e.target&&e.target.closest&&e.target.closest('[data-smart-action],[data-contract-reason-index],[data-contract-reason-close]'))requestFullScan(120);},true);
-  window.addEventListener('petatoe:records-changed',function(){requestFullScan(120);});
-  document.addEventListener('petatoe:navbuilt',function(){requestFullScan(90);});
-  window.addEventListener('petatoe:localization-ready',function(){if(runtimeEnabled()){buildIndex();requestFullScan(50);}});
-  window.addEventListener('load',function(){if(runtimeEnabled()){buildIndex();requestFullScan(180);}});
+  window.addEventListener('petatoe:records-changed',function(){ensureIndexFresh(false);requestFullScan(120);scheduleInitialEnglishHydration('records-changed',240);});
+  document.addEventListener('petatoe:navbuilt',function(){requestFullScan(90);scheduleInitialEnglishHydration('navbuilt',160);});
+  window.addEventListener('petatoe:localization-ready',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(50);scheduleInitialEnglishHydration('localization-ready',140);}});
+  window.addEventListener('load',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(180);scheduleInitialEnglishHydration('window-load',420);}});
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
