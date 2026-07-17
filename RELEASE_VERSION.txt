@@ -1,13 +1,2 @@
-PETATOE v9.0.0 — ELC_PHASE8G_MISSING_RUNTIME_KEYS_RECOVERY
-
-Release Type: Enterprise Localization Missing Runtime Keys Recovery
-Base: petatoe-pet-care(9).zip
-
-Purpose:
-- Restore missing Smart Reports export and interaction runtime keys.
-- Route export, interaction, and sales-invoice helpers through the dedicated translation pack.
-- Complete English runtime-template source symmetry for the nine certified gaps.
-
-Scope:
-- Localization runtime and dictionaries only.
-- No calculations, filters, datasets, Supabase, database, or business-logic changes.
+PETATOE v9.0.0
+ELC_FINAL_GLOBAL_ENGLISH_SCREEN_PURGE
