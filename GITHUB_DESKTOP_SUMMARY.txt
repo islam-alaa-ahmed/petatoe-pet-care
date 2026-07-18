@@ -1,12 +1,8 @@
-PETATOE v9.4.14 — Smart Reports Data Readiness Recovery
+PETATOE v9.4.14 — Smart Reports CI Validator Fix
 
-- Fixed false “not enough data” states after refresh while Supabase/session data was still hydrating.
-- Preserved the last valid Smart Reports dataset and dashboard during background refreshes.
-- Added a 30-second event-aware readiness window instead of treating a short retry timeout as empty data.
-- Prevented Smart Reports bootstrap from being marked complete when the DOM is loading, empty, or data is unavailable.
-- Deferred the full dashboard render until data readiness is confirmed.
-- Removed duplicate direct tab render calls from the router and delegated lazy chart rendering to the canonical Smart Tabs controller after the tab becomes visible.
-- Fixed blank vehicle and sales charts caused by Chart.js rendering against hidden sections.
-- Kept render coalescing, localization batching, and duplicate-render protection from v9.4.13.
-- Added Smart Reports data-readiness recovery validation to GitHub Actions.
-- Synchronized release metadata and cache tokens to PETATOE v9.4.14.
+- Fixed the outdated Smart Reports render-performance validator that still required the removed eight-retry cap.
+- Preserved the v9.4.14 event-aware 30-second data-readiness window and did not roll back runtime behavior.
+- Updated performance validation to verify immediate stop when data becomes available, loading-state safety, and the final synchronized readiness check.
+- Passed Smart Reports Render Performance validation with 12/12 checks.
+- Passed Smart Reports Data Readiness Recovery validation with 10/10 checks.
+- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, and JavaScript syntax validation.
