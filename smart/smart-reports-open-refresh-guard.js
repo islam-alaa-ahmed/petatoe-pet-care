@@ -13,7 +13,7 @@
   var syncPromise = null;
   var retryTimer = null;
   var retryCount = 0;
-  var MAX_RETRIES = 30;
+  var MAX_RETRIES = 8;
   var dataConfirmed = false;
 
   function q(sel, root){ try{return (root||document).querySelector(sel);}catch(_e){return null;} }
@@ -117,8 +117,7 @@
       clearTimeout(retryTimer);
       try{
         if(typeof window.renderSmartReports === 'function') window.renderSmartReports(tab);
-        setTimeout(function(){ setSmartTabSafe(tab); }, 0);
-        setTimeout(function(){ setSmartTabSafe(tab); }, 180);
+        requestAnimationFrame(function(){ setSmartTabSafe(tab); });
         try{ if(window.PETATOENavigationState && typeof window.PETATOENavigationState.save === 'function') window.PETATOENavigationState.save(reason || 'smart-ready-render'); }catch(_e){}
         return true;
       }catch(e){ try{ console.error('[PETATOE Smart] render failed', e); }catch(_e){} return false; }

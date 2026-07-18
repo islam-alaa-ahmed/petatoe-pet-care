@@ -42,7 +42,7 @@
     }catch(_e){}
     return false;
   }
-  function runtimeEnabled(){ return language()==='en'; }
+  function runtimeEnabled(){ return language()==='en'&&!window.__PETATOE_LOCALIZATION_MUTATION_SUSPENDED__; }
   function normalize(v){return String(v==null?'':v).replace(/\s+/g,' ').trim();}
   function hasArabic(v){return ARABIC_RE.test(String(v||''));}
   function flatten(obj,prefix,out){

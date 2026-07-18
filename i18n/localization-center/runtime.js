@@ -1,7 +1,7 @@
-/* PETATOE v9.4.12 — Runtime Translation Completion */
+/* PETATOE v9.4.13 — Smart Reports Render & Localization Performance */
 (function(){
   'use strict';
-  var VERSION='9.4.12-runtime-translation-completion';
+  var VERSION='9.4.13-smart-reports-performance';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

@@ -396,14 +396,14 @@
         }
         function flushAddedRoots(){
           pendingFrame=0;
-          if(applying||!pendingRoots.size) return;
+          if(applying||window.__PETATOE_LOCALIZATION_MUTATION_SUSPENDED__||!pendingRoots.size) return;
           var roots=Array.from(pendingRoots);pendingRoots.clear();
           roots.forEach(function(root){
             if(root&&root.isConnected!==false) translateAddedSubtree(root,currentLang());
           });
         }
         var observer=new MutationObserver(function(mutations){
-          if(applying) return;
+          if(applying||window.__PETATOE_LOCALIZATION_MUTATION_SUSPENDED__) return;
           mutations.forEach(function(mutation){
             Array.prototype.forEach.call(mutation.addedNodes||[],queueRoot);
           });

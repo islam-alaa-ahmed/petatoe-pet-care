@@ -44,7 +44,7 @@ function smartSafeHTML(target, html, reason){
     }
   }catch(e){try{window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('smart/smart-reports-core.js smartSafeHTML',e);}catch(_){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-reports-core.js', _, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } } }
   el.textContent='';el.insertAdjacentHTML('beforeend',String(html==null?'':html));
-  try{if(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.apply==='function')window.PETATOE_LOCALIZATION_CENTER.apply(el);}catch(_){ }
+  try{if(!window.__PETATOE_SMART_RENDER_BATCH__&&window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.apply==='function')window.PETATOE_LOCALIZATION_CENTER.apply(el);}catch(_){ }
   return true;
 }
 
