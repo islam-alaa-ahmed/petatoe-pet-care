@@ -40,7 +40,7 @@
     try{ if(Object.prototype.hasOwnProperty.call(__settingsMemoryState,k)) delete __settingsMemoryState[k]; }catch(_){}
   }
   function tr(key,fallback){try{return window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.t==='function'?window.PETATOE_LOCALIZATION_CENTER.t(key,{}, {fallback:fallback,allowKeyFallback:true}):fallback}catch(_){return fallback}}
-  function currentLanguage(){try{return String((window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.getLanguage&&window.PETATOE_LOCALIZATION_CENTER.getLanguage())||(window.PETATOE_I18N&&window.PETATOE_I18N.getLanguage&&window.PETATOE_I18N.getLanguage())||document.documentElement.lang||'ar').toLowerCase().slice(0,2)}catch(_){return 'ar'}}
+  function currentLanguage(){try{return String((window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.getLanguage&&window.PETATOE_LOCALIZATION_CENTER.getLanguage())||document.documentElement.lang||'ar').toLowerCase().slice(0,2)}catch(_){return 'ar'}}
   function translateSettingsText(value){
     var text=String(value==null?'':value);
     if(currentLanguage()!=='en'||!/[\u0600-\u06ff]/.test(text))return text;

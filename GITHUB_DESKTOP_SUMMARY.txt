@@ -1,10 +1,11 @@
-PETATOE v9.4.8 — Settings Localization Migration Phase 6.1
+PETATOE v9.4.8 — Localization Lockdown CI Fix
 
-- Migrated the Permissions Management screen to direct Localization Center keys.
-- Added 149 Arabic and 149 English canonical Settings translation entries.
-- Localized permission screens, CRUD actions, special permissions, module tabs, controls, help text, vehicle assignment, and runtime messages.
-- Resolved permission labels dynamically on every render for instant Arabic/English switching without reload.
-- Removed the main Permissions UI dependency on hardcoded Arabic text and Global Screen Translator fallback.
-- Added Phase 6.1 localization validation with zero missing language counterparts.
+- Removed the remaining direct PETATOE_I18N reference from settings/settings.js.
+- Kept PETATOE_LOCALIZATION_CENTER as the only Settings language source.
+- Synchronized Localization Center runtime metadata with PETATOE v9.4.8.
+- Updated Enterprise Localization Certification checks from v9.4.5 to v9.4.8.
+- Updated Production Localization Lockdown checks from v9.4.5 to v9.4.8.
+- Preserved the current release without rolling back version metadata.
+- Passed Enterprise Localization Certification with zero legacy calls, zero missing stored texts, and zero missing counterparts.
+- Passed Production Localization Lockdown.
 - Passed JavaScript syntax validation for 275 files with zero failures.
-- Updated release metadata to PETATOE v9.4.8.

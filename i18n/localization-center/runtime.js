@@ -1,7 +1,7 @@
-/* PETATOE v9.4.7 — Navigation & Language Performance Runtime */
+/* PETATOE v9.4.8 — Settings Localization Migration Phase 6.1 Runtime */
 (function(){
   'use strict';
-  var VERSION='9.4.7-navigation-language-performance';
+  var VERSION='9.4.8-settings-localization-phase61';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}
