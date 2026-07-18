@@ -123,7 +123,7 @@
     if(!item){item={id:'m_'+Date.now()+'_'+Math.random().toString(16).slice(2),source:'manual',createdAt:new Date().toISOString()};d[type]=d[type]||[];d[type].push(item)}
     m.fields.forEach(function(f){item[f[0]]=getV121Field(type,f[0])});
     item.name=String(item.name||'').trim();
-    if(!item.name){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اسم '):'اسم '+m.single+' مطلوب');return;}
+    if(!item.name){var namePrefix=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اسم '):'اسم ');toast(namePrefix+m.single+' مطلوب');return;}
     item.updatedAt=new Date().toISOString();
     item.source=item.source||'manual';
     if(!item.status)item.status='active';

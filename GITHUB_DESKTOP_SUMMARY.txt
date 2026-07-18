@@ -1,11 +1,10 @@
-PETATOE v9.4.11 — Permissions Runtime Reference Fix
+PETATOE v9.4.12 — Runtime Translation Completion
 
-- Fixed the console-blocking `ReferenceError: userPermStore is not defined` in settings/permissions.js.
-- Confirmed the root cause: the Phase 6.1 localized Permissions module exported and used the permission-store APIs after their definitions were omitted.
-- Restored the canonical identity-backed `userPermStore()` loader and `saveUserPermStore()` persistence adapter.
-- Restored the supporting user-source, escaping, and notification helpers required by the localized Permissions runtime.
-- Preserved all existing permission rules and kept the Localization Center integration unchanged.
-- Verified that window.PETATOEPermissions loads and exports both permission-store APIs successfully.
-- Passed Enterprise Localization Certification and Production Localization Lockdown.
-- Passed JavaScript syntax validation for 277 files with zero failures.
-- Synchronized release, runtime, index cache tokens, and CI validators to PETATOE v9.4.11.
+- Linked all remaining literal runtime translation calls to the canonical Localization Center store.
+- Added 66 Arabic and 66 English runtime translations.
+- Verified 229 runtime phrases used by the application with zero missing translations.
+- Increased canonical translation parity to 3,427 Arabic and 3,427 English entries.
+- Fixed dynamic localized messages that previously lost user names, invoice numbers, error details, or conflict details.
+- Added a Runtime Translation Completion validator to the GitHub Actions Localization Lockdown workflow.
+- Passed Enterprise Localization Certification, Production Localization Lockdown, Smart Reports Key Resolution, and JavaScript syntax validation.
+- Updated release metadata and cache tokens to PETATOE v9.4.12.

@@ -190,7 +190,7 @@
     var btn=document.querySelector('[data-v110-action="save-user"]'); if(btn)btn.disabled=true;
     try{
       var res=await persistUserToSupabase(x,{rowId:rowId,editMode:!isNew});
-      if(!res.ok){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل حفظ المستخدم: '):'فشل حفظ المستخدم: '+(res.error||'خطأ غير معروف'));return;}
+      if(!res.ok){toast((window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل حفظ المستخدم: '):'فشل حفظ المستخدم: ')+(res.error||'خطأ غير معروف'));return;}
       replaceCacheUser(res.user||x);
       if(!isNew && String(x.status || '').toLowerCase() !== 'active' && window.PETATOEAuth && typeof window.PETATOEAuth.forceRevokeUserSessions === 'function'){
         try{
@@ -204,7 +204,7 @@
       toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حفظ المستخدم'):'تم حفظ المستخدم');
       window.petV110ClearUserForm&&window.petV110ClearUserForm();
       renderUsers();
-    }catch(e){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل حفظ المستخدم: '):'فشل حفظ المستخدم: '+(e&&e.message?e.message:e));}
+    }catch(e){toast((window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل حفظ المستخدم: '):'فشل حفظ المستخدم: ')+(e&&e.message?e.message:e));}
     finally{if(btn)btn.disabled=false;}
   };
   window.petV110EditUser=function(id,rowId){
@@ -221,7 +221,7 @@
     if(isSuperUser(target)){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا يمكن حذف Super Admin'):'لا يمكن حذف Super Admin');return}
     if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف المستخدم؟'):'حذف المستخدم؟'))return;
     var res=await deleteUserFromSupabase(target);
-    if(!res.ok){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل حذف المستخدم: '):'فشل حذف المستخدم: '+(res.error||'خطأ غير معروف'));return;}
+    if(!res.ok){toast((window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل حذف المستخدم: '):'فشل حذف المستخدم: ')+(res.error||'خطأ غير معروف'));return;}
     removeCacheUser(target);
     audit('User Deleted',target.username||id,'warn'); toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حذف المستخدم'):'تم حذف المستخدم'); renderUsers();
   };

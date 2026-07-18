@@ -1,15 +1,15 @@
 {
   "status": "PASSED",
   "stats": {
-    "files": 274,
-    "js": 272,
+    "files": 281,
+    "js": 279,
     "html": 2,
     "legacyCalls": 0,
-    "staticUiCandidates": 512,
+    "staticUiCandidates": 501,
     "missingStoredTexts": 0,
     "missingCounterparts": 0,
-    "arabicEntries": 3336,
-    "englishEntries": 3336
+    "arabicEntries": 3427,
+    "englishEntries": 3427
   },
   "failures": [],
   "warnings": []

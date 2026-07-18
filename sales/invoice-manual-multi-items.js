@@ -146,7 +146,7 @@ function renderResults(keepFocus){ensureEntryUi();var active=document.activeElem
     no=invKey(no);
     var cnt=arr().filter(function(r){return invKey(r.invoice)===no}).length;
     if(!cnt){note('الفاتورة غير موجودة');return false}
-    if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف الفاتورة رقم '):'حذف الفاتورة رقم '+no+' بالكامل؟\nعدد البنود: '+cnt))return false;
+    var deleteInvoicePrefix=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف الفاتورة رقم '):'حذف الفاتورة رقم ');if(!confirm(deleteInvoicePrefix+no+' بالكامل؟\nعدد البنود: '+cnt))return false;
     var supabaseDelete=await deleteInvoiceFromSupabase(no,'manual-invoice-delete-button');
     if(!supabaseDelete || supabaseDelete.ok!==true){
       note('تعذر حذف الفاتورة من Supabase، لم يتم حذفها محلياً');

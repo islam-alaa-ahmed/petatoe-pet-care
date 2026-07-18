@@ -18,6 +18,8 @@ jobs:
         run: node scripts/enterprise-localization-certification-check.js
       - name: Production localization lockdown
         run: node scripts/localization-production-lockdown-check.js
+      - name: Runtime translation completion
+        run: node scripts/runtime-translation-completion-check.js
       - name: JavaScript syntax validation
         shell: bash
         run: |

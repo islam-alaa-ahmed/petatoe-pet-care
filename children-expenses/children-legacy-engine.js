@@ -586,13 +586,15 @@
   function deleteRowInternal(id){
     if(!can('delete')){ deny('ليس لديك صلاحية حذف مصروفات الأبناء'); return; }
     var rows=read(), r=rows.find(function(x){return x.id===id;}); if(!r) return;
-    if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف مصروف '):'حذف مصروف '+(r.child||'')+'؟')) return;
+    var deleteExpensePrefix=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف مصروف '):'حذف مصروف ');
+    if(!confirm(deleteExpensePrefix+(r.child||'')+'؟')) return;
     write(rows.filter(function(x){return x.id!==id;})); render(); if(window.toast) window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حذف المصروف'):'تم حذف المصروف');
   }
   function deleteBudgetInternal(id){
     if(!canSpecial('children_expenses_budget')){ deny('ليس لديك صلاحية إدارة ميزانية مصروفات الأبناء'); return; }
     var rows=readBudgets(), b=rows.find(function(x){return x.id===id;}); if(!b) return;
-    if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف ميزانية '):'حذف ميزانية '+(b.child||'')+' لشهر '+(b.month||'')+'؟')) return;
+    var deleteBudgetPrefix=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف ميزانية '):'حذف ميزانية ');
+    if(!confirm(deleteBudgetPrefix+(b.child||'')+' '+(b.month||'')+'؟')) return;
     writeBudgets(rows.filter(function(x){return x.id!==id;})); render(); if(window.toast) window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حذف الميزانية'):'تم حذف الميزانية');
   }
   window.__PETATOEChildrenExpensesEntryInternal = {

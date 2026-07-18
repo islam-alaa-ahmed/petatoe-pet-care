@@ -1,7 +1,7 @@
-/* PETATOE v9.4.11 — Permissions Runtime Reference Fix */
+/* PETATOE v9.4.12 — Runtime Translation Completion */
 (function(){
   'use strict';
-  var VERSION='9.4.11-permissions-runtime-reference-fix';
+  var VERSION='9.4.12-runtime-translation-completion';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

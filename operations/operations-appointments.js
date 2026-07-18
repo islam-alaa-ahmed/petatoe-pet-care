@@ -127,7 +127,7 @@
     }
     var conflicts = a.findConflicts(r, rows);
     if(conflicts.length){
-      alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('⚠️ يوجد تعارض في الموعد:\n'):'⚠️ يوجد تعارض في الموعد:\n' + conflicts.map(function(c){
+      var conflictPrefix=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('⚠️ يوجد تعارض في الموعد:\n'):'⚠️ يوجد تعارض في الموعد:\n'); alert(conflictPrefix + conflicts.map(function(c){
         return '- ' + c.reason + ' مع ' + ((c.row && c.row.client) || 'عميل') + ' من ' + ((c.row && c.row.start) || '?') + ' إلى ' + ((c.row && c.row.end) || '?');
       }).join('\n'));
       return;
