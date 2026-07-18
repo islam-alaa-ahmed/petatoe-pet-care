@@ -118,6 +118,29 @@
   var rendering=false;
 
   function byId(id){return document.getElementById(id)}
+  function treasurySessionAuthenticated(){
+    try{
+      if(document.documentElement.classList.contains('pet-authenticated'))return true;
+      if(document.body&&document.body.classList.contains('pet-authenticated'))return true;
+      if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'){
+        var u=window.PETATOEAuth.currentUser();
+        return !!(u&&(u.id||u.username));
+      }
+    }catch(_e){}
+    return false;
+  }
+  function treasuryPermissionsReady(){
+    try{
+      var ids=window.PETATOEIdentityStore;
+      if(!ids)return true;
+      var c=ids._cache||null;
+      if(c&&c.loaded===true)return true;
+      if(c&&c.loading)return false;
+      if(typeof ids.load==='function')ids.load();
+      return !!(c&&c.loaded===true);
+    }catch(_e){return true;}
+  }
+  function treasuryCanRender(){return treasurySessionAuthenticated()&&treasuryPermissionsReady();}
   function qa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel))}
   function clean(v){return String(v==null?'':v).trim()}
   function esc(v){return window.PETATOESecurity?PETATOESecurity.escapeHtml(clean(v)):clean(v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -485,7 +508,7 @@
   }
   function openTreasuryTab(tab,silent){
     tab=tab||firstAllowedTreasuryTab()||'home';
-    if(!canTreasuryTab(tab)){var fb=firstAllowedTreasuryTab(); if(!fb){activeTreasuryTab='';return alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('غير متاح للصلاحية الحالية'):'غير متاح للصلاحية الحالية');} tab=fb;}
+    if(!canTreasuryTab(tab)){var fb=firstAllowedTreasuryTab(); if(!fb){activeTreasuryTab=''; if(!silent)toastSafe(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('غير متاح للصلاحية الحالية'):'غير متاح للصلاحية الحالية'); return false;} tab=fb;}
     activeTreasuryTab=tab;
     qa('#treasury .treasury-tab-btn-v82').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tr-tab')===activeTreasuryTab)});
     qa('#treasury .treasury-section-v82').forEach(function(s){var id=s.getAttribute('data-tr-section');var allowed=!treasuryTabMeta(id)||canTreasuryTab(id);s.style[allowed?'removeProperty':'setProperty']&& (allowed?s.style.removeProperty('display'):s.style.setProperty('display','none','important'));s.classList.toggle('active',allowed&&id===activeTreasuryTab)});
@@ -527,8 +550,9 @@
   function exportAuditCsv(){var rows=getAudit(), header=['time','user','action','before','after','reason'];var lines=[header.join(',')].concat(rows.map(function(a){return [a.time,a.user,a.action,briefObj(a.before),briefObj(a.after),a.reason].map(function(v){return '"'+clean(v).replace(/"/g,'""')+'"'}).join(',')}));var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Treasury_Audit.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
 
   function renderAll(){
-    if(rendering)return; rendering=true;
-    try{patchApi();ensureTabs();fillSelects();renderKpis();renderVaults();updateBalanceBoxes();renderTable();if(activeStatementVault||clean((byId('trStatementVaultSelectV82')||{}).value))renderStatement();renderAudit();renderHome();}
+    if(!treasuryCanRender())return false;
+    if(rendering)return false; rendering=true;
+    try{patchApi();ensureTabs();fillSelects();renderKpis();renderVaults();updateBalanceBoxes();renderTable();if(activeStatementVault||clean((byId('trStatementVaultSelectV82')||{}).value))renderStatement();renderAudit();renderHome();return true;}
     finally{rendering=false;}
   }
   function patchApi(){
@@ -549,8 +573,9 @@
   function boot(){
     bind();
     patchApi();
+    if(!treasuryCanRender())return;
     loadTreasuryFromSupabase(false).then(function(){
-      if(!byId('treasury'))return;
+      if(!byId('treasury')||!treasuryCanRender())return;
       var t=Date.now();
       if(boot.lastRenderAt && (t-boot.lastRenderAt)<180)return;
       boot.lastRenderAt=t;
@@ -558,6 +583,7 @@
     });
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-  [80,300].forEach(function(ms){setTimeout(boot,ms)});
+  document.addEventListener('petatoe:userchanged',function(e){if(e&&e.detail&&e.detail.user)setTimeout(boot,0);});
+  window.addEventListener('petatoe:identity-ready',function(){setTimeout(boot,0);});
   /* PETATOE v3.8.103: disabled treasury self-mutation rerender; it was causing slow selects and action rebinding issues. */
 })();

@@ -1,7 +1,7 @@
-/* PETATOE v9.4.8 — Settings Localization Migration Phase 6.1 Runtime */
+/* PETATOE v9.4.9 — Startup Permission Guard Runtime */
 (function(){
   'use strict';
-  var VERSION='9.4.8-settings-localization-phase61';
+  var VERSION='9.4.9-startup-permission-guard';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}
