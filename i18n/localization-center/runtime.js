@@ -1,7 +1,7 @@
-/* PETATOE v9.4.9 — Startup Permission Guard Runtime */
+/* PETATOE v9.4.10 — Smart Reports Key Resolution Runtime */
 (function(){
   'use strict';
-  var VERSION='9.4.9-startup-permission-guard';
+  var VERSION='9.4.10-smart-reports-key-resolution';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

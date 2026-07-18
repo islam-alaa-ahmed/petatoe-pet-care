@@ -1,10 +1,11 @@
-PETATOE v9.4.9 — Startup Permission Guard
+PETATOE v9.4.10 — Smart Reports Key Resolution
 
-- Fixed the repeated native “Unavailable for the current permission” alert after login and page refresh.
-- Confirmed the root cause in treasury startup rendering before authentication and identity permissions were ready.
-- Gated Treasury rendering behind authenticated-session and identity-cache readiness checks.
-- Removed unconditional 80 ms and 300 ms Treasury startup retries.
-- Reinitialized Treasury from the canonical user-change and identity-ready events.
-- Prevented silent internal Treasury tab selection from displaying a blocking browser alert.
-- Preserved all existing permission rules and denied-action behavior.
-- Synchronized release and localization validation metadata to PETATOE v9.4.9.
+- Fixed Smart Reports translation keys appearing as visible text in Overview, Vehicles, filters, KPI cards, tables, and vehicle-efficiency controls.
+- Confirmed the root cause: Smart Reports dictionaries use flat dotted keys while the canonical store resolver only supported nested paths.
+- Updated Localization Center getPath() to resolve both nested objects and flat dotted dictionary entries.
+- Preserved PETATOE_LOCALIZATION_CENTER_STORE as the single translation source.
+- Added Smart Reports key-resolution regression validation for 22 visible keys in Arabic and English.
+- Verified 642 Smart Reports entries per language with zero visible key fallbacks.
+- Passed Enterprise Localization Certification and Production Localization Lockdown.
+- Verified 3,361 Arabic and 3,361 English entries with zero missing counterparts and zero legacy calls.
+- Updated release metadata and cache tokens to PETATOE v9.4.10.
