@@ -22,6 +22,8 @@ jobs:
         run: node scripts/runtime-translation-completion-check.js
       - name: Smart Reports render performance
         run: node scripts/smart-reports-render-performance-check.js
+      - name: Smart Reports data readiness recovery
+        run: node scripts/smart-reports-data-readiness-recovery-check.js
       - name: JavaScript syntax validation
         shell: bash
         run: |

@@ -1,14 +1,12 @@
-PETATOE v9.4.13 — Smart Reports Render & Localization Performance
+PETATOE v9.4.14 — Smart Reports Data Readiness Recovery
 
-- Fixed overlapping Smart Reports render requests during refresh, navigation, filter changes, and data-restoration events.
-- Added requestAnimationFrame render coalescing with an in-flight lock and latest-tab queue.
-- Preserved local active-tab rendering after the initial Smart Reports bootstrap instead of rebuilding the full dashboard.
-- Suspended Localization Center mutation processing while Smart Reports constructs large DOM trees.
-- Replaced repeated per-fragment translation passes with one Smart Reports root translation pass after rendering.
-- Paused the residual Global Screen Translator during batched Smart Reports rendering.
-- Reduced Smart Reports data-readiness retries from 30 to 8.
-- Removed the duplicate delayed active-tab restoration pass.
-- Added Smart Reports render performance validation to GitHub Actions.
-- Passed 9/9 performance architecture checks and JavaScript syntax validation for 280 files.
-- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, and Smart Reports Key Resolution.
-- Synchronized release, runtime, dictionary metadata, cache tokens, and validators to PETATOE v9.4.13.
+- Fixed false “not enough data” states after refresh while Supabase/session data was still hydrating.
+- Preserved the last valid Smart Reports dataset and dashboard during background refreshes.
+- Added a 30-second event-aware readiness window instead of treating a short retry timeout as empty data.
+- Prevented Smart Reports bootstrap from being marked complete when the DOM is loading, empty, or data is unavailable.
+- Deferred the full dashboard render until data readiness is confirmed.
+- Removed duplicate direct tab render calls from the router and delegated lazy chart rendering to the canonical Smart Tabs controller after the tab becomes visible.
+- Fixed blank vehicle and sales charts caused by Chart.js rendering against hidden sections.
+- Kept render coalescing, localization batching, and duplicate-render protection from v9.4.13.
+- Added Smart Reports data-readiness recovery validation to GitHub Actions.
+- Synchronized release metadata and cache tokens to PETATOE v9.4.14.
