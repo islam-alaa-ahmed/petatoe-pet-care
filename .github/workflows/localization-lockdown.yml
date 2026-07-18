@@ -24,6 +24,8 @@ jobs:
         run: node scripts/smart-reports-render-performance-check.js
       - name: Smart Reports fast readiness path
         run: node scripts/smart-reports-data-readiness-recovery-check.js
+      - name: Smart Reports public API
+        run: node scripts/smart-reports-public-api-check.js
       - name: JavaScript syntax validation
         shell: bash
         run: |

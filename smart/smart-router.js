@@ -1,4 +1,4 @@
-/* PETATOE v9.4.15 - Smart Reports Fast Runtime Restoration
+/* PETATOE v9.4.16 - Smart Reports Public API Restoration
    Keep the first full Smart Reports render as the stable baseline, then route local
    rerenders for already-modular tabs to their own renderers instead of rebuilding
    the whole Smart Reports dashboard. This preserves existing UI/data while reducing
@@ -9,6 +9,35 @@
   window.__PETATOE_SMART_REPORTS_ROUTER_B1__ = true;
 
   var legacyRender = window.renderSmartReports;
+
+  function normalizeSmartTab(tab){
+    var target = String(tab || 'overview').trim() || 'overview';
+    return target === 'business' ? 'forecast' : target;
+  }
+
+  function openSmartReports(tab, event){
+    try{ if(event && typeof event.preventDefault === 'function') event.preventDefault(); }catch(_e){}
+    var target = normalizeSmartTab(tab);
+    try{
+      if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function'){
+        window.PETATOERouter.openTab('smart', target);
+      }else if(window.PETATOEInlineHandlers && typeof window.PETATOEInlineHandlers.moduleCall === 'function'){
+        window.PETATOEInlineHandlers.moduleCall('router', 'openTab', 'smart', target);
+      }else if(typeof window.tab === 'function'){
+        window.tab('smart');
+        if(typeof window.setSmartTab === 'function') window.setSmartTab(target);
+      }else{
+        throw new Error('Smart Reports router is unavailable');
+      }
+      return false;
+    }catch(error){
+      console.error('[PETATOE Smart] open failed', error);
+      return false;
+    }
+  }
+
+  // Stable public API used by the header and legacy integrations.
+  window.PETATOEOpenSmartReports = openSmartReports;
 
   function perfNow(){ try{ return (window.performance && performance.now) ? performance.now() : Date.now(); }catch(e){ return Date.now(); } }
   function perfPush(name, start, meta){

@@ -1,12 +1,11 @@
-PETATOE v9.4.15 — Smart Reports Fast Runtime Restoration
+PETATOE v9.4.16 — Smart Reports Public API Restoration
 
-- Restored the proven fast Smart Reports routing path from the earlier stable baseline.
-- Removed the v9.4.13/v9.4.14 requestAnimationFrame render queue, in-flight lock, and retry-driven readiness layer from the active runtime.
-- Stopped loading smart-reports-open-refresh-guard.js, eliminating the 30-second wait/retry loop and repeated tab restoration.
-- Preserved the first canonical full render, then routed subsequent active-tab updates locally without rebuilding the full Smart Reports dashboard.
-- Removed per-fragment Localization Center DOM rescans from Smart Reports rendering.
-- Excluded #smartReportsArea from the generic Localization Center MutationObserver and residual Global Screen Translator scans.
-- Preserved direct Smart Reports Localization Center keys, business-data localization, and Arabic/English dictionary parity.
-- Updated CI checks to validate the fast runtime architecture instead of the obsolete readiness/retry implementation.
-- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports Fast Runtime, and JavaScript syntax validation.
-- Synchronized release metadata and cache tokens to PETATOE v9.4.15.
+- Fixed the console-blocking `ReferenceError: PETATOEOpenSmartReports is not defined` from the header Reports button.
+- Confirmed the root cause: v9.4.15 stopped loading the old readiness guard that previously owned the public API export.
+- Restored `window.PETATOEOpenSmartReports` inside the active Smart Reports router.
+- Routed the restored API through the canonical `PETATOERouter.openTab('smart', tab)` path without reintroducing retry loops or readiness delays.
+- Restored the header Reports button to the proven direct router call used by the earlier fast baseline.
+- Kept the public API as compatibility support for legacy integrations and external calls.
+- Added a Smart Reports Public API regression validator to GitHub Actions.
+- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports Public API validation, and JavaScript syntax checks.
+- Synchronized release metadata and cache tokens to PETATOE v9.4.16.

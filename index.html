@@ -588,7 +588,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="app">
 <main class="main">
 <header class="topbar">
-<div class="top-left pet-topbar-compact-actions"><button class="side-launcher" id="sideLauncher" onclick="toggleSidebar()" title="فتح القائمة الرئيسية"><span class="launch-logo">🐾</span><span class="launch-text"><b>PETATOE</b><small>Analytics System</small></span></button><button class="search pet-topbar-search-icon" id="topbarSearch" type="button" onclick="openGlobalSearch()" aria-label="فتح البحث" title="بحث">🔍</button><button class="top-paw-up-btn" id="topPawBackToTopBtn" title="Click للأعلى — Double Click لآخر الصفحة — اسحب لأعلى/أسفل للتمرير"><span class="paw-icon">🐾</span><span class="paw-tip">Click للأعلى<span class="drag-hint">Double Click لآخر الصفحة</span></span></button><button class="reports-btn" data-pet-permission-screen="reports" onclick="return PETATOEOpenSmartReports('overview',event)">📑 التقارير</button><button class="reports-btn" data-pet-permission-screen="reports" id="headerPdfBtn" type="button" onclick="return PETATOEHeaderPdfSafeOpen(event)" style="background:linear-gradient(135deg,#dc2626,#b91c1c);box-shadow:0 12px 32px rgba(220,38,38,.32)">📊 تقرير PDF</button></div>
+<div class="top-left pet-topbar-compact-actions"><button class="side-launcher" id="sideLauncher" onclick="toggleSidebar()" title="فتح القائمة الرئيسية"><span class="launch-logo">🐾</span><span class="launch-text"><b>PETATOE</b><small>Analytics System</small></span></button><button class="search pet-topbar-search-icon" id="topbarSearch" type="button" onclick="openGlobalSearch()" aria-label="فتح البحث" title="بحث">🔍</button><button class="top-paw-up-btn" id="topPawBackToTopBtn" title="Click للأعلى — Double Click لآخر الصفحة — اسحب لأعلى/أسفل للتمرير"><span class="paw-icon">🐾</span><span class="paw-tip">Click للأعلى<span class="drag-hint">Double Click لآخر الصفحة</span></span></button><button class="reports-btn" data-pet-permission-screen="reports" onclick="return PETATOEInlineHandlers.moduleCall('router','openTab','smart','overview')">📑 التقارير</button><button class="reports-btn" data-pet-permission-screen="reports" id="headerPdfBtn" type="button" onclick="return PETATOEHeaderPdfSafeOpen(event)" style="background:linear-gradient(135deg,#dc2626,#b91c1c);box-shadow:0 12px 32px rgba(220,38,38,.32)">📊 تقرير PDF</button></div>
 <div class="top-right"><span class="pill" id="today"></span><div class="pet-language-switcher" id="petLanguageSwitcher"><button class="pill pet-language-toggle" id="petLanguageToggle" type="button" data-i18n-title="language.toggleTitle" title="تغيير اللغة" aria-label="تغيير اللغة" aria-haspopup="listbox" aria-expanded="false"><span class="pet-language-current" id="petLanguageCurrent">AR</span><span class="pet-language-caret">▾</span></button><div class="pet-language-menu" id="petLanguageMenu" role="listbox" aria-label="اختيار اللغة"><button type="button" class="pet-language-option" data-pet-lang="ar" role="option">عربي</button><button type="button" class="pet-language-option" data-pet-lang="en" role="option">English</button></div></div><span class="pill toggle" onclick="toggleTheme()"><span class="switch"><i></i></span><span id="themeLabel">Dark</span></span><div class="pill pet-notification-trigger" id="topbarNotifBtn" role="button" tabindex="0" aria-label="الإشعارات" aria-haspopup="menu" aria-expanded="false"><span class="pet-notification-bell">🔔</span><b id="topbarNotifCount" style="color:#ef4444">0</b></div><div class="user" id="topbarUserBlock"><div><b id="topbarUserName">...</b><br/><small id="topbarUserRole" style="color:var(--muted)">جارٍ التحميل</small></div><div class="avatar">🐾</div></div></div>
 </header>
 <section class="page">
@@ -3616,7 +3616,7 @@ function petatoeUpdateWhatIf(){
 }
 
 
-/* PETATOE v6.2.3 Phase 2: Smart Reports core moved to smart/smart-reports-core.js?v=9.4.15-smart-reports-fast-runtime */
+/* PETATOE v6.2.3 Phase 2: Smart Reports core moved to smart/smart-reports-core.js?v=9.4.16-smart-reports-public-api */
 </script>
 <script src="router/navigation-controller.js"></script>
 <!-- FIXED BUILD v5: report year filters are independent from dashboard filters + horizontal scroll table -->
@@ -3930,8 +3930,8 @@ function petatoeUpdateWhatIf(){
 <script src="smart/smart-services.js"></script>
 <script src="smart/smart-vehicles.js?v=9.1.8-legacy-cleanup-pack1"></script>
 <script src="smart/smart-customers.js"></script>
-<script src="smart/smart-reports-core.js?v=9.4.15-smart-reports-fast-runtime"></script>
-<script src="smart/smart-router.js?v=9.4.15-smart-reports-fast-runtime"></script>
+<script src="smart/smart-reports-core.js?v=9.4.16-smart-reports-public-api"></script>
+<script src="smart/smart-router.js?v=9.4.16-smart-reports-public-api"></script>
 <script src="smart/smart-reports-interactions-real.js?v=9.0.0-elc-phase8g"></script>
 <script src="smart/smart-reports-export-engine.js?v=9.2.3-source-migration-pack2"></script>
 <script src="smart/smart-reports-facade.js"></script>
@@ -4581,7 +4581,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script defer="" src="components/liquid-glass-ui.js"></script>
 <script defer="" src="components/phase6f-safe-inline-cleanup.js"></script>
 <script defer="" src="inline-extracted/contract-candidates-full-export.js"></script>
-<script>window.PETATOE_RELEASE_VERSION='v9.4.15';window.PETATOE_RELEASE_NAME='PETATOE_V9_4_15_SMART_REPORTS_FAST_RUNTIME_RESTORATION';</script>
+<script>window.PETATOE_RELEASE_VERSION='v9.4.16';window.PETATOE_RELEASE_NAME='PETATOE_V9_4_16_SMART_REPORTS_PUBLIC_API_RESTORATION';</script>
 <script>
 (function(){
   function showPdfEngineMessage(){
@@ -4609,13 +4609,13 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script src="i18n/en.js?v=9.1.0-unified"></script>
 <script src="i18n/formatter.js?v=9.1.0-unified"></script>
 <script src="i18n/direction.js?v=9.1.0-unified"></script>
-<script src="i18n/index.js?v=9.4.15-smart-reports-fast-runtime"></script>
+<script src="i18n/index.js?v=9.4.16-smart-reports-public-api"></script>
 
 
 <script src="i18n/localization-center/loader.js?v=9.2.1-runtime-stability-phase1"></script>
-<script src="i18n/localization-center/dictionary-store.js?v=9.4.15-smart-reports-fast-runtime"></script>
+<script src="i18n/localization-center/dictionary-store.js?v=9.4.16-smart-reports-public-api"></script>
 <script src="i18n/localization-center/settings-phase61.js?v=9.4.8-settings-localization-phase61"></script>
-<script src="i18n/localization-center/runtime.js?v=9.4.15-smart-reports-fast-runtime"></script>
+<script src="i18n/localization-center/runtime.js?v=9.4.16-smart-reports-public-api"></script>
 <script src="i18n/localization-center/business-data.js?v=9.4.5-performance"></script>
 <script src="i18n/operations-source.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/warehouse-source.js?v=9.4.5-performance-adapter"></script>
@@ -4623,7 +4623,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script src="i18n/business-data-localization.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/maintenance-source.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/localization-center/consolidation.js?v=9.4.5-performance"></script>
-<script src="i18n/global-screen-translator.js?v=9.4.15-smart-reports-fast-runtime"></script>
+<script src="i18n/global-screen-translator.js?v=9.4.16-smart-reports-public-api"></script>
 <script src="i18n/localization-center/dashboard-pilot.js?v=9.0.0-elc-phase6a"></script>
 <script src="i18n/localization-center/application-shell-pilot.js?v=9.0.0-elc-phase7a"></script>
 <script src="i18n/audit.js?v=9.0.0-elc-phase6a"></script>

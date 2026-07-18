@@ -1,7 +1,7 @@
-/* PETATOE v9.4.15 — Smart Reports Fast Runtime Restoration */
+/* PETATOE v9.4.16 — Smart Reports Public API Restoration */
 (function(){
   'use strict';
-  var VERSION='9.4.15-smart-reports-fast-runtime';
+  var VERSION='9.4.16-smart-reports-public-api';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}
