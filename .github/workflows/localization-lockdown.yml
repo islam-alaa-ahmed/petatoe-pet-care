@@ -20,9 +20,9 @@ jobs:
         run: node scripts/localization-production-lockdown-check.js
       - name: Runtime translation completion
         run: node scripts/runtime-translation-completion-check.js
-      - name: Smart Reports render performance
+      - name: Smart Reports fast runtime
         run: node scripts/smart-reports-render-performance-check.js
-      - name: Smart Reports data readiness recovery
+      - name: Smart Reports fast readiness path
         run: node scripts/smart-reports-data-readiness-recovery-check.js
       - name: JavaScript syntax validation
         shell: bash

@@ -1,7 +1,7 @@
-/* PETATOE v9.4.14 — Smart Reports Render & Localization Performance */
+/* PETATOE v9.4.15 — Smart Reports Fast Runtime Restoration */
 (function(){
   'use strict';
-  var VERSION='9.4.14-smart-reports-performance';
+  var VERSION='9.4.15-smart-reports-fast-runtime';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

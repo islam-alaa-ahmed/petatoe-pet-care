@@ -385,7 +385,7 @@
         var pendingRoots=new Set();
         var pendingFrame=0;
         function queueRoot(node){
-          if(!node||node.nodeType!==1||node.closest('#petLanguageSwitcher'))return;
+          if(!node||node.nodeType!==1||node.closest('#petLanguageSwitcher')||node.closest('#smartReportsArea'))return;
           // Avoid processing both a parent subtree and its descendants in the same frame.
           var covered=false;
           pendingRoots.forEach(function(existing){

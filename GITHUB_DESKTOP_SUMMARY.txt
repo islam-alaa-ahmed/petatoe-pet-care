@@ -1,8 +1,12 @@
-PETATOE v9.4.14 — Smart Reports CI Validator Fix
+PETATOE v9.4.15 — Smart Reports Fast Runtime Restoration
 
-- Fixed the outdated Smart Reports render-performance validator that still required the removed eight-retry cap.
-- Preserved the v9.4.14 event-aware 30-second data-readiness window and did not roll back runtime behavior.
-- Updated performance validation to verify immediate stop when data becomes available, loading-state safety, and the final synchronized readiness check.
-- Passed Smart Reports Render Performance validation with 12/12 checks.
-- Passed Smart Reports Data Readiness Recovery validation with 10/10 checks.
-- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, and JavaScript syntax validation.
+- Restored the proven fast Smart Reports routing path from the earlier stable baseline.
+- Removed the v9.4.13/v9.4.14 requestAnimationFrame render queue, in-flight lock, and retry-driven readiness layer from the active runtime.
+- Stopped loading smart-reports-open-refresh-guard.js, eliminating the 30-second wait/retry loop and repeated tab restoration.
+- Preserved the first canonical full render, then routed subsequent active-tab updates locally without rebuilding the full Smart Reports dashboard.
+- Removed per-fragment Localization Center DOM rescans from Smart Reports rendering.
+- Excluded #smartReportsArea from the generic Localization Center MutationObserver and residual Global Screen Translator scans.
+- Preserved direct Smart Reports Localization Center keys, business-data localization, and Arabic/English dictionary parity.
+- Updated CI checks to validate the fast runtime architecture instead of the obsolete readiness/retry implementation.
+- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports Fast Runtime, and JavaScript syntax validation.
+- Synchronized release metadata and cache tokens to PETATOE v9.4.15.
