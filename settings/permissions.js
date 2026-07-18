@@ -1,4 +1,4 @@
-/* PETATOE v9.4.8 - Settings Localization Migration Phase 6.1
+/* PETATOE v9.4.11 - Permissions Runtime Reference Fix
    User-level CRUD permissions module. The matrix depends on real users only.
    Settings core renders this module without keeping permission logic inside settings.js. */
 (function(){
@@ -26,6 +26,48 @@
     {id:'children',icon:'👶',screens:['childrenExpenses'],specials:['children_expenses_budget','children_expenses_export']},
     {id:'admin',icon:'⚙️',screens:['settings','setup','users','permissions','audit'],specials:['manage_users','manage_permissions','backup','restore','manage_security','data_quality']}
   ];
+  var __petV139SelectedUser='';
+  var __petV139ActiveModule='home';
+  function identity(){return window.PETATOEIdentityStore||window.PETATOESupabaseRepository||null}
+  function esc(s){return String(s==null?'':s).replace(/[&<>'\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
+  function toast(msg){try{if(typeof window.toast==='function')window.toast(msg);else if(typeof window.alert==='function')window.alert(msg)}catch(e){try{window.alert(msg)}catch(_){}}}
+  function defaultAdmin(){return {id:'u_admin',username:'Admin',fullName:'Admin',role:'superadmin',role_code:'super_admin',status:'active'}}
+  function seedUsers(){
+    try{
+      var ids=identity();
+      if(ids&&typeof ids.load==='function')ids.load();
+      if(ids&&typeof ids.usersSync==='function'){
+        var list=ids.usersSync()||[];
+        if(Array.isArray(list)&&list.length)return list;
+      }
+    }catch(e){try{console.warn('PETATOE permissions users load failed',e)}catch(_){}}
+    return [defaultAdmin()];
+  }
+  function users(api){
+    if(api&&typeof api.users==='function'){
+      var apiUsers=api.users();
+      if(Array.isArray(apiUsers)&&apiUsers.length)return apiUsers;
+    }
+    return seedUsers();
+  }
+  function userPermStore(){
+    try{
+      var ids=identity();
+      if(ids&&typeof ids.permissionsSync==='function'){
+        var store=ids.permissionsSync()||{};
+        return store&&typeof store==='object'?store:{};
+      }
+    }catch(e){try{console.warn('PETATOE permissions store load failed',e)}catch(_){}}
+    return {};
+  }
+  function saveUserPermStore(store){
+    try{
+      var ids=identity();
+      if(ids&&typeof ids.savePermissions==='function')return ids.savePermissions(store||{});
+    }catch(e){try{console.warn('PETATOE permissions store save failed',e)}catch(_){}}
+    return null;
+  }
+
   function isSuperUser(u){var role=String((u&&u.role)||'').trim().toLowerCase(), roleN=role.replace(/[\u200f\u200e]/g,'').replace(/\s+/g,'_').replace(/-/g,'_'), id=String((u&&(u.id||u.userId||u.uid))||'').trim().toLowerCase(), name=String((u&&(u.username||u.name||u.fullName||u.login))||'').trim().toLowerCase(), job=String((u&&(u.job||u.title||u.position))||'').trim().toLowerCase();return !!(u&&(roleN==='superadmin'||roleN==='super_admin'||role.indexOf('super')>-1||role.indexOf('سوبر')>-1||id==='u_admin'||id==='admin'||name==='admin'||name==='superadmin'||job.indexOf('super')>-1||job.indexOf('سوبر')>-1))}
   function fullUserPerm(){var o={screens:{},special:{},vehicleScope:defaultVehicleScope()};screenPerms.forEach(function(s){o.screens[s[0]]={view:true,add:true,edit:true,delete:true}});specialPerms.forEach(function(s){o.special[s[0]]=true});return o}
   function normalizeRole(u){return String((u&&(u.role||u.role_code||u.job||u.title))||'').trim().toLowerCase().replace(/[‏‎]/g,'').replace(/\s+/g,'_').replace(/-/g,'_')}

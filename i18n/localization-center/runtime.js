@@ -1,7 +1,7 @@
-/* PETATOE v9.4.10 — Smart Reports Key Resolution Runtime */
+/* PETATOE v9.4.11 — Permissions Runtime Reference Fix */
 (function(){
   'use strict';
-  var VERSION='9.4.10-smart-reports-key-resolution';
+  var VERSION='9.4.11-permissions-runtime-reference-fix';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

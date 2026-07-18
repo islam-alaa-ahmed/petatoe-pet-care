@@ -1,11 +1,11 @@
-PETATOE v9.4.10 — Smart Reports Key Resolution
+PETATOE v9.4.11 — Permissions Runtime Reference Fix
 
-- Fixed Smart Reports translation keys appearing as visible text in Overview, Vehicles, filters, KPI cards, tables, and vehicle-efficiency controls.
-- Confirmed the root cause: Smart Reports dictionaries use flat dotted keys while the canonical store resolver only supported nested paths.
-- Updated Localization Center getPath() to resolve both nested objects and flat dotted dictionary entries.
-- Preserved PETATOE_LOCALIZATION_CENTER_STORE as the single translation source.
-- Added Smart Reports key-resolution regression validation for 22 visible keys in Arabic and English.
-- Verified 642 Smart Reports entries per language with zero visible key fallbacks.
+- Fixed the console-blocking `ReferenceError: userPermStore is not defined` in settings/permissions.js.
+- Confirmed the root cause: the Phase 6.1 localized Permissions module exported and used the permission-store APIs after their definitions were omitted.
+- Restored the canonical identity-backed `userPermStore()` loader and `saveUserPermStore()` persistence adapter.
+- Restored the supporting user-source, escaping, and notification helpers required by the localized Permissions runtime.
+- Preserved all existing permission rules and kept the Localization Center integration unchanged.
+- Verified that window.PETATOEPermissions loads and exports both permission-store APIs successfully.
 - Passed Enterprise Localization Certification and Production Localization Lockdown.
-- Verified 3,361 Arabic and 3,361 English entries with zero missing counterparts and zero legacy calls.
-- Updated release metadata and cache tokens to PETATOE v9.4.10.
+- Passed JavaScript syntax validation for 277 files with zero failures.
+- Synchronized release, runtime, index cache tokens, and CI validators to PETATOE v9.4.11.
