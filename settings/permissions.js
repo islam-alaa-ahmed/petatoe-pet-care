@@ -1,0 +1,407 @@
+/* PETATOE v9.4.8 - Settings Localization Migration Phase 6.1
+   User-level CRUD permissions module. The matrix depends on real users only.
+   Settings core renders this module without keeping permission logic inside settings.js. */
+(function(){
+  'use strict';
+  function tr(key,params,fallback){
+    var c=window.PETATOE_LOCALIZATION_CENTER;
+    if(c&&typeof c.t==='function')return c.t('settingsPhase61.permissions.'+key,params||{}, {fallback:fallback||key});
+    return fallback||key;
+  }
+  var USERS_KEY='app_users', USER_PERMS_KEY='app_user_permissions', CURRENT_KEY='app_current_user_ref';
+  var roleNames={superadmin:'Super Admin',super_admin:'Super Admin',admin:'Admin',manager:'Manager',operations_manager:'Operations Manager',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',driver:'Driver',groomer:'Groomer',driver_groomer:'Driver / Groomer',viewer:'Viewer'};
+  var screenKeys=['dashboardManagement','dashboardOperations','sales','customers','services','appointments','vehicleOperations','vehicleOperationsReports','operationKpis','vehicles','vaults','treasury','expenses','obligations','commissions','commissionStatement','payroll','salarySlip','childrenExpenses','reports','settings','setup','users','permissions','audit'];
+  var actionKeys=['view','add','edit','delete'];
+  var specialKeys=['export_pdf','export_excel','backup','restore','manage_users','manage_permissions','hard_delete','edit_closed','view_profit','edit_targets','manage_security','data_quality','payroll_cancel_approval','children_expenses_budget','children_expenses_export','operations_close_session','operations_reopen_session','operations_confirm_session','operations_edit_confirmed_session','vehicle_ops_create_trip','vehicle_ops_edit_trip','vehicle_ops_cancel_trip','vehicle_ops_reopen_trip','vehicle_ops_approve_trip','vehicle_ops_print','vehicle_ops_export','vehicle_ops_export_excel','vehicle_ops_export_pdf','vehicle_ops_view_reports','vehicle_ops_view_kpis','treasury_tab_home','treasury_tab_balances','treasury_tab_movements','treasury_tab_expenses','treasury_tab_statement','treasury_tab_log','treasury_tab_audit','treasury_tab_reports'];
+  var screenPerms=screenKeys.map(function(k){return [k,k,k]});
+  var crudActions=actionKeys.map(function(k){return [k,k]});
+  var specialPerms=specialKeys.map(function(k){return [k,k]});
+  var permissionModules=[
+    {id:'home',icon:'🏠',screens:['dashboardManagement','dashboardOperations'],specials:[]},
+    {id:'operations',icon:'🚗',screens:['appointments','vehicleOperations','vehicleOperationsReports','operationKpis'],specials:['vehicle_ops_create_trip','vehicle_ops_edit_trip','vehicle_ops_cancel_trip','vehicle_ops_reopen_trip','vehicle_ops_approve_trip','operations_close_session','operations_reopen_session','operations_confirm_session','operations_edit_confirmed_session','vehicle_ops_print','vehicle_ops_export','vehicle_ops_export_excel','vehicle_ops_export_pdf','vehicle_ops_view_reports','vehicle_ops_view_kpis']},
+    {id:'salary',icon:'💵',screens:['salarySlip','commissionStatement','payroll','commissions'],specials:['payroll_cancel_approval']},
+    {id:'sales',icon:'🛒',screens:['sales','customers','services','reports'],specials:['export_pdf','export_excel','view_profit','edit_targets']},
+    {id:'finance',icon:'💰',screens:['vaults','treasury','expenses','obligations'],specials:['treasury_tab_home','treasury_tab_balances','treasury_tab_movements','treasury_tab_expenses','treasury_tab_statement','treasury_tab_log','treasury_tab_audit','treasury_tab_reports']},
+    {id:'fleet',icon:'🚐',screens:['vehicles'],specials:[]},
+    {id:'children',icon:'👶',screens:['childrenExpenses'],specials:['children_expenses_budget','children_expenses_export']},
+    {id:'admin',icon:'⚙️',screens:['settings','setup','users','permissions','audit'],specials:['manage_users','manage_permissions','backup','restore','manage_security','data_quality']}
+  ];
+  function isSuperUser(u){var role=String((u&&u.role)||'').trim().toLowerCase(), roleN=role.replace(/[\u200f\u200e]/g,'').replace(/\s+/g,'_').replace(/-/g,'_'), id=String((u&&(u.id||u.userId||u.uid))||'').trim().toLowerCase(), name=String((u&&(u.username||u.name||u.fullName||u.login))||'').trim().toLowerCase(), job=String((u&&(u.job||u.title||u.position))||'').trim().toLowerCase();return !!(u&&(roleN==='superadmin'||roleN==='super_admin'||role.indexOf('super')>-1||role.indexOf('سوبر')>-1||id==='u_admin'||id==='admin'||name==='admin'||name==='superadmin'||job.indexOf('super')>-1||job.indexOf('سوبر')>-1))}
+  function fullUserPerm(){var o={screens:{},special:{},vehicleScope:defaultVehicleScope()};screenPerms.forEach(function(s){o.screens[s[0]]={view:true,add:true,edit:true,delete:true}});specialPerms.forEach(function(s){o.special[s[0]]=true});return o}
+  function normalizeRole(u){return String((u&&(u.role||u.role_code||u.job||u.title))||'').trim().toLowerCase().replace(/[‏‎]/g,'').replace(/\s+/g,'_').replace(/-/g,'_')}
+  function emptyUserPerm(){var o={screens:{},special:{},vehicleScope:defaultVehicleScope()};screenPerms.forEach(function(s){o.screens[s[0]]={view:false,add:false,edit:false,delete:false}});specialPerms.forEach(function(s){o.special[s[0]]=false});return o}
+  function grantScreen(o,k,actions){if(!o.screens[k])return;o.screens[k].view=actions.indexOf('view')>-1;o.screens[k].add=actions.indexOf('add')>-1;o.screens[k].edit=actions.indexOf('edit')>-1;o.screens[k].delete=actions.indexOf('delete')>-1}
+  function defaultUserPerm(u){
+    if(isSuperUser(u))return fullUserPerm();
+    var o=emptyUserPerm(), r=normalizeRole(u);
+    if(r==='driver'||r==='groomer'||r==='driver_groomer'){
+      grantScreen(o,'dashboardOperations',['view']);
+      grantScreen(o,'vehicleOperations',['view','edit']);
+      grantScreen(o,'salarySlip',['view']);
+      grantScreen(o,'commissionStatement',['view']);
+      ['vehicle_ops_edit_trip','operations_confirm_session','operations_close_session'].forEach(function(k){o.special[k]=true});
+      return o;
+    }
+    if(r==='viewer'){
+      ['dashboardManagement','reports','sales','customers'].forEach(function(k){grantScreen(o,k,['view'])});
+      return o;
+    }
+    if(r==='accountant'){
+      ['dashboardManagement','sales','customers','treasury','vaults','expenses','obligations','salarySlip','commissionStatement','payroll','commissions','reports'].forEach(function(k){grantScreen(o,k,['view'])});
+      ['sales','treasury','expenses','obligations','payroll'].forEach(function(k){grantScreen(o,k,['view','add','edit'])});
+      o.special.export_pdf=true;o.special.export_excel=true;o.special.payroll_cancel_approval=true;
+      return o;
+    }
+    if(r==='fleet'||r==='operations_manager'||r==='dispatcher'){
+      ['dashboardOperations','appointments','vehicleOperations','vehicleOperationsReports','operationKpis','vehicles','salarySlip','commissionStatement'].forEach(function(k){grantScreen(o,k,['view'])});
+      ['appointments','vehicleOperations'].forEach(function(k){grantScreen(o,k,['view','add','edit'])});
+      ['vehicle_ops_create_trip','vehicle_ops_edit_trip','vehicle_ops_cancel_trip','vehicle_ops_reopen_trip','vehicle_ops_approve_trip','operations_close_session','operations_reopen_session','operations_confirm_session','operations_edit_confirmed_session','vehicle_ops_view_reports','vehicle_ops_view_kpis','vehicle_ops_export','vehicle_ops_export_excel','vehicle_ops_export_pdf','vehicle_ops_print'].forEach(function(k){o.special[k]=true});
+      return o;
+    }
+    if(r==='admin'||r==='manager'){
+      ['dashboardManagement','sales','customers','services','appointments','vehicleOperations','vehicleOperationsReports','operationKpis','vehicles','vaults','treasury','expenses','obligations','commissions','commissionStatement','payroll','salarySlip','childrenExpenses','reports','settings','setup','users','permissions','audit'].forEach(function(k){grantScreen(o,k,['view','add','edit'])});
+      ['users','permissions'].forEach(function(k){grantScreen(o,k,['view','add','edit','delete'])});
+      specialPerms.forEach(function(s){o.special[s[0]]=true});
+      return o;
+    }
+    grantScreen(o,'dashboardOperations',['view']);
+    grantScreen(o,'salarySlip',['view']);
+    grantScreen(o,'commissionStatement',['view']);
+    return o;
+  }
+  function applyVehicleOpsDefaultSpecials(o){
+    o=o||{screens:{},special:{}};o.special=o.special||{};
+    var v=o.screens&&o.screens.vehicleOperations||{};
+    if(v.add){o.special.vehicle_ops_create_trip=true;}
+    if(v.edit){o.special.vehicle_ops_edit_trip=true;}
+    return o;
+  }
+  // PETATOE v8.0.2 Phase 12: strict user identity resolution for permissions.
+  // Root cause: the old getUserById() returned us[0] when the requested user was not matched.
+  // If us[0] was Super Admin, normal users could inherit full permissions during runtime checks.
+  // PETATOE v8.0.2 Phase 15: strict user identity resolution.
+  // Runtime permissions must never match a user by display name or fallback to another record.
+  // Matching priority: stable technical ids first, then username/login/email only when unique.
+  function normalizeIdentityValue(v){return String(v==null?'':v).trim().toLowerCase()}
+  function primaryUserKeys(u){
+    var out=[],seen={};
+    function add(v){v=String(v==null?'':v).trim();var k=v.toLowerCase();if(k&&!seen[k]){seen[k]=1;out.push(v)}}
+    if(u&&typeof u==='object'){add(u.id);add(u.userId);add(u.uid);add(u.supabase_id);add(u.row_id)}
+    else add(u);
+    return out;
+  }
+  function loginUserKeys(u){
+    var out=[],seen={};
+    function add(v){v=String(v==null?'':v).trim();var k=v.toLowerCase();if(k&&!seen[k]){seen[k]=1;out.push(v)}}
+    if(u&&typeof u==='object'){add(u.username);add(u.login);add(u.email)}
+    else add(u);
+    return out;
+  }
+  function permissionStoreKeys(u){
+    var out=[],seen={};
+    function add(v){v=String(v==null?'':v).trim();var k=v.toLowerCase();if(k&&!seen[k]){seen[k]=1;out.push(v)}}
+    primaryUserKeys(u).forEach(add); loginUserKeys(u).forEach(add);
+    return out;
+  }
+  function findUniqueByLoginKey(us,key){
+    key=normalizeIdentityValue(key); if(!key)return null;
+    var matches=(us||[]).filter(function(x){
+      return loginUserKeys(x).map(normalizeIdentityValue).indexOf(key)>-1;
+    });
+    return matches.length===1?matches[0]:null;
+  }
+  function samePrimaryUserKey(u,ref){
+    var a=primaryUserKeys(u).map(normalizeIdentityValue), b=primaryUserKeys(ref).map(normalizeIdentityValue);
+    return a.some(function(x){return b.indexOf(x)>-1});
+  }
+  function getUserById(uid){
+    var us=seedUsers(), ref=(uid&&typeof uid==='object')?uid:{id:uid,username:uid};
+    if(!uid&&uid!==0)return null;
+    var primary=us.find(function(x){return samePrimaryUserKey(x,ref)});
+    if(primary)return primary;
+    var loginKeys=loginUserKeys(ref);
+    for(var i=0;i<loginKeys.length;i++){
+      var unique=findUniqueByLoginKey(us,loginKeys[i]);
+      if(unique)return unique;
+    }
+    return null;
+  }
+  function permissionRecordFor(store,u){
+    store=store||{};
+    var keys=permissionStoreKeys(u);
+    for(var i=0;i<keys.length;i++){
+      if(Object.prototype.hasOwnProperty.call(store,keys[i]))return {found:true,perm:store[keys[i]]||{}};
+    }
+    return {found:false,perm:{}};
+  }
+  function getUserPerm(uid){
+    var u=getUserById(uid);
+    if(!u)return emptyUserPerm();
+    if(isSuperUser(u))return fullUserPerm();
+    var store=userPermStore(), rec=permissionRecordFor(store,u), saved=rec.perm||{};
+    // PETATOE v8.0.2 Phase 14: strict runtime permission source of truth.
+    // Runtime access is controlled only by the saved per-user permission record.
+    // Role defaults remain templates for creation/reset buttons, but they must not grant access automatically.
+    var base=emptyUserPerm();
+    if(!rec.found)return base;
+    screenPerms.forEach(function(s){var k=s[0], src=(saved.screens&&saved.screens[k])||{};base.screens[k]=Object.assign(base.screens[k]||{},src)});
+    specialPerms.forEach(function(s){var k=s[0];if(saved.special&&Object.prototype.hasOwnProperty.call(saved.special,k))base.special[k]=!!saved.special[k]});
+    base.vehicleScope=normalizeVehicleScope(saved.vehicleScope||base.vehicleScope);
+    return base
+  }
+  function saveUserPerm(uid,perm){var u=getUserById(uid);if(!u||isSuperUser(u))return Promise.resolve({ok:false,skipped:true});var key=(primaryUserKeys(u)[0]||loginUserKeys(u)[0]||uid);var store=userPermStore();store[key]=perm;try{var ids=identity(); if(ids&&typeof ids.savePermission==='function') return ids.savePermission(key,perm);}catch(e){try{console.warn('PETATOE save permission failed',e)}catch(_){}}return saveUserPermStore(store)||Promise.resolve({ok:true})}
+  function normalizeVehicleKey(v){return String(v==null?'':v).trim().toLowerCase().replace(/\s+/g,' ')}
+  function addVehicleUnique(out,seen,id,name,meta){
+    name=String(name||'').trim(); id=String(id||name||'').trim();
+    if(!name&&!id)return;
+    var display=name||id;
+    // PETATOE v8.0.2 Phase 24: vehicle permissions must store/display the real vehicle name.
+    // Internal setup ids like auto_cars_* are aliases only, never the visible permission token.
+    var key=normalizeVehicleKey(display);
+    if(!key||seen[key])return;
+    seen[key]=1;
+    out.push({id:id||display,name:display,meta:meta||'',aliases:[id,display,meta].filter(Boolean)});
+  }
+  function collectSetupVehicles(out,seen,forceSync){
+    try{
+      if(window.PETATOESetup&&typeof window.PETATOESetup.masterData==='function'){
+        var md=window.PETATOESetup.masterData(!!forceSync)||{};
+        (md.cars||[]).forEach(function(v){if(!v.status||v.status==='active')addVehicleUnique(out,seen,v.id||v.code||v.name||v.plate,v.name||v.vehicle||v.car||v.plate||v.id,v.plate||v.code||'setup')});
+      }
+    }catch(e){}
+  }
+  function getVehicleList(){
+    var out=[],seen={};
+    try{
+      var reg=window.PETATOEReferenceRegistry;
+      if(reg&&typeof reg.getVehicles==='function'){
+        (reg.getVehicles()||[]).forEach(function(v){addVehicleUnique(out,seen,v.id||v.code||v.name||v.plate,v.name||v.vehicle||v.car||v.plate||v.id,v.plate||v.code||'setup')});
+      }
+    }catch(e){}
+    collectSetupVehicles(out,seen,false);
+    // Phase 23: if the setup registry has not been hydrated yet, backfill it from existing invoice records.
+    // This keeps vehicle permissions sourced from Setup Reference Data without touching Operations data.
+    if(!out.length){
+      try{
+        var reg2=window.PETATOEReferenceRegistry;
+        if(reg2&&typeof reg2.refreshFromInvoices==='function')reg2.refreshFromInvoices();
+      }catch(e2){}
+      collectSetupVehicles(out,seen,true);
+    }
+    return out.sort(function(a,b){return String(a.name).localeCompare(String(b.name),'ar')});
+  }
+  function defaultVehicleScope(){return {allVehicles:true,vehicles:[]}}
+  function resolveVehicleScopeToken(token){
+    token=String(token==null?'':token).trim();
+    if(!token)return '';
+    var vehicles=[];
+    try{vehicles=getVehicleList()||[];}catch(_e){vehicles=[];}
+    var tk=normalizeVehicleKey(token);
+    for(var i=0;i<vehicles.length;i++){
+      var v=vehicles[i]||{}, aliases=[v.id,v.name,v.vehicle,v.car,v.plate,v.code,v.meta].map(function(x){return normalizeVehicleKey(x)});
+      if(aliases.indexOf(tk)>-1)return String(v.name||v.vehicle||v.car||v.plate||v.id||token).trim();
+    }
+    return token;
+  }
+  function normalizeVehicleScope(scope){
+    scope=scope&&typeof scope==='object'?scope:{};
+    var seen={};
+    var list=Array.isArray(scope.vehicles)?scope.vehicles.map(resolveVehicleScopeToken).map(function(x){return String(x||'').trim()}).filter(Boolean).filter(function(x){var k=normalizeVehicleKey(x);if(!k||seen[k])return false;seen[k]=1;return true;}):[];
+    return {allVehicles:scope.allVehicles!==false,vehicles:list};
+  }
+  function parseCurrentRef(raw){try{if(raw&&typeof raw==='object')return raw;var s=String(raw||'').trim();if(!s)return null;if((s.charAt(0)==='{'&&s.charAt(s.length-1)==='}')||(s.charAt(0)==='['&&s.charAt(s.length-1)===']'))return JSON.parse(s);return {id:s,username:s}}catch(_){return null}}
+  function matchUserRef(us,ref){if(!ref)return null;var rid=String(ref.id||ref.userId||ref.uid||'').trim(), rn=String(ref.username||ref.name||ref.fullName||ref.login||'').trim().toLowerCase();return (us||[]).find(function(u){var uid=String(u.id||u.userId||u.uid||'').trim(), un=String(u.username||u.name||u.login||'').trim().toLowerCase(), fn=String(u.fullName||'').trim().toLowerCase();return (rid&&uid===rid)||(rid&&un===rid.toLowerCase())||(rid&&fn===rid.toLowerCase())||(rn&&un===rn)||(rn&&uid.toLowerCase()===rn)||(rn&&fn===rn)})||null}
+  function currentUserId(){
+    try{if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function'){var au=window.PETATOEAuth.currentUser(); if(au&&(au.id||au.userId||au.uid||au.username||au.login||au.email)) return au;}}catch(e){}
+    try{if(window.__PETATOE_ACTIVE_USER__&&(window.__PETATOE_ACTIVE_USER__.id||window.__PETATOE_ACTIVE_USER__.username||window.__PETATOE_ACTIVE_USER__.email)) return window.__PETATOE_ACTIVE_USER__;}catch(e){}
+    try{if(window.currentUser&&(window.currentUser.id||window.currentUser.username||window.currentUser.email)) return window.currentUser;}catch(e){}
+    return '';
+  }
+  // PETATOE v8.0.2 Phase 18: single permission decision engine.
+  // Runtime access decisions must come from one path only, so Sidebar/Header/Router/Buttons get identical answers.
+  function canonicalScreenKey(screen){
+    var aliases={
+      dashboard:'dashboardManagement',dashboardManagement:'dashboardManagement',dashboardOperationsPanel:'dashboardOperations',
+      entry:'sales',import:'sales',records:'reports',logs:'audit',smart:'reports',executive:'reports',
+      customer360:'customers',treasury:'treasury',warehouses:'vehicles',warehouse:'vehicles',fleet:'vehicles',vans:'vehicles',
+      commissions:'commissions',commissionStatement:'commissionStatement',payroll:'payroll',salarySlip:'salarySlip',childrenExpenses:'childrenExpenses',
+      appointments:'appointments','appointments-master':'setup',appointmentsMaster:'setup',
+      vehicleOperations:'vehicleOperations',vehicleOperationsReports:'vehicleOperationsReports',operationKpis:'operationKpis',
+      settings:'settings',system:'settings',setup:'setup',permissions:'permissions',users:'users',audit:'audit'
+    };
+    screen=String(screen||'').trim();
+    return aliases[screen]||screen;
+  }
+  function currentPermissionUser(){return currentUserId()}
+  function resolvePermissionDecision(uid,screen,action){
+    uid=uid||currentPermissionUser();
+    screen=canonicalScreenKey(screen);
+    action=action||'view';
+    var out={allow:false,user:null,screen:screen,action:action,source:'none',reason:'deny'};
+    if(!uid){out.reason='missing-current-user';return out}
+    var u=getUserById(uid);
+    out.user=u||null;
+    if(!u){out.reason='user-not-found';return out}
+    if(isSuperUser(u)){out.allow=true;out.source='superadmin';out.reason='superadmin';return out}
+    var store=userPermStore(), rec=permissionRecordFor(store,u);
+    out.source=rec.found?'saved-user-permissions':'no-permission-record';
+    if(!rec.found){out.reason='no-saved-permission-record';return out}
+    var p=getUserPerm(u);
+    out.allow=!!(p.screens&&p.screens[screen]&&p.screens[screen][action]);
+    out.reason=out.allow?'saved-permission-allow':'saved-permission-deny';
+    return out;
+  }
+  function resolveSpecialPermissionDecision(uid,key){
+    uid=uid||currentPermissionUser();
+    key=String(key||'').trim();
+    var out={allow:false,user:null,key:key,source:'none',reason:'deny'};
+    if(!uid){out.reason='missing-current-user';return out}
+    var u=getUserById(uid);
+    out.user=u||null;
+    if(!u){out.reason='user-not-found';return out}
+    if(isSuperUser(u)){out.allow=true;out.source='superadmin';out.reason='superadmin';return out}
+    var store=userPermStore(), rec=permissionRecordFor(store,u);
+    out.source=rec.found?'saved-user-permissions':'no-permission-record';
+    if(!rec.found){out.reason='no-saved-permission-record';return out}
+    var p=getUserPerm(u);
+    out.allow=!!(p.special&&p.special[key]);
+    out.reason=out.allow?'saved-special-allow':'saved-special-deny';
+    return out;
+  }
+  function can(uid,screen,action){return !!resolvePermissionDecision(uid,screen,action||'view').allow}
+  function canAny(uid,screen){return ['view','add','edit','delete'].some(function(a){return can(uid,screen,a)})}
+  function canSpecial(uid,key){return !!resolveSpecialPermissionDecision(uid,key).allow}
+  function permissionTrace(uid){
+    uid=uid||currentPermissionUser();
+    var u=getUserById(uid);
+    var store=userPermStore();
+    var rec=u?permissionRecordFor(store,u):{found:false,perm:{}};
+    return {
+      currentRef:uid,
+      matchedUser:u||null,
+      role:u?(u.role||u.role_code||u.job||u.title||''):'',
+      isSuperAdmin:!!(u&&isSuperUser(u)),
+      permissionRecordFound:!!rec.found,
+      permissionSource:rec.found?'saved-user-permissions':(u&&isSuperUser(u)?'superadmin':'no-permission-record'),
+      allowedScreens:rec.found||isSuperUser(u)?screenPerms.filter(function(s){return canAny(u,s[0])}).map(function(s){return s[0]}):[],
+      deniedReason:(!u?'user-not-found':(!rec.found&&!isSuperUser(u)?'no-saved-permission-record':''))
+    };
+  }
+  function screenByKey(k){return [k,tr('screens.'+k+'.title',null,k),tr('screens.'+k+'.description',null,'')]}
+  function specialByKey(k){return [k,tr('specials.'+k,null,k)]}
+  function localizedModule(m){if(!m)return m;return Object.assign({},m,{title:tr('modules.'+m.id+'.title',null,m.id),hint:tr('modules.'+m.id+'.hint',null,'')})}
+  function getModuleById(id){return localizedModule(permissionModules.find(function(m){return m.id===id})||permissionModules[0])}
+  function normalizeActiveModule(){
+    if(!permissionModules.some(function(m){return m.id===__petV139ActiveModule}))__petV139ActiveModule=(permissionModules[0]||{}).id||'home';
+    return __petV139ActiveModule;
+  }
+  function moduleTabsHtml(){var active=normalizeActiveModule();return '<div class="pet-v139-module-tabs">'+permissionModules.map(function(raw){var m=localizedModule(raw),cls='pet-v139-module-tab'+(m.id===active?' active':'');return '<button type="button" class="'+cls+'" data-v139-set-module="'+esc(m.id)+'"><span class="pet-v139-module-icon">'+esc(m.icon)+'</span><b>'+esc(m.title)+'</b></button>'}).join('')+'</div>'}
+  function actionCheckbox(screenKey,actionKey,checked,locked){return '<td><input class="pet-v139-check" type="checkbox" data-v139-screen="'+esc(screenKey)+'" data-v139-action="'+esc(actionKey)+'" '+(checked?'checked':'')+' '+(locked?'disabled':'')+'></td>'}
+  function moduleActionChecked(m,p,actionKey){
+    var keys=(m&&m.screens)||[];
+    if(!keys.length)return false;
+    return keys.every(function(k){return !!(p.screens&&p.screens[k]&&p.screens[k][actionKey])});
+  }
+  function moduleSectionHtml(m,p,locked){
+    var rows=(m.screens||[]).map(function(k){var scr=screenByKey(k), sp=p.screens[k]||{};return '<tr><td class="pet-v139-screen-name"><b>'+esc(scr[1])+'</b><small>'+esc(scr[2])+'</small></td>'+crudActions.map(function(a){return actionCheckbox(k,a[0],!!sp[a[0]],locked)}).join('')+'</tr>'}).join('');
+    var header=crudActions.map(function(a){var checked=moduleActionChecked(m,p,a[0]),actionLabel=tr('actions.'+a[0],null,a[0]);return '<th><label class="pet-v139-bulk-head"><input class="pet-v139-check pet-v139-bulk-check" type="checkbox" data-v139-bulk-action="'+esc(a[0])+'" '+(checked?'checked':'')+' '+(locked?'disabled':'')+'> <span>'+esc(actionLabel)+'</span></label></th>'}).join('');
+    var specials=(m.specials||[]).map(function(k){var x=specialByKey(k);return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-special="'+esc(k)+'" '+(p.special&&p.special[k]?'checked':'')+' '+(locked?'disabled':'')+'> <span>'+esc(x[1])+'</span></label>'}).join('');
+    return '<section class="pet-v139-module-section active" id="petV139Module_'+esc(m.id)+'" data-v139-current-module="'+esc(m.id)+'"><div class="pet-v139-module-head"><div><h3>'+esc(m.icon)+' '+esc(m.title)+'</h3><p>'+esc(m.hint||'')+'</p></div><span class="pet-v139-module-badge">'+((m.screens||[]).length)+' '+tr('common.screensCount',null,'screens')+'</span></div><div class="pet-v139-perm-table erp"><table><thead><tr><th>'+tr('common.screenFunction',null,'Screen / function')+'</th>'+header+'</tr></thead><tbody>'+rows+'</tbody></table></div>'+(specials?'<div class="pet-v139-special-box"><h4>'+tr('common.extraPermissionsIn',null,'Additional permissions in')+' '+esc(m.title)+'</h4><div class="pet-v139-special-grid erp">'+specials+'</div></div>':'')+'</section>';
+  }
+  function renderPermissionsBody(api){
+    var us=users(api), selected=__petV139SelectedUser||currentUserId()||((us[0]||{}).id||'');
+    if(!us.some(function(u){return String(u.id)===String(selected)})&&us[0])selected=us[0].id;
+    __petV139SelectedUser=selected;
+    var u=us.find(function(x){return String(x.id)===String(selected)})||us[0]||{}, p=getUserPerm(selected), locked=isSuperUser(u);
+    var opts=us.map(function(x){return '<option value="'+esc(x.id)+'" '+(String(x.id)===String(selected)?'selected':'')+'>'+esc((x.fullName||x.username||x.id)+' - '+(x.username||''))+'</option>'}).join('');
+    var active=normalizeActiveModule(), activeModule=getModuleById(active);
+    var modules=moduleSectionHtml(activeModule,p,locked);
+    var usedSpecials={}; permissionModules.forEach(function(m){(m.specials||[]).forEach(function(k){usedSpecials[k]=true})});
+    var orphanSpecials='';
+    if(active==='admin'){
+      orphanSpecials=specialPerms.filter(function(x){return !usedSpecials[x[0]]}).map(function(x){var sx=specialByKey(x[0]);return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-special="'+esc(sx[0])+'" '+(p.special&&p.special[sx[0]]?'checked':'')+' '+(locked?'disabled':'')+'> <span>'+esc(sx[1])+'</span></label>'}).join('');
+    }
+    var vehicleScopeHtml='';
+    if(active==='operations'||active==='fleet'){
+      var vehicleScope=normalizeVehicleScope(p.vehicleScope), vehicleList=getVehicleList();
+      var vehicleChecks=vehicleList.map(function(v){var key=String(v.name||v.vehicle||v.car||v.plate||v.id||'');var aliases=[key,v.id,v.code,v.plate,v.meta].map(function(x){return normalizeVehicleKey(x)});var checked=vehicleScope.allVehicles||vehicleScope.vehicles.some(function(x){return aliases.indexOf(normalizeVehicleKey(x))>-1});return '<label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" data-v139-vehicle="'+esc(key)+'" '+(checked?'checked':'')+' '+(locked||vehicleScope.allVehicles?'disabled':'')+'> <span>'+esc(v.name)+(v.meta?'<small style="opacity:.7"> — '+esc(v.meta)+'</small>':'')+'</span></label>'}).join('')||'<div class="pet-v110-note">'+tr('vehicleScope.noVehicles',null,'No vehicles are currently registered. Add vehicles from Setup or Vehicle Management.')+'</div>';
+      vehicleScopeHtml='<section class="pet-v139-module-section"><div class="pet-v139-module-head"><div><h3>🚐 '+tr('vehicleScope.title',null,'Vehicle operation assignment')+'</h3><p>'+tr('vehicleScope.description',null,'Select the vehicles this user may operate or report on.')+'</p></div></div><label class="pet-v139-special pet-v139-special-erp"><input class="pet-v139-check" type="checkbox" id="petV139AllVehicles" data-v139-all-vehicles="1" '+(vehicleScope.allVehicles?'checked':'')+' '+(locked?'disabled':'')+'> <span>'+tr('vehicleScope.allVehicles',null,'All current and future vehicles')+'</span></label><div class="pet-v139-special-grid erp" id="petV139VehicleScopeGrid">'+vehicleChecks+'</div></section>';
+    }
+    return '<div class="pet-v139-user-permissions pet-v139-erp-ui">'
+      +'<div class="pet-v139-hero"><div><h3>🔐 '+tr('hero.title',null,'Permissions Management')+'</h3><p>'+tr('hero.description',null,'Clear ERP structure: section, screen, view, add, edit, and delete. Only the selected section is shown to prevent permission overlap.')+'</p></div><div class="pet-v139-info-pill">'+(locked?tr('hero.superAdminFull',null,'Super Admin has full permissions'):tr('hero.currentSection',{section:activeModule.title},'Current section: {section}'))+'</div></div>'
+      +'<div class="pet-v139-control-card"><div class="pet-v139-user-select-row"><div><label>'+tr('controls.user',null,'User')+'</label><select id="petV139UserSelect" data-v139-select-user="1">'+opts+'</select></div><div class="pet-v139-selected-user">'+tr('controls.selectedUser',null,'Selected user')+': <b>'+esc(u.fullName||u.username||'-')+'</b><br>'+tr('controls.username',null,'Username')+': <b>'+esc(u.username||'-')+'</b> — '+tr('controls.currentRole',null,'Current role')+': <b>'+esc(roleNames[normalizeRole(u)]||roleNames[u.role]||u.role||'-')+'</b></div><div class="pet-v139-template-actions"><button class="pet-v110-btn primary" data-v110-action="save-user-permissions" '+(locked?'disabled':'')+'>💾 '+tr('controls.saveChanges',null,'Save changes')+'</button><button class="pet-v110-btn blue" data-v110-action="grant-read-only" '+(locked?'disabled':'')+'>'+tr('controls.viewOnly',null,'View only')+'</button><button class="pet-v110-btn green" data-v110-action="grant-driver-groomer" '+(locked?'disabled':'')+'>'+tr('controls.driverGroomerTemplate',null,'Driver/Groomer template')+'</button><button class="pet-v110-btn green" data-v110-action="grant-operational" '+(locked?'disabled':'')+'>'+tr('controls.operationalTemplate',null,'Operational template')+'</button><button class="pet-v110-btn danger" data-v110-action="reset-user-permissions" '+(locked?'disabled':'')+'>'+tr('controls.restoreDefault',null,'Restore default')+'</button></div></div>'+(locked?'<div class="pet-v139-warn">⚠️ '+tr('controls.superAdminWarning',null,'This user is a protected Super Admin with full permissions and cannot be disabled from this screen.')+'</div>':'')+'</div>'
+      +moduleTabsHtml()
+      +'<div class="pet-v139-layout"><div class="pet-v139-modules">'+modules+(orphanSpecials?'<section class="pet-v139-module-section"><div class="pet-v139-module-head"><div><h3>🔐 '+tr('help.otherPermissionsTitle',null,'Other general permissions')+'</h3><p>'+tr('help.otherPermissionsDescription',null,'General permissions not tied to one screen.')+'</p></div></div><div class="pet-v139-special-grid erp">'+orphanSpecials+'</div></section>':'')+vehicleScopeHtml+'</div><aside class="pet-v139-help"><div class="pet-v139-help-card"><h3>ℹ️ '+tr('help.infoTitle',null,'Information')+'</h3><p>'+tr('help.infoDescription',null,'Choose a section above. The checkbox in a column header selects or clears that permission for the current section only.')+'</p></div><div class="pet-v139-help-card"><h3>💡 '+tr('help.templatesTitle',null,'Base templates')+'</h3><ul><li>'+tr('help.driverGroomer',null,'Driver/Groomer: Operations dashboard, salary slip, commission statement, and vehicle operations only.')+'</li><li>'+tr('help.operations',null,'Operations: Vehicle operations and operations reports.')+'</li><li>'+tr('help.accountant',null,'Accountant: Sales, treasury, and payroll.')+'</li><li>'+tr('help.superAdmin',null,'Super Admin: All permissions.')+'</li></ul></div></aside></div>'
+      +'</div>';
+  }
+  function clonePerm(p){try{return JSON.parse(JSON.stringify(p||{screens:{},special:{}}))}catch(e){return {screens:{},special:{}}}}
+  window.petV139SelectUser=function(uid){__petV139SelectedUser=uid||'';if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions')};
+  window.petV139ReadFormPerm=function(){
+    var uid=(document.getElementById('petV139UserSelect')||{}).value||__petV139SelectedUser;
+    var o=clonePerm(getUserPerm(uid));
+    screenPerms.forEach(function(s){if(!o.screens[s[0]])o.screens[s[0]]={view:false,add:false,edit:false,delete:false}});
+    specialPerms.forEach(function(s){if(!o.special)o.special={}; if(!Object.prototype.hasOwnProperty.call(o.special,s[0]))o.special[s[0]]=false});
+    document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){var sc=c.getAttribute('data-v139-screen'),ac=c.getAttribute('data-v139-action');if(!o.screens[sc])o.screens[sc]={view:false,add:false,edit:false,delete:false};o.screens[sc][ac]=!!c.checked});
+    document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){o.special[c.getAttribute('data-v139-special')]=!!c.checked});
+    var allVeh=document.getElementById('petV139AllVehicles');
+    if(allVeh){o.vehicleScope={allVehicles:!!allVeh.checked,vehicles:[]};document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){if(c.checked)o.vehicleScope.vehicles.push(c.getAttribute('data-v139-vehicle'))});}
+    else{o.vehicleScope=normalizeVehicleScope(o.vehicleScope)}
+    return {uid:uid,perm:o};
+  };
+  window.petV139SaveUserPermissions=async function(){var api=window.__PETATOE_SETTINGS_API__||{}, f=window.petV139ReadFormPerm(), u=users(api).find(function(x){return String(x.id)===String(f.uid)});if(!u){toast(tr('messages.selectUserFirst',null,'Select a user first'));return}if(isSuperUser(u)){toast(tr('messages.superAdminProtected',null,'Super Admin has full permissions and is protected'));return}var res=await saveUserPerm(f.uid,f.perm);if(res&&res.ok===false){toast(tr('messages.saveFailed',{error:(res.error||'')},'Failed to save permissions: {error}'));return}try{window.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));}catch(e){}if(api.audit)api.audit('User Permissions Updated','Permissions saved for '+(u.username||u.id),'warn');toast(tr('messages.saved',null,'User permissions saved'));if(api.render)api.render('permissions')};
+  window.petV139GrantReadOnly=function(){
+    document.querySelectorAll('#settings [data-v139-screen][data-v139-action]').forEach(function(c){c.checked=c.getAttribute('data-v139-action')==='view'});
+    document.querySelectorAll('#settings [data-v139-special]').forEach(function(c){c.checked=false});
+    var av=document.getElementById('petV139AllVehicles');if(av){av.checked=true;window.petV139ToggleVehicleScope&&window.petV139ToggleVehicleScope(true)}
+    window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();
+    toast(tr('messages.readOnlyPrepared',null,'View-only permissions are ready for the current section. Click Save to confirm.'))
+  };
+  window.petV139GrantDriverGroomer=function(){
+    var f=window.petV139ReadFormPerm(), p=emptyUserPerm();
+    grantScreen(p,'dashboardOperations',['view']);
+    grantScreen(p,'vehicleOperations',['view','edit']);
+    grantScreen(p,'salarySlip',['view']);
+    grantScreen(p,'commissionStatement',['view']);
+    ['vehicle_ops_edit_trip','operations_confirm_session','operations_close_session'].forEach(function(k){p.special[k]=true});
+    p.vehicleScope={allVehicles:true,vehicles:[]};
+    saveUserPerm(f.uid,p).then(function(res){
+      if(res&&res.ok===false){toast(tr('messages.driverTemplateFailed',{error:(res.error||'')},'Failed to apply Driver/Groomer template: {error}'));return}
+      try{document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));window.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));}catch(e){}
+      toast(tr('messages.driverTemplateApplied',null,'Driver/Groomer template applied'));
+      if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions');
+    });
+  };
+  window.petV139GrantOperational=function(){
+    var f=window.petV139ReadFormPerm(), p=emptyUserPerm();
+    ['dashboardOperations','appointments','vehicleOperations','vehicleOperationsReports','operationKpis','salarySlip','commissionStatement'].forEach(function(k){grantScreen(p,k,['view'])});
+    ['appointments','vehicleOperations'].forEach(function(k){grantScreen(p,k,['view','add','edit'])});
+    ['vehicle_ops_create_trip','vehicle_ops_edit_trip','vehicle_ops_cancel_trip','vehicle_ops_reopen_trip','vehicle_ops_approve_trip','operations_close_session','operations_reopen_session','operations_confirm_session','operations_edit_confirmed_session','vehicle_ops_view_reports','vehicle_ops_view_kpis','vehicle_ops_export','vehicle_ops_export_excel','vehicle_ops_export_pdf','vehicle_ops_print'].forEach(function(k){p.special[k]=true});
+    p.vehicleScope={allVehicles:true,vehicles:[]};
+    saveUserPerm(f.uid,p).then(function(res){
+      if(res&&res.ok===false){toast(tr('messages.operationalTemplateFailed',{error:(res.error||'')},'Failed to apply operational template: {error}'));return}
+      try{document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));window.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:f.uid}}));}catch(e){}
+      toast(tr('messages.operationalTemplateApplied',null,'Operational template applied'));
+      if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions');
+    });
+  };
+  window.petV139ResetUserPermissions=async function(){var api=window.__PETATOE_SETTINGS_API__||{}, uid=(document.getElementById('petV139UserSelect')||{}).value||__petV139SelectedUser, u=users(api).find(function(x){return x.id===uid});if(!u)return;if(!confirm(tr('messages.confirmRestoreDefault',null,'Restore this user permissions to the default state?')))return;var st=userPermStore();delete st[uid];try{var ids=identity(); if(ids&&typeof ids.deletePermission==='function') await ids.deletePermission(uid); else await saveUserPermStore(st);}catch(e){await saveUserPermStore(st);}if(api.audit)api.audit('User Permissions Reset','Default permissions for '+(u.username||uid),'warn');toast(tr('messages.restoredDefault',null,'User permissions restored to default'));if(api.render)api.render('permissions')};
+  window.petV139ToggleVehicleScope=function(force){var all=document.getElementById('petV139AllVehicles');var checked=typeof force==='boolean'?force:!!(all&&all.checked);document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){c.disabled=checked;c.checked=checked?true:c.checked});};
+  document.addEventListener('click',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-v139-set-module]');if(!t)return;__petV139ActiveModule=t.getAttribute('data-v139-set-module')||'home';if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions');});
+  window.petV139SyncBulkHeaders=function(){var section=document.querySelector('#settings [data-v139-current-module]');if(!section)return;crudActions.forEach(function(a){var inputs=[].slice.call(section.querySelectorAll('[data-v139-action="'+a[0]+'"]'));var head=section.querySelector('[data-v139-bulk-action="'+a[0]+'"]');if(head)head.checked=!!inputs.length&&inputs.every(function(x){return x.checked})})};
+  document.addEventListener('change',function(e){var t=e.target;if(!t)return;if(t.matches&&t.matches('[data-v139-bulk-action]')){var act=t.getAttribute('data-v139-bulk-action');var section=t.closest('[data-v139-current-module]')||document.querySelector('#settings [data-v139-current-module]');if(section){section.querySelectorAll('[data-v139-action="'+act+'"]').forEach(function(c){if(!c.disabled)c.checked=!!t.checked});window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();}}else if(t.matches&&t.matches('[data-v139-screen][data-v139-action]')){window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();}if(t&&t.id==='petV139AllVehicles')window.petV139ToggleVehicleScope(!!t.checked)});
+  function getVehicleScope(uid){var p=getUserPerm(uid||currentUserId());return normalizeVehicleScope(p.vehicleScope)}
+  function canAccessVehicle(uid,vehicle){var u=getUserById(uid||currentUserId());if(isSuperUser(u))return true;var scope=getVehicleScope(uid);if(scope.allVehicles)return true;var candidates=[];if(vehicle&&typeof vehicle==='object')candidates=[vehicle.name,vehicle.vehicle,vehicle.car,vehicle.plate,vehicle.code,vehicle.id,vehicle.meta];else candidates=[vehicle];var keys=candidates.map(function(x){return normalizeVehicleKey(x)}).filter(Boolean);return !!keys.length&&scope.vehicles.some(function(x){var rx=normalizeVehicleKey(resolveVehicleScopeToken(x));return keys.indexOf(rx)>-1||normalizeVehicleKey(x)&&keys.indexOf(normalizeVehicleKey(x))>-1})}
+  window.PETATOEPermissionEngine={
+    canonicalScreenKey:canonicalScreenKey,
+    currentUser:currentPermissionUser,
+    resolveUser:getUserById,
+    decision:resolvePermissionDecision,
+    specialDecision:resolveSpecialPermissionDecision,
+    can:can,
+    canAny:canAny,
+    canSpecial:canSpecial,
+    trace:permissionTrace,
+    __v:'phase18-single-permission-engine'
+  };
+  window.PETATOEPermissions={screenPerms:screenPerms,crudActions:crudActions,specialPerms:specialPerms,userPermStore:userPermStore,saveUserPermStore:saveUserPermStore,isSuperUser:isSuperUser,fullUserPerm:fullUserPerm,defaultUserPerm:defaultUserPerm,getUserPerm:getUserPerm,saveUserPerm:saveUserPerm,can:can,canSpecial:canSpecial,canAny:canAny,decision:resolvePermissionDecision,trace:permissionTrace,getVehicleList:getVehicleList,getVehicleScope:getVehicleScope,canAccessVehicle:canAccessVehicle,applyVehicleOpsDefaultSpecials:applyVehicleOpsDefaultSpecials,renderPermissionsBody:renderPermissionsBody};
+})();
