@@ -1,11 +1,10 @@
-PETATOE v9.4.16 — Smart Reports Public API Restoration
+PETATOE v9.4.17 — Display-Layer Localization Performance
 
-- Fixed the console-blocking `ReferenceError: PETATOEOpenSmartReports is not defined` from the header Reports button.
-- Confirmed the root cause: v9.4.15 stopped loading the old readiness guard that previously owned the public API export.
-- Restored `window.PETATOEOpenSmartReports` inside the active Smart Reports router.
-- Routed the restored API through the canonical `PETATOERouter.openTab('smart', tab)` path without reintroducing retry loops or readiness delays.
-- Restored the header Reports button to the proven direct router call used by the earlier fast baseline.
-- Kept the public API as compatibility support for legacy integrations and external calls.
-- Added a Smart Reports Public API regression validator to GitHub Actions.
-- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports Public API validation, and JavaScript syntax checks.
-- Synchronized release metadata and cache tokens to PETATOE v9.4.16.
+- Removed full invoice-row localization from Smart Reports calculations.
+- Kept canonical stored values in Smart Data Engine and moved business-name translation to display helpers only.
+- Replaced repeated master-data JSON serialization with an event-invalidated display cache.
+- Removed duplicate Smart Reports tab rendering from the router and local vehicle filter path.
+- Added per-render vehicle matrix caching to avoid recalculating identical year matrices.
+- Localized vehicle labels only when displayed in charts, legends, and tables.
+- Added a dedicated display-layer localization performance regression validator.
+- Synchronized release metadata and cache tokens to PETATOE v9.4.17.

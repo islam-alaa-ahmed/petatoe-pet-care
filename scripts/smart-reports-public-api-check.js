@@ -9,7 +9,7 @@ if(!/function\s+openSmartReports\s*\(/.test(router)) failures.push('Smart Report
 if(!router.includes("PETATOERouter.openTab('smart', target)")) failures.push('Public API is not routed through the canonical router.');
 if(!index.includes("PETATOEInlineHandlers.moduleCall('router','openTab','smart','overview')")) failures.push('Header Reports button is not using the proven direct router path.');
 if(index.includes("onclick=\"return PETATOEOpenSmartReports('overview',event)\"")) failures.push('Header still depends exclusively on a load-order-sensitive global function.');
-if(!index.includes("smart/smart-router.js?v=9.4.16-smart-reports-public-api")) failures.push('Smart router cache token is not synchronized.');
+if(!index.includes("smart/smart-router.js?v=9.4.17-display-layer-localization-performance")) failures.push('Smart router cache token is not synchronized.');
 const result={status:failures.length?'FAILED':'PASSED',checks:6,failures};
 console.log('Smart Reports Public API: '+result.status); console.log(JSON.stringify(result,null,2));
 if(failures.length) process.exit(1);

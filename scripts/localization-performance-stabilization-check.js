@@ -9,8 +9,8 @@ pass(!global.includes("PETATOE_I18N.apply('en'"), 'Recursive full-language apply
 pass(!global.includes('patchRuntimeMessageApis();patchRuntimeMessageApis();'), 'Duplicate runtime API patch call remains.');
 pass(core.includes('function activeLocalizationRoots()'), 'Active-root localization helper is missing.');
 pass(core.includes('applyActiveSubtrees(currentLang())'), 'Tab navigation still triggers full-document localization.');
-pass(runtime.includes("VERSION='9.4.5-localization-performance'"), 'Runtime version mismatch.');
-pass(index.includes("PETATOE_RELEASE_VERSION='v9.4.5'"), 'Release version mismatch.');
+pass(runtime.includes("VERSION='9.4.17-display-layer-localization-performance'"), 'Runtime version mismatch.');
+pass(index.includes("PETATOE_RELEASE_VERSION='v9.4.17'"), 'Release version mismatch.');
 const result={passed:failures.length===0,checks:9,failures};
 fs.writeFileSync(path.join(root,'LOCALIZATION_PERFORMANCE_STABILIZATION_RESULTS.json'),JSON.stringify(result,null,2));
 console.log('Localization Performance Stabilization:',result.passed?'PASSED':'FAILED');if(failures.length){failures.forEach(x=>console.error('-',x));process.exit(1);}

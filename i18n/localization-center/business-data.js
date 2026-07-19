@@ -2,8 +2,8 @@
    Localizes user-maintained master-data display names without changing canonical stored values. */
 (function(){
   'use strict';
-  var VERSION='9.4.2-center-business-data';
-  var cache={signature:'',maps:null};
+  var VERSION='9.4.17-center-business-data-display-cache';
+  var cache={maps:null};
 
   function text(v){return String(v==null?'':v).trim();}
   function lang(){
@@ -31,10 +31,11 @@
     return text(row['name_'+c]||row['display_name_'+c]);
   }
   function build(){
+    // PETATOE v9.4.17: Build reference maps once, then use O(1) Map-like lookups.
+    // Registry/storage events explicitly invalidate the cache, so no JSON.stringify
+    // signature is calculated for every displayed service, vehicle or customer.
+    if(cache.maps)return cache.maps;
     var data=master();
-    var signature='';
-    try{signature=JSON.stringify([data.services||[],data.cars||data.vehicles||[],data.customers||[]]);}catch(_e){signature=String(Date.now());}
-    if(cache.maps&&cache.signature===signature)return cache.maps;
     var maps={service:Object.create(null),vehicle:Object.create(null),customer:Object.create(null)};
     ['service','vehicle','customer'].forEach(function(type){
       rowsFor(data,type).forEach(function(row){
@@ -44,7 +45,7 @@
         [item.ar,item.en,item.fil].filter(Boolean).forEach(function(alias){maps[type][alias.toLowerCase()]=item;});
       });
     });
-    cache={signature:signature,maps:maps};
+    cache={maps:maps};
     return maps;
   }
 
@@ -190,7 +191,7 @@
   function render(type,value,code){return resolve(type,value,code);}
   function renderRecord(row,code){return localizeRecord(row,code);}
   function renderList(type,values,code){return (Array.isArray(values)?values:[]).map(function(value){return resolve(type,value,code);});}
-  function invalidate(){cache={signature:'',maps:null};return true;}
+  function invalidate(){cache={maps:null};return true;}
   window.PETATOE_LOCALIZATION_CENTER_BUSINESS={version:VERSION,resolve:resolve,canonical:canonical,localizeRecord:localizeRecord,render:render,renderRecord:renderRecord,renderList:renderList,translateServiceName:translateServiceName,invalidate:invalidate,getLanguage:lang,source:"PETATOE_LOCALIZATION_CENTER"};
   ['petatoe:language-changed','petatoe:reference-registry-updated','petatoe:operations-storage-change'].forEach(function(evt){window.addEventListener(evt,function(){
     invalidate();

@@ -83,31 +83,36 @@
 
     try{
       if(target === 'services' && typeof window.renderSmartServicesReport === 'function'){
-        window.renderSmartServicesReport();
+        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
+        // Calling the renderer here as well caused duplicate heavy chart/table work.
         if(typeof window.setSmartTab === 'function') window.setSmartTab('services');
         perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
         return true;
       }
       if(target === 'vehicles' && typeof window.renderSmartVans === 'function'){
-        window.renderSmartVans(invoiceRows());
+        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
+        // Calling the renderer here as well caused duplicate heavy chart/table work.
         if(typeof window.setSmartTab === 'function') window.setSmartTab('vehicles');
         perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
         return true;
       }
       if(target === 'customers' && typeof window.renderSmartCustomers === 'function'){
-        window.renderSmartCustomers(invoiceRows());
+        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
+        // Calling the renderer here as well caused duplicate heavy chart/table work.
         if(typeof window.setSmartTab === 'function') window.setSmartTab('customers');
         perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
         return true;
       }
       if(target === 'sales' && typeof window.renderSmartSales === 'function'){
-        window.renderSmartSales(invoiceRows());
+        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
+        // Calling the renderer here as well caused duplicate heavy chart/table work.
         if(typeof window.setSmartTab === 'function') window.setSmartTab('sales');
         perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
         return true;
       }
       if(target === 'advanced' && typeof window.renderReportsCenter === 'function'){
-        window.renderReportsCenter(invoiceRows());
+        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
+        // Calling the renderer here as well caused duplicate heavy chart/table work.
         if(typeof window.setSmartTab === 'function') window.setSmartTab('advanced');
         perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
         return true;

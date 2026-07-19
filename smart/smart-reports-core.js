@@ -60,9 +60,8 @@ function renderSmartReports(){
   let data=smartData();
   data=smartDataCutoff(data,y);
   data=smartApplyGlobalFilters(data);
-  if(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.localizeBusinessRecord==='function'){
-    data=data.map(function(row){return window.PETATOE_LOCALIZATION_CENTER.localizeBusinessRecord(row);});
-  }
+  // PETATOE v9.4.17: Keep canonical records in the calculation layer.
+  // Business names are localized only when rendered through smart*Display helpers.
   try{ if(window.PETATOESmartDataEngine) window.PETATOESmartDataEngine.buildSmartData(data||[]); }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-reports-core.js', e, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
   if(!data.length){try{ if(window.__PETATOE_SMART_PERF__){ window.__PETATOE_SMART_PERF__.push({name:'SmartReports.fullRender.beforeDOM', ms:+(((window.performance&&performance.now)?performance.now():Date.now())-__smartRenderPerfStart).toFixed(2), at:Date.now(), records:data.length}); } }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-reports-core.js', e, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
   smartSafeHTML('smartReportsArea',`<div class="smart-empty">${smartReportHtml('empty.noData','لا توجد بيانات كافية لعرض التقارير الذكية. ارفع ملف Excel أو اختر سنة أخرى.')}</div>`,'smart empty state');return;}

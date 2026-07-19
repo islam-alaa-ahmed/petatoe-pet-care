@@ -1,7 +1,7 @@
-/* PETATOE v9.4.16 — Smart Reports Public API Restoration */
+/* PETATOE v9.4.17 — Display-Layer Localization Performance */
 (function(){
   'use strict';
-  var VERSION='9.4.16-smart-reports-public-api';
+  var VERSION='9.4.17-display-layer-localization-performance';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

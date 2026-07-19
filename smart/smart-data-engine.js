@@ -196,12 +196,10 @@
   function buildSmartData(records, options){
     const __perfStart = perfNow();
     const rawSource = asArray(records);
-    const center=window.PETATOE_LOCALIZATION_CENTER;
-    const source = (center&&typeof center.localizeBusinessRecord==='function')
-      ? rawSource.map(function(row){return center.localizeBusinessRecord(row);})
-      : rawSource;
-    const activeBusinessLang=(center&&typeof center.getLanguage==='function')?center.getLanguage():(document.documentElement.lang||'ar');
-    const key = stableRecordsKey(rawSource)+'|bdl:'+activeBusinessLang;
+    // PETATOE v9.4.17: Smart calculations always use canonical stored values.
+    // Localization belongs to the display layer and must not clone every invoice row.
+    const source = rawSource;
+    const key = stableRecordsKey(rawSource);
     if(!options || !options.force){
       if(cacheValue && cacheKey === key){
         smartPerfMeasure('SmartDataEngine.cacheHit', __perfStart, {records: source.length});

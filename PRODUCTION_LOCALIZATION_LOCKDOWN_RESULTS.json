@@ -1,7 +1,7 @@
 {
   "status": "PASSED",
   "stats": {
-    "filesScanned": 281,
+    "filesScanned": 285,
     "legacyReferences": 0,
     "adapterDictionaries": 0,
     "publicAliasReferences": 0,
