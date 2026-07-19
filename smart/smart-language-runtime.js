@@ -1,4 +1,4 @@
-/* PETATOE v9.4.18 — Smart Reports Atomic Language Runtime
+/* PETATOE v9.4.19 — Smart Reports Atomic Language Runtime
    Translates only the visible Smart Reports surface without rebuilding data,
    clearing calculation caches, or invoking a second report renderer. */
 (function(){
@@ -12,7 +12,13 @@
   var revision=0;
 
   function language(){
-    try{return String(window.PETATOE_I18N&&window.PETATOE_I18N.getLanguage?window.PETATOE_I18N.getLanguage():document.documentElement.lang||'ar').toLowerCase();}catch(_){return 'ar';}
+    try{
+      var center=window.PETATOE_LOCALIZATION_CENTER;
+      if(center&&typeof center.getLanguage==='function')return String(center.getLanguage()||document.documentElement.lang||'ar').toLowerCase();
+      var api=translator();
+      if(api&&typeof api.getLanguage==='function')return String(api.getLanguage()||document.documentElement.lang||'ar').toLowerCase();
+      return String(document.documentElement.lang||'ar').toLowerCase();
+    }catch(_){return 'ar';}
   }
   function translator(){return window.PETATOE_GLOBAL_SCREEN_TRANSLATOR;}
   function translate(value){
@@ -85,7 +91,7 @@
     if(window.requestAnimationFrame)requestAnimationFrame(run);else setTimeout(run,0);
   }
 
-  window.PETATOE_SMART_LANGUAGE_RUNTIME={apply:apply,version:'9.4.18-atomic'};
+  window.PETATOE_SMART_LANGUAGE_RUNTIME={apply:apply,version:'9.4.19-atomic-ci-certified'};
   window.addEventListener('petatoe:language-changed',function(){apply('language-changed');});
   window.addEventListener('petatoe:smart-tab-rendered',function(){apply('tab-rendered');});
   document.addEventListener('DOMContentLoaded',function(){apply('dom-ready');});

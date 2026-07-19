@@ -15,8 +15,8 @@ const release=fs.readFileSync(path.join(root,'RELEASE_VERSION.txt'),'utf8');
 const runtime=fs.readFileSync(path.join(root,'i18n/localization-center/runtime.js'),'utf8');
 const failures=[];
 if(missing.length)failures.push('Missing runtime translations: '+missing.length);
-if(!release.includes('PETATOE v9.4.17')||!release.includes('PETATOE_V9_4_17_DISPLAY_LAYER_LOCALIZATION_PERFORMANCE'))failures.push('Release metadata mismatch.');
-if(!runtime.includes("VERSION='9.4.17-display-layer-localization-performance'"))failures.push('Runtime version mismatch.');
+if(!release.includes('PETATOE v9.4.19')||!release.includes('PETATOE_V9_4_19_LOCALIZATION_CI_CERTIFICATION_FIX'))failures.push('Release metadata mismatch.');
+if(!runtime.includes("VERSION='9.4.19-localization-ci-certification'"))failures.push('Runtime version mismatch.');
 const result={status:failures.length?'FAILED':'PASSED',usedRuntimePhrases:used.size,storedRuntimePhrases:Object.keys(en).length,missingRuntimePhrases:missing.length,missing};
 console.log('Runtime Translation Completion: '+result.status);console.log(JSON.stringify(result,null,2));
 if(failures.length){failures.forEach(x=>console.error('- '+x));process.exit(1);}

@@ -1,7 +1,7 @@
-/* PETATOE v9.4.17 — Display-Layer Localization Performance */
+/* PETATOE v9.4.19 — Localization CI Certification Fix */
 (function(){
   'use strict';
-  var VERSION='9.4.17-display-layer-localization-performance';
+  var VERSION='9.4.19-localization-ci-certification';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}
