@@ -2,12 +2,17 @@
    Localizes user-maintained master-data display names without changing canonical stored values. */
 (function(){
   'use strict';
-  var VERSION='9.4.18-center-business-data-atomic';
+  var VERSION='9.4.20-center-business-data-stable';
   var cache={maps:null};
 
   function text(v){return String(v==null?'':v).trim();}
   function lang(){
-    try{if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.getLanguage==='function')return text(window.PETATOE_I18N.getLanguage()).toLowerCase()||'ar';}catch(_e){}
+    try{
+      var center=window.PETATOE_LOCALIZATION_CENTER;
+      if(center&&typeof center.getLanguage==='function')return text(center.getLanguage()).toLowerCase()||'ar';
+      var globalTranslator=window.PETATOE_GLOBAL_SCREEN_TRANSLATOR;
+      if(globalTranslator&&typeof globalTranslator.getLanguage==='function')return text(globalTranslator.getLanguage()).toLowerCase()||'ar';
+    }catch(_e){}
     return text(document.documentElement.lang||'ar').toLowerCase()||'ar';
   }
   function master(){

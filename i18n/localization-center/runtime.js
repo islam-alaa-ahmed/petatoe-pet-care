@@ -1,7 +1,7 @@
-/* PETATOE v9.4.19 — Localization CI Certification Fix */
+/* PETATOE v9.4.20 — Translation Stability Certification */
 (function(){
   'use strict';
-  var VERSION='9.4.19-localization-ci-certification';
+  var VERSION='9.4.20-translation-stability-certification';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

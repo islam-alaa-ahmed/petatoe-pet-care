@@ -26,6 +26,8 @@ jobs:
         run: node scripts/smart-reports-data-readiness-recovery-check.js
       - name: Smart Reports public API
         run: node scripts/smart-reports-public-api-check.js
+      - name: Smart Reports translation stability
+        run: node scripts/smart-reports-translation-stability-check.js
       - name: JavaScript syntax validation
         shell: bash
         run: |

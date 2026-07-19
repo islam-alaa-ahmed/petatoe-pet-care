@@ -1,8 +1,10 @@
-PETATOE v9.4.19 — Release Metadata Synchronization Fix
+PETATOE v9.4.20 — Smart Reports Translation Stability & Performance Certification
 
-- Fixed the remaining GitHub Actions release-metadata mismatch.
-- Synchronized RELEASE_VERSION.txt to PETATOE v9.4.19 and the approved release name.
-- Synchronized index.html release version and release name to v9.4.19.
-- Synchronized the v9.4.18 Atomic Language cache tokens in index.html to v9.4.19-localization-ci-certification, including the Smart Reports router token required by CI.
-- Kept runtime behavior unchanged: no Smart Reports calculation, translation, rendering, cache logic, UI, or performance code was modified.
-- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports Fast Runtime, Smart Reports Fast Readiness Path, Smart Reports Public API, and JavaScript syntax validation.
+- Applied Smart Reports visible-tab text and attribute localization synchronously in the same render event turn to prevent Arabic-to-English flashing.
+- Deferred only chart label repaint through one deduplicated animation frame, preserving UI responsiveness.
+- Added stale chart-update cancellation so rapid language changes cannot overwrite the latest selected language.
+- Preserved the fast report architecture: no full Smart Reports render, no calculation-cache clear, no data reload, and no MutationObserver.
+- Replaced the remaining legacy PETATOE_I18N language lookup in business-data localization with the canonical Localization Center API and safe fallback.
+- Added a dedicated Smart Reports translation-stability CI validator and integrated it into Localization Lockdown.
+- Synchronized release metadata, runtime versions, cache tokens, and certification validators to PETATOE v9.4.20.
+- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports Fast Runtime, Fast Readiness Path, Public API, Translation Stability, and JavaScript syntax validation.
