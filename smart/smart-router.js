@@ -82,51 +82,11 @@
     if(target === 'business') target = 'forecast';
 
     try{
-      if(target === 'services' && typeof window.renderSmartServicesReport === 'function'){
-        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
-        // Calling the renderer here as well caused duplicate heavy chart/table work.
-        if(typeof window.setSmartTab === 'function') window.setSmartTab('services');
-        perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
-        return true;
-      }
-      if(target === 'vehicles' && typeof window.renderSmartVans === 'function'){
-        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
-        // Calling the renderer here as well caused duplicate heavy chart/table work.
-        if(typeof window.setSmartTab === 'function') window.setSmartTab('vehicles');
-        perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
-        return true;
-      }
-      if(target === 'customers' && typeof window.renderSmartCustomers === 'function'){
-        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
-        // Calling the renderer here as well caused duplicate heavy chart/table work.
-        if(typeof window.setSmartTab === 'function') window.setSmartTab('customers');
-        perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
-        return true;
-      }
-      if(target === 'sales' && typeof window.renderSmartSales === 'function'){
-        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
-        // Calling the renderer here as well caused duplicate heavy chart/table work.
-        if(typeof window.setSmartTab === 'function') window.setSmartTab('sales');
-        perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
-        return true;
-      }
-      if(target === 'advanced' && typeof window.renderReportsCenter === 'function'){
-        // PETATOE v9.4.17: setSmartTab owns the single deferred render.
-        // Calling the renderer here as well caused duplicate heavy chart/table work.
-        if(typeof window.setSmartTab === 'function') window.setSmartTab('advanced');
-        perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
-        return true;
-      }
-      if(target === 'forecast' && typeof window.injectBusinessIntelligence === 'function'){
-        window.injectBusinessIntelligence('forecast');
-        if(typeof window.setSmartTab === 'function') window.setSmartTab('forecast');
-        perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
-        return true;
-      }
-      if(target === 'salesInvoices' && typeof window.injectSalesInvoiceReport === 'function'){
-        window.injectSalesInvoiceReport('salesInvoices');
-        if(typeof window.setSmartTab === 'function') window.setSmartTab('salesInvoices');
-        perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target});
+      // setSmartTab owns lazy rendering. Calling a renderer here as well caused every
+      // modular tab (especially Vehicles) to render twice per navigation.
+      if(['services','vehicles','customers','sales','advanced','forecast','salesInvoices'].indexOf(target)!==-1 && typeof window.setSmartTab === 'function'){
+        window.setSmartTab(target);
+        perfPush('SmartReports.route.'+target, __routePerfStart, {tab:target, renderOwner:'setSmartTab'});
         return true;
       }
     }catch(e){

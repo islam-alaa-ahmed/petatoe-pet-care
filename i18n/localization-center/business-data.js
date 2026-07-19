@@ -2,7 +2,7 @@
    Localizes user-maintained master-data display names without changing canonical stored values. */
 (function(){
   'use strict';
-  var VERSION='9.4.17-center-business-data-display-cache';
+  var VERSION='9.4.18-center-business-data-atomic';
   var cache={maps:null};
 
   function text(v){return String(v==null?'':v).trim();}
@@ -31,9 +31,6 @@
     return text(row['name_'+c]||row['display_name_'+c]);
   }
   function build(){
-    // PETATOE v9.4.17: Build reference maps once, then use O(1) Map-like lookups.
-    // Registry/storage events explicitly invalidate the cache, so no JSON.stringify
-    // signature is calculated for every displayed service, vehicle or customer.
     if(cache.maps)return cache.maps;
     var data=master();
     var maps={service:Object.create(null),vehicle:Object.create(null),customer:Object.create(null)};
@@ -193,13 +190,13 @@
   function renderList(type,values,code){return (Array.isArray(values)?values:[]).map(function(value){return resolve(type,value,code);});}
   function invalidate(){cache={maps:null};return true;}
   window.PETATOE_LOCALIZATION_CENTER_BUSINESS={version:VERSION,resolve:resolve,canonical:canonical,localizeRecord:localizeRecord,render:render,renderRecord:renderRecord,renderList:renderList,translateServiceName:translateServiceName,invalidate:invalidate,getLanguage:lang,source:"PETATOE_LOCALIZATION_CENTER"};
-  ['petatoe:language-changed','petatoe:reference-registry-updated','petatoe:operations-storage-change'].forEach(function(evt){window.addEventListener(evt,function(){
-    invalidate();
-    try{if(window.PETATOESmartReports&&typeof window.PETATOESmartReports.clearCache==='function')window.PETATOESmartReports.clearCache('business-data-localization');}catch(_e){}
-    try{
-      var panel=document.getElementById('smart');
-      var area=document.getElementById('smartReportsArea');
-      if(typeof window.renderSmartReports==='function'&&area&&panel&&panel.classList.contains('active'))window.renderSmartReports();
-    }catch(_e2){}
-  });});
+  // Language changes only invalidate the lightweight display cache. They must never
+  // clear Smart Reports calculation caches or trigger a full report render.
+  window.addEventListener('petatoe:language-changed',function(){ invalidate(); });
+  ['petatoe:reference-registry-updated','petatoe:operations-storage-change'].forEach(function(evt){
+    window.addEventListener(evt,function(){
+      invalidate();
+      try{if(window.PETATOESmartReports&&typeof window.PETATOESmartReports.clearCache==='function')window.PETATOESmartReports.clearCache('business-master-data-changed');}catch(_e){}
+    });
+  });
 })();

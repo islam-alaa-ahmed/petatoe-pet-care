@@ -1,0 +1,11 @@
+PETATOE v9.4.18 — Smart Reports Atomic Language Rendering
+
+- Removed row-level business localization from Smart Reports calculations.
+- Kept canonical records in Smart Data Engine and removed language from its calculation cache key.
+- Replaced repeated master-data JSON signature generation with event-invalidated translation maps.
+- Stopped language changes from clearing Smart Reports calculation caches or triggering full report renders.
+- Made setSmartTab the single lazy-render owner to prevent duplicate Vehicles and modular-tab renders.
+- Added a scoped atomic language runtime for the visible Smart Reports tab and active charts only.
+- Added stale-event cancellation and reversible text/attribute/chart label storage.
+- Preserved report opening and tab-navigation performance while stabilizing Arabic/English text.
+- Synchronized release metadata and cache tokens to PETATOE v9.4.18.

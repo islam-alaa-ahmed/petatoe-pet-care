@@ -196,8 +196,7 @@
   function buildSmartData(records, options){
     const __perfStart = perfNow();
     const rawSource = asArray(records);
-    // PETATOE v9.4.17: Smart calculations always use canonical stored values.
-    // Localization belongs to the display layer and must not clone every invoice row.
+    // Keep canonical records in the calculation layer. Business localization is display-only.
     const source = rawSource;
     const key = stableRecordsKey(rawSource);
     if(!options || !options.force){

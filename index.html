@@ -3077,12 +3077,12 @@ function petatoeSmartRerender(tab){
   // The previous v6.4.146 branch called records() although records is the global array here,
   // so the year chips threw an error and stayed stuck on the same year.
   if(target==='vehicles' && typeof renderSmartVans==='function'){
-    // PETATOE v9.4.17: local filters rerender the active vehicle report once.
     renderSmartVans(petatoeSmartReportsRows());
+    setSmartTab('vehicles');
     return;
   }
 
-  if(target==='services' && typeof renderSmartServicesReport==='function'){ renderSmartServicesReport(); return; }
+  if(target==='services' && typeof renderSmartServicesReport==='function'){ renderSmartServicesReport(); setSmartTab('services'); return; }
   renderSmartReports();
   setSmartTab(target);
 }
@@ -3616,7 +3616,7 @@ function petatoeUpdateWhatIf(){
 }
 
 
-/* PETATOE v6.2.3 Phase 2: Smart Reports core moved to smart/smart-reports-core.js?v=9.4.17-display-layer-localization-performance */
+/* PETATOE v6.2.3 Phase 2: Smart Reports core moved to smart/smart-reports-core.js?v=9.4.18-atomic-language */
 </script>
 <script src="router/navigation-controller.js"></script>
 <!-- FIXED BUILD v5: report year filters are independent from dashboard filters + horizontal scroll table -->
@@ -3925,13 +3925,13 @@ function petatoeUpdateWhatIf(){
 <script src="smart/smart-reports-filters-real.js?v=9.1.8-legacy-cleanup-pack2"></script>
 <script src="smart/smart-reports-new-customers-real.js?v=9.1.8-legacy-cleanup-pack1"></script>
 <script src="smart/smart-reports-performance-optimizer.js"></script>
-<script src="smart/smart-data-engine.js"></script>
+<script src="smart/smart-data-engine.js?v=9.4.18-atomic-language"></script>
 <script src="components/safe-render-helpers.js"></script>
 <script src="smart/smart-services.js"></script>
 <script src="smart/smart-vehicles.js?v=9.1.8-legacy-cleanup-pack1"></script>
 <script src="smart/smart-customers.js"></script>
-<script src="smart/smart-reports-core.js?v=9.4.17-display-layer-localization-performance"></script>
-<script src="smart/smart-router.js?v=9.4.17-display-layer-localization-performance"></script>
+<script src="smart/smart-reports-core.js?v=9.4.18-atomic-language"></script>
+<script src="smart/smart-router.js?v=9.4.18-atomic-language"></script>
 <script src="smart/smart-reports-interactions-real.js?v=9.0.0-elc-phase8g"></script>
 <script src="smart/smart-reports-export-engine.js?v=9.2.3-source-migration-pack2"></script>
 <script src="smart/smart-reports-facade.js"></script>
@@ -3952,7 +3952,7 @@ function petatoeUpdateWhatIf(){
 <script src="inline-extracted/commission-inline.js"></script>
 <!-- === /PETATOE v3.5 COMMISSION SYSTEM - APPEND ONLY === -->
 <script src="inline-extracted/commission-tab-visibility-fix.js"></script>
-<script src="smart/smart-tabs.js"></script>
+<script src="smart/smart-tabs.js?v=9.4.18-atomic-language"></script>
 <script src="sales/import-engine.js"></script>
 <script src="sales/entry-references.js"></script>
 <script src="inline-extracted/movement-center-inline.js"></script>
@@ -4581,7 +4581,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script defer="" src="components/liquid-glass-ui.js"></script>
 <script defer="" src="components/phase6f-safe-inline-cleanup.js"></script>
 <script defer="" src="inline-extracted/contract-candidates-full-export.js"></script>
-<script>window.PETATOE_RELEASE_VERSION='v9.4.17';window.PETATOE_RELEASE_NAME='PETATOE_V9_4_17_DISPLAY_LAYER_LOCALIZATION_PERFORMANCE';</script>
+<script>window.PETATOE_RELEASE_VERSION='v9.4.16';window.PETATOE_RELEASE_NAME='PETATOE_V9_4_16_SMART_REPORTS_PUBLIC_API_RESTORATION';</script>
 <script>
 (function(){
   function showPdfEngineMessage(){
@@ -4609,21 +4609,23 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script src="i18n/en.js?v=9.1.0-unified"></script>
 <script src="i18n/formatter.js?v=9.1.0-unified"></script>
 <script src="i18n/direction.js?v=9.1.0-unified"></script>
-<script src="i18n/index.js?v=9.4.17-display-layer-localization-performance"></script>
+<script src="i18n/index.js?v=9.4.18-atomic-language"></script>
 
 
 <script src="i18n/localization-center/loader.js?v=9.2.1-runtime-stability-phase1"></script>
-<script src="i18n/localization-center/dictionary-store.js?v=9.4.17-display-layer-localization-performance"></script>
+<script src="i18n/localization-center/dictionary-store.js?v=9.4.18-atomic-language"></script>
 <script src="i18n/localization-center/settings-phase61.js?v=9.4.8-settings-localization-phase61"></script>
-<script src="i18n/localization-center/runtime.js?v=9.4.17-display-layer-localization-performance"></script>
-<script src="i18n/localization-center/business-data.js?v=9.4.5-performance"></script>
+<script src="i18n/localization-center/runtime.js?v=9.4.18-atomic-language"></script>
+<script src="i18n/localization-center/business-data.js?v=9.4.18-atomic-language"></script>
 <script src="i18n/operations-source.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/warehouse-source.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/smart-reports-source.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/business-data-localization.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/maintenance-source.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/localization-center/consolidation.js?v=9.4.5-performance"></script>
-<script src="i18n/global-screen-translator.js?v=9.4.17-display-layer-localization-performance"></script>
+<script src="i18n/global-screen-translator.js?v=9.4.18-atomic-language"></script>
+<script src="smart/smart-language-runtime.js?v=9.4.18-atomic-language"></script>
+
 <script src="i18n/localization-center/dashboard-pilot.js?v=9.0.0-elc-phase6a"></script>
 <script src="i18n/localization-center/application-shell-pilot.js?v=9.0.0-elc-phase7a"></script>
 <script src="i18n/audit.js?v=9.0.0-elc-phase6a"></script>

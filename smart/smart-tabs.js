@@ -188,6 +188,7 @@
     document.querySelectorAll('#smartTabs .smart-pill').forEach(function(b){
       b.classList.toggle('active', (b.dataset.smartTab || b.getAttribute('data-smart-tab')) === tab);
     });
+    try{window.dispatchEvent(new CustomEvent('petatoe:smart-tab-rendered',{detail:{tab:tab}}));}catch(_e){}
 
     document.querySelectorAll('[data-smart-section]').forEach(function(sec){
       sec.classList.toggle('active', (sec.dataset.smartSection || sec.getAttribute('data-smart-section')) === tab);
