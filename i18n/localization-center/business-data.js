@@ -2,7 +2,7 @@
    Localizes user-maintained master-data display names without changing canonical stored values. */
 (function(){
   'use strict';
-  var VERSION='9.4.20-center-business-data-stable';
+  var VERSION='9.4.21-center-business-data-finalized';
   var cache={maps:null};
 
   function text(v){return String(v==null?'':v).trim();}

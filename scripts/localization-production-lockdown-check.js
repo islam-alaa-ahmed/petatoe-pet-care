@@ -30,12 +30,12 @@ for(const file of files){const r=rel(file);const src=fs.readFileSync(file,'utf8'
 const adapterFiles=['i18n/operations-source.js','i18n/warehouse-source.js','i18n/smart-reports-source.js','i18n/business-data-localization.js','i18n/maintenance-source.js'];
 for(const r of adapterFiles){const src=fs.readFileSync(path.join(root,r),'utf8');if(/\bdictionaries\s*:\s*(?!null\b)[{[]/.test(src)||/\b(?:AR|EN|DICTIONARY|TRANSLATIONS)\s*=\s*[{[]/.test(src)){stats.adapterDictionaries++;fail(`${r}: compatibility adapter owns translation data`);}if(!src.includes('PETATOE_LOCALIZATION_CENTER'))fail(`${r}: compatibility adapter does not delegate to Localization Center`);}
 const runtime=fs.readFileSync(path.join(root,'i18n/localization-center/runtime.js'),'utf8');
-if(!runtime.includes("VERSION='9.4.20-translation-stability-certification'"))fail('Localization Center runtime version mismatch.');
+if(!runtime.includes("VERSION='9.4.21-enterprise-localization-finalization'"))fail('Localization Center runtime version mismatch.');
 if(runtime.includes('window.localize=')||runtime.includes('window.petatoeLocalizationStatus=')||runtime.includes('window.petatoeLocalizationReload='))fail('Deprecated public localization aliases remain exported.');
 const release=fs.readFileSync(path.join(root,'RELEASE_VERSION.txt'),'utf8');
-if(!release.includes('PETATOE v9.4.20')||!release.includes('PETATOE_V9_4_20_SMART_REPORTS_TRANSLATION_STABILITY_PERFORMANCE_CERTIFICATION'))fail('Release metadata mismatch.');
+if(!release.includes('PETATOE v9.4.21')||!release.includes('PETATOE_V9_4_21_ENTERPRISE_LOCALIZATION_FINALIZATION'))fail('Release metadata mismatch.');
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
-if(!index.includes("PETATOE_RELEASE_VERSION='v9.4.20'")||!index.includes("PETATOE_RELEASE_NAME='PETATOE_V9_4_20_SMART_REPORTS_TRANSLATION_STABILITY_PERFORMANCE_CERTIFICATION'"))fail('index.html release metadata mismatch.');
+if(!index.includes("PETATOE_RELEASE_VERSION='v9.4.21'")||!index.includes("PETATOE_RELEASE_NAME='PETATOE_V9_4_21_ENTERPRISE_LOCALIZATION_FINALIZATION'"))fail('index.html release metadata mismatch.');
 const result={status:failures.length?'FAILED':'PASSED',stats,failures};
 fs.writeFileSync(path.join(root,'PRODUCTION_LOCALIZATION_LOCKDOWN_RESULTS.json'),JSON.stringify(result,null,2));
 if(failures.length){console.error('Production Localization Lockdown: FAILED');console.error(JSON.stringify(stats,null,2));failures.forEach(x=>console.error('- '+x));process.exit(1);}

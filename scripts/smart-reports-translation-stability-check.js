@@ -9,17 +9,18 @@ const business=fs.readFileSync(path.join(root,'i18n/localization-center/business
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 function requireText(src,text,msg){if(!src.includes(text))failures.push(msg);}
 function forbid(src,re,msg){if(re.test(src))failures.push(msg);}
-requireText(runtime,"version:'9.4.20-translation-stability'",'Smart language runtime version mismatch.');
-requireText(runtime,"translateTextNodes(root,lang);",'Visible text must be translated synchronously.');
-requireText(runtime,"translateAttributes(root,lang);",'Visible attributes must be translated synchronously.');
-requireText(runtime,"scheduleCharts(root,lang,token);",'Chart repaint must remain deferred and deduplicated.');
-requireText(runtime,"petatoe:smart-tab-rendered",'Rendered tabs must receive atomic localization.');
+requireText(runtime,"version:'9.4.21-dynamic-localization-finalization'",'Smart language runtime version mismatch.');
+requireText(runtime,'translateRoot(root,lang);','Visible text and attributes must be translated synchronously.');
+requireText(runtime,'scheduleCharts(root,lang,token);','Chart repaint must remain deferred and deduplicated.');
+requireText(runtime,'petatoe:smart-tab-rendered','Rendered tabs must receive localization.');
+requireText(runtime,"observer.observe(area,{subtree:true,childList:true,characterData:true});",'Dynamic localization observer must be scoped to Smart Reports only.');
+requireText(runtime,'Promise.resolve().then(flushPending);','Dynamic mutations must be batched before paint.');
 forbid(runtime,/renderSmartReports\s*\(/,'Language runtime must not trigger a full Smart Reports render.');
 forbid(runtime,/clearCache\s*\(/,'Language runtime must not clear calculation caches.');
-forbid(runtime,/MutationObserver/,'Smart Reports stability runtime must not add a DOM-wide observer.');
+forbid(runtime,/observer\.observe\((document|document\.body)/,'Observer must never scan the full document.');
 forbid(business,/PETATOE_I18N/,'Business display localization must not call the legacy PETATOE_I18N API.');
-requireText(index,'smart/smart-language-runtime.js?v=9.4.20-translation-stability','Smart language runtime cache token mismatch.');
-const result={status:failures.length?'FAILED':'PASSED',checks:10,failures};
+requireText(index,'smart/smart-language-runtime.js?v=9.4.21-enterprise-localization-finalization','Smart language runtime cache token mismatch.');
+const result={status:failures.length?'FAILED':'PASSED',checks:11,failures};
 fs.writeFileSync(path.join(root,'SMART_REPORTS_TRANSLATION_STABILITY_RESULTS.json'),JSON.stringify(result,null,2));
 if(failures.length){console.error('Smart Reports Translation Stability: FAILED');failures.forEach(x=>console.error('- '+x));process.exit(1);}
-console.log('Smart Reports Translation Stability: PASSED — 10/10');
+console.log('Smart Reports Translation Stability: PASSED — 11/11');

@@ -1,10 +1,11 @@
-PETATOE v9.4.20 — Smart Reports Translation Stability & Performance Certification
+PETATOE v9.4.21 — Enterprise Localization Finalization
 
-- Applied Smart Reports visible-tab text and attribute localization synchronously in the same render event turn to prevent Arabic-to-English flashing.
-- Deferred only chart label repaint through one deduplicated animation frame, preserving UI responsiveness.
-- Added stale chart-update cancellation so rapid language changes cannot overwrite the latest selected language.
-- Preserved the fast report architecture: no full Smart Reports render, no calculation-cache clear, no data reload, and no MutationObserver.
-- Replaced the remaining legacy PETATOE_I18N language lookup in business-data localization with the canonical Localization Center API and safe fallback.
-- Added a dedicated Smart Reports translation-stability CI validator and integrated it into Localization Lockdown.
-- Synchronized release metadata, runtime versions, cache tokens, and certification validators to PETATOE v9.4.20.
-- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports Fast Runtime, Fast Readiness Path, Public API, Translation Stability, and JavaScript syntax validation.
+- Added a Smart Reports-only dynamic localization observer scoped to #smartReportsArea.
+- Batched newly created text nodes before paint to stabilize dynamic buttons, filters, tables, dialogs, tooltips, and Load More counters.
+- Preserved report performance: no full report render, no data reload, no calculation-cache clear, and no document-wide DOM scan.
+- Added exact, business-value, and controlled fragment translation fallbacks for dynamic services, payment methods, statuses, recommendation controls, and mixed runtime labels.
+- Kept chart translation deferred and deduplicated through one animation frame.
+- Added stale-language protection and reversible Arabic source storage.
+- Updated localization certification validators to permit only the scoped batched Smart Reports observer and reject document-wide observers.
+- Synchronized release metadata, runtime versions, validator expectations, and cache tokens to PETATOE v9.4.21.
+- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports Fast Runtime, Fast Readiness, Public API, Translation Stability, and JavaScript syntax validation.
