@@ -546,11 +546,11 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="pdf-period-bar">
 <label>السنة:</label>
 <select data-pet-filter="pdf-year" id="pdf-year-sel">
-<option value="all">كل السنوات</option>
+<option value="all" data-i18n="filters.allYears">كل السنوات</option>
 </select>
 <label style="margin-right:10px">الشهر:</label>
 <select data-pet-filter="pdf-month" id="pdf-month-sel">
-<option value="all">كل الشهور</option>
+<option value="all" data-i18n="filters.allMonths">كل الشهور</option>
 </select>
 <label style="margin-right:10px">اليوم:</label>
 <select data-pet-filter="pdf-refresh" id="pdf-day-sel">
@@ -810,8 +810,8 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <select data-op-change="render" id="appointmentAnimalFilter"><option value="all">كل أنواع الحيوانات</option></select>
 <select data-op-change="render" id="appointmentGroomerFilter"><option value="all">كل الجرومرز</option></select>
 <select data-op-change="render" id="appointmentDriverFilter"><option value="all">كل السائقين</option></select>
-<select data-op-change="render" id="appointmentVehicleFilter"><option value="all">كل السيارات</option></select>
-<select data-op-change="render" id="appointmentPaymentFilter"><option value="all">كل طرق الدفع</option><option>شبكة</option><option>نقدًا</option><option>تحويل بنكي</option><option>دفع عن طريق الموقع</option></select>
+<select data-op-change="render" id="appointmentVehicleFilter"><option value="all" data-i18n="filters.allVehicles">كل السيارات</option></select>
+<select data-op-change="render" id="appointmentPaymentFilter"><option value="all" data-i18n="filters.allPayments">كل طرق الدفع</option><option>شبكة</option><option>نقدًا</option><option>تحويل بنكي</option><option>دفع عن طريق الموقع</option></select>
 <input data-op-change="render" id="appointmentDateFromFilter" title="من تاريخ" type="date"/>
 <input data-op-change="render" id="appointmentDateToFilter" title="إلى تاريخ" type="date"/>
 <button class="btn btn-ghost" data-op-click="resetFilters" type="button">مسح الفلاتر</button>
@@ -1317,7 +1317,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 </div>
 </div>
 <div class="panel" data-pet-module="settings" id="settings">
-<div class="section-head"><div><h2>Settings &amp; Control Center</h2><p>إعدادات التشغيل، الصلاحيات، النسخ الاحتياطي، وفحص جودة البيانات.</p></div><div class="gov-actions"><button class="btn btn-primary" id="petatoeDataQualityBtn">🧪 فحص البيانات</button><button class="exp-btn exp-btn-excel" id="petatoeExportBackupBtn">💾 Backup</button><button class="btn btn-ghost" id="petatoeRestorePickerBtn">♻️ Restore</button><input accept="application/json,.json" hidden="" id="petatoeRestoreInput" type="file"/></div></div>
+<div class="section-head"><div><h2>Settings &amp; Control Center</h2><p><span data-i18n="settingsBackup.shell.description">إعدادات التشغيل، الصلاحيات، النسخ الاحتياطي، وفحص جودة البيانات.</span></p></div><div class="gov-actions"><button class="btn btn-primary" id="petatoeDataQualityBtn" data-i18n="settingsBackup.shell.dataQuality">🧪 فحص البيانات</button><button class="exp-btn exp-btn-excel" id="petatoeExportBackupBtn">💾 Backup</button><button class="btn btn-ghost" id="petatoeRestorePickerBtn">♻️ Restore</button><input accept="application/json,.json" hidden="" id="petatoeRestoreInput" type="file"/></div></div>
 <div class="gov-stack" id="settingsArea"></div>
 </div>
 <div class="panel" id="logs">
@@ -4484,7 +4484,8 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <script src="inline-extracted/children-expenses-core.js"></script>
 <script src="settings/setup.js"></script>
 <script data-petatoe-defer="v6.5.0-phase1" defer="" src="settings/audit.js"></script>
-<script src="settings/backup.js"></script>
+<script src="i18n/localization-center/settings-backup.js?v=9.4.23-a3-1"></script>
+<script src="settings/backup.js?v=9.4.23-a3-1"></script>
 <script src="settings/settings.js?v=9.4.8-settings-localization-phase61"></script>
 <script src="i18n/localization-center/dashboard.js?v=9.4.23-operations-localization-completion"></script>
 <script src="sales/contract-candidates-report.js"></script>
