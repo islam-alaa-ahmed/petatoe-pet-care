@@ -12,6 +12,8 @@
   if(window.PETATOEOperationsAppointments) return;
 
 
+  function t(key,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&typeof c.translate==='function'?c.translate('operations.appointments.'+key,fallback):fallback;}
+
   var LEGACY_STATUS_MAP = {'تم':'تمت الجلسة'};
 
   function normalizeStatusValue(status){
@@ -116,8 +118,8 @@
     var a = adapter();
     if(!a) return callTarget('saveAppointment', []);
     var r = a.collect();
-    if(!r.client){ alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب اسم العميل'):'اكتب اسم العميل'); return; }
-    if(!r.date){ alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اختر تاريخ الموعد'):'اختر تاريخ الموعد'); return; }
+    if(!r.client){ alert(t('requiredClient','Enter the customer name')); return; }
+    if(!r.date){ alert(t('requiredDate','Select the appointment date')); return; }
     var rows = a.read();
     var profile = a.findCustomerProfile();
     if(profile){
@@ -127,8 +129,8 @@
     }
     var conflicts = a.findConflicts(r, rows);
     if(conflicts.length){
-      var conflictPrefix=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('⚠️ يوجد تعارض في الموعد:\n'):'⚠️ يوجد تعارض في الموعد:\n'); alert(conflictPrefix + conflicts.map(function(c){
-        return '- ' + c.reason + ' مع ' + ((c.row && c.row.client) || 'عميل') + ' من ' + ((c.row && c.row.start) || '?') + ' إلى ' + ((c.row && c.row.end) || '?');
+      var conflictPrefix=t('conflictTitle','⚠️ Appointment conflict detected:')+'\n'; alert(conflictPrefix + conflicts.map(function(c){
+        return '- ' + c.reason + ' ' + t('conflictWith','with') + ' ' + ((c.row && c.row.client) || t('customerFallback','Customer')) + ' ' + t('from','from') + ' ' + ((c.row && c.row.start) || '?') + ' ' + t('to','to') + ' ' + ((c.row && c.row.end) || '?');
       }).join('\n'));
       return;
     }
@@ -146,7 +148,7 @@
       rows.unshift(r);
       a.pushExecutionLog(rows[0], 'create', {
         status: a.normalizeStatus(rows[0].status),
-        notes: 'تم إنشاء الموعد من إدارة المواعيد'
+        notes: t('createdNote','Appointment created from Appointment Management')
       });
     }
     if(typeof a.upsertMasterCustomer === 'function'){
@@ -160,7 +162,7 @@
     a.write(rows);
     a.clearForm();
     a.setTab('log');
-    a.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حفظ الموعد'):'تم حفظ الموعد');
+    a.toast(t('saved','Appointment saved'));
   }
 
   function actionEdit(id){
@@ -175,10 +177,10 @@
   function actionRemove(id){
     var a = adapter();
     if(!a) return callTarget('remove', [id]);
-    if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف الموعد؟'):'حذف الموعد؟')) return;
+    if(!confirm(t('deleteConfirm','Delete this appointment?'))) return;
     a.write(a.read().filter(function(x){ return String(x.id) !== String(id); }));
     a.render();
-    a.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حذف الموعد'):'تم حذف الموعد');
+    a.toast(t('deleted','Appointment deleted'));
   }
 
   function actionChangeStatus(id, status){
@@ -190,7 +192,7 @@
     });
     a.write(rows);
     a.render();
-    a.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم تحديث حالة الموعد'):'تم تحديث حالة الموعد');
+    a.toast(t('statusUpdated','Appointment status updated'));
   }
 
   window.PETATOEOperationsAppointmentsActions = {

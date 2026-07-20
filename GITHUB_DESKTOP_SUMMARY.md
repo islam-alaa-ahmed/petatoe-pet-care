@@ -1,12 +1,13 @@
 # GitHub Desktop Summary
 
 ## Summary
-Phase A3.1 migrates the first Settings runtime surface to explicit localization keys and removes all Arabic UI literals from the Backup/Restore module.
+Localize Appointment Management actions and Vehicle Operations status/history UI using an explicit bilingual catalog while preserving canonical workflow status values.
 
-## Files Changed
-- Modified: `index.html`
-- Modified: `settings/backup.js`
-- Added: `i18n/localization-center/settings-backup.js`
+## Changed files
+- `index.html`
+- `operations/operations-appointments.js`
+- `operations/operations-status.js`
+- `i18n/localization-center/operations-appointments-status.js` (new)
 
-## Suggested Commit Message
-`localize dashboard filters and settings backup module`
+## Commit message
+`localization: migrate appointment and vehicle status UI strings`

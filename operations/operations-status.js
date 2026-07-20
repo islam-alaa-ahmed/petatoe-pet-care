@@ -11,6 +11,15 @@
    */
   if(window.PETATOEOperationsStatus && window.PETATOEOperationsStatus.version === 'OPS-23-history-render-bridge') return;
 
+
+  function t(key,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&typeof c.translate==='function'?c.translate('operations.status.'+key,fallback):fallback;}
+  function locale(){return document.documentElement.lang==='en'?'en-US':'ar-SA';}
+  function statusLabel(status){
+    var map={'مجدول':'scheduled','في الطريق':'onTheWay','وصل العميل':'arrived','بدأت الجلسة':'started','تمت الجلسة':'completed','تم التحصيل':'collected','مغلق':'closed','مؤكد':'confirmed','غير مكتملة':'incomplete'};
+    var key=map[String(status||'')];
+    return key?t('statusNames.'+key,String(status||'')):String(status||'');
+  }
+
   var STATUS_METHODS = [
     'setVehicleStatusById',
     'setVehicleStatusByIndex',
@@ -70,11 +79,11 @@
 
     var check = call(s, 'validateVehicleStatusTransition', [row, status, id]);
     if(!check || !check.ok){
-      toast((check && check.msg) || 'لا يمكن تغيير الحالة بهذا التسلسل');
+      toast((check && check.msg) || t('invalidSequence','The status cannot be changed in this sequence'));
       return;
     }
     if(check.same){
-      toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('الحالة الحالية مختارة بالفعل'):'الحالة الحالية مختارة بالفعل');
+      toast(t('alreadySelected','This is already the current status'));
       return;
     }
 
@@ -93,11 +102,11 @@
         oldStatus: oldStatus,
         status: status,
         reason: check.reason || '',
-        notes: check.backward ? 'تراجع حالة الطلب بسبب موثق' : ''
+        notes: check.backward ? t('rollbackNote','Order status rolled back with a documented reason') : ''
       }]);
     });
 
-    toast(check.backward ? 'تم التراجع للحالة السابقة وتسجيل السبب' : 'تم تحديث حالة الجلسة');
+    toast(check.backward ? t('rolledBack','Rolled back to the previous status and recorded the reason') : t('sessionUpdated','Session status updated'));
   }
 
   function setVehicleStatusByIndex(idx, status){
@@ -128,13 +137,13 @@
 
 
   var STATUS_STEPS = [
-    ['في الطريق','بدء التحرك','🚐'],
-    ['وصل العميل','وصلنا','📍'],
-    ['بدأت الجلسة','بدء الجلسة','✂️'],
-    ['تمت الجلسة','إنهاء الجلسة','🧼'],
-    ['تم التحصيل','تم التحصيل','💳'],
-    ['مغلق','مغلقة','🔒'],
-    ['مؤكد','مؤكدة','🛡️']
+    ['في الطريق','steps.onTheWay','🚐'],
+    ['وصل العميل','steps.arrived','📍'],
+    ['بدأت الجلسة','steps.started','✂️'],
+    ['تمت الجلسة','steps.completed','🧼'],
+    ['تم التحصيل','steps.collected','💳'],
+    ['مغلق','steps.closed','🔒'],
+    ['مؤكد','steps.confirmed','🛡️']
   ];
 
   var STATUS_ORDER = ['مجدول','في الطريق','وصل العميل','بدأت الجلسة','تمت الجلسة','تم التحصيل','مغلق','مؤكد'];
@@ -156,38 +165,38 @@
   }
 
   function auditActionLabel(action){
-    return {create:'إنشاء الموعد',edit:'تعديل بيانات الموعد',status:'تغيير حالة الطلب',close:'إغلاق الجلسة',reopen:'إعادة فتح الجلسة',confirm:'تأكيد الجلسة',collection:'تحديث التحصيل والدفع',select:'اختيار الطلب للتشغيل',delete:'حذف الموعد'}[action]||action||'تحديث';
+    var key={create:'create',edit:'edit',status:'status',close:'close',reopen:'reopen',confirm:'confirm',collection:'collection',select:'select',delete:'delete'}[action]; return key?t('actions.'+key,action):(action||t('actions.update','Update'));
   }
 
   function fmtAuditDate(iso){
     var d = new Date(iso || Date.now());
     if(isNaN(d.getTime())) d = new Date();
-    return d.toLocaleDateString('ar-SA', {year:'numeric', month:'2-digit', day:'2-digit'});
+    return d.toLocaleDateString(locale(), {year:'numeric', month:'2-digit', day:'2-digit'});
   }
 
   function fmtAuditTime(iso){
     var d = new Date(iso || Date.now());
     if(isNaN(d.getTime())) d = new Date();
-    return d.toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'});
+    return d.toLocaleTimeString(locale(), {hour:'2-digit', minute:'2-digit'});
   }
 
   function money(n){
     n = Number(n || 0);
-    return n.toLocaleString('ar-SA', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' SAR';
+    return n.toLocaleString(locale(), {minimumFractionDigits:2, maximumFractionDigits:2}) + ' ' + t('currency','SAR');
   }
 
   function historyDetails(action, extra){
     extra = extra || {};
     var parts = [];
-    if(extra.oldStatus || extra.status) parts.push('الحالة: ' + (extra.oldStatus || '-') + ' ← ' + (extra.status || '-'));
-    if(extra.paymentMethod) parts.push('طريقة الدفع: ' + extra.paymentMethod);
-    if(extra.paidAmount != null) parts.push('المحصل: ' + money(Number(extra.paidAmount || 0)));
-    if(extra.collectionStatus) parts.push('حالة التحصيل: ' + extra.collectionStatus);
-    if(extra.collectionReference) parts.push('مرجع المعاملة: ' + extra.collectionReference);
-    if(extra.paymentAttachmentName) parts.push('صورة إثبات الدفع: ' + extra.paymentAttachmentName);
-    if(extra.reason) parts.push('السبب: ' + extra.reason);
-    if(extra.validation) parts.push('تنبيه تحقق: ' + extra.validation);
-    if(extra.changes && extra.changes.length) parts.push('تعديلات: ' + extra.changes.join('، '));
+    if(extra.oldStatus || extra.status) parts.push(t('statusLabel','Status') + ': ' + statusLabel(extra.oldStatus || '-') + ' ← ' + statusLabel(extra.status || '-'));
+    if(extra.paymentMethod) parts.push(t('paymentMethod','Payment method') + ': ' + extra.paymentMethod);
+    if(extra.paidAmount != null) parts.push(t('collected','Collected') + ': ' + money(Number(extra.paidAmount || 0)));
+    if(extra.collectionStatus) parts.push(t('collectionStatus','Collection status') + ': ' + extra.collectionStatus);
+    if(extra.collectionReference) parts.push(t('transactionReference','Transaction reference') + ': ' + extra.collectionReference);
+    if(extra.paymentAttachmentName) parts.push(t('paymentProof','Payment proof image') + ': ' + extra.paymentAttachmentName);
+    if(extra.reason) parts.push(t('reason','Reason') + ': ' + extra.reason);
+    if(extra.validation) parts.push(t('validationAlert','Validation alert') + ': ' + extra.validation);
+    if(extra.changes && extra.changes.length) parts.push(t('changes','Changes') + ': ' + extra.changes.join(', '));
     return parts.join(' | ');
   }
 
@@ -197,7 +206,7 @@
       var x = logs[i] || {};
       if(x.status && normalizeStatus(x.status) === normalizeStatus(status) && x.at){
         var d = new Date(x.at);
-        if(!isNaN(d.getTime())) return d.toLocaleTimeString('ar-SA', {hour:'2-digit', minute:'2-digit'});
+        if(!isNaN(d.getTime())) return d.toLocaleTimeString(locale(), {hour:'2-digit', minute:'2-digit'});
       }
     }
     return fallback || '--:--';
@@ -212,7 +221,7 @@
 
   function vehicleStatusButtons(id, row){
     var locked = isLocked(row);
-    var disabled = locked ? ' disabled title="الجلسة مؤكدة ومقفلة"' : '';
+    var disabled = locked ? ' disabled title="' + esc(t('lockedTitle','The session is confirmed and locked')) + '"' : '';
     return STATUS_STEPS.map(function(x){
       var active = normalizeStatus(row && row.status) === x[0];
       var done = vehicleStageDone(row, x[0]);
@@ -238,13 +247,13 @@
     var hist = Array.isArray(row && row.sessionHistory) ? row.sessionHistory : [];
     if(!hist.length && Array.isArray(row && row.executionLog)){
       hist = row.executionLog.map(function(x){
-        return {at:x.at, date:fmtAuditDate(x.at), time:fmtAuditTime(x.at), userName:x.userName || x.userId || 'النظام', userRole:x.userRole || '', actionLabel:auditActionLabel(x.action), oldStatus:x.oldStatus || '', newStatus:x.status || '', details:historyDetails(x.action, x)};
+        return {at:x.at, date:fmtAuditDate(x.at), time:fmtAuditTime(x.at), userName:x.userName || x.userId || t('system','System'), userRole:x.userRole || '', actionLabel:auditActionLabel(x.action), oldStatus:x.oldStatus || '', newStatus:x.status || '', details:historyDetails(x.action, x)};
       });
     }
     var rows = hist.slice().reverse().map(function(h, i){
-      return '<div class="vehicle-ops-history-item"><span class="history-index">' + (hist.length - i) + '</span><div><b>' + esc(h.actionLabel || auditActionLabel(h.action)) + '</b><small>' + esc((h.date || fmtAuditDate(h.at)) + ' - ' + (h.time || fmtAuditTime(h.at))) + ' | ' + esc(h.userName || '-') + ' | ' + esc(h.userRole || '-') + '</small>' + (h.oldStatus || h.newStatus ? '<p>الحالة: ' + esc(h.oldStatus || '-') + ' ← ' + esc(h.newStatus || '-') + '</p>' : '') + (h.details ? '<p>' + esc(h.details) + '</p>' : '') + (h.notes ? '<em>' + esc(h.notes) + '</em>' : '') + '</div></div>';
+      return '<div class="vehicle-ops-history-item"><span class="history-index">' + (hist.length - i) + '</span><div><b>' + esc(h.actionLabel || auditActionLabel(h.action)) + '</b><small>' + esc((h.date || fmtAuditDate(h.at)) + ' - ' + (h.time || fmtAuditTime(h.at))) + ' | ' + esc(h.userName || '-') + ' | ' + esc(h.userRole || '-') + '</small>' + (h.oldStatus || h.newStatus ? '<p>' + esc(t('statusLabel','Status')) + ': ' + esc(statusLabel(h.oldStatus || '-')) + ' ← ' + esc(statusLabel(h.newStatus || '-')) + '</p>' : '') + (h.details ? '<p>' + esc(h.details) + '</p>' : '') + (h.notes ? '<em>' + esc(h.notes) + '</em>' : '') + '</div></div>';
     }).join('');
-    return '<div class="vehicle-ops-history-panel"><div class="vehicle-ops-history-head"><h4>📜 سجل حالة الطلب</h4><span>' + hist.length + ' حدث</span></div><div class="vehicle-ops-history-list">' + (rows || '<div class="appointments-empty">لا يوجد سجل حالة لهذا الطلب بعد</div>') + '</div></div>';
+    return '<div class="vehicle-ops-history-panel"><div class="vehicle-ops-history-head"><h4>📜 سجل حالة الطلب</h4><span>' + hist.length + ' حدث</span></div><div class="vehicle-ops-history-list">' + (rows || '<div class="appointments-empty">' + esc(t('emptyHistory','No status history is available for this order yet')) + '</div>') + '</div></div>';
   }
 
   var renderApi = {

@@ -1,5 +1,6 @@
 # Files Modified
 
 - `index.html`
-- `settings/backup.js`
-- `i18n/localization-center/settings-backup.js` (new)
+- `operations/operations-appointments.js`
+- `operations/operations-status.js`
+- `i18n/localization-center/operations-appointments-status.js`
