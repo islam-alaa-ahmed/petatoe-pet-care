@@ -52,7 +52,7 @@ function petatoeRenderSmartRecBackButton(activeTab){
   if(note){
     note.classList.toggle('show',show);
     if(show){
-      window.PETATOESafeRender.setHTML(note,`<span>📌 ${smartInteractionT('openedFromRecommendations','تم فتح {report} من شاشة التوصيات.',{report:'<b>'+htmlSafe(label)+'</b>'})}</span><div class="smart-rec-return-actions"><button class="smart-rec-back-btn" data-smart-action="back-smart-recommendations">↩️ ${smartInteractionT('backToRecommendations','رجوع لتقرير التوصيات')}</button></div>`);
+      window.PETATOESafeRender.setHTML(note,`<span>${smartInteractionT('pinIcon','📌')} ${smartInteractionT('openedFromRecommendations','تم فتح {report} من شاشة التوصيات.',{report:'<b>'+htmlSafe(label)+'</b>'})}</span><div class="smart-rec-return-actions"><button class="smart-rec-back-btn" data-smart-action="back-smart-recommendations">${smartInteractionT('backIcon','↩️')} ${smartInteractionT('backToRecommendations','رجوع لتقرير التوصيات')}</button></div>`);
     }
   }
   try{petatoeRenderSmartRecFloatingBack(activeTab)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
@@ -100,7 +100,7 @@ function petatoeRenderSmartRecFloatingBack(activeTab){
   const label=window.petatoeSmartRecReturnLabel||smartInteractionT('linkedReport','التقرير المرتبط');
   btn.classList.toggle('show',show);
   if(show){
-    window.PETATOESafeRender.setHTML(btn,`<span class="smart-rec-floating-ico">↩️</span><span class="smart-rec-floating-text"><b>${smartInteractionT('backToRecommendationsShort','رجوع للتوصيات')}</b><small>${htmlSafe(label)}</small></span>`);
+    window.PETATOESafeRender.setHTML(btn,`<span class="smart-rec-floating-ico">${smartInteractionT('backIcon','↩️')}</span><span class="smart-rec-floating-text"><b>${smartInteractionT('backToRecommendationsShort','رجوع للتوصيات')}</b><small>${htmlSafe(label)}</small></span>`);
   }
 }
 window.petatoeOpenSmartRecReport=petatoeOpenSmartRecReport;

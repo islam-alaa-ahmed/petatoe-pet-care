@@ -1147,7 +1147,7 @@ function renderSmartReports(){
     </div>
 
     <div class="smart-tab-section" data-smart-section="customers">
-      <div class="customer-analysis-tabs" role="tablist" aria-label="تبويبات تحليل العملاء">
+      <div class="customer-analysis-tabs" role="tablist" aria-label="${smartReportHtml('customers.analysisTabsAria','تبويبات تحليل العملاء')}">
         <button type="button" class="customer-analysis-tab ${(['overview','contracts','compare','ai'].includes(window.customerAnalysisSubTab)?window.customerAnalysisSubTab:'overview')==='overview'?'active':''}" data-customer-analysis-tab="overview" data-smart-action="customer-analysis-tab" data-tab="overview"><b>🆕 متابعة العملاء الجدد</b><small>العملاء الجدد وقيمة العملاء</small></button>
         <button type="button" class="customer-analysis-tab ${(['overview','contracts','compare','ai'].includes(window.customerAnalysisSubTab)?window.customerAnalysisSubTab:'overview')==='contracts'?'active':''}" data-customer-analysis-tab="contracts" data-smart-action="customer-analysis-tab" data-tab="contracts"><b>⭐ العملاء المرشحون للعقود</b><small>Score، ترشيح، توصيات العقود</small></button>
         <button type="button" class="customer-analysis-tab ${(['overview','contracts','compare','ai'].includes(window.customerAnalysisSubTab)?window.customerAnalysisSubTab:'overview')==='compare'?'active':''}" data-customer-analysis-tab="compare" data-smart-action="customer-analysis-tab" data-tab="compare"><b>🔁 مقارنة العملاء بين عامين</b><small>نمو، تراجع، مفقودون، ترتيب وتورنادو</small></button>
@@ -1273,7 +1273,7 @@ function renderSmartReports(){
     </div>
 
     <div class="smart-tab-section" data-smart-section="forecast">
-      <div class="ai-forecast-hero"><div><h3>${smartReportHtml('ai.heroTitle','🤖 AI Forecasting داخل التقارير الذكية')}</h3><p>${smartReportHtml('ai.heroDescription','توقعات مطورة باستخدام نماذج إحصائية متعددة، اختيار تلقائي لأفضل نموذج، وشرح ذكي لمخاطر وفرص الفترة القادمة.')}</p></div><span class="ai-badge">AI-like Predictive Engine</span></div>
+      <div class="ai-forecast-hero"><div><h3>${smartReportHtml('ai.heroTitle','🤖 AI Forecasting داخل التقارير الذكية')}</h3><p>${smartReportHtml('ai.heroDescription','توقعات مطورة باستخدام نماذج إحصائية متعددة، اختيار تلقائي لأفضل نموذج، وشرح ذكي لمخاطر وفرص الفترة القادمة.')}</p></div><span class="ai-badge">${smartReportHtml('ai.predictiveEngineBadge','AI-like Predictive Engine')}</span></div>
       <div class="ai-forecast-kpis">
         <div class="ai-forecast-kpi" style="--accent:var(--purple)"><span>${smartReportHtml('ai.nextMonthForecast','توقع الشهر القادم')}</span><b>${money(aiForecast.next)}</b><small>${smartReportHtml('ai.basedOnModel','حسب نموذج {model}',{model:aiForecast.best})}</small></div>
         <div class="ai-forecast-kpi" style="--accent:var(--green)"><span>${smartReportHtml('ai.nextQuarterForecast','توقع الربع القادم')}</span><b>${money(aiForecast.quarter)}</b><small>${smartReportHtml('ai.firstThreeFutureMonths','أول 3 شهور مستقبلية')}</small></div>
@@ -1313,7 +1313,7 @@ function renderSmartReports(){
   renderReportsCenter(data);
 
   const palette=[css('--purple'),css('--blue'),css('--cyan'),css('--green'),css('--yellow'),css('--orange'),css('--pink')];
-  chart('smartForecastChart',{type:'line',data:{labels:MONTHS.map(m=>smartReportMonth(m,MAR[m])),datasets:[{label:'Actual',data:monthly.map(x=>x.idx<=lastActual?x.sales:null),borderColor:css('--green'),backgroundColor:'rgba(34,197,94,.18)',tension:.35,pointRadius:4,fill:false},{label:'Forecast',data:forecast,borderColor:css('--purple'),backgroundColor:'rgba(139,92,246,.16)',borderDash:[7,5],tension:.35,pointRadius:3,fill:false}]},options:{...baseOpts(),layout:{padding:{top:28}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 10px Cairo'}}}});
+  chart('smartForecastChart',{type:'line',data:{labels:MONTHS.map(m=>smartReportMonth(m,MAR[m])),datasets:[{label:smartReportHtml('ai.actualSeries','الفعلي'),data:monthly.map(x=>x.idx<=lastActual?x.sales:null),borderColor:css('--green'),backgroundColor:'rgba(34,197,94,.18)',tension:.35,pointRadius:4,fill:false},{label:smartReportHtml('ai.forecastSeries','المتوقع'),data:forecast,borderColor:css('--purple'),backgroundColor:'rgba(139,92,246,.16)',borderDash:[7,5],tension:.35,pointRadius:3,fill:false}]},options:{...baseOpts(),layout:{padding:{top:28}},plugins:{...baseOpts().plugins,petatoeLabels:{enabled:true,money:false,font:'900 10px Cairo'}}}});
   setTimeout(petatoeUpdateWhatIf,0);
   // v6.4.144: smartServiceDonut is rendered lazily by renderSmartServicesReport() only.
 
