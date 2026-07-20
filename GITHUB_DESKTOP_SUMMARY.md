@@ -1,11 +1,12 @@
 # GitHub Desktop Summary
 
 ## Summary
-Localize Smart Reports recommendation and export chrome at source level.
+Finalize Smart Reports localization for customer comparison, inactive-customer analysis, recovery opportunities, contract candidates, export metadata, pagination, and analytical tooltips.
 
-## Description
-- Added A3.5.4 Arabic/English recommendation chrome catalog.
-- Localized CEO briefing headings and description.
-- Localized recommendation metric labels, buttons, and execution-plan heading.
-- Localized contract-candidate Excel/PDF controls.
-- Preserved recommendation calculations and workflow values.
+## Files Changed
+- `index.html`
+- `smart/smart-reports-core.js`
+- `i18n/localization-center/smart-reports-a3-5-5.js` (new)
+
+## Suggested Commit Message
+`feat(i18n): complete Smart Reports final localization pass`

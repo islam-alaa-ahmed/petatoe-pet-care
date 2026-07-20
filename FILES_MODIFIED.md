@@ -1,8 +1,5 @@
 # Files Modified
 
-## Modified
-- `index.html`
-- `smart/smart-reports-core.js`
-
-## Added
-- `i18n/localization-center/smart-reports-a3-5-4.js`
+1. `index.html`
+2. `smart/smart-reports-core.js`
+3. `i18n/localization-center/smart-reports-a3-5-5.js` — new file

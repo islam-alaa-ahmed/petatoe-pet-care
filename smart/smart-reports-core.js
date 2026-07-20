@@ -19,6 +19,13 @@ function smartA354T(key,fallback,params){
   return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,name){return params&&params[name]!=null?String(params[name]):'';});
 }
 
+
+function smartA355T(key,fallback,params){
+  var center=window.PETATOE_LOCALIZATION_CENTER;
+  if(center&&typeof center.t==='function') return center.t('smartReportsSource.finalPass.'+key,fallback,params);
+  return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,name){return params&&params[name]!=null?String(params[name]):'';});
+}
+
 function smartBusinessDisplay(type,v){try{return window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.business==='function'?window.PETATOE_LOCALIZATION_CENTER.business(type,v):v}catch(_){return v}}
 function smartServiceDisplay(v){return smartBusinessDisplay('service',v)}
 function smartVehicleDisplay(v){return smartBusinessDisplay('vehicle',v)}
@@ -753,12 +760,12 @@ function renderSmartReports(){
         <div class="new-cust-report-head"><h3>${smartReportHtml('customerCompare.title','🔁 مقارنة مبيعات العملاء خلال عامين')}</h3><div class="customer-yoy-controls">${customerCompareFiltersHtml}</div></div>
         <div class="advanced-tax-actions customer-yoy-tax-actions">${customerCompareModeButtons}<div class="advanced-tax-badge"><span>${smartReportHtml('customerCompare.currentMode','الوضع الحالي:')}</span><b>${customerCompareValueLabel()}</b></div></div>
         <div class="customer-yoy-period-banner"><b>📅 ${customerComparePeriodLabel}</b><span>${smartReportHtml('customerCompare.periodExplanation','نوع المقارنة الحالي: {mode} — يتم تطبيق نفس المنطق على الملخص التنفيذي، النمو، التراجع، العملاء المفقودين، ترتيب العملاء، Tornado Chart، وExecutive Insights.',{mode:customerComparePeriodModeLabel})}</span></div>
-        <p>يقارن التقرير مبيعات كل عميل بين سنتين حتى تاريخ آخر فاتورة مرفوعة في سنة المقارنة، مع حساب كامل البيانات أولاً ثم عرض أول 10 صفوف في كل جدول مع زر عرض المزيد. الفلاتر مرتبطة بكل الأقسام: الملخص، النمو، التراجع، المفقودين، الترتيب، والرسم.</p>
+        <p>${smartA355T('customerCompareDescription','يقارن التقرير مبيعات كل عميل بين سنتين حتى تاريخ آخر فاتورة مرفوعة في سنة المقارنة، مع حساب كامل البيانات أولاً ثم عرض أول 10 صفوف في كل جدول مع زر عرض المزيد. الفلاتر مرتبطة بكل الأقسام: الملخص، النمو، التراجع، المفقودين، الترتيب، والرسم.')}</p>
         <div class="customer-yoy-kpis executive">
           <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.activeBothYears','العملاء النشطون في السنتين')}</span><b>${fmt0(customerCompareActiveBoth)}</b><small>${customerCompareBaseYear} و ${customerCompareTargetYear}</small></div>
-          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.growthCustomers','عملاء نمو')}</span><b>${fmt0(customerCompareGrowth)}</b><small>زادوا عن سنة الأساس</small></div>
-          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.decliningCustomers','عملاء تراجع')}</span><b>${fmt0(customerCompareDecline)}</b><small>انخفضوا ومازالوا نشطين</small></div>
-          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.lostCustomers','عملاء مفقودون')}</span><b>${fmt0(customerCompareLost)}</b><small>اشتروا في فترة الأساس ولم يشتروا في نفس فترة المقارنة</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.growthCustomers','عملاء نمو')}</span><b>${fmt0(customerCompareGrowth)}</b><small>${smartA355T('grewVsBaseYear','زادوا عن سنة الأساس')}</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.decliningCustomers','عملاء تراجع')}</span><b>${fmt0(customerCompareDecline)}</b><small>${smartA355T('declinedStillActive','انخفضوا ومازالوا نشطين')}</small></div>
+          <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.lostCustomers','عملاء مفقودون')}</span><b>${fmt0(customerCompareLost)}</b><small>${smartA355T('boughtBaseNotComparison','اشتروا في فترة الأساس ولم يشتروا في نفس فترة المقارنة')}</small></div>
         </div>
         <div class="customer-yoy-kpis">
           <div class="new-cust-kpi"><span>${smartReportHtml('customerCompare.totalForYear','إجمالي {year}',{year:customerCompareBaseYear})}</span><b>${money(customerCompareBaseTotal)}</b><small>${customerCompareValueLabel()}</small></div>
@@ -813,33 +820,33 @@ function renderSmartReports(){
   const inactiveLostTooltipHtml=(x)=>{
     const activeMonths=Math.max(1,(x.visitMonths||[]).length);
     const completedMissedMonths=Math.max(0,Math.floor(x.daysSince/30));
-    return `<span class="new-cust-tier-wrap" tabindex="0"><span class="inactive-analysis-btn">${money(x.lostRevenue)} ⓘ</span><span class="new-cust-tier-tooltip"><b>تحليل القيمة المفقودة المتوقعة</b><span>العميل: ${htmlSafe(x.name)}</span><div class="inactive-tip-kpis"><div class="inactive-tip-kpi"><small>إجمالي الإنفاق الصافي</small><b>${money(x.val)}</b></div><div class="inactive-tip-kpi"><small>شهور النشاط الفعلية</small><b>${fmt0(activeMonths)}</b></div><div class="inactive-tip-kpi"><small>متوسط إنفاق العميل شهرياً</small><b>${money(x.monthlyAvg)}</b></div><div class="inactive-tip-kpi"><small>شهور الغياب المكتملة</small><b>${fmt0(completedMissedMonths)} شهر</b></div></div><span class="ok">✓ متوسط إنفاق العميل شهرياً = إجمالي إنفاقه الصافي ÷ عدد شهور الزيارة الفعلية</span><span class="ok">✓ القيمة المفقودة = متوسط إنفاق العميل شهرياً × عدد شهور الغياب المكتملة</span><span class="ok">✓ التطبيق: ${money(x.monthlyAvg)} × ${fmt0(completedMissedMonths)} شهر = ${money(x.lostRevenue)}</span><span>لا يتم احتساب كسر الشهر؛ عندما يكمل العميل شهر غياب كامل يتم اعتبار متوسط إنفاق شهر كامل كقيمة مفقودة متوقعة.</span></span></span>`;
+    return `<span class="new-cust-tier-wrap" tabindex="0"><span class="inactive-analysis-btn">${money(x.lostRevenue)} ⓘ</span><span class="new-cust-tier-tooltip"><b>${smartA355T('expectedLostValueAnalysis','تحليل القيمة المفقودة المتوقعة')}</b><span>${smartA355T('customerLabel','العميل: {name}',{name:htmlSafe(x.name)})}</span><div class="inactive-tip-kpis"><div class="inactive-tip-kpi"><small>${smartA355T('netTotalSpend','إجمالي الإنفاق الصافي')}</small><b>${money(x.val)}</b></div><div class="inactive-tip-kpi"><small>${smartA355T('actualActiveMonths','شهور النشاط الفعلية')}</small><b>${fmt0(activeMonths)}</b></div><div class="inactive-tip-kpi"><small>${smartA355T('averageMonthlyCustomerSpend','متوسط إنفاق العميل شهرياً')}</small><b>${money(x.monthlyAvg)}</b></div><div class="inactive-tip-kpi"><small>${smartA355T('completedAbsenceMonths','شهور الغياب المكتملة')}</small><b>${fmt0(completedMissedMonths)} ${smartA355T('monthUnit','شهر')}</b></div></div><span class="ok">✓ ${smartA355T('monthlySpendFormula','متوسط إنفاق العميل شهرياً = إجمالي إنفاقه الصافي ÷ عدد شهور الزيارة الفعلية')}</span><span class="ok">✓ ${smartA355T('lostValueFormula','القيمة المفقودة = متوسط إنفاق العميل شهرياً × عدد شهور الغياب المكتملة')}</span><span class="ok">✓ التطبيق: ${money(x.monthlyAvg)} × ${fmt0(completedMissedMonths)} شهر = ${money(x.lostRevenue)}</span><span>${smartA355T('completedMonthRule','لا يتم احتساب كسر الشهر؛ عندما يكمل العميل شهر غياب كامل يتم اعتبار متوسط إنفاق شهر كامل كقيمة مفقودة متوقعة.')}</span></span></span>`;
   };
   const inactiveRecoveryTooltipHtml=(x)=>{
     const tips=[];
-    if(x.recoveryKey==='high'){tips.push('ابدأ بتواصل مباشر وسريع لأن قيمة العميل عالية واحتمال استرجاعه أفضل.');tips.push('اعرض خصم عودة محدود المدة أو خدمة إضافية مجانية مرتبطة بآخر خدمة اشتراها.');}
-    else if(x.recoveryKey==='medium'){tips.push('استخدم رسالة متابعة ودية مع عرض متوسط القيمة يناسب تاريخ إنفاق العميل.');tips.push('اقترح إعادة حجز أو تذكير بالخدمة السابقة بدل عرض خصم كبير من البداية.');}
-    else{tips.push('استخدم حملة جماعية منخفضة التكلفة مثل رسالة واتساب أو SMS بدل متابعة فردية مكلفة.');tips.push('اختبر عرض بسيط لاستعادة النشاط قبل تخصيص خصم كبير.');}
-    if(x.daysSince>120) tips.push('العميل غائب أكثر من 120 يوم، لذلك يفضل التواصل برسالة إعادة تنشيط واضحة وليست تذكير عادي.');
-    if(x.cls==='At Risk') tips.push('ابدأ بسؤال قصير عن سبب التوقف لتحويل العميل من At Risk إلى Active.');
-    return `<span class="new-cust-tier-wrap" tabindex="0"><span class="inactive-analysis-btn recovery">${x.recovery} ⓘ</span><span class="new-cust-tier-tooltip"><b>توصيات استرجاع العميل</b><span>العميل: ${htmlSafe(x.name)}</span><div class="inactive-tip-kpis"><div class="inactive-tip-kpi"><small>فرصة الاسترجاع</small><b>${x.recovery}</b></div><div class="inactive-tip-kpi"><small>أيام الغياب</small><b>${fmt0(x.daysSince)} يوم</b></div><div class="inactive-tip-kpi"><small>التصنيف</small><b>${x.cls}</b></div><div class="inactive-tip-kpi"><small>آخر فاتورة</small><b>${htmlSafe(x.lastInvoiceNo||'—')}</b></div></div><div class="inactive-tip-list">${tips.map(t=>`<span class="ok">✓ ${t}</span>`).join('')}</div><span>الأولوية مبنية على قيمة الإنفاق، مدة الغياب، وتصنيف العميل الحالي.</span></span></span>`;
+    if(x.recoveryKey==='high'){tips.push(smartA355T('recoveryTipHigh1','ابدأ بتواصل مباشر وسريع لأن قيمة العميل عالية واحتمال استرجاعه أفضل.'));tips.push(smartA355T('recoveryTipHigh2','اعرض خصم عودة محدود المدة أو خدمة إضافية مجانية مرتبطة بآخر خدمة اشتراها.'));}
+    else if(x.recoveryKey==='medium'){tips.push(smartA355T('recoveryTipMedium1','استخدم رسالة متابعة ودية مع عرض متوسط القيمة يناسب تاريخ إنفاق العميل.'));tips.push(smartA355T('recoveryTipMedium2','اقترح إعادة حجز أو تذكير بالخدمة السابقة بدل عرض خصم كبير من البداية.'));}
+    else{tips.push(smartA355T('recoveryTipLow1','استخدم حملة جماعية منخفضة التكلفة مثل رسالة واتساب أو SMS بدل متابعة فردية مكلفة.'));tips.push(smartA355T('recoveryTipLow2','اختبر عرض بسيط لاستعادة النشاط قبل تخصيص خصم كبير.'));}
+    if(x.daysSince>120) tips.push(smartA355T('recoveryTipLongAbsence','العميل غائب أكثر من 120 يوم، لذلك يفضل التواصل برسالة إعادة تنشيط واضحة وليست تذكير عادي.'));
+    if(x.cls==='At Risk') tips.push(smartA355T('recoveryTipAtRisk','ابدأ بسؤال قصير عن سبب التوقف لتحويل العميل من At Risk إلى Active.'));
+    return `<span class="new-cust-tier-wrap" tabindex="0"><span class="inactive-analysis-btn recovery">${x.recovery} ⓘ</span><span class="new-cust-tier-tooltip"><b>${smartA355T('customerRecoveryRecommendations','توصيات استرجاع العميل')}</b><span>${smartA355T('customerLabel','العميل: {name}',{name:htmlSafe(x.name)})}</span><div class="inactive-tip-kpis"><div class="inactive-tip-kpi"><small>${smartA355T('recoveryOpportunity','فرصة الاسترجاع')}</small><b>${x.recovery}</b></div><div class="inactive-tip-kpi"><small>${smartA355T('absenceDays','أيام الغياب')}</small><b>${fmt0(x.daysSince)} ${smartA355T('dayUnit','يوم')}</b></div><div class="inactive-tip-kpi"><small>${smartA355T('classification','التصنيف')}</small><b>${x.cls}</b></div><div class="inactive-tip-kpi"><small>${smartA355T('lastInvoice','آخر فاتورة')}</small><b>${htmlSafe(x.lastInvoiceNo||'—')}</b></div></div><div class="inactive-tip-list">${tips.map(t=>`<span class="ok">✓ ${t}</span>`).join('')}</div><span>${smartA355T('recoveryPriorityBasis','الأولوية مبنية على قيمة الإنفاق، مدة الغياب، وتصنيف العميل الحالي.')}</span></span></span>`;
   };
   const inactiveRecoveryTableLimit=Math.max(15, window.inactiveRecoveryTableLimit || 15);
   const recoveryDisplayedRows=inactiveCustomers.slice(0,inactiveRecoveryTableLimit);
   const recoveryRows=recoveryDisplayedRows.map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${x.lastDate?smartFormatDate(x.lastDate):'—'}</td><td>${htmlSafe(x.lastInvoiceNo||'—')}</td><td>${fmt0(x.daysSince)}</td><td>${money(x.monthlyAvg)}</td><td>${inactiveLostTooltipHtml(x)}</td><td><span class="smart-tag ${x.badgeClass}">${x.cls}</span></td><td>${inactiveRecoveryTooltipHtml(x)}</td></tr>`).join('') || `<tr><td colspan="9">${smartReportHtml('customers.noRecoveryOpportunities','لا توجد فرص استرجاع حسب شرط الغياب الحالي.')}</td></tr>`;
   const recoveryMoreButton=inactiveCustomers.length>inactiveRecoveryTableLimit
     ? `<div class="new-cust-table-footer"><button class="new-cust-more-btn" data-smart-action="inactive-recovery-more" data-limit="${inactiveRecoveryTableLimit+15}">${smartReportHtml('common.loadMore','اضغط لعرض المزيد ⌄')}</button><span>${smartReportHtml('common.showingRecovery','عرض {shown} من أصل {total} فرصة استرجاع',{shown:fmt0(Math.min(inactiveRecoveryTableLimit,inactiveCustomers.length)),total:fmt0(inactiveCustomers.length)})}</span></div>`
-    : `<div class="new-cust-table-footer"><span>تم عرض ${fmt0(inactiveCustomers.length)} من أصل ${fmt0(inactiveCustomers.length)} فرصة استرجاع</span></div>`;
+    : `<div class="new-cust-table-footer"><span>${smartA355T('shownRecoveryOpportunities','تم عرض {shown} من أصل {total} فرصة استرجاع',{shown:fmt0(inactiveCustomers.length),total:fmt0(inactiveCustomers.length)})}</span></div>`;
   const inactiveCustTableLimit=Math.max(15, window.inactiveCustTableLimit || 15);
   const inactiveCustomerSort=window.inactiveCustomerSort || 'spend';
   const inactiveRiskRank={"حرج":4,"مرتفع":3,"متوسط":2,"منخفض":1};
   const inactiveTierRank={"VIP":6,"Gold":5,"Silver":4,"Bronze":3,"Active":2,"At Risk":1};
   const inactiveSortLabel={spend:window.PETATOE_LOCALIZATION_CENTER.smart('table.totalSpending','إجمالي الإنفاق'),tier:window.PETATOE_LOCALIZATION_CENTER.smart('customers.customerClassification','تصنيف العميل'),risk:window.PETATOE_LOCALIZATION_CENTER.smart('customers.riskLevel','مستوى الخطورة'),absence:window.PETATOE_LOCALIZATION_CENTER.smart('customers.absenceDays','عدد أيام الغياب')}[inactiveCustomerSort] || window.PETATOE_LOCALIZATION_CENTER.smart('table.totalSpending','إجمالي الإنفاق');
   const inactiveSortControls=`<div class="inactive-sort-actions">
-    <button class="inactive-sort-btn ${inactiveCustomerSort==='spend'?'active':''}" data-smart-action="inactive-sort" data-sort="spend">ترتيب حسب إجمالي الإنفاق</button>
-    <button class="inactive-sort-btn ${inactiveCustomerSort==='tier'?'active':''}" data-smart-action="inactive-sort" data-sort="tier">ترتيب حسب تصنيف العميل</button>
-    <button class="inactive-sort-btn ${inactiveCustomerSort==='risk'?'active':''}" data-smart-action="inactive-sort" data-sort="risk">ترتيب حسب مستوى الخطورة</button>
-    <button class="inactive-sort-btn ${inactiveCustomerSort==='absence'?'active':''}" data-smart-action="inactive-sort" data-sort="absence">ترتيب حسب عدد أيام الغياب</button>
+    <button class="inactive-sort-btn ${inactiveCustomerSort==='spend'?'active':''}" data-smart-action="inactive-sort" data-sort="spend">${smartA355T('sortByTotalSpend','ترتيب حسب إجمالي الإنفاق')}</button>
+    <button class="inactive-sort-btn ${inactiveCustomerSort==='tier'?'active':''}" data-smart-action="inactive-sort" data-sort="tier">${smartA355T('sortByCustomerTier','ترتيب حسب تصنيف العميل')}</button>
+    <button class="inactive-sort-btn ${inactiveCustomerSort==='risk'?'active':''}" data-smart-action="inactive-sort" data-sort="risk">${smartA355T('sortByRiskLevel','ترتيب حسب مستوى الخطورة')}</button>
+    <button class="inactive-sort-btn ${inactiveCustomerSort==='absence'?'active':''}" data-smart-action="inactive-sort" data-sort="absence">${smartA355T('sortByAbsenceDays','ترتيب حسب عدد أيام الغياب')}</button>
   </div>`;
   const inactiveSortedForTable=inactiveCustomers.slice().sort((a,b)=>{
     if(inactiveCustomerSort==='tier'){
@@ -857,34 +864,34 @@ function renderSmartReports(){
   const inactiveTableRows=inactiveDisplayedRows.map((x,i)=>`<tr><td>${i+1}</td><td>${htmlSafe(x.name)}</td><td>${x.lastDate?smartFormatDate(x.lastDate):'—'}</td><td>${htmlSafe(x.lastInvoiceNo||'—')}</td><td>${fmt0(x.daysSince)}</td><td>${x.visitsHtml}</td><td>${money(x.val)}</td><td><span class="smart-tag ${x.riskCls}">${x.risk}</span></td><td>${x.tierHtml}</td></tr>`).join('') || `<tr><td colspan="9">${smartReportHtml('customers.noInactiveCustomersByRule','لا يوجد عملاء غير نشطين حسب شرط أكثر من 60 يوم بدون زيارة صافية.')}</td></tr>`;
   const inactiveMoreButton=inactiveSortedForTable.length>inactiveCustTableLimit
     ? `<div class="new-cust-table-footer"><button class="new-cust-more-btn" data-smart-action="inactive-more" data-limit="${inactiveCustTableLimit+15}">${smartReportHtml('common.loadMore','اضغط لعرض المزيد ⌄')}</button><span>${smartReportHtml('common.showingInactive','عرض {shown} من أصل {total} عميل غير نشط',{shown:fmt0(Math.min(inactiveCustTableLimit,inactiveCustomers.length)),total:fmt0(inactiveCustomers.length)})}</span></div>`
-    : `<div class="new-cust-table-footer"><span>تم عرض ${fmt0(inactiveCustomers.length)} من أصل ${fmt0(inactiveCustomers.length)} عميل غير نشط</span></div>`;
+    : `<div class="new-cust-table-footer"><span>${smartA355T('shownInactiveCustomers','تم عرض {shown} من أصل {total} عميل غير نشط',{shown:fmt0(inactiveCustomers.length),total:fmt0(inactiveCustomers.length)})}</span></div>`;
 
   const inactiveActivityExportBtn=function(kind){
-    return `<button type="button" class="exp-btn exp-btn-excel customer-activity-export-btn" data-smart-action="customer-activity-export" data-kind="${kind}">⬇️ Excel</button>`;
+    return `<button type="button" class="exp-btn exp-btn-excel customer-activity-export-btn" data-smart-action="customer-activity-export" data-kind="${kind}">⬇️ ${smartA355T('excel','Excel')}</button>`;
   };
   const inactiveActivityPanelHead=function(title, kind){
     return `<div class="customer-activity-panel-head"><h3>${title}</h3>${inactiveActivityExportBtn(kind)}</div>`;
   };
   window.PETATOECustomerActivityFollowupExportData={
     aging:{
-      title:'توزيع العملاء حسب مدة الغياب',
+      title:smartA355T('inactiveAgingTitle','توزيع العملاء حسب مدة الغياب'),
       sheetName:'Inactive Aging',
       fileName:'Customer_Activity_Inactive_Aging',
-      headers:['الفئة','عدد العملاء'],
+      headers:[smartA355T('category','الفئة'),smartA355T('customerCount','عدد العملاء')],
       rows:inactiveBuckets.map(function(x){return [x.label, x.count];})
     },
     inactive:{
-      title:'جدول العملاء غير النشطين',
+      title:smartA355T('inactiveCustomersTableTitle','جدول العملاء غير النشطين'),
       sheetName:'Inactive Customers',
       fileName:'Customer_Activity_Inactive_Customers',
-      headers:['#','العميل','آخر زيارة صافية','رقم آخر فاتورة','أيام الغياب','عدد الزيارات','إجمالي الإنفاق','مستوى الخطورة','تصنيف العميل'],
+      headers:['#',smartA355T('customer','العميل'),smartA355T('lastNetVisit','آخر زيارة صافية'),smartA355T('lastInvoiceNumber','رقم آخر فاتورة'),smartA355T('absenceDays','أيام الغياب'),smartA355T('visitCount','عدد الزيارات'),smartA355T('totalSpend','إجمالي الإنفاق'),smartA355T('riskLevel','مستوى الخطورة'),smartA355T('customerTier','تصنيف العميل')],
       rows:inactiveSortedForTable.map(function(x,i){return [i+1,x.name,x.lastDate?smartFormatDate(x.lastDate):'—',x.lastInvoiceNo||'—',fmt0(x.daysSince),fmt0(x.visits),customerCompareNum?customerCompareNum(x.val):Number(x.val||0),x.risk,x.cls];})
     },
     recovery:{
-      title:'فرص الاسترجاع Recovery Opportunities',
+      title:smartA355T('recoveryOpportunitiesTitle','فرص الاسترجاع Recovery Opportunities'),
       sheetName:'Recovery Opportunities',
       fileName:'Customer_Activity_Recovery_Opportunities',
-      headers:['#','العميل','آخر فاتورة','رقم آخر فاتورة','أيام الغياب','متوسط الإنفاق الشهري','القيمة المفقودة المتوقعة','التصنيف','فرصة الاسترجاع'],
+      headers:['#',smartA355T('customer','العميل'),smartA355T('lastInvoice','آخر فاتورة'),smartA355T('lastInvoiceNumber','رقم آخر فاتورة'),smartA355T('absenceDays','أيام الغياب'),smartA355T('averageMonthlySpend','متوسط الإنفاق الشهري'),smartA355T('expectedLostValue','القيمة المفقودة المتوقعة'),smartA355T('customerTier','التصنيف'),smartA355T('recoveryOpportunity','فرصة الاسترجاع')],
       rows:inactiveCustomers.map(function(x,i){return [i+1,x.name,x.lastDate?smartFormatDate(x.lastDate):'—',x.lastInvoiceNo||'—',fmt0(x.daysSince),Number(x.monthlyAvg||0),Number(x.lostRevenue||0),x.cls,x.recovery];})
     }
   };
@@ -894,9 +901,9 @@ function renderSmartReports(){
   const contractCandidateLimit=Math.min(100, Math.max(10, Number(window.contractCandidateLimit || 10)));
   const contractScoreClass=(score)=>score>=80?'':(score>=60?'mid':'low');
   const contractRecommendationMeta=(score)=>{
-    if(score>=80) return {label:'عقد سنوي',cls:'annual',ico:'⭐',desc:'أولوية عالية للتعاقد السنوي'};
-    if(score>=60) return {label:'عقد توريد دوري',cls:'supply',ico:'🔵',desc:'مناسب لاتفاقية توريد شهرية أو ربع سنوية'};
-    return {label:'متابعة للتعاقد',cls:'follow',ico:'🟠',desc:'مرشح للمتابعة قبل عرض عقد رسمي'};
+    if(score>=80) return {label:smartA355T('annualContract','عقد سنوي'),cls:'annual',ico:'⭐',desc:smartA355T('annualContractPriority','أولوية عالية للتعاقد السنوي')};
+    if(score>=60) return {label:smartA355T('periodicSupplyContract','عقد توريد دوري'),cls:'supply',ico:'🔵',desc:smartA355T('periodicSupplyDescription','مناسب لاتفاقية توريد شهرية أو ربع سنوية')};
+    return {label:smartA355T('contractFollowup','متابعة للتعاقد'),cls:'follow',ico:'🟠',desc:smartA355T('contractFollowupDescription','مرشح للمتابعة قبل عرض عقد رسمي')};
   };
   const petatoeIsCashAggregateCustomer=(name)=>{
     const normalized=String(name||'').trim().replace(/[ً-ٰٟ]/g,'').replace(/ى/g,'ي').replace(/\s+/g,' ').toLowerCase();
@@ -941,15 +948,15 @@ function renderSmartReports(){
   }));
   const contractReasonHtml=(x,idx)=>{
     const chips=[];
-    if((x.contractScore||0)>=80) chips.push('<span class="contract-reason-chip good">⭐ أولوية عالية</span>');
-    if((x.val||0)>=contractMaxValue*.70) chips.push('<span class="contract-reason-chip good">💰 إنفاق قوي</span>');
-    if((x.visits||0)>=contractMaxVisits*.55) chips.push('<span class="contract-reason-chip info">🔁 زيارات متكررة</span>');
-    if(((x.visitMonths||[]).length)>=Math.max(3,Math.ceil(contractMaxMonths*.50))) chips.push('<span class="contract-reason-chip info">📅 نشاط منتظم</span>');
-    if((x.daysSince||999)<=30) chips.push('<span class="contract-reason-chip good">🟢 زيارة قريبة</span>');
+    if((x.contractScore||0)>=80) chips.push(`<span class="contract-reason-chip good">⭐ ${smartA355T('highPriority','أولوية عالية')}</span>`);
+    if((x.val||0)>=contractMaxValue*.70) chips.push(`<span class="contract-reason-chip good">💰 ${smartA355T('strongSpend','إنفاق قوي')}</span>`);
+    if((x.visits||0)>=contractMaxVisits*.55) chips.push(`<span class="contract-reason-chip info">🔁 ${smartA355T('repeatVisits','زيارات متكررة')}</span>`);
+    if(((x.visitMonths||[]).length)>=Math.max(3,Math.ceil(contractMaxMonths*.50))) chips.push(`<span class="contract-reason-chip info">📅 ${smartA355T('regularActivity','نشاط منتظم')}</span>`);
+    if((x.daysSince||999)<=30) chips.push(`<span class="contract-reason-chip good">🟢 ${smartA355T('recentVisit','زيارة قريبة')}</span>`);
     if(String(x.cls||'').toUpperCase()==='VIP') chips.push('<span class="contract-reason-chip warn">👑 VIP</span>');
-    if(!chips.length) chips.push('<span class="contract-reason-chip warn">🟠 قابل للمتابعة</span>');
+    if(!chips.length) chips.push(`<span class="contract-reason-chip warn">🟠 ${smartA355T('followupCandidate','قابل للمتابعة')}</span>`);
     const summary=(x.contractScore||0)>=80?window.PETATOE_LOCALIZATION_CENTER.smart('summary.strongSpend','إنفاق قوي + نشاط منتظم'):((x.contractScore||0)>=60?window.PETATOE_LOCALIZATION_CENTER.smart('summary.goodActivity','نشاط جيد + فرصة توريد دوري'):window.PETATOE_LOCALIZATION_CENTER.smart('summary.followUp','فرصة متابعة قبل التعاقد'));
-    return `<div class="contract-reason-compact"><div class="contract-reason-chips">${chips.slice(0,4).join('')}</div><div class="contract-reason-summary">${summary}</div><button type="button" class="contract-reason-btn" data-contract-reason-index="${idx}" data-smart-action="contract-reason" data-index="${idx}">عرض التفاصيل 🔍</button></div>`;
+    return `<div class="contract-reason-compact"><div class="contract-reason-chips">${chips.slice(0,4).join('')}</div><div class="contract-reason-summary">${summary}</div><button type="button" class="contract-reason-btn" data-contract-reason-index="${idx}" data-smart-action="contract-reason" data-index="${idx}">${smartA355T('viewDetails','عرض التفاصيل')} 🔍</button></div>`;
   };
   const topContractCandidate=allContractCandidates[0] || {name:'—',contractScore:0,val:0,contractMeta:{label:'—',desc:'—',cls:'follow'}};
   const contractCandidatesCount=allContractCandidates.length;
@@ -974,7 +981,7 @@ function renderSmartReports(){
   }).join('') || `<tr><td colspan="11">${smartReportHtml('empty.noContractCandidateData','لا توجد بيانات عملاء كافية داخل الفترة المختارة لاحتساب مرشحين للتعاقد.')}</td></tr>`;
   const contractCandidateMoreButton=allContractCandidates.length>contractCandidateLimit
     ? `<div class="new-cust-table-footer"><button class="new-cust-more-btn" data-smart-action="contract-candidate-more" data-limit="${Math.min(100, contractCandidateLimit+10)}">${smartReportHtml('common.loadMore','اضغط لعرض المزيد ⌄')}</button><span>${smartReportHtml('common.showingCandidates','عرض {shown} من أصل {total} عميل مرشح',{shown:fmt0(Math.min(contractCandidateLimit,allContractCandidates.length)),total:fmt0(allContractCandidates.length)})}</span></div>`
-    : `<div class="new-cust-table-footer"><span>تم عرض ${fmt0(allContractCandidates.length)} من أصل ${fmt0(allContractCandidates.length)} عميل مرشح</span></div>`;
+    : `<div class="new-cust-table-footer"><span>${smartA355T('shownContractCandidates','تم عرض {shown} من أصل {total} عميل مرشح',{shown:fmt0(allContractCandidates.length),total:fmt0(allContractCandidates.length)})}</span></div>`;
 
   const vanRows=vanAvgRev.map(v=>`<tr><td>${v[0]}</td><td>${fmt0(v[2])}</td><td>${money(v[1])}</td><td>${money(v[3])}</td><td>${safeDiv(v[1],total)*100 .toFixed?'' : ''}</td></tr>`).join('');
   const vanRowsFixed=vanAvgRev.map(v=>`<tr><td>${v[0]}</td><td>${fmt0(v[2])}</td><td>${money(v[1])}</td><td>${money(v[3])}</td><td>${safeDiv(v[1],total).toLocaleString('en-US',{style:'percent',maximumFractionDigits:1})}</td></tr>`).join('');
