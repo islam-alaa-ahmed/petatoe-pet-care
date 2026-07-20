@@ -1,5 +1,5 @@
 # Files Modified
 
-1. `index.html`
-2. `smart/smart-reports-core.js`
-3. `i18n/localization-center/smart-reports-a3-5-5.js` — new file
+- `i18n/localization-center/dictionary-store.js`
+- `i18n/localization-center/payroll-ui-a3-4.js`
+- `i18n/localization-center/smart-reports-a3-5-3.js`

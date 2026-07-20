@@ -1,12 +1,11 @@
 # GitHub Desktop Summary
 
 ## Summary
-Finalize Smart Reports localization for customer comparison, inactive-customer analysis, recovery opportunities, contract candidates, export metadata, pagination, and analytical tooltips.
+Centralize conflicting localization values and remove shadow translation overrides.
 
-## Files Changed
-- `index.html`
-- `smart/smart-reports-core.js`
-- `i18n/localization-center/smart-reports-a3-5-5.js` (new)
-
-## Suggested Commit Message
-`feat(i18n): complete Smart Reports final localization pass`
+## Description
+- Consolidated 18 conflicting translation-path rewrites into the central dictionary.
+- Removed redundant Payroll and Smart Reports phase-catalog definitions.
+- Preserved the latest approved Arabic and English wording.
+- Added no runtime observers, scans, business-logic changes, or Supabase changes.
+- Verified 17/17 production localization gates with zero blocking failures.

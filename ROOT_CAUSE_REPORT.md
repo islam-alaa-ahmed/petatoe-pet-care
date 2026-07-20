@@ -1,16 +1,11 @@
-# Root Cause Report — Phase A3.5.5
+# Root Cause Report — Phase A3.6
 
 ## Confirmed Root Cause
-The final Smart Reports customer-analysis surfaces still contained visible Arabic literals generated directly inside runtime templates. The remaining concentration was in customer year comparison, inactive-customer analysis, recovery opportunities, contract-candidate details, export titles/headers, pagination summaries, sorting buttons, and analytical tooltips.
+The localization load chain contained 18 divergent rewrites of the same translation paths. Base values were installed by the central dictionary, then supplemental phase catalogs redefined the same paths with different wording. Runtime output therefore depended on script order rather than a single source of truth.
 
-These strings were rebuilt whenever filters, pagination, sorting, or report tabs changed. They therefore depended on post-render runtime translation and could display mixed language or Arabic fallback text in English mode.
-
-## Responsible Files
-- `smart/smart-reports-core.js`
-- `index.html` for loading the new localization catalog.
+Affected surfaces included payroll approval messaging, Smart Reports search states, invoice labels, vehicle-analysis empty state, and recommendation navigation labels.
 
 ## Fix
-A new bilingual source catalog was added under `smartReportsSource.finalPass`. Runtime templates now resolve the active language before creating the HTML, tooltip, pagination summary, export metadata, or contract recommendation label.
-
-## Business Logic Protection
-No calculation, score, threshold, customer classification, filter, export row value, Supabase query, RPC, or stored workflow value was changed.
+- Kept the latest approved wording in the central dictionary.
+- Removed the redundant shadow definitions from the supplemental Payroll and Smart Reports catalogs.
+- No UI, calculations, queries, Supabase integration, or workflow values were changed.

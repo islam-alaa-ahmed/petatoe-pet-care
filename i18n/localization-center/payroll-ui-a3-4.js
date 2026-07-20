@@ -17,7 +17,7 @@
       cannotOpenOthers:'لا يمكنك فتح كشف غير خاص بك',
       cannotDeleteApprovedDetailed:'لا يمكن حذف كشف دخل دورة الاعتماد. استخدم إلغاء الاعتماد أولاً ثم احذف المسودة.',
       slipDeleted:'تم حذف كشف الراتب',
-      employeeApproveAfterBoard:'لا يمكن موافقة الموظف إلا بعد اعتماد رئيس مجلس الإدارة',
+      
       employeeApprovedByEmployee:'تمت موافقة الموظف',
       employeeObjectAfterBoardDetailed:'لا يمكن الاعتراض إلا على كشف معتمد مبدئيًا من رئيس مجلس الإدارة',
       enterObjectionReason:'اكتب سبب الاعتراض',
@@ -41,7 +41,7 @@
       cannotOpenOthers:'You cannot open a salary slip that does not belong to you',
       cannotDeleteApprovedDetailed:'An approved salary slip cannot be deleted. Cancel approval first, then delete the draft.',
       slipDeleted:'Salary slip deleted',
-      employeeApproveAfterBoard:'Employee approval is available only after Chairman approval',
+      
       employeeApprovedByEmployee:'Employee approval recorded',
       employeeObjectAfterBoardDetailed:'An objection can be submitted only after initial Chairman approval',
       enterObjectionReason:'Enter the objection reason',
