@@ -1,5 +1,6 @@
-# Files Modified — Phase A3.3
+# Files Modified — Phase A3.4
 
 - `index.html`
-- `operations/operations-legacy-engine.js`
-- `i18n/localization-center/operations-customer-management.js` — Added
+- `payroll/payroll-core.js`
+- `payroll/payroll-view-model-facade.js`
+- `i18n/localization-center/payroll-ui-a3-4.js` (new)

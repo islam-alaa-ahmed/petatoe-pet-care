@@ -1,23 +1,18 @@
-# Verification Report — Phase A3.3
+# Verification Report — Phase A3.4
 
-## Automated verification
+## Passed
+- JavaScript syntax: `292 / 292` files passed `node --check`.
+- Localization Production Gates: `17 / 17` passed.
+- Blocking failures: `0`.
+- Diagnostic source audit completed successfully.
+- Direct Arabic Payroll action-message patterns reduced from `18` to `10`; remaining matches are either already-keyed fallbacks or internal/business data literals.
 
-- Full JavaScript syntax check: **290 / 290 passed**.
-- Localization production gates: **17 / 17 passed**.
-- Blocking failures: **0**.
-- Diagnostic localization scan completed successfully.
+## Regression Protection
+- No payroll status identifiers were changed.
+- No approval transition order was changed.
+- No salary calculations were changed.
+- No Supabase table, query, RPC, or persistence payload was changed.
+- No MutationObserver or new DOM scan was added.
 
-## Source-surface movement
-
-- Unbound HTML candidates: **527 → 503**.
-- Explicitly bound HTML: **50 → 74**.
-- Runtime UI candidates: **615** (unchanged; remaining runtime scope is outside this limited phase).
-- General source literals: **1827** (unchanged; stored/business values were deliberately preserved).
-
-## Regression protection
-
-No changes were made to customer records, appointment storage, Supabase queries/RPCs, status values, calculations, imports, exports, or matching logic.
-
-## Not tested
-
-Live customer import/export and production Supabase writes were not executed because no authenticated production session was available in the audit environment.
+## Not Tested
+- Live payroll approval/write operations against Production Supabase were not executed because no authenticated Production session was available in the audit environment.

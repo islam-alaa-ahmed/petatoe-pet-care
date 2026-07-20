@@ -14,6 +14,14 @@
   function reader(){ return window.PETATOEPayrollReadFacade || null; }
   function computed(){ return window.PETATOEPayrollComputedFacade || null; }
   function str(value){ return String(value == null ? '' : value); }
+  function vmT(key,fallback){
+    try{
+      var c=window.PETATOE_LOCALIZATION_CENTER;
+      if(c&&typeof c.t==='function') return c.t('payrollRuntime.viewModel.'+key,{}, {fallback:fallback});
+      if(c&&typeof c.translate==='function') return c.translate('payrollRuntime.viewModel.'+key,fallback,(document.documentElement.lang||'ar'));
+    }catch(_e){}
+    return fallback;
+  }
   function asArray(value){ return Array.isArray(value) ? value : []; }
   function num(value){
     var C = computed();
@@ -33,31 +41,34 @@
 
   function employeeLabel(emp){
     emp = emp || {};
-    return str(emp.name || emp.fullName || emp.employeeName || emp.username || emp.code || emp.id || 'غير محدد');
+    return str(emp.name || emp.fullName || emp.employeeName || emp.username || emp.code || emp.id || vmT('unspecified','غير محدد'));
   }
 
   function statusLabel(status){
     var s = str(status);
     var map = {
-      draft: 'مسودة',
-      board_approved: 'اعتماد مجلس الإدارة',
-      employee_approved: 'موافقة الموظف',
-      accounts_approved: 'اعتماد الحسابات',
-      paid: 'تم الصرف',
-      cancelled: 'ملغي'
+      draft: vmT('status.draft','مسودة'),
+      pending_board: vmT('status.pending_board','بانتظار اعتماد رئيس مجلس الإدارة'),
+      board_approved: vmT('status.board_approved','اعتماد مجلس الإدارة'),
+      employee_objection: vmT('status.employee_objection','اعتراض الموظف'),
+      employee_approved: vmT('status.employee_approved','موافقة الموظف'),
+      accounts_approved: vmT('status.accounts_approved','اعتماد الحسابات'),
+      paid: vmT('status.paid','تم الصرف'),
+      rejected: vmT('status.rejected','مرفوض'),
+      cancelled: vmT('status.cancelled','ملغي')
     };
-    return map[s] || s || 'غير محدد';
+    return map[s] || s || vmT('unspecified','غير محدد');
   }
 
   function paymentLabel(method){
     var m = str(method);
     var map = {
-      mada: 'مدى',
-      bank: 'تحويل بنكي',
-      cash: 'نقدًا',
-      transfer: 'تحويل بنكي'
+      mada: vmT('payment.mada','مدى'),
+      bank: vmT('payment.bank','تحويل بنكي'),
+      cash: vmT('payment.cash','نقدًا'),
+      transfer: vmT('payment.transfer','تحويل بنكي')
     };
-    return map[m] || m || 'غير محدد';
+    return map[m] || m || vmT('unspecified','غير محدد');
   }
 
   function slipRow(slip){
@@ -137,10 +148,10 @@
     return {
       period: str(period || 'all'),
       cards: [
-        {key:'count', label:'عدد الكشوف', value:num(totals.count), display:String(num(totals.count))},
-        {key:'gross', label:'إجمالي المستحق', value:num(totals.gross), display:money(totals.gross)},
-        {key:'deductions', label:'إجمالي الخصومات', value:num(totals.deductions), display:money(totals.deductions)},
-        {key:'net', label:'صافي الرواتب', value:num(totals.net), display:money(totals.net)}
+        {key:'count', label:vmT('metrics.count','عدد الكشوف'), value:num(totals.count), display:String(num(totals.count))},
+        {key:'gross', label:vmT('metrics.gross','إجمالي المستحق'), value:num(totals.gross), display:money(totals.gross)},
+        {key:'deductions', label:vmT('metrics.deductions','إجمالي الخصومات'), value:num(totals.deductions), display:money(totals.deductions)},
+        {key:'net', label:vmT('metrics.net','صافي الرواتب'), value:num(totals.net), display:money(totals.net)}
       ],
       statusCounts: clone(totals.byStatus || {}, {})
     };

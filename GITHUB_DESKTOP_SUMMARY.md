@@ -1,13 +1,11 @@
 # GitHub Desktop Summary
 
 ## Summary
-
-Localize Customer Management, Customers & Pets, and customer master-data UI through explicit bilingual keys.
+Localize remaining Payroll workflow messages and report/view-model labels without changing payroll business logic.
 
 ## Description
-
-- Added the `operationsCustomer` Arabic/English localization catalog.
-- Bound customer/pet tab, filters, master-data labels, actions, placeholders, search, and table headers to explicit keys.
-- Localized dynamic empty state, unknown customer/animal labels, and pet count text.
-- Preserved all stored customer, pet, breed, appointment, and workflow values.
-- No Business Logic, Supabase, query, calculation, or schema changes.
+- Added bilingual Payroll Phase A3.4 catalog.
+- Replaced direct Arabic workflow/toast/confirmation messages with `payrollT` keys.
+- Localized Payroll view-model status, payment, fallback, and KPI labels.
+- Loaded the new catalog before `payroll-core.js`.
+- Kept stored statuses, approval transitions, calculations, and Supabase persistence unchanged.

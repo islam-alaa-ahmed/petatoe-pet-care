@@ -1,18 +1,17 @@
-# Root Cause Report — Phase A3.3
+# Root Cause Report — Phase A3.4 Payroll Localization
 
-## Confirmed root cause
+## Root Cause
+The Payroll module already used the central `payrollRuntime` dictionary for most UI content, but several workflow actions still emitted direct Arabic strings. The read-only payroll view-model facade also returned Arabic status, payment, fallback, and KPI labels directly.
 
-The Customers & Pets and customer master-data surfaces still contained direct Arabic labels, placeholders, table headers, filters, empty states, and runtime fallback text. These surfaces depended on the generic post-render operations subtree translator instead of explicit localization keys.
-
-## Responsible areas
-
-- `index.html`: customer/pet tab, customer master-data section, customer filters, actions, fields, search placeholder, and table headers.
-- `operations/operations-legacy-engine.js`: runtime empty state, unknown customer/animal labels, and pet count display.
+## Responsible Areas
+- `payroll/payroll-core.js`: direct workflow/toast/confirmation messages in job management, slip deletion, employee approval, and employee objection actions.
+- `payroll/payroll-view-model-facade.js`: direct Arabic display labels used by dashboard/report view models.
 
 ## Impact
+When English was active, these paths could expose Arabic text or depend on runtime phrase replacement after rendering, causing mixed-language UI and preventing source-level localization lock.
 
-English mode could depend on runtime DOM translation after rendering, leaving hard-coded UI text in source and increasing the risk of mixed-language output or translation flash.
-
-## Resolution
-
-An explicit bilingual `operationsCustomer` localization module was added. Static controls now use `data-i18n` / `data-i18n-placeholder`; dynamic customer/pet display strings resolve through the localization center. Stored customer, animal, breed, and workflow values were not changed.
+## Fix
+- Routed remaining user-facing Payroll workflow messages through `payrollT(...)`.
+- Added bilingual keys in a dedicated Phase A3.4 payroll catalog.
+- Added localization lookup to the read-only view-model facade.
+- Preserved all internal status codes and stored job/employee/payroll values.
