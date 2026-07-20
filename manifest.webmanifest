@@ -2,7 +2,7 @@
   "name": "PETATOE Analytics System",
   "short_name": "PETATOE",
   "description": "PETATOE pet care operations and analytics system",
-  "start_url": "./index.html",
+  "start_url": "./?source=pwa",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
@@ -33,5 +33,19 @@
       "type": "image/png",
       "purpose": "maskable"
     }
-  ]
+  ],
+  "id": "./",
+  "lang": "ar",
+  "dir": "rtl",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
+  "prefer_related_applications": false
 }

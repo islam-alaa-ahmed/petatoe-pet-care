@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#061832">
+  <title>PETATOE — Offline</title>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png">
+  <style>
+    *{box-sizing:border-box}body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top,#123565 0,#07172f 46%,#030914 100%);color:#fff;font-family:Cairo,Arial,sans-serif}.card{width:min(440px,100%);padding:34px 26px;border:1px solid rgba(125,211,252,.28);border-radius:30px;background:rgba(8,24,50,.82);box-shadow:0 26px 80px rgba(0,0,0,.45);text-align:center;backdrop-filter:blur(18px)}img{width:92px;height:92px;border-radius:24px;box-shadow:0 14px 36px rgba(0,0,0,.35)}h1{margin:18px 0 8px;font-size:25px}p{margin:0;color:#cbd5e1;line-height:1.8}button{margin-top:22px;height:46px;padding:0 22px;border:0;border-radius:15px;background:linear-gradient(135deg,#22d3ee,#6366f1);color:#fff;font-weight:900;cursor:pointer}
+  </style>
+</head>
+<body>
+  <main class="card">
+    <img src="./assets/icons/apple-touch-icon.png" alt="PETATOE">
+    <h1 id="title">لا يوجد اتصال بالإنترنت</h1>
+    <p id="message">تحقق من الاتصال ثم أعد المحاولة. بيانات PETATOE تحتاج اتصالًا آمنًا للوصول إلى Supabase.</p>
+    <button type="button" onclick="location.reload()" id="retry">إعادة المحاولة</button>
+  </main>
+  <script>
+    if((navigator.language||'ar').toLowerCase().startsWith('en')){document.documentElement.lang='en';document.documentElement.dir='ltr';title.textContent='You are offline';message.textContent='Check your connection and try again. PETATOE data requires a secure connection to Supabase.';retry.textContent='Try again';}
+  </script>
+</body>
+</html>

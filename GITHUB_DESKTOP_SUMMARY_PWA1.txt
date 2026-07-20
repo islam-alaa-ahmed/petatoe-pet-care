@@ -1,0 +1,9 @@
+PETATOE v9.4.23 — Phase PWA-1 Enterprise Installation & Update System
+
+- Add enterprise Service Worker with safe cache lifecycle
+- Add offline PETATOE fallback page
+- Add PWA install manager for iPhone, Android and desktop
+- Add in-app update notification and Update Now action
+- Add iPhone Safe Area and Dynamic Island viewport support
+- Complete web app manifest metadata
+- Keep business logic, Supabase, reports, payroll and permissions unchanged
