@@ -1,5 +1,12 @@
 # Files Modified
 
-- `i18n/localization-center/dictionary-store.js`
-- `i18n/localization-center/payroll-ui-a3-4.js`
-- `i18n/localization-center/smart-reports-a3-5-3.js`
+## Modified
+
+- `index.html`
+- `i18n/localization-center/loader.js`
+
+## Added
+
+- `scripts/localization-supabase-parity-build.js`
+- `LOCALIZATION_SUPABASE_PARITY_SNAPSHOT.json`
+- `petatoe_v9_4_23_supabase_localization_dictionary_parity_sync.sql`

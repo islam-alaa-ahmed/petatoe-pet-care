@@ -1,11 +1,24 @@
 # GitHub Desktop Summary
 
 ## Summary
-Centralize conflicting localization values and remove shadow translation overrides.
 
-## Description
-- Consolidated 18 conflicting translation-path rewrites into the central dictionary.
-- Removed redundant Payroll and Smart Reports phase-catalog definitions.
-- Preserved the latest approved Arabic and English wording.
-- Added no runtime observers, scans, business-logic changes, or Supabase changes.
-- Verified 17/17 production localization gates with zero blocking failures.
+Phase A4 adds a reproducible Supabase localization parity pipeline generated from the effective runtime catalog order. It updates the runtime loader to preserve Arabic source-matching metadata while continuing to reject Arabic text in visible English translations.
+
+## Modified
+
+- `index.html`
+- `i18n/localization-center/loader.js`
+
+## Added
+
+- `scripts/localization-supabase-parity-build.js`
+- `LOCALIZATION_SUPABASE_PARITY_SNAPSHOT.json`
+- `petatoe_v9_4_23_supabase_localization_dictionary_parity_sync.sql`
+
+## Not changed
+
+- Business logic
+- Report calculations
+- Payroll workflow
+- Supabase client configuration
+- Queries or RPC calls used by operational modules

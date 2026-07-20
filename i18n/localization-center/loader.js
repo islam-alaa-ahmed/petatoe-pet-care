@@ -16,6 +16,7 @@
   }
   function hasArabic(value){return /[\u0600-\u06FF]/.test(typeof value==='string'?value:JSON.stringify(value==null?'':value));}
   function isEmptyValue(value){return value==null||(typeof value==='string'&&!value.trim());}
+  function isSourceMetadataKey(key){return /^runtimeTemplates\.[^.]+\.source$/.test(String(key||''));}
   function safeEnglishValue(value){
     if(isEmptyValue(value)||hasArabic(value))return false;
     if(Array.isArray(value))return value.every(safeEnglishValue);
@@ -26,7 +27,7 @@
     var out={},dictionaries=window.PETATOE_I18N_DICTIONARIES||{},local=dictionaries[code]||{};
     Object.keys(values||{}).forEach(function(key){
       var value=values[key],existing=getPath(local,key);
-      if(code==='en'&&!safeEnglishValue(value)){state.rejectedValues++;return;}
+      if(code==='en'&&!isSourceMetadataKey(key)&&!safeEnglishValue(value)){state.rejectedValues++;return;}
       /* Local dictionaries are the production source of truth. Runtime sources may only fill missing keys. */
       if(code==='en'&&source!=='local-file'&&!isEmptyValue(existing)&&safeEnglishValue(existing)){state.protectedValues++;return;}
       out[key]=value;
