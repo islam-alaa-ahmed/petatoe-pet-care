@@ -40,24 +40,96 @@
   function opsCtx(){return window.PETATOEOperationsContext||null}
   function byId(id){var ctx=opsCtx();return ctx&&ctx.byId?ctx.byId(id):document.getElementById(id)}
   function esc(s){var ctx=opsCtx();return ctx&&ctx.htmlEscape?ctx.htmlEscape(s):String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+  function operationsLanguage(){
+    try{
+      var center=window.PETATOE_LOCALIZATION_CENTER;
+      if(center&&typeof center.getLanguage==='function')return String(center.getLanguage()||'ar').toLowerCase();
+      return String(document.documentElement.lang||'ar').toLowerCase();
+    }catch(_){return 'ar';}
+  }
+  function translateOperationsText(value){
+    var source=String(value==null?'':value);
+    if(!source)return source;
+    if(operationsLanguage()==='ar')return source;
+    try{
+      var center=window.PETATOE_LOCALIZATION_CENTER;
+      if(center&&typeof center.translateRuntime==='function'){
+        var exact=center.translateRuntime(source,'en');
+        if(typeof exact==='string'&&exact!==source&&!/[\u0600-\u06FF]/.test(exact))return exact;
+      }
+    }catch(_exact){}
+    try{
+      var globalTranslator=window.PETATOE_GLOBAL_SCREEN_TRANSLATOR;
+      if(globalTranslator&&typeof globalTranslator.translate==='function')return globalTranslator.translate(source);
+    }catch(_mixed){}
+    return source;
+  }
+  function localizeOperationsSubtree(root){
+    if(!root||!root.nodeType)return root;
+    var lang=operationsLanguage();
+    var TEXT_NODE=3;
+    try{
+      var walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,null);
+      var node;
+      while((node=walker.nextNode())){
+        var parent=node.parentElement;
+        if(!parent||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA)$/i.test(parent.tagName)||parent.closest('[data-i18n-ignore]'))continue;
+        var current=String(node.nodeValue||'');
+        if(lang==='ar'){
+          if(node.__petatoeOperationsArabicSource!=null)node.nodeValue=node.__petatoeOperationsArabicSource;
+          continue;
+        }
+        if(!/[\u0600-\u06FF]/.test(current))continue;
+        if(node.__petatoeOperationsArabicSource==null)node.__petatoeOperationsArabicSource=current;
+        var translated=translateOperationsText(current);
+        if(translated!==current)node.nodeValue=translated;
+      }
+      var attrs=['title','aria-label','aria-description','placeholder','data-label','data-title','data-tooltip','data-original-title','alt'];
+      var elements=root.nodeType===1?[root].concat(Array.prototype.slice.call(root.querySelectorAll('*'))):[];
+      elements.forEach(function(el){
+        if(!el||el.closest('[data-i18n-ignore]'))return;
+        attrs.forEach(function(attr){
+          if(!el.hasAttribute(attr))return;
+          var current=el.getAttribute(attr)||'';
+          var sourceAttr='data-petatoe-operations-source-'+attr.replace(/[^a-z0-9]/gi,'-');
+          if(lang==='ar'){
+            if(el.hasAttribute(sourceAttr))el.setAttribute(attr,el.getAttribute(sourceAttr)||'');
+            return;
+          }
+          if(!/[\u0600-\u06FF]/.test(current))return;
+          if(!el.hasAttribute(sourceAttr))el.setAttribute(sourceAttr,current);
+          var translated=translateOperationsText(current);
+          if(translated!==current)el.setAttribute(attr,translated);
+        });
+      });
+    }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('operations/operations-legacy-engine.js localizeOperationsSubtree',e);}
+    return root;
+  }
   function safeHtml(target, html, reason){
     var el=target&&target.nodeType?target:null;
     if(!el)return false;
+    var rendered=false;
     try{
-      if(window.PETATOESafeRender&&typeof window.PETATOESafeRender.htmlTrusted==='function')return window.PETATOESafeRender.htmlTrusted(el,html,reason||'operations-legacy-engine trusted legacy template');
+      if(window.PETATOESafeRender&&typeof window.PETATOESafeRender.htmlTrusted==='function')rendered=window.PETATOESafeRender.htmlTrusted(el,html,reason||'operations-legacy-engine trusted legacy template');
     }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('operations/operations-legacy-engine.js safeHtml',e);}
-    el.textContent = '';
-    el.insertAdjacentHTML('beforeend', String(html==null?'':html));
-    return true;
+    if(!rendered){
+      el.textContent = '';
+      el.insertAdjacentHTML('beforeend', String(html==null?'':html));
+      rendered=true;
+    }
+    localizeOperationsSubtree(el);
+    return rendered;
   }
   function safeAppend(target, html, reason){
     var el=target&&target.nodeType?target:null;
     if(!el)return false;
+    var rendered=false;
     try{
-      if(window.PETATOESafeRender&&typeof window.PETATOESafeRender.appendTrusted==='function')return window.PETATOESafeRender.appendTrusted(el,html,reason||'operations-legacy-engine trusted legacy append');
+      if(window.PETATOESafeRender&&typeof window.PETATOESafeRender.appendTrusted==='function')rendered=window.PETATOESafeRender.appendTrusted(el,html,reason||'operations-legacy-engine trusted legacy append');
     }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('operations/operations-legacy-engine.js safeAppend',e);}
-    el.insertAdjacentHTML('beforeend',String(html==null?'':html));
-    return true;
+    if(!rendered){el.insertAdjacentHTML('beforeend',String(html==null?'':html));rendered=true;}
+    localizeOperationsSubtree(el);
+    return rendered;
   }
   function money(n){var ctx=opsCtx();return ctx&&ctx.formatMoney?ctx.formatMoney(n):(Number(n||0).toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2})+' SAR')}
   function appointmentDateTime(row){var ctx=opsCtx();if(ctx&&ctx.appointmentDateTime)return ctx.appointmentDateTime(row);var d=String((row&&row.date)||'');if(!d)return null;var t=String((row&&row.start)||'00:00');var dt=new Date(d+'T'+(t||'00:00'));return isNaN(dt.getTime())?null:dt}
@@ -2914,6 +2986,13 @@
     window.__PETATOE_APPOINTMENT_REFERENCE_REFRESH_BOUND__=true;
     window.addEventListener('petatoe:payroll-read-facade-refreshed',function(){try{if(currentTab==='master'&&appointmentMasterSectionValue()==='vehicleStaff')renderMasterData();}catch(_e){} });
     document.addEventListener('petatoe:reference-registry-updated',function(){try{if(currentTab==='master'&&appointmentMasterSectionValue()==='vehicleStaff')renderMasterData();}catch(_e){} });
+  }
+  if(!window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__){
+    window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__=true;
+    window.addEventListener('petatoe:language-changed',function(){
+      var root=document.getElementById('appointments');
+      if(root)localizeOperationsSubtree(root);
+    });
   }
   window.__PETATOEAppointmentsLegacyEngine=appointmentsPublicApi;
   window.PETATOEAppointments=appointmentsPublicApi;

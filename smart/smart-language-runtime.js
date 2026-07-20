@@ -1,4 +1,4 @@
-/* PETATOE v9.4.21 — Smart Reports Dynamic Localization Finalization
+/* PETATOE v9.4.23 — Smart Reports Dynamic Localization Runtime
    Keeps Smart Reports fast by translating only the visible tab and newly-created
    dynamic nodes. No report rebuild, data reload, calculation-cache clear, or
    full-page observer is used. */
@@ -193,7 +193,7 @@
     scheduleCharts(root,lang,token);startObserver();return true;
   }
 
-  window.PETATOE_SMART_LANGUAGE_RUNTIME={apply:apply,getLanguage:language,translate:translate,version:'9.4.21-dynamic-localization-finalization'};
+  window.PETATOE_SMART_LANGUAGE_RUNTIME={apply:apply,getLanguage:language,translate:translate,version:'9.4.23-operations-localization-completion'};
   window.addEventListener('petatoe:language-changed',function(){apply('language-changed');});
   window.addEventListener('petatoe:smart-tab-rendered',function(){apply('tab-rendered');});
   document.addEventListener('DOMContentLoaded',function(){startObserver();apply('dom-ready');});

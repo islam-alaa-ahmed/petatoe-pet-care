@@ -1,7 +1,7 @@
-/* PETATOE v9.4.21 — Translation Stability Certification */
+/* PETATOE v9.4.23 — Operations Localization Completion */
 (function(){
   'use strict';
-  var VERSION='9.4.21-enterprise-localization-finalization';
+  var VERSION='9.4.23-operations-localization-completion';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

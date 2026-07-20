@@ -1,11 +1,9 @@
-PETATOE v9.4.21 — Enterprise Localization Finalization
+PETATOE v9.4.23 — Operations Localization Completion
 
-- Added a Smart Reports-only dynamic localization observer scoped to #smartReportsArea.
-- Batched newly created text nodes before paint to stabilize dynamic buttons, filters, tables, dialogs, tooltips, and Load More counters.
-- Preserved report performance: no full report render, no data reload, no calculation-cache clear, and no document-wide DOM scan.
-- Added exact, business-value, and controlled fragment translation fallbacks for dynamic services, payment methods, statuses, recommendation controls, and mixed runtime labels.
-- Kept chart translation deferred and deduplicated through one animation frame.
-- Added stale-language protection and reversible Arabic source storage.
-- Updated localization certification validators to permit only the scoped batched Smart Reports observer and reject document-wide observers.
-- Synchronized release metadata, runtime versions, validator expectations, and cache tokens to PETATOE v9.4.21.
-- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports Fast Runtime, Fast Readiness, Public API, Translation Stability, and JavaScript syntax validation.
+- Fixed dynamic Arabic leakage across Appointments Management, Vehicle Operations, Daily Operations, Alerts, Route Planning, Customers & Pets, and Appointment Reports.
+- Added synchronous, subtree-scoped localization immediately after trusted operations HTML rendering.
+- Preserved canonical Arabic data attributes and workflow status values by translating visible text and approved UI attributes only.
+- Added reversible Arabic source retention so language switching can restore the original Arabic UI without rebuilding reports.
+- Added an operations-only language-change refresh scoped to #appointments; no document-wide observer or report recalculation was introduced.
+- Updated release metadata, runtime versions, cache tokens, and localization validators to v9.4.23.
+- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports performance/readiness/public API/stability, and JavaScript syntax validation (285/285).
