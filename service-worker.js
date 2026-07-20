@@ -1,7 +1,7 @@
 /* PETATOE PWA Enterprise Service Worker — Phase PWA-1 */
 'use strict';
 
-const APP_VERSION = '9.4.23-pwa1';
+const APP_VERSION = '9.4.24-mobile-m1';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;
@@ -19,6 +19,7 @@ const APP_SHELL = [
   './assets/icons/icon-maskable-512.png',
   './assets/icons/petatoe-app-icon.svg',
   './css/pwa/pwa-enterprise.css',
+  './css/mobile/mobile-enterprise-m1.css',
   './pwa/pwa-manager.js'
 ];
 

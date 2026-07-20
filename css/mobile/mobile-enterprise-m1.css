@@ -1,0 +1,205 @@
+/* PETATOE Mobile Enterprise UI — Phase M1
+   Mobile-only safe-area and compact layout corrections. Desktop/tablet remain unchanged. */
+
+@media (max-width: 760px) {
+  :root {
+    --pet-safe-top: env(safe-area-inset-top, 0px);
+    --pet-safe-right: env(safe-area-inset-right, 0px);
+    --pet-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --pet-safe-left: env(safe-area-inset-left, 0px);
+  }
+
+  html,
+  body {
+    min-height: 100%;
+    min-height: 100dvh;
+    overscroll-behavior-y: none;
+  }
+
+  body {
+    padding-left: var(--pet-safe-left);
+    padding-right: var(--pet-safe-right);
+  }
+
+  /* iPhone standalone header: keep all controls below the notch / Dynamic Island. */
+  .topbar {
+    box-sizing: border-box !important;
+    min-height: calc(64px + var(--pet-safe-top)) !important;
+    height: auto !important;
+    padding-top: calc(8px + var(--pet-safe-top)) !important;
+    padding-right: calc(10px + var(--pet-safe-right)) !important;
+    padding-bottom: 8px !important;
+    padding-left: calc(10px + var(--pet-safe-left)) !important;
+    align-items: center !important;
+    overflow: visible !important;
+  }
+
+  .topbar .top-left,
+  .topbar .top-right {
+    min-width: 0 !important;
+  }
+
+  .topbar .user,
+  .topbar .pill,
+  .topbar button {
+    max-width: 100% !important;
+  }
+
+  .page {
+    padding-top: 8px !important;
+    padding-right: calc(10px + var(--pet-safe-right)) !important;
+    padding-bottom: calc(24px + var(--pet-safe-bottom)) !important;
+    padding-left: calc(10px + var(--pet-safe-left)) !important;
+  }
+
+  /* Dashboard: reduce vertical waste while retaining touch-friendly controls. */
+  #dashboard .section-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+    padding: 16px !important;
+  }
+
+  #dashboard .section-head > div:first-child {
+    min-width: 0 !important;
+  }
+
+  #dashboard .section-head h2 {
+    margin: 0 !important;
+    font-size: clamp(22px, 7vw, 28px) !important;
+    line-height: 1.15 !important;
+  }
+
+  #dashboard .section-head p {
+    margin-top: 5px !important;
+    font-size: 12px !important;
+    line-height: 1.55 !important;
+  }
+
+  #dashboard .section-head > div:last-child {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 7px !important;
+  }
+
+  #dashboard .section-head .btn,
+  #dashboard .section-head .pet-page-pdf-btn {
+    min-height: 42px !important;
+    padding: 9px 12px !important;
+    border-radius: 14px !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    font-size: 12px !important;
+  }
+
+  #dashboard .filters {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+    padding: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  #dashboard .filters select,
+  #dashboard .filters input,
+  #dashboard .filters button,
+  #dashboard .filters .btn {
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 48px !important;
+    height: 48px !important;
+    margin: 0 !important;
+    padding-block: 8px !important;
+    border-radius: 16px !important;
+    font-size: 14px !important;
+  }
+
+  #dashboard .kpis,
+  #dashboard .grid,
+  #dashboard .grid-2,
+  #dashboard .grid-3 {
+    gap: 10px !important;
+  }
+
+  #dashboard .card,
+  #dashboard .kpi {
+    margin-bottom: 10px !important;
+  }
+
+  /* Login overlay: respect iOS safe areas without changing authentication logic. */
+  .pet-auth-overlay {
+    box-sizing: border-box !important;
+    min-height: 100dvh !important;
+    padding-top: calc(92px + var(--pet-safe-top)) !important;
+    padding-right: calc(12px + var(--pet-safe-right)) !important;
+    padding-bottom: calc(86px + var(--pet-safe-bottom)) !important;
+    padding-left: calc(12px + var(--pet-safe-left)) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .pet-auth-brand {
+    top: calc(10px + var(--pet-safe-top)) !important;
+    left: calc(12px + var(--pet-safe-left)) !important;
+    max-width: calc(100vw - 24px - var(--pet-safe-left) - var(--pet-safe-right)) !important;
+  }
+
+  .pet-auth-card {
+    width: min(100%, 430px) !important;
+    max-height: none !important;
+    margin: auto !important;
+    transform: none !important;
+    padding: 18px !important;
+    border-radius: 24px !important;
+  }
+
+  .pet-auth-card:before {
+    height: 112px !important;
+  }
+
+  .pet-auth-logo {
+    width: 48px !important;
+    height: 48px !important;
+    margin-bottom: 42px !important;
+  }
+
+  .pet-auth-field input {
+    min-height: 50px !important;
+    font-size: 16px !important; /* prevents Safari auto zoom */
+  }
+
+  .pet-auth-login,
+  .pet-auth-secondary,
+  .pet-auth-biometric {
+    min-height: 48px !important;
+  }
+
+  .pet-auth-footer {
+    box-sizing: border-box !important;
+    padding-right: calc(10px + var(--pet-safe-right)) !important;
+    padding-bottom: calc(10px + var(--pet-safe-bottom)) !important;
+    padding-left: calc(10px + var(--pet-safe-left)) !important;
+  }
+}
+
+@media (max-width: 390px) {
+  #dashboard .section-head {
+    grid-template-columns: 1fr !important;
+  }
+
+  #dashboard .section-head > div:last-child {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .pet-auth-brand img {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .pet-auth-brand span,
+  .pet-auth-brand small {
+    font-size: 13px !important;
+  }
+}

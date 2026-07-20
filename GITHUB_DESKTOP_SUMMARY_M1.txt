@@ -1,0 +1,9 @@
+PETATOE v9.4.24 — Phase M1 Mobile Enterprise UI
+
+- Fix iPhone Dynamic Island and status-bar overlap using Safe Area insets
+- Add safe-area protection to login brand, authentication card and footer
+- Compact Dashboard header and filters on mobile only
+- Preserve touch-friendly control sizes and prevent Safari input auto-zoom
+- Add missing PWA enterprise control stylesheet
+- Refresh Service Worker cache version and pre-cache mobile styles
+- Keep Desktop, Supabase, reports, payroll, permissions and business logic unchanged
