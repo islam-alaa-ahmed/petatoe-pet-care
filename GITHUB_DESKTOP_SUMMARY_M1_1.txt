@@ -1,0 +1,7 @@
+PETATOE v9.4.24 — Hotfix M1.1 JavaScript Text Leak
+
+- Fix PWA manager script injected inside Full Page PDF export HTML string
+- Prevent inline JavaScript from rendering as visible page content
+- Load PWA manager at the real document body end
+- Refresh Service Worker cache version for installed devices
+- Keep business logic, Supabase, reports, payroll, permissions and translations unchanged

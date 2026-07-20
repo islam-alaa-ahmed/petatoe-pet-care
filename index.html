@@ -4360,8 +4360,7 @@ window.petatoeExportActivePagePdf = function(){
       var clone=prepareClone(panel);
       var theme=document.documentElement.getAttribute('data-theme') || 'dark';
       clone.setAttribute('data-export-theme', theme);
-      var html='<!DOCTYPE html><html lang="ar" dir="rtl" data-theme="'+block_5843_esc(theme)+'"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+block_5843_esc(title)+' - PETATOE PDF</title>'+collectStyles(theme)+'</head><body class="pet-export-theme-'+block_5843_esc(theme)+'"><div id="petatoe-universal-print-shell" class="pet-print-shell pet-export-theme-'+block_5843_esc(theme)+'"><div class="pet-print-header"><div class="pet-print-brand"><div class="pet-print-logo">🐾</div><div>PETATOE<br><small>Analytics System</small></div></div><div class="pet-print-title"><b>'+block_5843_esc(title)+'</b><small>تصدير PDF منسق بنفس بيانات العرض الحالية</small></div><div class="pet-print-meta">التاريخ: '+block_5843_esc(new Date().toLocaleString('ar-SA'))+'<br>Save as PDF</div></div>'+clone.outerHTML+'<div class="pet-print-footer">PETATOE Analytics System — Full Page PDF Export — '+block_5843_esc(todayStamp())+'</div></div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.focus();window.print();},350)}<\/scr'+'ipt><script src="pwa/pwa-manager.js?v=9.4.23-pwa1" defer></script>
-</body></html>';
+      var html='<!DOCTYPE html><html lang="ar" dir="rtl" data-theme="'+block_5843_esc(theme)+'"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+block_5843_esc(title)+' - PETATOE PDF</title>'+collectStyles(theme)+'</head><body class="pet-export-theme-'+block_5843_esc(theme)+'"><div id="petatoe-universal-print-shell" class="pet-print-shell pet-export-theme-'+block_5843_esc(theme)+'"><div class="pet-print-header"><div class="pet-print-brand"><div class="pet-print-logo">🐾</div><div>PETATOE<br><small>Analytics System</small></div></div><div class="pet-print-title"><b>'+block_5843_esc(title)+'</b><small>تصدير PDF منسق بنفس بيانات العرض الحالية</small></div><div class="pet-print-meta">التاريخ: '+block_5843_esc(new Date().toLocaleString('ar-SA'))+'<br>Save as PDF</div></div>'+clone.outerHTML+'<div class="pet-print-footer">PETATOE Analytics System — Full Page PDF Export — '+block_5843_esc(todayStamp())+'</div></div><scr'+'ipt>window.onload=function(){setTimeout(function(){window.focus();window.print();},350)}<\/scr'+'ipt></body></html>';
       var win=petatoeOpenPrintHtmlBlob(html,'width=1200,height=800');
       if(!win){alert('المتصفح منع فتح نافذة الطباعة. فعّل Popups للموقع ثم جرّب مرة أخرى.');return;}
       notify('✅ تم تجهيز نافذة PDF — اختر Save as PDF');
@@ -4663,6 +4662,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script src="security/auth-session.js?v=7.1.0"></script>
 <script src="security/topbar-notifications.js?v=7.1.0"></script>
 
+<script src="pwa/pwa-manager.js?v=9.4.24-m1-1" defer></script>
 </body>
 </html>
 <style>.liquid-summary-row{display:flex;gap:12px;margin-top:12px}.liquid-mini-card{flex:1;padding:12px;border-radius:16px;text-align:center}.liquid-mini-card.cyan{border:1px solid #18E7F9;color:#18E7F9}.liquid-mini-card.gold{border:1px solid #FFD54A;color:#FFD54A}.liquid-mini-card.smart-new-returning-card,.liquid-mini-card.smart-new-returning-card b,.liquid-mini-card.smart-new-returning-card span{color:#fff!important;text-shadow:0 1px 8px rgba(0,0,0,.45)}
