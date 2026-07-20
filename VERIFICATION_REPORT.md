@@ -1,18 +1,23 @@
-# Verification Report — Phase A3.2
+# Verification Report — Phase A3.3
 
-- JavaScript syntax checks for all modified/new JavaScript files: Passed.
-- Full localization production suite: 17/17 production gates passed.
-- Blocking failures: 0.
-- Diagnostic source audit completed.
-- Total Arabic source lines outside localization folders: 3044 → 3019.
-- Runtime UI candidates: 628 → 615.
-- General source literals: 1852 → 1827.
-- Unbound HTML candidates remained 527 because this phase targeted JavaScript runtime templates.
-- `operations-appointments.js` Arabic-line count: 12 → 3; remaining values are canonical workflow data mappings.
-- `operations-status.js` Arabic-line count: 30 → 14; remaining values are canonical stored statuses and workflow comparisons, not untranslated visible labels.
+## Automated verification
 
-## Not tested live
-- Live Supabase appointment write/update.
-- Real browser interaction with production customer data.
-- Vehicle operation status changes against production records.
-These were not executed because no live authenticated production session is available in the audit environment.
+- Full JavaScript syntax check: **290 / 290 passed**.
+- Localization production gates: **17 / 17 passed**.
+- Blocking failures: **0**.
+- Diagnostic localization scan completed successfully.
+
+## Source-surface movement
+
+- Unbound HTML candidates: **527 → 503**.
+- Explicitly bound HTML: **50 → 74**.
+- Runtime UI candidates: **615** (unchanged; remaining runtime scope is outside this limited phase).
+- General source literals: **1827** (unchanged; stored/business values were deliberately preserved).
+
+## Regression protection
+
+No changes were made to customer records, appointment storage, Supabase queries/RPCs, status values, calculations, imports, exports, or matching logic.
+
+## Not tested
+
+Live customer import/export and production Supabase writes were not executed because no authenticated production session was available in the audit environment.

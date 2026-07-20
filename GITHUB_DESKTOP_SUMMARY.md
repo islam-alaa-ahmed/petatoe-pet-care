@@ -1,13 +1,13 @@
 # GitHub Desktop Summary
 
 ## Summary
-Localize Appointment Management actions and Vehicle Operations status/history UI using an explicit bilingual catalog while preserving canonical workflow status values.
 
-## Changed files
-- `index.html`
-- `operations/operations-appointments.js`
-- `operations/operations-status.js`
-- `i18n/localization-center/operations-appointments-status.js` (new)
+Localize Customer Management, Customers & Pets, and customer master-data UI through explicit bilingual keys.
 
-## Commit message
-`localization: migrate appointment and vehicle status UI strings`
+## Description
+
+- Added the `operationsCustomer` Arabic/English localization catalog.
+- Bound customer/pet tab, filters, master-data labels, actions, placeholders, search, and table headers to explicit keys.
+- Localized dynamic empty state, unknown customer/animal labels, and pet count text.
+- Preserved all stored customer, pet, breed, appointment, and workflow values.
+- No Business Logic, Supabase, query, calculation, or schema changes.

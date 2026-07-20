@@ -18,6 +18,7 @@
 (function(){
   'use strict';
   function opT(key,params){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsSource.'+key,params,{fallback:key}):key;}
+  function opCustomerT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsCustomer.'+key,params,{fallback:fallback||key}):(fallback||key);}
   function opStatusT(status){var map={'مجدول':'statusScheduled','في الطريق':'statusOnTheWay','وصل العميل':'statusArrived','بدأت الجلسة':'statusStarted','تمت الجلسة':'statusCompleted','تم التحصيل':'statusCollected','مغلق':'statusClosed','مؤكد':'statusConfirmed','غير مكتملة':'statusIncomplete','مؤجل':'statusPostponed','ملغي':'statusCancelled','تم':'statusCompleted'};return opT(map[String(status||'')]||'statusUnknown');}
   if(window.PETATOEAppointments) return;
   var KEY='petatoe_appointments_v1';
@@ -261,7 +262,7 @@
     (readMasterData().customers||[]).forEach(function(mc){
       mc=cleanMasterCustomer(mc); if(!mc)return;
       var key=mc.code||mc.phone||mc.name; if(!key)return;
-      if(!map[key])map[key]={key:key,client:mc.name||'عميل غير محدد',phone:mc.phone||'',address:mc.address||'',googleMapUrl:mc.googleMapUrl||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
+      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',googleMapUrl:mc.googleMapUrl||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
       if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address; if(mc.googleMapUrl)map[key].googleMapUrl=mc.googleMapUrl;
     });
     return Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return String(a.name||a.code).localeCompare(String(b.name||b.code),'ar')});
@@ -475,7 +476,7 @@
   function resetMasterData(){if(confirm(opT('confirmRestoreDefaults'))){writeMasterData(cloneDefaultMaster());toast(opT('restored'))}}
   function renderMasterPills(list,type,animalType){
     list=uniqueSorted(list||[]);
-    return list.length?list.map(function(x){return '<span class="appointments-master-pill"><b>'+esc(x)+'</b><button type="button" data-op-click="editMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">'+esc(opT('edit'))+'</button><button type="button" data-op-click="removeMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">'+esc(opT('delete'))+'</button></span>'}).join(''):'<div class="appointments-empty appointments-master-empty">لا توجد بيانات</div>';
+    return list.length?list.map(function(x){return '<span class="appointments-master-pill"><b>'+esc(x)+'</b><button type="button" data-op-click="editMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">'+esc(opT('edit'))+'</button><button type="button" data-op-click="removeMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">'+esc(opT('delete'))+'</button></span>'}).join(''):'<div class="appointments-empty appointments-master-empty">'+esc(opCustomerT('empty.noData',null,'لا توجد بيانات'))+'</div>';
   }
   function setMasterSection(section){
     currentMasterSection=String(section||val('appointmentMasterSection')||'animalTypes');
@@ -495,7 +496,7 @@
     (readMasterData().customers||[]).forEach(function(mc){
       mc=cleanMasterCustomer(mc); if(!mc)return;
       var key=mc.code||mc.phone||mc.name; if(!key)return;
-      if(!map[key])map[key]={key:key,client:mc.name||'عميل غير محدد',phone:mc.phone||'',address:mc.address||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
+      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
       if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address;
     });
     return Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return String(a.name||a.code).localeCompare(String(b.name||b.code),'ar')});
@@ -1398,7 +1399,7 @@
       if(r.date){ if(!c.firstVisit||r.date<c.firstVisit)c.firstVisit=r.date; if(!c.lastVisit||r.date>c.lastVisit)c.lastVisit=r.date; }
       var appointmentAnimals=Array.isArray(r.animals)&&r.animals.length?r.animals:[{animalType:r.animalType||'',breed:r.breed||'',size:r.size||'',petName:r.petName||'',petCount:r.petCount||1}];
       appointmentAnimals.forEach(function(ap){
-        var petKey=[ap.animalType,ap.breed,ap.size,ap.petName].filter(Boolean).join(' - ')||'حيوان غير محدد';
+        var petKey=[ap.animalType,ap.breed,ap.size,ap.petName].filter(Boolean).join(' - ')||opCustomerT('fallback.unknownAnimal',null,'حيوان غير محدد');
         if(!c.pets[petKey])c.pets[petKey]={animalType:ap.animalType||'',breed:ap.breed||'',size:ap.size||'',petName:ap.petName||'',count:0,visits:0,services:{}};
         c.pets[petKey].count=Math.max(c.pets[petKey].count,Number(ap.petCount||ap.count||1));
         c.pets[petKey].visits+=1;
@@ -1408,7 +1409,7 @@
     (readMasterData().customers||[]).forEach(function(mc){
       mc=cleanMasterCustomer(mc); if(!mc)return;
       var key=mc.code||mc.phone||mc.name; if(!key)return;
-      if(!map[key])map[key]={key:key,client:mc.name||'عميل غير محدد',phone:mc.phone||'',address:mc.address||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
+      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
       if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address;
     });
     return Object.keys(map).map(function(k){
@@ -1440,7 +1441,7 @@
     var typeEl=activeRow?activeRow.querySelector('.appointment-animal-type'):null;
     var animal=(typeEl&&typeEl.value)||val('appointmentAnimalType');
     var pets=(found&&found.petsList?found.petsList:[]).filter(function(p){return !animal||String(p.animalType||'')===String(animal)});
-    safeHtml(dl, pets.map(function(p){return '<option value="'+esc(p.petName||p.label)+'">'+esc([p.animalType,p.breed,p.size,p.count?('عدد '+p.count):'',(p.topServices||[]).join('، ')].filter(Boolean).join(' | '))+'</option>'}).join(''), 'operations legacy render');
+    safeHtml(dl, pets.map(function(p){return '<option value="'+esc(p.petName||p.label)+'">'+esc([p.animalType,p.breed,p.size,p.count?opCustomerT('pets.count',{count:p.count},'عدد '+p.count):'',(p.topServices||[]).join('، ')].filter(Boolean).join(' | '))+'</option>'}).join(''), 'operations legacy render');
     return pets;
   }
   function applyPetSuggestion(){

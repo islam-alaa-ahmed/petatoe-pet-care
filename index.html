@@ -621,7 +621,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <details class="appointments-tab-group">
 <summary>📚 البيانات والتقارير</summary>
 <div class="appointments-tab-group-items">
-<button class="appointments-tab" data-appointment-tab="customers" data-op-arg1="customers" data-op-click="setTab" type="button">👥 العملاء والحيوانات</button>
+<button class="appointments-tab" data-appointment-tab="customers" data-op-arg1="customers" data-op-click="setTab" type="button" data-i18n="operationsCustomer.tabs.customersPets">👥 العملاء والحيوانات</button>
 <button class="appointments-tab" data-appointment-tab="reports" data-op-arg1="reports" data-op-click="setTab" type="button">📊 تقارير المواعيد</button>
 </div>
 </details>
@@ -770,7 +770,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="appointments-card appointments-today-card">
 <div class="appointments-card-head">
 <div><h3>🚦 Timeline مواعيد اليوم</h3></div>
-<button class="btn btn-ghost" data-op-click="refreshCustomersCrm" type="button">🔄 تحديث</button>
+<button class="btn btn-ghost" data-op-click="refreshCustomersCrm" type="button" data-i18n="operationsCustomer.actions.refresh">🔄 تحديث</button>
 </div>
 <div class="appointments-status-legend">
 <span class="scheduled">مجدول</span>
@@ -786,7 +786,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="appointments-card appointments-alerts-card">
 <div class="appointments-card-head">
 <div><h3>🔔 تنبيهات المواعيد</h3></div>
-<button class="btn btn-ghost" data-op-click="render" type="button">🔄 تحديث</button>
+<button class="btn btn-ghost" data-op-click="render" type="button" data-i18n="operationsCustomer.actions.refresh">🔄 تحديث</button>
 </div>
 <div class="appointments-alert-summary" id="appointmentsAlertsSummary"></div>
 <div class="appointments-alert-list" id="appointmentsAlertsList"></div>
@@ -807,7 +807,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="appointments-filters appointments-filters-advanced">
 <input data-op-input="render" id="appointmentSearch" placeholder="بحث باسم العميل / الهاتف / الخدمة / العنوان"/>
 <select data-op-change="render" id="appointmentStatusFilter"><option value="all">كل الحالات</option><option>مجدول</option><option>في الطريق</option><option>وصل العميل</option><option>بدأت الجلسة</option><option>تمت الجلسة</option><option>تم التحصيل</option><option>مؤجل</option><option>ملغي</option></select>
-<select data-op-change="render" id="appointmentAnimalFilter"><option value="all">كل أنواع الحيوانات</option></select>
+<select data-op-change="render" id="appointmentAnimalFilter"><option value="all" data-i18n="operationsCustomer.filters.allAnimalTypes">كل أنواع الحيوانات</option></select>
 <select data-op-change="render" id="appointmentGroomerFilter"><option value="all">كل الجرومرز</option></select>
 <select data-op-change="render" id="appointmentDriverFilter"><option value="all">كل السائقين</option></select>
 <select data-op-change="render" id="appointmentVehicleFilter"><option value="all" data-i18n="filters.allVehicles">كل السيارات</option></select>
@@ -827,7 +827,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <section class="appointments-section" data-appointment-section="customers">
 <div class="appointments-card">
 <div class="appointments-card-head">
-<div><h3>👥 العملاء والحيوانات</h3></div>
+<div><h3 data-i18n="operationsCustomer.customersPets.title">👥 العملاء والحيوانات</h3></div>
 <button class="btn btn-ghost" data-op-click="render" type="button">🔄 تحديث</button>
 </div>
 <div class="appointments-report-summary-grid appointments-customers-summary-grid" id="appointmentsCustomersSummary"></div>
@@ -837,19 +837,19 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <section class="appointments-section" data-appointment-section="master">
 <div class="appointments-card appointments-master-card">
 <div class="appointments-card-head appointments-master-head-row">
-<div><h3>⚙️ البيانات المرجعية للمواعيد</h3></div>
+<div><h3 data-i18n="operationsCustomer.master.title">⚙️ البيانات المرجعية للمواعيد</h3></div>
 <div class="appointments-master-actions-head">
-<label class="appointments-master-section-picker">اختر القسم
+<label class="appointments-master-section-picker"><span data-i18n="operationsCustomer.master.chooseSection">اختر القسم</span>
               <select data-op-change="setMasterSection" data-op-use-value="true" id="appointmentMasterSection">
-<option value="animalTypes">🐾 أنواع الحيوانات</option>
-<option value="breeds">🧬 السلالات</option>
-<option value="sizes">📏 الأحجام</option>
-<option value="services">🛁 الخدمات</option>
-<option value="customers">👥 بيانات العملاء</option>
-<option value="vehicleStaff">🚐 بيانات السيارات والموظفين</option>
+<option value="animalTypes" data-i18n="operationsCustomer.master.animalTypes">🐾 أنواع الحيوانات</option>
+<option value="breeds" data-i18n="operationsCustomer.master.breeds">🧬 السلالات</option>
+<option value="sizes" data-i18n="operationsCustomer.master.sizes">📏 الأحجام</option>
+<option value="services" data-i18n="operationsCustomer.master.services">🛁 الخدمات</option>
+<option value="customers" data-i18n="operationsCustomer.master.customers">👥 بيانات العملاء</option>
+<option value="vehicleStaff" data-i18n="operationsCustomer.master.vehicleStaff">🚐 بيانات السيارات والموظفين</option>
 </select>
 </label>
-<button class="btn btn-ghost" data-op-click="resetMasterData" type="button">↩️ استعادة القيم الافتراضية</button>
+<button class="btn btn-ghost" data-op-click="resetMasterData" type="button" data-i18n="operationsCustomer.actions.restoreDefaults">↩️ استعادة القيم الافتراضية</button>
 </div>
 </div>
 <div class="appointments-master-single">
@@ -884,21 +884,21 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="appointments-master-table-wrap"><table class="appointments-master-table appointments-master-services-table"><thead><tr><th>الكود</th><th>اسم الخدمة</th><th>السعر</th><th>الإجراءات</th></tr></thead><tbody id="appointmentServicesList"></tbody></table></div>
 </div>
 <div class="appointments-master-box" data-master-panel="customers">
-<h4>👥 بيانات العملاء</h4>
+<h4 data-i18n="operationsCustomer.master.customers">👥 بيانات العملاء</h4>
 <div class="appointments-master-add appointments-master-customer-add">
-<input id="appointmentMasterCustomerCode" placeholder="الكود"/>
-<input id="appointmentMasterCustomerName" placeholder="الاسم"/>
-<input id="appointmentMasterCustomerAddress" placeholder="العنوان"/>
-<input id="appointmentMasterCustomerPhone" placeholder="الجوال"/>
-<button class="btn btn-primary" data-op-click="addMasterCustomer" type="button">إضافة / حفظ</button>
+<input id="appointmentMasterCustomerCode" placeholder="الكود" data-i18n-placeholder="operationsCustomer.fields.code"/>
+<input id="appointmentMasterCustomerName" placeholder="الاسم" data-i18n-placeholder="operationsCustomer.fields.name"/>
+<input id="appointmentMasterCustomerAddress" placeholder="العنوان" data-i18n-placeholder="operationsCustomer.fields.address"/>
+<input id="appointmentMasterCustomerPhone" placeholder="الجوال" data-i18n-placeholder="operationsCustomer.fields.mobile"/>
+<button class="btn btn-primary" data-op-click="addMasterCustomer" type="button" data-i18n="operationsCustomer.actions.addSave">إضافة / حفظ</button>
 </div>
 <div class="appointments-master-customer-tools">
-<button class="btn btn-ghost" data-op-click="triggerMasterCustomersExcelImport" type="button">📥 رفع البيانات Excel</button>
-<button class="btn btn-ghost" data-op-click="exportMasterCustomersExcel" type="button">📤 تصدير البيانات Excel</button>
+<button class="btn btn-ghost" data-op-click="triggerMasterCustomersExcelImport" type="button" data-i18n="operationsCustomer.actions.importCustomersExcel">📥 رفع البيانات Excel</button>
+<button class="btn btn-ghost" data-op-click="exportMasterCustomersExcel" type="button" data-i18n="operationsCustomer.actions.exportCustomersExcel">📤 تصدير البيانات Excel</button>
 <input accept=".xlsx,.xls,.csv" data-op-change="handleMasterCustomersExcelImport" data-op-pass-self="true" hidden="" id="appointmentMasterCustomersExcelInput" type="file"/>
 </div>
-<div class="appointments-master-search"><input data-op-input="render" id="appointmentMasterCustomerSearch" placeholder="بحث بالكود / الاسم / العنوان / الجوال"/></div>
-<div class="appointments-master-table-wrap"><table class="appointments-master-table"><thead><tr><th>الكود</th><th>الاسم</th><th>العنوان</th><th>الجوال</th><th>الإجراءات</th></tr></thead><tbody id="appointmentMasterCustomersList"></tbody></table></div>
+<div class="appointments-master-search"><input data-op-input="render" id="appointmentMasterCustomerSearch" placeholder="بحث بالكود / الاسم / العنوان / الجوال" data-i18n-placeholder="operationsCustomer.search.masterCustomers"/></div>
+<div class="appointments-master-table-wrap"><table class="appointments-master-table"><thead><tr><th data-i18n="operationsCustomer.fields.code">الكود</th><th data-i18n="operationsCustomer.fields.name">الاسم</th><th data-i18n="operationsCustomer.fields.address">العنوان</th><th data-i18n="operationsCustomer.fields.mobile">الجوال</th><th data-i18n="operationsCustomer.fields.actions">الإجراءات</th></tr></thead><tbody id="appointmentMasterCustomersList"></tbody></table></div>
 </div>
 <div class="appointments-master-box" data-master-panel="vehicleStaff">
 <h4>🚐 بيانات السيارات والموظفين</h4>
@@ -4498,6 +4498,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <script src="operations/operations-storage.js"></script>
 <script src="operations/operations-context.js"></script>
 <script src="i18n/localization-center/operations-appointments-status.js?v=9.4.23-a3-2"></script>
+<script src="i18n/localization-center/operations-customer-management.js?v=9.4.23-a3-3"></script>
 <script src="operations/operations-workflow-real.js"></script>
 
 <script src="operations/operations-legacy-engine.js?v=9.4.23-operations-localization-completion"></script>
