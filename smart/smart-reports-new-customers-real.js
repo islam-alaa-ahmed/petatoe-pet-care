@@ -1,6 +1,12 @@
 /* PETATOE v6.4.52 Phase G2 - Smart Reports New Customers Real Extraction.
    Extracted from smart-reports-core.js without changing formulas, filters, or rendered markup. */
 (function(){
+  function petatoeSmartNewCustomersT(path,fallback,params){
+    try{
+      if(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.smart==='function') return window.PETATOE_LOCALIZATION_CENTER.smart('a35.'+path,fallback,params||{});
+    }catch(_e){}
+    return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,key){return params&&params[key]!=null?params[key]:_;});
+  }
   function serviceDisplay(v){try{var center=window.PETATOE_LOCALIZATION_CENTER;var value=center&&typeof center.business==='function'?center.business('service',v):v;return typeof htmlSafe==='function'?htmlSafe(value):String(value==null?'':value);}catch(_){return typeof htmlSafe==='function'?htmlSafe(v):String(v==null?'':v);}}
   function buildSmartReportsNewCustomersState(ctx){
     const records=ctx.records||[];
@@ -133,7 +139,7 @@ const newCustomersConversion=safeDiv(newCustomersRepeatCount,newCustomersCount)*
 const topNewCustomer=newCustomerRows[0]||{name:'-',totalValue:0};
 const newCustWeekRows=[1,2,3,4,5].map(w=>{
   const cnt=newCustomerRows.filter(x=>x.firstDate && (Math.floor((x.firstDate.getDate()-1)/7)+1)===w).length;
-  return {w,label:'الأسبوع '+w,count:cnt};
+  return {w,label:petatoeSmartNewCustomersT('customers.week','الأسبوع {number}',{number:w}),count:cnt};
 });
 const newCustTierRows=['VIP','Gold','Silver','Bronze'].map(t=>({tier:t,count:newCustomerRows.filter(x=>x.tier===t).length}));
 const firstCustomerPeriodCounts=Object.values(allCustomerFirstMap).reduce((a,first)=>{
@@ -155,12 +161,12 @@ function newCustomerTierMeta(x){
   const icon=t==='VIP'?'👑':t==='Gold'?'🥇':t==='Silver'?'⭐':'🥉';
   const cls=t==='VIP'?'vip':t==='Gold'?'gold':t==='Silver'?'silver':'bronze';
   const rules=t==='VIP'
-    ? ['إجمالي المشتريات لا يقل عن SAR 10,000.00','عدد المعاملات: '+fmt0(x.transCount),'آخر معاملة خلال '+fmt0(x.daysSince)+' يوم']
+    ? [petatoeSmartNewCustomersT('customers.spendAtLeast10k','إجمالي المشتريات لا يقل عن SAR 10,000.00'),petatoeSmartNewCustomersT('customers.transactionCount','عدد المعاملات: {count}',{count:fmt0(x.transCount)}),petatoeSmartNewCustomersT('customers.lastTransactionDays','آخر معاملة خلال {days} يوم',{days:fmt0(x.daysSince)})]
     : t==='Gold'
-    ? ['إجمالي المشتريات لا يقل عن SAR 5,000.00','عدد المعاملات: '+fmt0(x.transCount),'آخر معاملة خلال '+fmt0(x.daysSince)+' يوم']
+    ? [petatoeSmartNewCustomersT('customers.spendAtLeast5k','إجمالي المشتريات لا يقل عن SAR 5,000.00'),petatoeSmartNewCustomersT('customers.transactionCount','عدد المعاملات: {count}',{count:fmt0(x.transCount)}),petatoeSmartNewCustomersT('customers.lastTransactionDays','آخر معاملة خلال {days} يوم',{days:fmt0(x.daysSince)})]
     : t==='Silver'
-    ? ['إجمالي المشتريات لا يقل عن SAR 1,000.00','عدد المعاملات: '+fmt0(x.transCount),'آخر معاملة خلال '+fmt0(x.daysSince)+' يوم']
-    : ['إجمالي المشتريات أقل من SAR 1,000.00','عدد المعاملات: '+fmt0(x.transCount),'آخر معاملة خلال '+fmt0(x.daysSince)+' يوم'];
+    ? [petatoeSmartNewCustomersT('customers.spendAtLeast1k','إجمالي المشتريات لا يقل عن SAR 1,000.00'),petatoeSmartNewCustomersT('customers.transactionCount','عدد المعاملات: {count}',{count:fmt0(x.transCount)}),petatoeSmartNewCustomersT('customers.lastTransactionDays','آخر معاملة خلال {days} يوم',{days:fmt0(x.daysSince)})]
+    : [petatoeSmartNewCustomersT('customers.spendBelow1k','إجمالي المشتريات أقل من SAR 1,000.00'),petatoeSmartNewCustomersT('customers.transactionCount','عدد المعاملات: {count}',{count:fmt0(x.transCount)}),petatoeSmartNewCustomersT('customers.lastTransactionDays','آخر معاملة خلال {days} يوم',{days:fmt0(x.daysSince)})];
   return {t,icon,cls,rules};
 }
 const newCustomerTableRows=newCustomerDisplayedRows.map((x,i)=>{const tm=newCustomerTierMeta(x);return `
@@ -168,19 +174,19 @@ const newCustomerTableRows=newCustomerDisplayedRows.map((x,i)=>{const tm=newCust
     <td>${i+1}</td><td>${x.name}</td><td>${fmtDateAr(x.firstDate)}</td><td>${String(x.first.invoice||'-')}</td>
     <td>${serviceDisplay(x.topService)}</td><td>${x.topPay}</td><td>${fmt0(x.transCount)}</td><td>${money(x.totalValue)}</td>
     <td>${money(x.avgValue)}</td><td>${fmtDateAr(x.lastDate)}</td><td>${fmt0(x.daysSince)}</td>
-    <td class="new-cust-tier-cell"><span class="new-cust-tier-wrap"><span class="new-cust-tier-icon ${tm.cls}">${tm.icon}</span><span class="new-cust-tier-label">${tm.t}</span><span class="new-cust-tier-tooltip"><b>سبب التصنيف: ${tm.t}</b><span>العميل مصنف ضمن هذا التصنيف بناءً على:</span>${tm.rules.map(r=>`<span class="ok">✓ ${r}</span>`).join('')}<span>يتم حساب التصنيف من بيانات الشهر المختار فقط بدون تغيير أي قيم أصلية.</span></span></span></td>
-  </tr>`}).join('') || '<tr><td colspan="12">لا يوجد عملاء جدد في هذا الشهر حسب أول معاملة مسجلة في كل قاعدة البيانات.</td></tr>';
+    <td class="new-cust-tier-cell"><span class="new-cust-tier-wrap"><span class="new-cust-tier-icon ${tm.cls}">${tm.icon}</span><span class="new-cust-tier-label">${tm.t}</span><span class="new-cust-tier-tooltip"><b>${petatoeSmartNewCustomersT('customers.classificationReason','سبب التصنيف: {tier}',{tier:tm.t})}</b><span>${petatoeSmartNewCustomersT('customers.classificationDescription','العميل مصنف ضمن شريحة {tier} بناءً على قيمة مشترياته وعدد معاملاته وحداثة آخر تعامل.',{tier:tm.t})}</span><span>${petatoeSmartNewCustomersT('customers.classificationBasis','هذا التصنيف مبني على القواعد التالية:')}</span>${tm.rules.map(r=>`<span class="ok">✓ ${r}</span>`).join('')}<span>${petatoeSmartNewCustomersT('customers.classificationScope','يتم حساب التصنيف من بيانات الشهر المختار فقط دون تغيير أي قيم أصلية.')}</span></span></span></td>
+  </tr>`}).join('') || '<tr><td colspan="12">'+petatoeSmartNewCustomersT('customers.noNewCustomers','لا يوجد عملاء جدد في هذا الشهر حسب أول معاملة مسجلة في كل قاعدة البيانات.')+'</td></tr>';
 const newCustomerMoreButton=newCustomerRows.length>newCustTableLimit
   ? `<div class="new-cust-table-footer"><button class="new-cust-more-btn" data-smart-action="new-customer-more" data-limit="${newCustTableLimit+10}" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">${smartReportHtml('common.loadMore','اضغط لعرض المزيد ⌄')}</button><span>${smartReportHtml('common.showingCustomers','عرض {shown} من أصل {total} عميل',{shown:fmt0(Math.min(newCustTableLimit,newCustomerRows.length)),total:fmt0(newCustomerRows.length)})}</span></div>`
   : `<div class="new-cust-table-footer"><span>${smartReportHtml('common.shownCustomers','تم عرض {shown} من أصل {total} عميل',{shown:fmt0(newCustomerRows.length),total:fmt0(newCustomerRows.length)})}</span></div>`;
 const newCustomerInactiveRows=newCustomerRows.filter(x=>!x.repeatedAfterFirst && x.transCount<=1).sort((a,b)=>b.daysSince-a.daysSince).slice(0,12).map((x,i)=>`
-  <tr><td>${i+1}</td><td>${x.name}</td><td>${fmtDateAr(x.firstDate)}</td><td>${String(x.first.invoice||'-')}</td><td>${money(x.totalValue)}</td><td>${fmt0(x.daysSince)}</td><td>${serviceDisplay(x.topService)}</td></tr>`).join('') || '<tr><td colspan="7">لا يوجد عملاء جدد غير نشطين في الفترة المختارة.</td></tr>';
-const newCustYearButtons=`<button class="new-cust-year-btn ${newCustSelectedYear==='all'?'active':''}" data-smart-action="new-customer-year" data-year="all" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">كل السنوات</button>`+newCustAvailableYears.slice().sort((a,b)=>b-a).map(yy=>`<button class="new-cust-year-btn ${String(newCustSelectedYear)===String(yy)?'active':''}" data-smart-action="new-customer-year" data-year="${yy}" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">${yy}</button>`).join('');
+  <tr><td>${i+1}</td><td>${x.name}</td><td>${fmtDateAr(x.firstDate)}</td><td>${String(x.first.invoice||'-')}</td><td>${money(x.totalValue)}</td><td>${fmt0(x.daysSince)}</td><td>${serviceDisplay(x.topService)}</td></tr>`).join('') || '<tr><td colspan="7">'+petatoeSmartNewCustomersT('customers.noInactiveCustomers','لا يوجد عملاء غير نشطين ضمن الفترة المختارة.')+'</td></tr>';
+const newCustYearButtons=`<button class="new-cust-year-btn ${newCustSelectedYear==='all'?'active':''}" data-smart-action="new-customer-year" data-year="all" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">${petatoeSmartNewCustomersT('common.allYears','كل السنوات')}</button>`+newCustAvailableYears.slice().sort((a,b)=>b-a).map(yy=>`<button class="new-cust-year-btn ${String(newCustSelectedYear)===String(yy)?'active':''}" data-smart-action="new-customer-year" data-year="${yy}" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">${yy}</button>`).join('');
 const newCustMonthButtons=newCustPeriods.map(k=>{
   const [yy,mm]=k.split('-');
   const mi=(+mm)-1;
   return `<button class="new-cust-month-btn ${newCustPeriod===k?'active':''}" data-smart-action="new-customer-period" data-period="${k}" onclick="return window.petatoeSmartNewCustomerFilterClick ? window.petatoeSmartNewCustomerFilterClick(this,event) : true">${(window.PETATOE_GLOBAL_SCREEN_TRANSLATOR&&window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName)?window.PETATOE_GLOBAL_SCREEN_TRANSLATOR.monthName(MAR[MONTHS[mi]]||MONTHS[mi]):(MAR[MONTHS[mi]]||MONTHS[mi])} ${yy}</button>`;
-}).join('') || '<span class="pill">لا توجد شهور متاحة</span>';
+}).join('') || '<span class="pill">'+petatoeSmartNewCustomersT('customers.noAvailableMonths','لا توجد شهور متاحة')+'</span>';
 
 
     return {

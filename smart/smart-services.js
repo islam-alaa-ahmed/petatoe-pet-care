@@ -9,6 +9,13 @@ function petatoeSmartServicesEscHTML(value){
   return String(value == null ? '' : value).replace(/[&<>\"'`]/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;','`':'&#96;'}[ch]||ch;});
 }
 
+function petatoeSmartServicesT(path,fallback,params){
+  try{
+    if(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.smart==='function') return window.PETATOE_LOCALIZATION_CENTER.smart('a35.'+path,fallback,params||{});
+  }catch(_e){}
+  return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,key){return params&&params[key]!=null?params[key]:_;});
+}
+
 function petatoeSmartServicesSetHTML(el, html, reason){
   if(!el) return false;
   html = String(html == null ? '' : html);
@@ -22,7 +29,7 @@ function petatoeSmartServicesSetHTML(el, html, reason){
 
 function smartServiceCleanName(v){
   v=String(v==null?'':v).trim();
-  return v || 'غير محدد';
+  return v || petatoeSmartServicesT('common.unspecified','غير محدد');
 }
 function smartServiceNumericValue(v){
   var n=(typeof parseNum==='function')?parseNum(v):Number(String(v||'').replace(/[^0-9.\-]/g,''));
@@ -130,7 +137,7 @@ window.PETATOESmartServicesAudit=function(){
 };
 
 function smartServicesSortLabel(){
-  return smartServicesSort==='valueAsc'?'المبيعات الأقل قيمة':smartServicesSort==='countDesc'?'الخدمات الأكثر استخدامًا':smartServicesSort==='countAsc'?'الخدمات الأقل استخدامًا':'المبيعات الأعلى قيمة';
+  return smartServicesSort==='valueAsc'?petatoeSmartServicesT('services.sortValueAsc','المبيعات الأقل قيمة'):smartServicesSort==='countDesc'?petatoeSmartServicesT('services.sortCountDesc','الخدمات الأكثر استخدامًا'):smartServicesSort==='countAsc'?petatoeSmartServicesT('services.sortCountAsc','الخدمات الأقل استخدامًا'):petatoeSmartServicesT('services.sortValueDesc','المبيعات الأعلى قيمة');
 }
 function smartServicesYearButtons(){
   var years=[];
@@ -144,10 +151,10 @@ function smartServicesYearButtons(){
   }
   if(!years.length) years=[String((new Date()).getFullYear())];
   var y=smartServicesYear==='all'?'all':String(+smartServicesYear||years[0]);
-  return `<div class="year-strip" style="margin-bottom:12px">${years.map(yy=>`<button type="button" class="year-chip ${String(y)===String(yy)?'active':''}" data-smart-action="service-year" data-year="${yy}">📅 ${yy}</button>`).join('')}<button type="button" class="year-chip ${y==='all'?'active':''}" data-smart-action="service-year" data-year="all">كل السنوات 🌐</button></div>`;
+  return `<div class="year-strip" style="margin-bottom:12px">${years.map(yy=>`<button type="button" class="year-chip ${String(y)===String(yy)?'active':''}" data-smart-action="service-year" data-year="${yy}">📅 ${yy}</button>`).join('')}<button type="button" class="year-chip ${y==='all'?'active':''}" data-smart-action="service-year" data-year="all">${petatoeSmartServicesT('common.allYears','كل السنوات')} 🌐</button></div>`;
 }
 function smartServicesSortButtons(){
-  const btns=[['valueDesc','المبيعات الأعلى قيمة'],['valueAsc','المبيعات الأقل قيمة'],['countDesc','الخدمات الأكثر استخدامًا'],['countAsc','الخدمات الأقل استخدامًا']];
+  const btns=[['valueDesc',petatoeSmartServicesT('services.sortValueDesc','المبيعات الأعلى قيمة')],['valueAsc',petatoeSmartServicesT('services.sortValueAsc','المبيعات الأقل قيمة')],['countDesc',petatoeSmartServicesT('services.sortCountDesc','الخدمات الأكثر استخدامًا')],['countAsc',petatoeSmartServicesT('services.sortCountAsc','الخدمات الأقل استخدامًا')]];
   return `<div class="report-control-group" style="margin-bottom:12px">${btns.map(([k,t])=>`<button type="button" class="metric-chip ${smartServicesSort===k?'active':''}" data-smart-action="service-sort" data-sort="${k}">${t}</button>`).join('')}</div>`;
 }
 function smartServicesAggregates(source){
@@ -177,14 +184,14 @@ function smartServicesAggregates(source){
 function smartServicesTableRows(source){
   const rows=smartServicesAggregates(source);
   const visibleRows=smartServicesShowAll?rows:rows.slice(0,10);
-  if(!visibleRows.length)return '<tr><td colspan="4" class="muted">لا توجد بيانات خدمات مطابقة للفترة المختارة.</td></tr>';
+  if(!visibleRows.length)return '<tr><td colspan="4" class="muted">'+petatoeSmartServicesT('services.noMatchingData','لا توجد بيانات خدمات مطابقة للفترة المختارة.')+'</td></tr>';
   return visibleRows.map((x,i)=>`<tr><td>${i+1}</td><td>${petatoeSmartServicesEscHTML(x.name)}</td><td>${money(x.value)}</td><td>${fmt0(x.count)}</td></tr>`).join('');
 }
 function smartServicesMoreButton(source){
   const total=smartServicesAggregates(source).length;
   if(total<=10)return '';
   const shown=smartServicesShowAll?total:10;
-  return `<div class="pager" style="justify-content:center;margin-top:14px"><button type="button" class="btn btn-ghost" data-smart-action="service-more">${smartServicesShowAll?'عرض أول 10 خدمات':'المزيد لعرض باقي الخدمات'}</button><span>عرض ${fmt0(shown)} من ${fmt0(total)} خدمة</span></div>`;
+  return `<div class="pager" style="justify-content:center;margin-top:14px"><button type="button" class="btn btn-ghost" data-smart-action="service-more">${smartServicesShowAll?petatoeSmartServicesT('services.showFirstTen','عرض أول 10 خدمات'):petatoeSmartServicesT('services.loadMore','المزيد لعرض باقي الخدمات')}</button><span>${petatoeSmartServicesT('common.showing','عرض {shown} من {total}',{shown:fmt0(shown),total:fmt0(total)})} ${petatoeSmartServicesT('services.serviceNoun','خدمة')}</span></div>`;
 }
 
 
@@ -198,13 +205,13 @@ function renderSmartServicesReport(){
   var sum=aggRows.map(function(x){return [x.name,x.value,x.count,x.avg];});
   var weak=aggRows.slice().sort(function(a,b){return (a.value||0)-(b.value||0);}).slice(0,10);
   petatoeSmartServicesSetHTML(holder, `<div class="smart-dash-grid smart-services-stack">
-      <div class="smart-panel"><h3>📦 تحليل الخدمات</h3><p>نصيب كل خدمة من الإيراد، مع تحديد الخدمات الأكثر تأثيرًا.</p>${smartServicesYearButtons()}<div class="smart-chart-md smart-service-cylinder-chart"><canvas id="smartServiceDonut"></canvas></div>${sum.length?'':'<div class="smart-empty-inline">لا توجد بيانات خدمات للفترة المختارة.</div>'}</div>
-      <div class="smart-panel"><h3>🧩 Top Services</h3>${smartServicesYearButtons()}${smartServicesSortButtons()}<div class="smart-table-clean"><table id="smartServicesTable"><thead><tr><th>#</th><th>الخدمة</th><th>المبيعات</th><th>العمليات</th></tr></thead><tbody>${smartServicesTableRows(scoped)}</tbody></table></div>${smartServicesMoreButton(scoped)}</div>
-      <div class="smart-panel"><h3>📉 خدمات تحتاج متابعة</h3><p>أقل الخدمات من حيث الإيراد لمراجعة التسعير أو العروض.</p>${smartServicesYearButtons()}<div class="smart-table-clean"><table><thead><tr><th>الخدمة</th><th>الإيراد</th><th>عدد العمليات</th><th>متوسط العملية</th></tr></thead><tbody>${weak.length?weak.map(function(x){var name=x.name,val=x.value,c=x.count;return `<tr><td>${petatoeSmartServicesEscHTML(name)}</td><td>${money(val)}</td><td>${fmt0(c)}</td><td>${money(x.avg||safeDiv(val,c))}</td></tr>`;}).join(''):'<tr><td colspan="4" class="muted">لا توجد بيانات خدمات مطابقة.</td></tr>'}</tbody></table></div></div>
+      <div class="smart-panel"><h3>${petatoeSmartServicesT('services.analysisTitle','📦 تحليل الخدمات')}</h3><p>${petatoeSmartServicesT('services.analysisDescription','نصيب كل خدمة من الإيراد، مع تحديد الخدمات الأكثر تأثيرًا.')}</p>${smartServicesYearButtons()}<div class="smart-chart-md smart-service-cylinder-chart"><canvas id="smartServiceDonut"></canvas></div>${sum.length?'':'<div class="smart-empty-inline">'+petatoeSmartServicesT('services.noPeriodData','لا توجد بيانات خدمات للفترة المختارة.')+'</div>'}</div>
+      <div class="smart-panel"><h3>${petatoeSmartServicesT('services.topTitle','🧩 أعلى الخدمات')}</h3>${smartServicesYearButtons()}${smartServicesSortButtons()}<div class="smart-table-clean"><table id="smartServicesTable"><thead><tr><th>#</th><th>${petatoeSmartServicesT('common.service','الخدمة')}</th><th>${petatoeSmartServicesT('common.sales','المبيعات')}</th><th>${petatoeSmartServicesT('common.operations','العمليات')}</th></tr></thead><tbody>${smartServicesTableRows(scoped)}</tbody></table></div>${smartServicesMoreButton(scoped)}</div>
+      <div class="smart-panel"><h3>${petatoeSmartServicesT('services.followUpTitle','📉 خدمات تحتاج متابعة')}</h3><p>${petatoeSmartServicesT('services.followUpDescription','أقل الخدمات من حيث الإيراد لمراجعة التسعير أو العروض.')}</p>${smartServicesYearButtons()}<div class="smart-table-clean"><table><thead><tr><th>${petatoeSmartServicesT('common.service','الخدمة')}</th><th>${petatoeSmartServicesT('common.revenue','الإيراد')}</th><th>${petatoeSmartServicesT('common.operations','العمليات')}</th><th>${petatoeSmartServicesT('common.averageOperation','متوسط العملية')}</th></tr></thead><tbody>${weak.length?weak.map(function(x){var name=x.name,val=x.value,c=x.count;return `<tr><td>${petatoeSmartServicesEscHTML(name)}</td><td>${money(val)}</td><td>${fmt0(c)}</td><td>${money(x.avg||safeDiv(val,c))}</td></tr>`;}).join(''):'<tr><td colspan="4" class="muted">'+petatoeSmartServicesT('services.noMatchingData','لا توجد بيانات خدمات مطابقة للفترة المختارة.')+'</td></tr>'}</tbody></table></div></div>
     </div>`, 'smart services report');
   var palette=[css('--purple'),css('--blue'),css('--cyan'),css('--green'),css('--yellow'),css('--orange'),css('--pink')];
   try{
-    chart('smartServiceDonut',{type:'bar',data:{labels:sum.slice(0,8).map(function(x){return String(x[0]).replace(/\s*-\s*/g,'\n');}),datasets:[{label:'الإيراد (SAR)',data:sum.slice(0,8).map(function(x){return x[1];}),backgroundColor:palette,borderColor:palette,borderWidth:0,borderRadius:18,barPercentage:.62,categoryPercentage:.78,cylinder:true}]},options:{...baseOpts(),layout:{padding:{top:44,right:18,left:18,bottom:8}},plugins:{...baseOpts().plugins,legend:{labels:{color:css('--text'),font:{family:'Cairo',weight:'900'}}},petatoeLabels:{enabled:true,fullMoney:true,color:css('--text'),font:'900 12px Cairo',offset:16,strokeWidth:4}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'900'},maxRotation:0,minRotation:0},grid:{display:false}},y:{title:{display:true,text:'الإيراد (SAR)',color:css('--muted'),font:{family:'Cairo',weight:'900'}},ticks:{color:css('--muted'),callback:function(v){return Number(v)>=1000?(Number(v)/1000)+'K':v;}},grid:{color:'rgba(148,163,184,.13)'}}}}});
+    chart('smartServiceDonut',{type:'bar',data:{labels:sum.slice(0,8).map(function(x){return String(x[0]).replace(/\s*-\s*/g,'\n');}),datasets:[{label:petatoeSmartServicesT('services.revenueSar','الإيراد (SAR)'),data:sum.slice(0,8).map(function(x){return x[1];}),backgroundColor:palette,borderColor:palette,borderWidth:0,borderRadius:18,barPercentage:.62,categoryPercentage:.78,cylinder:true}]},options:{...baseOpts(),layout:{padding:{top:44,right:18,left:18,bottom:8}},plugins:{...baseOpts().plugins,legend:{labels:{color:css('--text'),font:{family:'Cairo',weight:'900'}}},petatoeLabels:{enabled:true,fullMoney:true,color:css('--text'),font:'900 12px Cairo',offset:16,strokeWidth:4}},scales:{x:{ticks:{color:css('--text'),font:{family:'Cairo',weight:'900'},maxRotation:0,minRotation:0},grid:{display:false}},y:{title:{display:true,text:petatoeSmartServicesT('services.revenueSar','الإيراد (SAR)'),color:css('--muted'),font:{family:'Cairo',weight:'900'}},ticks:{color:css('--muted'),callback:function(v){return Number(v)>=1000?(Number(v)/1000)+'K':v;}},grid:{color:'rgba(148,163,184,.13)'}}}}});
   }catch(e){ if(window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch) window.PETATOEUtils.warnSilentCatch('renderSmartServicesReport',e); }
   window.__petatoeSmartServicesRendered=true;
   return true;

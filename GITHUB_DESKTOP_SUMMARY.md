@@ -1,11 +1,10 @@
 # GitHub Desktop Summary
 
 ## Summary
-Localize remaining Payroll workflow messages and report/view-model labels without changing payroll business logic.
+Localize Smart Reports service analysis and new-customer fast renderers at source level to prevent Arabic UI text from being recreated after filters or chart refreshes.
 
 ## Description
-- Added bilingual Payroll Phase A3.4 catalog.
-- Replaced direct Arabic workflow/toast/confirmation messages with `payrollT` keys.
-- Localized Payroll view-model status, payment, fallback, and KPI labels.
-- Loaded the new catalog before `payroll-core.js`.
-- Kept stored statuses, approval transitions, calculations, and Supabase persistence unchanged.
+- Added a bilingual Smart Reports A3.5 source catalog.
+- Replaced direct visible labels in service and customer renderers with source keys.
+- Localized Chart.js dataset and axis labels before chart creation.
+- Preserved stored values and all report calculations.

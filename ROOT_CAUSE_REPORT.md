@@ -1,17 +1,17 @@
-# Root Cause Report — Phase A3.4 Payroll Localization
+# Root Cause Report — Phase A3.5.1
 
-## Root Cause
-The Payroll module already used the central `payrollRuntime` dictionary for most UI content, but several workflow actions still emitted direct Arabic strings. The read-only payroll view-model facade also returned Arabic status, payment, fallback, and KPI labels directly.
+## Confirmed Root Cause
+Several Smart Reports fast/local renderers generated Arabic UI text directly inside JavaScript templates and Chart.js dataset/axis labels. The generic Smart Reports runtime translated those nodes only after rendering, so changing filters or rebuilding a local report could briefly recreate Arabic text before the runtime pass.
 
-## Responsible Areas
-- `payroll/payroll-core.js`: direct workflow/toast/confirmation messages in job management, slip deletion, employee approval, and employee objection actions.
-- `payroll/payroll-view-model-facade.js`: direct Arabic display labels used by dashboard/report view models.
+## Responsible Files
+- `smart/smart-services.js`
+- `smart/smart-customers.js`
+- `smart/smart-reports-new-customers-real.js`
 
 ## Impact
-When English was active, these paths could expose Arabic text or depend on runtime phrase replacement after rendering, causing mixed-language UI and preventing source-level localization lock.
+- Possible mixed-language frames after local filter changes.
+- Repeated DOM translation work for content that could be resolved before render.
+- Chart labels depended on post-render localization.
 
 ## Fix
-- Routed remaining user-facing Payroll workflow messages through `payrollT(...)`.
-- Added bilingual keys in a dedicated Phase A3.4 payroll catalog.
-- Added localization lookup to the read-only view-model facade.
-- Preserved all internal status codes and stored job/employee/payroll values.
+A bilingual source catalog was added and the affected renderers now resolve visible labels before creating HTML or chart configuration. Stored customer, service, invoice, and workflow values were not changed.

@@ -1,6 +1,10 @@
-# Files Modified — Phase A3.4
+# Files Modified
 
+## Modified
 - `index.html`
-- `payroll/payroll-core.js`
-- `payroll/payroll-view-model-facade.js`
-- `i18n/localization-center/payroll-ui-a3-4.js` (new)
+- `smart/smart-services.js`
+- `smart/smart-customers.js`
+- `smart/smart-reports-new-customers-real.js`
+
+## Added
+- `i18n/localization-center/smart-reports-a3-5.js`

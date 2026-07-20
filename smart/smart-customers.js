@@ -19,6 +19,13 @@
     }catch(_diag){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-customers.js', _diag, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
   }
 
+  function petatoeSmartCustomersT(path,fallback,params){
+    try{
+      if(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.smart==='function') return window.PETATOE_LOCALIZATION_CENTER.smart('a35.'+path,fallback,params||{});
+    }catch(_e){}
+    return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,key){return params&&params[key]!=null?params[key]:_;});
+  }
+
   function petatoeSmartCustomersEscHTML(value){
     if(window.PETATOESafeRender && typeof window.PETATOESafeRender.escapeHTML === 'function') return window.PETATOESafeRender.escapeHTML(value);
     if(typeof window.htmlSafe === 'function') return window.htmlSafe(value);
@@ -113,11 +120,11 @@
     var topNewValue = firstDated.slice().sort(function(a,b){return (b.total||0)-(a.total||0);}).slice(0,10);
 
     var inactiveBuckets = [
-      {label:'0-30 يوم', min:0, max:30, count:0},
-      {label:'31-60 يوم', min:31, max:60, count:0},
-      {label:'61-90 يوم', min:61, max:90, count:0},
-      {label:'91-180 يوم', min:91, max:180, count:0},
-      {label:'+180 يوم', min:181, max:99999, count:0}
+      {label:petatoeSmartCustomersT('customers.aging0_30','0-30 يوم'), min:0, max:30, count:0},
+      {label:petatoeSmartCustomersT('customers.aging31_60','31-60 يوم'), min:31, max:60, count:0},
+      {label:petatoeSmartCustomersT('customers.aging61_90','61-90 يوم'), min:61, max:90, count:0},
+      {label:petatoeSmartCustomersT('customers.aging91_180','91-180 يوم'), min:91, max:180, count:0},
+      {label:petatoeSmartCustomersT('customers.aging180Plus','+180 يوم'), min:181, max:99999, count:0}
     ];
     customers.forEach(function(c){
       var days = c.last ? Math.max(0, Math.floor((now - c.last) / 86400000)) : 99999;
@@ -134,11 +141,11 @@
       var parts = k.split('-'); return {label:htmlMonthLabel(parts[0], Number(parts[1])), count:inactiveByMonth[k]};
     });
 
-    drawChart('newCustomersWeeklyChart',{type:'bar',data:{labels:weekRows.map(function(x){return x.label;}),datasets:[{label:'عملاء جدد',data:weekRows.map(function(x){return x.count;}),backgroundColor:cssVar('--purple','#8b5cf6'),borderRadius:10}]},options:Object.assign(baseOptions(),{layout:{padding:{top:24}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
-    drawChart('newCustomersTopValueChart',{type:'bar',data:{labels:topNewValue.map(function(x){return x.name;}),datasets:[{label:'المبيعات',data:topNewValue.map(function(x){return x.total;}),backgroundColor:cssVar('--blue','#3b82f6'),borderRadius:10}]},options:Object.assign(baseOptions(),{indexAxis:'y',layout:{padding:{left:12,right:12}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,fullMoney:true,font:'900 10px Cairo'}})})});
-    drawChart('newCustomersTrendChart',{type:'line',data:{labels:trendRows.map(function(x){return x.label;}),datasets:[{label:'عملاء جدد',data:trendRows.map(function(x){return x.count;}),borderColor:cssVar('--green','#22c55e'),backgroundColor:'rgba(34,197,94,.16)',tension:.35,pointRadius:4,fill:true}]},options:Object.assign(baseOptions(),{layout:{padding:{top:24}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
-    drawChart('inactiveAgingChart',{type:'bar',data:{labels:inactiveBuckets.map(function(x){return x.label;}),datasets:[{label:'عدد العملاء',data:inactiveBuckets.map(function(x){return x.count;}),backgroundColor:cssVar('--orange','#f97316'),borderRadius:10}]},options:Object.assign(baseOptions(),{layout:{padding:{top:26}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
-    drawChart('inactiveLostTrendChart',{type:'line',data:{labels:inactiveTrend.map(function(x){return x.label;}),datasets:[{label:'عملاء أصبحوا غير نشطين',data:inactiveTrend.map(function(x){return x.count;}),borderColor:cssVar('--red','#ef4444'),backgroundColor:'rgba(239,68,68,.16)',tension:.35,pointRadius:4,fill:true,clip:false}]},options:Object.assign(baseOptions(),{layout:{padding:{top:28,right:54,left:54,bottom:34}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo',offset:12}})})});
+    drawChart('newCustomersWeeklyChart',{type:'bar',data:{labels:weekRows.map(function(x){return x.label;}),datasets:[{label:petatoeSmartCustomersT('customers.newCustomers','العملاء الجدد'),data:weekRows.map(function(x){return x.count;}),backgroundColor:cssVar('--purple','#8b5cf6'),borderRadius:10}]},options:Object.assign(baseOptions(),{layout:{padding:{top:24}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
+    drawChart('newCustomersTopValueChart',{type:'bar',data:{labels:topNewValue.map(function(x){return x.name;}),datasets:[{label:petatoeSmartCustomersT('common.sales','المبيعات'),data:topNewValue.map(function(x){return x.total;}),backgroundColor:cssVar('--blue','#3b82f6'),borderRadius:10}]},options:Object.assign(baseOptions(),{indexAxis:'y',layout:{padding:{left:12,right:12}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,fullMoney:true,font:'900 10px Cairo'}})})});
+    drawChart('newCustomersTrendChart',{type:'line',data:{labels:trendRows.map(function(x){return x.label;}),datasets:[{label:petatoeSmartCustomersT('customers.newCustomers','العملاء الجدد'),data:trendRows.map(function(x){return x.count;}),borderColor:cssVar('--green','#22c55e'),backgroundColor:'rgba(34,197,94,.16)',tension:.35,pointRadius:4,fill:true}]},options:Object.assign(baseOptions(),{layout:{padding:{top:24}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
+    drawChart('inactiveAgingChart',{type:'bar',data:{labels:inactiveBuckets.map(function(x){return x.label;}),datasets:[{label:petatoeSmartCustomersT('customers.customerCount','عدد العملاء'),data:inactiveBuckets.map(function(x){return x.count;}),backgroundColor:cssVar('--orange','#f97316'),borderRadius:10}]},options:Object.assign(baseOptions(),{layout:{padding:{top:26}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
+    drawChart('inactiveLostTrendChart',{type:'line',data:{labels:inactiveTrend.map(function(x){return x.label;}),datasets:[{label:petatoeSmartCustomersT('customers.becameInactive','عملاء أصبحوا غير نشطين'),data:inactiveTrend.map(function(x){return x.count;}),borderColor:cssVar('--red','#ef4444'),backgroundColor:'rgba(239,68,68,.16)',tension:.35,pointRadius:4,fill:true,clip:false}]},options:Object.assign(baseOptions(),{layout:{padding:{top:28,right:54,left:54,bottom:34}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo',offset:12}})})});
 
     // PETATOE v6.4.165 - New Customers initial month execution-order fix.
     // The customers fast renderer used to redraw the New Customers charts from all customer
@@ -243,15 +250,15 @@
     var kpis = pane.querySelector('.new-cust-kpis');
     if(kpis){
       petatoeSmartSetHtmlIfChanged(kpis, [
-        '<div class="new-cust-kpi"><span>العملاء الجدد</span><b>'+fmt0(state.newCustomersCount||0)+'</b><small>'+petatoeSmartCustomersEscHTML(state.newCustPeriodLabel||'-')+'</small></div>',
-        '<div class="new-cust-kpi"><span>مبيعات العملاء الجدد</span><b>'+money(state.newCustomersTotal||0)+'</b><small>من نفس الشهر</small></div>',
-        '<div class="new-cust-kpi"><span>متوسط العميل الجديد</span><b>'+money(state.newCustomersAvg||0)+'</b><small>إجمالي / عدد العملاء</small></div>',
-        '<div class="new-cust-kpi"><span>معدل التحويل</span><b>'+Number(state.newCustomersConversion||0).toLocaleString('en-US',{maximumFractionDigits:1})+'%</b><small>عادوا أو نفذوا أكثر من عملية</small></div>',
-        '<div class="new-cust-kpi"><span>أعلى عميل جديد</span><b>'+petatoeSmartCustomersEscHTML((state.topNewCustomer&&state.topNewCustomer.name)||'-')+'</b><small>'+money((state.topNewCustomer&&state.topNewCustomer.totalValue)||0)+'</small></div>'
+        '<div class="new-cust-kpi"><span>'+petatoeSmartCustomersT('customers.newCustomers','العملاء الجدد')+'</span><b>'+fmt0(state.newCustomersCount||0)+'</b><small>'+petatoeSmartCustomersEscHTML(state.newCustPeriodLabel||'-')+'</small></div>',
+        '<div class="new-cust-kpi"><span>'+petatoeSmartCustomersT('customers.newCustomerSales','مبيعات العملاء الجدد')+'</span><b>'+money(state.newCustomersTotal||0)+'</b><small>'+petatoeSmartCustomersT('customers.sameMonth','من نفس الشهر')+'</small></div>',
+        '<div class="new-cust-kpi"><span>'+petatoeSmartCustomersT('customers.averageNewCustomer','متوسط العميل الجديد')+'</span><b>'+money(state.newCustomersAvg||0)+'</b><small>'+petatoeSmartCustomersT('customers.totalPerCustomers','إجمالي / عدد العملاء')+'</small></div>',
+        '<div class="new-cust-kpi"><span>'+petatoeSmartCustomersT('customers.conversionRate','معدل التحويل')+'</span><b>'+Number(state.newCustomersConversion||0).toLocaleString('en-US',{maximumFractionDigits:1})+'%</b><small>'+petatoeSmartCustomersT('customers.returnedOrRepeated','عادوا أو نفذوا أكثر من عملية')+'</small></div>',
+        '<div class="new-cust-kpi"><span>'+petatoeSmartCustomersT('customers.topNewCustomer','أعلى عميل جديد')+'</span><b>'+petatoeSmartCustomersEscHTML((state.topNewCustomer&&state.topNewCustomer.name)||'-')+'</b><small>'+money((state.topNewCustomer&&state.topNewCustomer.totalValue)||0)+'</small></div>'
       ].join(''));
     }
     var tableBody = pane.querySelector('.new-cust-table tbody');
-    if(tableBody) petatoeSmartSetHtmlIfChanged(tableBody, state.newCustomerTableRows || '<tr><td colspan="12">لا توجد بيانات.</td></tr>');
+    if(tableBody) petatoeSmartSetHtmlIfChanged(tableBody, state.newCustomerTableRows || '<tr><td colspan="12">'+petatoeSmartCustomersT('common.noData','لا توجد بيانات.')+'</td></tr>');
     var oldFooter = pane.querySelector('.new-cust-table-footer');
     if(oldFooter){
       petatoeSmartReplaceWithHtmlIfChanged(oldFooter, state.newCustomerMoreButton || '');
@@ -259,12 +266,12 @@
     var panels = pane.querySelectorAll('.smart-panel');
     if(panels && panels.length >= 5){
       var inactiveBody = panels[4].querySelector('tbody');
-      if(inactiveBody) petatoeSmartSetHtmlIfChanged(inactiveBody, state.newCustomerInactiveRows || '<tr><td colspan="7">لا توجد بيانات.</td></tr>');
+      if(inactiveBody) petatoeSmartSetHtmlIfChanged(inactiveBody, state.newCustomerInactiveRows || '<tr><td colspan="7">'+petatoeSmartCustomersT('common.noData','لا توجد بيانات.')+'</td></tr>');
     }
     try{
-      drawChart('newCustomersWeeklyChart',{type:'bar',data:{labels:(state.newCustWeekRows||[]).map(function(x){return x.label;}),datasets:[{label:'عملاء جدد',data:(state.newCustWeekRows||[]).map(function(x){return x.count;}),backgroundColor:cssVar('--purple','#8b5cf6'),borderRadius:10}]},options:Object.assign(baseOptions(),{layout:{padding:{top:24}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
-      drawChart('newCustomersTopValueChart',{type:'bar',data:{labels:(state.newCustomerRows||[]).slice(0,10).map(function(x){return x.name;}),datasets:[{label:'المبيعات',data:(state.newCustomerRows||[]).slice(0,10).map(function(x){return x.totalValue;}),backgroundColor:cssVar('--blue','#3b82f6'),borderRadius:10}]},options:Object.assign(baseOptions(),{indexAxis:'y',layout:{padding:{left:12,right:12}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,fullMoney:true,font:'900 10px Cairo'}})})});
-      drawChart('newCustomersTrendChart',{type:'line',data:{labels:(state.newCustTrendRows||[]).map(function(x){return x.label;}),datasets:[{label:'عملاء جدد',data:(state.newCustTrendRows||[]).map(function(x){return x.count;}),borderColor:cssVar('--green','#22c55e'),backgroundColor:'rgba(34,197,94,.16)',tension:.35,pointRadius:4,fill:true}]},options:Object.assign(baseOptions(),{layout:{padding:{top:24}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
+      drawChart('newCustomersWeeklyChart',{type:'bar',data:{labels:(state.newCustWeekRows||[]).map(function(x){return x.label;}),datasets:[{label:petatoeSmartCustomersT('customers.newCustomers','العملاء الجدد'),data:(state.newCustWeekRows||[]).map(function(x){return x.count;}),backgroundColor:cssVar('--purple','#8b5cf6'),borderRadius:10}]},options:Object.assign(baseOptions(),{layout:{padding:{top:24}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
+      drawChart('newCustomersTopValueChart',{type:'bar',data:{labels:(state.newCustomerRows||[]).slice(0,10).map(function(x){return x.name;}),datasets:[{label:petatoeSmartCustomersT('common.sales','المبيعات'),data:(state.newCustomerRows||[]).slice(0,10).map(function(x){return x.totalValue;}),backgroundColor:cssVar('--blue','#3b82f6'),borderRadius:10}]},options:Object.assign(baseOptions(),{indexAxis:'y',layout:{padding:{left:12,right:12}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,fullMoney:true,font:'900 10px Cairo'}})})});
+      drawChart('newCustomersTrendChart',{type:'line',data:{labels:(state.newCustTrendRows||[]).map(function(x){return x.label;}),datasets:[{label:petatoeSmartCustomersT('customers.newCustomers','العملاء الجدد'),data:(state.newCustTrendRows||[]).map(function(x){return x.count;}),borderColor:cssVar('--green','#22c55e'),backgroundColor:'rgba(34,197,94,.16)',tension:.35,pointRadius:4,fill:true}]},options:Object.assign(baseOptions(),{layout:{padding:{top:24}},plugins:Object.assign((baseOptions().plugins||{}),{petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}})})});
     }catch(e){ console.error('PETATOE customers local charts failed', e); }
     perfPush('SmartReports.customers.newCustomers.localFilters', start, {rows:rows.length, customers:(state.newCustomerRows||[]).length});
     return true;
