@@ -21,7 +21,19 @@ const forbidden=[
 ];
 const hits=forbidden.filter(x=>core.includes(x));
 if(hits.length){console.error('Smart Reports localization source regression detected:');hits.forEach(x=>console.error(' - '+x));process.exit(1);}
-const source=fs.readFileSync(path.join(root,'i18n/smart-reports-source.js'),'utf8');
+const vm=require('vm');
+const dictionaryPath=path.join(root,'i18n/localization-center/dictionary-store.js');
+const sandbox={window:{dispatchEvent(){}},CustomEvent:function(){},console};
+vm.createContext(sandbox);
+vm.runInContext(fs.readFileSync(dictionaryPath,'utf8'),sandbox,{filename:'dictionary-store.js'});
+const store=sandbox.window.PETATOE_LOCALIZATION_CENTER_STORE;
+if(!store||!store.dictionaries){console.error('Canonical localization store could not be loaded.');process.exit(1);}
+function flatten(obj,prefix='',out={}){for(const [k,v] of Object.entries(obj||{})){const key=prefix?prefix+'.'+k:k;if(v&&typeof v==='object'&&!Array.isArray(v))flatten(v,key,out);else out[key]=String(v??'');}return out;}
+const ar=flatten(store.dictionaries.ar||{}),en=flatten(store.dictionaries.en||{});
+const smartSource=fs.readFileSync(path.join(root,'i18n/smart-reports-source.js'),'utf8');
+if(!smartSource.includes('PETATOE_LOCALIZATION_CENTER_STORE')&&!smartSource.includes('PETATOE_LOCALIZATION_CENTER')){
+  console.error('Smart Reports adapter does not delegate to the canonical localization center.');process.exit(1);
+}
 const required=[
  'classification.reasonTitle','classification.reason.vipVisits','classification.reason.riskFollowup','classification.reason.activeVisitsSpend',
  'status.stable','status.lost','status.newCustomer','status.growth','status.decline',
@@ -30,12 +42,9 @@ const required=[
  'customers.inactiveSortDescription','customers.recoveryOpportunitiesDescription','customers.absenceDistributionDescription',
  'services.lazyDescription','services.readyForFastLoad'
 ];
-const missing=required.filter(k=>!source.includes(`'${k}'`));
-if(missing.length){console.error('Missing unified localization keys:',missing.join(', '));process.exit(1);}
-for(const key of required){
-  const count=(source.match(new RegExp(`'${key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}'`,'g'))||[]).length;
-  if(count<2){console.error(`Localization key is not present in both AR and EN dictionaries: ${key}`);process.exit(1);}
-}
+function resolveSmartKey(key){const candidates=[key,'smartReportsSource.'+key,'smartReports.'+key,'smart.'+key];return candidates.find(candidate=>candidate in ar&&candidate in en);}
+const missing=required.filter(key=>!resolveSmartKey(key));
+if(missing.length){console.error('Missing canonical Smart Reports localization keys:',missing.join(', '));process.exit(1);}
 // PETATOE v9.1.3 - Pack 3 source migration guards.
 [
   "{label:'العميل'",
@@ -54,7 +63,7 @@ for(const key of required){
   'customerCompare.change','customerCompare.salesDifference','customerCompare.noClearRankChange',
   'customerCompare.totalForYear','advanced.centerTitle','advanced.centerDescription'
 ].forEach((key)=>{
-  if(!source.includes(`'${key}'`)) fail(`Missing Pack 3 key in Smart Reports locale source: ${key}`);
+  if(!resolveSmartKey(key)) fail(`Missing Pack 3 key in canonical localization store: ${key}`);
 });
 
 
@@ -72,8 +81,7 @@ if((core.match(/fmtDateAr\(/g)||[]).length>1) fail('Direct Arabic date formattin
   'format.listSeparator','period.throughDate','period.yearEnd',
   'customers.noRecoveryOpportunities','customers.noInactiveCustomersByRule'
 ].forEach((key)=>{
-  const count=(source.match(new RegExp(`'${key.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}'`,'g'))||[]).length;
-  if(count<2) fail(`Pack 4 key is not present in both AR and EN dictionaries: ${key}`);
+  if(!resolveSmartKey(key)) fail(`Pack 4 key is not present in both AR and EN canonical dictionaries: ${key}`);
 });
 
 if(process.exitCode) process.exit(process.exitCode);

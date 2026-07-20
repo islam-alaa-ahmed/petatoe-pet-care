@@ -1,0 +1,157 @@
+{
+  "status": "PASSED",
+  "generatedAt": "2026-07-20T20:08:35.642Z",
+  "manifest": "scripts/localization-validation-manifest.json",
+  "release": {
+    "displayVersion": "PETATOE v9.4.23",
+    "releaseVersion": "v9.4.23",
+    "releaseName": "PETATOE_V9_4_23_OPERATIONS_LOCALIZATION_COMPLETION",
+    "runtimeVersion": "9.4.23-operations-localization-completion"
+  },
+  "canonicalDictionary": "i18n/localization-center/dictionary-store.js",
+  "summary": {
+    "productionGates": 16,
+    "diagnostics": 1,
+    "historicalExcluded": 26,
+    "blockingFailures": 0
+  },
+  "failures": [],
+  "results": [
+    {
+      "name": "enterprise-localization-certification-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 155,
+      "stdout": "Enterprise Localization Certification: PASSED\n{\n  \"files\": 289,\n  \"js\": 287,\n  \"html\": 2,\n  \"legacyCalls\": 0,\n  \"staticUiCandidates\": 501,\n  \"missingStoredTexts\": 0,\n  \"missingCounterparts\": 0,\n  \"arabicEntries\": 3427,\n  \"englishEntries\": 3427\n}",
+      "stderr": ""
+    },
+    {
+      "name": "localization-production-lockdown-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 135,
+      "stdout": "Production Localization Lockdown: PASSED\n{\n  \"filesScanned\": 289,\n  \"legacyReferences\": 0,\n  \"adapterDictionaries\": 0,\n  \"publicAliasReferences\": 0,\n  \"missingCounterparts\": 0,\n  \"arabicEntries\": 3427,\n  \"englishEntries\": 3427\n}",
+      "stderr": ""
+    },
+    {
+      "name": "runtime-translation-completion-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 122,
+      "stdout": "Runtime Translation Completion: PASSED\n{\n  \"status\": \"PASSED\",\n  \"usedRuntimePhrases\": 229,\n  \"storedRuntimePhrases\": 231,\n  \"missingRuntimePhrases\": 0,\n  \"missing\": []\n}",
+      "stderr": ""
+    },
+    {
+      "name": "smart-reports-localization-source-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 82,
+      "stdout": "Smart Reports source localization check passed.",
+      "stderr": ""
+    },
+    {
+      "name": "smart-reports-key-resolution-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 69,
+      "stdout": "Smart Reports Key Resolution: PASSED\n{\n  \"requiredKeys\": 22,\n  \"languages\": 2,\n  \"smartReportsEntriesPerLanguage\": 642,\n  \"visibleKeyFallbacks\": 0\n}",
+      "stderr": ""
+    },
+    {
+      "name": "smart-reports-public-api-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 56,
+      "stdout": "Smart Reports Public API: PASSED\n{\n  \"status\": \"PASSED\",\n  \"checks\": 6,\n  \"failures\": []\n}",
+      "stderr": ""
+    },
+    {
+      "name": "smart-reports-render-performance-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 60,
+      "stdout": "Smart Reports Fast Runtime: PASSED\n{\n  \"status\": \"PASSED\",\n  \"checks\": 9,\n  \"failures\": []\n}",
+      "stderr": ""
+    },
+    {
+      "name": "smart-reports-translation-stability-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 57,
+      "stdout": "Smart Reports Translation Stability: PASSED — 11/11",
+      "stderr": ""
+    },
+    {
+      "name": "smart-reports-data-readiness-recovery-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 56,
+      "stdout": "Smart Reports Fast Readiness Path: PASSED\nPASS - retry guard not loaded\nPASS - first render uses canonical renderer\nPASS - subsequent renders use local router\nPASS - ready DOM check retained\nPASS - no 30-second blocking readiness window\nPASS - no requestAnimationFrame render queue",
+      "stderr": ""
+    },
+    {
+      "name": "payroll-localization-source-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 56,
+      "stdout": "Payroll localization source check passed.",
+      "stderr": ""
+    },
+    {
+      "name": "payroll-ui-localization-source-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 61,
+      "stdout": "Payroll UI localization source check passed (44 keys).",
+      "stderr": ""
+    },
+    {
+      "name": "payroll-ui-localization-pack7-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 57,
+      "stdout": "Payroll UI Localization Pack 7 check passed.",
+      "stderr": ""
+    },
+    {
+      "name": "payroll-ui-localization-pack8-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 55,
+      "stdout": "Payroll UI Localization Pack 8 check passed.",
+      "stderr": ""
+    },
+    {
+      "name": "payroll-ui-localization-pack9-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 58,
+      "stdout": "Payroll UI Localization Pack 9 Check: Passed\nRequired bilingual keys checked: 18",
+      "stderr": ""
+    },
+    {
+      "name": "settings-localization-phase61-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 55,
+      "stdout": "{\n  \"phase\": \"6.1\",\n  \"module\": \"settingsPhase61\",\n  \"arabicKeys\": 149,\n  \"englishKeys\": 149,\n  \"missingArabic\": 0,\n  \"missingEnglish\": 0,\n  \"failures\": []\n}",
+      "stderr": ""
+    },
+    {
+      "name": "startup-permission-guard-check.js",
+      "blocking": true,
+      "status": "PASSED",
+      "durationMs": 57,
+      "stdout": "Startup Permission Guard: PASSED\n{\n  \"authenticatedGuard\": true,\n  \"identityReadyGuard\": true,\n  \"aggressiveRetries\": 0,\n  \"silentNativeAlerts\": 0\n}",
+      "stderr": ""
+    },
+    {
+      "name": "localization-source-surface-audit.js",
+      "blocking": false,
+      "status": "PASSED",
+      "durationMs": 133,
+      "stdout": "Localization source surface audit: OPEN\n{\n  \"filesScanned\": 214,\n  \"totalArabicLines\": 3057,\n  \"counts\": {\n    \"unbound-html-candidate\": 534,\n    \"source-literal\": 1852,\n    \"runtime-ui-candidate\": 628,\n    \"explicitly-bound-html\": 43\n  }\n}",
+      "stderr": ""
+    }
+  ]
+}

@@ -1,9 +1,23 @@
-PETATOE v9.4.23 — Operations Localization Completion
+PETATOE v9.4.23 — Phase A1 Certification Truth Layer
 
-- Fixed dynamic Arabic leakage across Appointments Management, Vehicle Operations, Daily Operations, Alerts, Route Planning, Customers & Pets, and Appointment Reports.
-- Added synchronous, subtree-scoped localization immediately after trusted operations HTML rendering.
-- Preserved canonical Arabic data attributes and workflow status values by translating visible text and approved UI attributes only.
-- Added reversible Arabic source retention so language switching can restore the original Arabic UI without rebuilding reports.
-- Added an operations-only language-change refresh scoped to #appointments; no document-wide observer or report recalculation was introduced.
-- Updated release metadata, runtime versions, cache tokens, and localization validators to v9.4.23.
-- Passed Enterprise Localization Certification, Production Localization Lockdown, Runtime Translation Completion, Smart Reports performance/readiness/public API/stability, and JavaScript syntax validation (285/285).
+Files changed/new: 4
+
+Modified:
+- scripts/smart-reports-localization-source-check.js
+
+Added:
+- scripts/localization-validation-manifest.json
+- scripts/run-localization-validation-suite.js
+- scripts/localization-source-surface-audit.js
+
+Summary:
+- Defined one authoritative production localization validation manifest.
+- Separated active production gates, diagnostics, and historical phase validators.
+- Updated Smart Reports source validation to inspect the canonical dictionary store.
+- Added a hard-coded localization source-surface diagnostic.
+- No production runtime or business logic files changed.
+
+Verification:
+- 287/287 JavaScript syntax checks passed.
+- 16/16 production localization gates passed.
+- 0 blocking failures.

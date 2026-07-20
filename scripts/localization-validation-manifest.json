@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "release": {
+    "displayVersion": "PETATOE v9.4.23",
+    "releaseVersion": "v9.4.23",
+    "releaseName": "PETATOE_V9_4_23_OPERATIONS_LOCALIZATION_COMPLETION",
+    "runtimeVersion": "9.4.23-operations-localization-completion"
+  },
+  "canonicalDictionary": "i18n/localization-center/dictionary-store.js",
+  "groups": {
+    "productionGates": [
+      "enterprise-localization-certification-check.js",
+      "localization-production-lockdown-check.js",
+      "runtime-translation-completion-check.js",
+      "smart-reports-localization-source-check.js",
+      "smart-reports-key-resolution-check.js",
+      "smart-reports-public-api-check.js",
+      "smart-reports-render-performance-check.js",
+      "smart-reports-translation-stability-check.js",
+      "smart-reports-data-readiness-recovery-check.js",
+      "payroll-localization-source-check.js",
+      "payroll-ui-localization-source-check.js",
+      "payroll-ui-localization-pack7-check.js",
+      "payroll-ui-localization-pack8-check.js",
+      "payroll-ui-localization-pack9-check.js",
+      "settings-localization-phase61-check.js",
+      "startup-permission-guard-check.js"
+    ],
+    "diagnostics": [
+      "localization-source-surface-audit.js"
+    ],
+    "historical": [
+      "bulk-localization-refactor-check.js",
+      "business-localization-pack1-check.js",
+      "business-localization-pack2-check.js",
+      "display-layer-localization-performance-check.js",
+      "final-bulk-source-migration-check.js",
+      "final-residual-localization-cleanup-check.js",
+      "legacy-localization-cleanup-pack1-check.js",
+      "legacy-localization-cleanup-pack2-check.js",
+      "localization-center-consolidation-check.js",
+      "localization-performance-stabilization-check.js",
+      "localization-regression-check.js",
+      "navigation-language-performance-check.js",
+      "runtime-localization-cleanup-check.js",
+      "runtime-stability-phase1-check.js",
+      "screen-localization-migration-check.js",
+      "settings-localization-phase1-check.js",
+      "single-source-enforcement-check.js",
+      "single-source-foundation-check.js",
+      "source-migration-pack1-check.js",
+      "source-migration-pack2-check.js",
+      "source-migration-pack3-check.js",
+      "source-migration-pack4-check.js",
+      "source-migration-pack5-check.js",
+      "source-migration-pack6-check.js",
+      "source-migration-pack7-check.js",
+      "source-migration-pack8-check.js"
+    ]
+  }
+}
