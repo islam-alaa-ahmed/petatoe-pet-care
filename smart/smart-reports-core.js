@@ -12,6 +12,13 @@ function smartReportHtml(key, fallback, params){
   var value=center&&typeof center.smart==='function'?center.smart(key,fallback,params):String(fallback==null?'':fallback);
   return htmlSafe(value);
 }
+
+function smartA354T(key,fallback,params){
+  var center=window.PETATOE_LOCALIZATION_CENTER;
+  if(center&&typeof center.t==='function') return center.t('smartReportsSource.recommendationChrome.'+key,fallback,params);
+  return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,name){return params&&params[name]!=null?String(params[name]):'';});
+}
+
 function smartBusinessDisplay(type,v){try{return window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.business==='function'?window.PETATOE_LOCALIZATION_CENTER.business(type,v):v}catch(_){return v}}
 function smartServiceDisplay(v){return smartBusinessDisplay('service',v)}
 function smartVehicleDisplay(v){return smartBusinessDisplay('vehicle',v)}
@@ -1035,9 +1042,9 @@ function renderSmartReports(){
     window.petatoeSmartRecommendationsCache=smartRecommendations;
   }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
   const ceoBriefHtml=`<div class="petatoe-ceo-brief">
-    <div class="petatoe-ceo-head"><div><h4>👑 PETATOE CEO Briefing</h4><p>ملخص تنفيذي سريع مبني على بيانات العملاء والخدمات والإيرادات والتوقعات، بدون تغيير أي حسابات في التقارير القديمة.</p></div><span class="petatoe-ceo-badge">AI Decision Support</span></div>
+    <div class="petatoe-ceo-head"><div><h4>👑 ${smartA354T('ceoTitle','PETATOE CEO Briefing')}</h4><p>${smartA354T('ceoDescription','ملخص تنفيذي سريع مبني على بيانات العملاء والخدمات والإيرادات والتوقعات، بدون تغيير أي حسابات في التقارير القديمة.')}</p></div><span class="petatoe-ceo-badge">${smartA354T('aiDecisionSupport','AI Decision Support')}</span></div>
     <div class="petatoe-ceo-grid"><div class="petatoe-ceo-kpi petatoe-ceo-hoverable" onmouseenter="petatoeShowCeoKpiTooltip(event,'growth')" onmouseleave="petatoeScheduleHideCeoKpiTooltip()"><span>${smartReportHtml('ceo.growthOpportunities','فرص نمو')}</span><b>${smartReportHtml('ceo.recommendationCount','{count} توصيات',{count:fmt0(ceoGrowthCount)})}</b><small>Revenue / Services / Pets</small></div><div class="petatoe-ceo-kpi petatoe-ceo-hoverable" onmouseenter="petatoeShowCeoKpiTooltip(event,'high')" onmouseleave="petatoeScheduleHideCeoKpiTooltip()"><span>${smartReportHtml('ceo.highPriority','أولوية عالية')}</span><b>${smartReportHtml('ceo.itemCountPlural','{count} عناصر',{count:fmt0(ceoHighCount)})}</b><small>${smartReportHtml('ceo.needsManagementFollowup','تحتاج متابعة إدارية')}</small></div><div class="petatoe-ceo-kpi petatoe-ceo-hoverable" onmouseenter="petatoeShowCeoKpiTooltip(event,'urgent')" onmouseleave="petatoeScheduleHideCeoKpiTooltip()"><span>${smartReportHtml('ceo.urgentIntervention','تدخل عاجل')}</span><b>${smartReportHtml('ceo.itemCount','{count} عنصر',{count:fmt0(ceoUrgentCount)})}</b><small>${ceoUrgentCount?smartReportHtml('ceo.startNow','ابدأ الآن'):smartReportHtml('ceo.noUrgentItems','لا يوجد عاجل واضح')}</small></div><div class="petatoe-ceo-kpi"><span>${smartReportHtml('ceo.dataVolume','حجم البيانات')}</span><b>${fmt0(count)} ${smartReportHtml('summary.operation','عملية')}</b><small>${periodLabel(y)}</small></div></div>
-    <div class="petatoe-ceo-actions"><div class="petatoe-ceo-action high"><b>أهم قرار اليوم</b><span>${ceoBestAction}</span></div><div class="petatoe-ceo-action good"><b>أكبر فرصة نمو</b><span>${ceoOpportunity}</span></div><div class="petatoe-ceo-action info"><b>أكبر نقطة متابعة</b><span>${ceoRisk}</span></div></div>
+    <div class="petatoe-ceo-actions"><div class="petatoe-ceo-action high"><b>${smartA354T('topDecisionToday','أهم قرار اليوم')}</b><span>${ceoBestAction}</span></div><div class="petatoe-ceo-action good"><b>${smartA354T('biggestGrowthOpportunity','أكبر فرصة نمو')}</b><span>${ceoOpportunity}</span></div><div class="petatoe-ceo-action info"><b>${smartA354T('biggestFollowupPoint','أكبر نقطة متابعة')}</b><span>${ceoRisk}</span></div></div>
   </div>`;
 
   const smartRecCards=smartRecommendations.map((r,i)=>{
@@ -1046,9 +1053,9 @@ function renderSmartReports(){
     return `<div class="smart-rec-pro-card" data-rec-cat="${r.cat}" data-rec-target="${recTarget}" style="--accent:${r.accent}">
     <div class="smart-rec-pro-top"><span class="smart-rec-pro-ico">${r.ico}</span><span class="smart-rec-priority">${r.prio}</span></div>
     <h4>${r.title}</h4><p>${r.desc}</p>
-    <div class="smart-rec-metrics"><div class="smart-rec-metric"><small>الأثر المتوقع</small><b>${r.impact}</b></div><div class="smart-rec-metric"><small>درجة الثقة</small><b>${r.confidence}</b></div></div>
-    <div class="smart-rec-actions"><button class="smart-rec-action-btn" data-smart-action="recommendation-toggle">عرض السبب</button><button class="smart-rec-action-btn smart-rec-open-btn" data-smart-action="recommendation-open" data-target="${recTarget}" data-report="${recReportName}">فتح التقرير</button><span class="smart-rec-priority">${r.report}</span></div>
-    <div class="smart-rec-detail"><b>خطة التنفيذ السريعة:</b><ul>${r.detail.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    <div class="smart-rec-metrics"><div class="smart-rec-metric"><small>${smartA354T('expectedImpact','الأثر المتوقع')}</small><b>${r.impact}</b></div><div class="smart-rec-metric"><small>${smartA354T('confidenceScore','درجة الثقة')}</small><b>${r.confidence}</b></div></div>
+    <div class="smart-rec-actions"><button class="smart-rec-action-btn" data-smart-action="recommendation-toggle">${smartA354T('showReason','عرض السبب')}</button><button class="smart-rec-action-btn smart-rec-open-btn" data-smart-action="recommendation-open" data-target="${recTarget}" data-report="${recReportName}">${smartA354T('openReport','فتح التقرير')}</button><span class="smart-rec-priority">${r.report}</span></div>
+    <div class="smart-rec-detail"><b>${smartA354T('quickExecutionPlan','خطة التنفيذ السريعة:')}</b><ul>${r.detail.map(x=>`<li>${x}</li>`).join('')}</ul></div>
   </div>`;
   }).join('');
 
@@ -1191,7 +1198,7 @@ function renderSmartReports(){
       <div class="customer-analysis-pane ${(['overview','contracts','compare','ai'].includes(window.customerAnalysisSubTab)?window.customerAnalysisSubTab:'overview')==='contracts'?'active':''}" data-customer-analysis-pane="contracts">
         <div class="smart-dash-grid smart-customers-stack">
       <div class="smart-panel contract-candidates-panel">
-        <div class="new-cust-report-head"><h3>${smartReportHtml('contracts.candidatesTitle','⭐ عملاء مرشحون لعمل عقود معهم')}</h3><div class="contract-actions"><button class="exp-btn exp-btn-excel" data-smart-action="contract-candidates-excel">⬇️ Excel</button><button class="exp-btn exp-btn-pdf" data-smart-action="contract-candidates-pdf">🖨️ PDF</button></div></div>
+        <div class="new-cust-report-head"><h3>${smartReportHtml('contracts.candidatesTitle','⭐ عملاء مرشحون لعمل عقود معهم')}</h3><div class="contract-actions"><button class="exp-btn exp-btn-excel" data-smart-action="contract-candidates-excel">⬇️ ${smartA354T('excel','Excel')}</button><button class="exp-btn exp-btn-pdf" data-smart-action="contract-candidates-pdf">🖨️ ${smartA354T('pdf','PDF')}</button></div></div>
         <p>${smartReportHtml('contracts.candidatesDescription','يرتب أفضل العملاء المرشحين لعقد سنوي أو توريد دوري بنفس منطق تحليل العملاء الحالي، مع Score تكيفي يعتمد على الإنفاق، الزيارات، شهور النشاط، حداثة آخر زيارة، وتصنيف العميل.')}</p>
         <div class="contract-kpis">
           <div class="contract-kpi" style="--accent:var(--purple)"><span>${smartReportHtml('contracts.totalCandidates','إجمالي العملاء المرشحين')}</span><b>${fmt0(contractCandidatesCount)}</b><small>${smartReportHtml('contracts.candidateUnit','عميل مرشح')}</small></div>

@@ -2,8 +2,7 @@
 
 ## Modified
 - `index.html`
-- `smart/smart-reports-filters-real.js`
-- `smart/smart-reports-open-refresh-guard.js`
+- `smart/smart-reports-core.js`
 
 ## Added
-- `i18n/localization-center/smart-reports-a3-5-3.js`
+- `i18n/localization-center/smart-reports-a3-5-4.js`

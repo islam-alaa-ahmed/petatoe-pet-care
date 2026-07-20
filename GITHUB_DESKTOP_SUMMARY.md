@@ -1,13 +1,11 @@
 # GitHub Desktop Summary
 
 ## Summary
-Localize Smart Reports readiness, vehicle-efficiency filters, global search and recommendation interactions through one explicit bilingual source catalog.
+Localize Smart Reports recommendation and export chrome at source level.
 
-## Files changed
-- `index.html`
-- `smart/smart-reports-filters-real.js`
-- `smart/smart-reports-open-refresh-guard.js`
-- `i18n/localization-center/smart-reports-a3-5-3.js`
-
-## Suggested commit message
-`fix(i18n): localize smart report readiness and interactions`
+## Description
+- Added A3.5.4 Arabic/English recommendation chrome catalog.
+- Localized CEO briefing headings and description.
+- Localized recommendation metric labels, buttons, and execution-plan heading.
+- Localized contract-candidate Excel/PDF controls.
+- Preserved recommendation calculations and workflow values.
