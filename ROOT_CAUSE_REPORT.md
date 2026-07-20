@@ -1,23 +1,16 @@
-# Phase A5.1 — Root Cause Report
+# Root Cause Report — PETATOE Enterprise App Icon
 
-## Confirmed causes
-
-1. `404.html` contained Arabic-only title and redirect text with a fixed `lang="ar"` / `dir="rtl"`. The page could display Arabic for users whose saved language is English.
-2. `children-expenses/children-legacy-engine.js` generated visible labels, empty states, permission messages, budget statuses, KPI labels, export/print labels, and action buttons directly in Arabic after each render.
-3. The static Children Expenses section in `index.html` still had filters, placeholders, and action labels without explicit translation bindings.
-4. Runtime translation was therefore being used as a post-render safety layer instead of resolving these strings at source.
+## Root Cause
+The application used only a legacy root `favicon.ico`. It had no Web App Manifest, Apple Touch Icon, Android maskable icons, or explicit icon metadata for installed desktop/mobile shortcuts.
 
 ## Impact
+- Browser tab used the old icon.
+- Add-to-Home-Screen and installed desktop shortcuts had no unified PETATOE identity.
+- iOS, Android, PWA and Windows could fall back to generic or low-resolution icons.
 
-- Mixed-language risk after filters or re-rendering.
-- Arabic flash in the 404 redirect path.
-- Source-surface audit remained open.
-- English users could receive Arabic permission, budget, empty-state, print, or export messages.
-
-## Fix approach
-
-- Added a dedicated Arabic/English catalog: `childrenExpensesA51`.
-- Added source-level translation resolution through `ceT()` before dynamic DOM creation.
-- Added explicit `data-i18n`, `data-i18n-placeholder`, and `data-i18n-aria-label` bindings to confirmed static surfaces.
-- Made `404.html` select language and direction from the saved language before DOM content is shown.
-- Preserved stored Arabic business values such as expense categories and payment values; only visible presentation strings were localized.
+## Fix
+- Replaced the root multi-resolution `favicon.ico`.
+- Added a complete PNG icon pack based on the approved glass PETATOE design.
+- Added Apple Touch, standard PWA and maskable icons.
+- Added `manifest.webmanifest` and `browserconfig.xml`.
+- Updated `index.html` and `404.html` icon metadata.

@@ -1,21 +1,11 @@
 # GitHub Desktop Summary
 
 ## Summary
+Replace PETATOE legacy favicon with the approved premium glass app icon and add unified desktop/mobile/PWA icon support.
 
-Localize confirmed residual UI strings in the 404 redirect and Children Expenses module at source level.
-
-## Files changed
-
-### Modified
-- `404.html`
-- `index.html`
-- `children-expenses/children-legacy-engine.js`
-- `LOCALIZATION_SUPABASE_PARITY_SNAPSHOT.json`
-- `petatoe_v9_4_23_supabase_localization_dictionary_parity_sync.sql`
-
-### Added
-- `i18n/localization-center/children-expenses-a5-1.js`
-
-## Business logic
-
-No changes to expense calculations, monthly budgets, stored category/payment values, permissions logic, CRUD behavior, Supabase queries, or report totals.
+## Description
+- Added complete PETATOE application icon pack.
+- Added Apple Touch and Android maskable icons.
+- Added Web App Manifest and Windows browser configuration.
+- Updated icon metadata in the main and redirect pages.
+- No operational code or data logic changed.
