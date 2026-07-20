@@ -319,7 +319,11 @@
     document.documentElement.setAttribute('data-pet-i18n-nav-ready',ready?'true':'false');
   }
   function finishInitialPaint(){
-    if(window.__PETATOE_I18N_BOOT_FAILSAFE__){clearTimeout(window.__PETATOE_I18N_BOOT_FAILSAFE__);window.__PETATOE_I18N_BOOT_FAILSAFE__=null;}
+    var boot=window.PETATOE_I18N_BOOT;
+    if(boot&&typeof boot.reveal==='function'){
+      boot.reveal('localization-engine-ready',false);
+      return;
+    }
     document.documentElement.removeAttribute('data-pet-i18n-booting');
     document.documentElement.setAttribute('data-pet-i18n-ready','true');
   }

@@ -13,3 +13,6 @@ html:not([data-pet-i18n-booting="true"]) body{
 @media (prefers-reduced-motion: reduce){
   html:not([data-pet-i18n-booting="true"]) body{transition:none;}
 }
+
+/* A degraded reveal is explicit and measurable; it must never masquerade as a successful localization boot. */
+html[data-pet-i18n-boot-failed="true"] body{transition:none!important;}

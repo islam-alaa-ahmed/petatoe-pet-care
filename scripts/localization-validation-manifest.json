@@ -24,7 +24,8 @@
       "payroll-ui-localization-pack8-check.js",
       "payroll-ui-localization-pack9-check.js",
       "settings-localization-phase61-check.js",
-      "startup-permission-guard-check.js"
+      "startup-permission-guard-check.js",
+      "startup-localization-first-paint-check.js"
     ],
     "diagnostics": [
       "localization-source-surface-audit.js"

@@ -1,21 +1,34 @@
-# Root Cause Report — Phase A1
+# PETATOE v9.4.23 — Phase A2 Root Cause Report
 
 ## Confirmed Root Cause
-The repository contained multiple phase-specific validators that were still treated as current checks. Several of them were pinned to historical release markers, legacy APIs, or pre-consolidation localization structures. This produced contradictory outcomes: current certification scripts passed while obsolete scripts failed.
 
-The Smart Reports source validator also searched for literal translation keys inside `i18n/smart-reports-source.js`, although that file is now an adapter delegating to the canonical store at `i18n/localization-center/dictionary-store.js`.
+`i18n/bootstrap.js` started a fixed 1.5-second reveal timer from the document head. The canonical dictionaries and the i18n engine are loaded near the end of `index.html`, after many synchronous local and CDN scripts. On a slow network, cold cache, or delayed CDN response, the timer could remove `data-pet-i18n-booting` before the English dictionary had been applied.
+
+This created a real startup race:
+
+1. Persisted English was detected and `dir=ltr` was applied.
+2. The Arabic source DOM continued parsing while hidden.
+3. The 1.5-second timer could reveal the page before `i18n/index.js` completed `applyLanguage()`.
+4. Arabic or mixed text could briefly appear before runtime translation completed.
+
+## Affected Files and Responsibilities
+
+- `i18n/bootstrap.js`: fixed-time reveal was the primary race condition.
+- `i18n/index.js`: initial-paint completion directly removed the guard without a shared readiness contract.
+- `index.html`: several stable Application Shell elements still depended on selector or phrase translation instead of explicit keys.
+- `css/i18n/bootstrap.css`: did not distinguish a successful localization reveal from an emergency degraded reveal.
 
 ## Impact
-- False localization failures from historical checks.
-- False confidence from running only the newest certificate.
-- No single authoritative list of blocking production validators.
-- Smart Reports reported 22 missing keys even though the keys existed in the canonical dictionary.
 
-## Implemented Repair
-- Added a versioned validator manifest defining production gates, diagnostics, and historical checks.
-- Added one authoritative validation-suite runner.
-- Updated Smart Reports localization validation to load and inspect the canonical dictionary store.
-- Added a non-blocking source-surface diagnostic for hard-coded Arabic candidates.
+- Possible Arabic-to-English startup flash.
+- A timeout could be mistaken for successful localization readiness.
+- Startup behavior depended on machine/network speed.
+- Core shell text had avoidable reliance on post-render translation.
 
-## Scope Safety
-No runtime application file, business logic, query, Supabase integration, calculation, UI component, or translation dictionary was modified.
+## Implemented Fix
+
+- Replaced the fixed timer with `window.PETATOE_I18N_BOOT`, a deterministic first-paint readiness coordinator.
+- The localization engine now reveals the page only after `applyLanguage()` and its initial reapply complete.
+- Emergency reveal is armed only after `DOMContentLoaded`, uses an explicit degraded state, and records the reason and duration.
+- Added explicit translation bindings for topbar reports, PDF, loading state, global search placeholder, and global search shortcut.
+- Added a production-gate test for startup language, direction, guard behavior, and explicit shell bindings.
