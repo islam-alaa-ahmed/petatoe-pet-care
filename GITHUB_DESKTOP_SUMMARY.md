@@ -1,12 +1,13 @@
 # GitHub Desktop Summary
 
 ## Summary
-Localize Smart Reports forecasting and recommendation source labels.
+Localize Smart Reports readiness, vehicle-efficiency filters, global search and recommendation interactions through one explicit bilingual source catalog.
 
-## Description
-- Added a bilingual localization catalog for forecasting and recommendation UI strings.
-- Localized the predictive-engine badge.
-- Localized Actual/Forecast chart series before Chart.js render.
-- Localized the customer-analysis tabs accessibility label.
-- Routed recommendation return icons through the source localization helper.
-- Preserved all report calculations, filters, navigation logic, and stored values.
+## Files changed
+- `index.html`
+- `smart/smart-reports-filters-real.js`
+- `smart/smart-reports-open-refresh-guard.js`
+- `i18n/localization-center/smart-reports-a3-5-3.js`
+
+## Suggested commit message
+`fix(i18n): localize smart report readiness and interactions`

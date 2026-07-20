@@ -8,9 +8,16 @@ function smartSafeHtml(target, html, reason){
   el.textContent='';el.insertAdjacentHTML('beforeend',String(html==null?'':html));return true;
 }
 
-function smartVehicleEfficiencyT(key,fallback){
-  try{var center=window.PETATOE_LOCALIZATION_CENTER;if(center&&typeof center.smart==='function')return center.smart('vehicleEfficiency.'+key,fallback);}catch(_){ }
-  return String(fallback==null?'':fallback);
+function smartVehicleEfficiencyT(key,fallback,params){
+  try{
+    var center=window.PETATOE_LOCALIZATION_CENTER;
+    if(center&&typeof center.t==='function'){
+      return center.t('smartReportsSource.vehicleEfficiency.'+key,params||{},{fallback:fallback,allowKeyFallback:true});
+    }
+  }catch(_){ }
+  var out=String(fallback==null?'':fallback);
+  Object.keys(params||{}).forEach(function(k){out=out.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
+  return out;
 }
 function smartGlobalFilterValue(id){
   const el=$(id);

@@ -1,9 +1,19 @@
-# Root Cause Report — Phase A3.5.2
+# Root Cause Report — Phase A3.5.3
 
-## Confirmed root cause
-Several Smart Reports forecasting and recommendation interface strings were still created as direct literals inside dynamic templates and Chart.js datasets. They included the predictive-engine badge, `Actual`/`Forecast` series labels, customer-analysis accessibility label, and navigation icons/messages used when opening linked recommendation reports.
+## Confirmed Root Cause
+Three Smart Reports surfaces were not using one explicit localization source:
 
-Because these values were recreated during Smart Reports rendering, filters or report navigation could temporarily depend on runtime DOM translation instead of resolving the active language at source-render time.
+1. Vehicle Efficiency filters read generic `smart()` keys and embedded Arabic fallbacks directly in the rendering module.
+2. The Smart Reports data-readiness guard selected Arabic or English manually from `document.lang` instead of resolving a catalog key.
+3. Global search and recommendation interactions used source keys, but those keys were distributed across prior runtime dictionaries rather than one complete source catalog.
+
+This made these frequently re-rendered surfaces depend on fallback strings or runtime language branching and weakened source-level localization parity.
 
 ## Fix
-The affected values now resolve through explicit localization keys before the DOM or Chart.js configuration is created. A dedicated bilingual catalog was added for this phase. No observer, DOM scan, calculation, query, or business-data value was changed.
+- Added one bilingual source catalog for readiness, Vehicle Efficiency, search and recommendation interactions.
+- Routed Vehicle Efficiency through `PETATOE_LOCALIZATION_CENTER.t()` using the `smartReportsSource.vehicleEfficiency` namespace.
+- Replaced manual readiness language branching with a source translation key resolved before rendering.
+- Loaded the catalog before Smart Reports runtime modules.
+
+## Business Logic Impact
+None. Filter values, report calculations, record fields, routing and data-readiness behavior remain unchanged.

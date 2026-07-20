@@ -71,10 +71,17 @@
     var area=q('#smartReportsArea');
     return !!(area&&area.querySelector('#smartTabs')&&area.querySelector('.smart-tab-section'));
   }
+  function readinessText(key,fallback,params){
+    try{
+      var center=window.PETATOE_LOCALIZATION_CENTER;
+      if(center&&typeof center.t==='function')return center.t('smartReportsSource.readiness.'+key,params||{},{fallback:fallback,allowKeyFallback:true});
+    }catch(_e){}
+    var out=String(fallback==null?'':fallback);
+    Object.keys(params||{}).forEach(function(k){out=out.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
+    return out;
+  }
   function loadingText(){
-    var lang='ar';
-    try{lang=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.getLanguage)?window.PETATOE_LOCALIZATION_CENTER.getLanguage():(document.documentElement.lang||'ar');}catch(_e){}
-    return lang==='en'?'Loading Smart Reports data…':'جارٍ تحميل بيانات التقارير الذكية…';
+    return readinessText('loading','جارٍ تحميل بيانات التقارير الذكية…');
   }
   function showLoading(){
     var area=q('#smartReportsArea');
