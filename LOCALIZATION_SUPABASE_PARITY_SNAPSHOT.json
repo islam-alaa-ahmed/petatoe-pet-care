@@ -1,8 +1,9 @@
 {
-  "generatedAt": "2026-07-20T21:38:04.900Z",
+  "generatedAt": "2026-07-20T22:04:01.732Z",
   "source": "index.html localization-center script order",
   "loadedCatalogs": [
     "i18n/localization-center/payroll-ui-a3-4.js",
+    "i18n/localization-center/children-expenses-a5-1.js",
     "i18n/localization-center/settings-backup.js",
     "i18n/localization-center/dashboard.js",
     "i18n/localization-center/operations-appointments-status.js",
@@ -19,9 +20,9 @@
     "i18n/localization-center/application-shell-pilot.js"
   ],
   "counts": {
-    "activeKeys": 3822,
-    "arabicValues": 3822,
-    "englishValues": 3822,
+    "activeKeys": 3923,
+    "arabicValues": 3923,
+    "englishValues": 3923,
     "duplicateKeys": 0,
     "missingArabic": 0,
     "missingEnglish": 0,
@@ -31,9 +32,9 @@
     "sourceMetadataArabic": 9
   },
   "hashes": {
-    "arabic": "dcf0498c7fab3b460c92350a2c6a1c603b51de4a2ff5a91cb9ee905a7ca37d1b",
-    "english": "fc852555ae41033c7f975f8391aa3f6577f4145095ba58a1e7922d481520d26c",
-    "combined": "a213639e20b080e1bcbda694b2d321ed94b610b9970fd7eb1a34ab93fb86e2be"
+    "arabic": "ff960f5d2c4ba81fc42149dfb3837cf06973258f641b16f174958e114e6dba1e",
+    "english": "11a63b17be857a936d64c75bebe567342edc99e9c5de2a900854c7cc61b8ee1b",
+    "combined": "f59e20f68b0e7623adf0421c59be92f265f8450fa6eeb913449981cd28fcb79c"
   },
   "issues": {
     "missingArabic": [],

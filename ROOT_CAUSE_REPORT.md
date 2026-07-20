@@ -1,17 +1,23 @@
-# Root Cause Report — Phase A4
+# Phase A5.1 — Root Cause Report
 
 ## Confirmed causes
 
-1. The existing Supabase parity file was generated before the A3 localization catalogs and contained 3,427 keys, while the effective runtime catalog loaded by `index.html` now contains 3,822 Arabic and 3,822 English keys.
-2. Supabase synchronization therefore could not reach exact parity with the current runtime dictionary.
-3. Nine `runtimeTemplates.*.source` values intentionally contain the original Arabic source text inside the English dictionary. They are matching metadata, not visible English translations. The runtime loader rejected them under the generic Arabic-in-English protection rule, creating a local/Supabase source mismatch.
-4. The previous SQL incremented value versions even when text had not changed and did not deactivate obsolete system keys, which could leave stale active records.
+1. `404.html` contained Arabic-only title and redirect text with a fixed `lang="ar"` / `dir="rtl"`. The page could display Arabic for users whose saved language is English.
+2. `children-expenses/children-legacy-engine.js` generated visible labels, empty states, permission messages, budget statuses, KPI labels, export/print labels, and action buttons directly in Arabic after each render.
+3. The static Children Expenses section in `index.html` still had filters, placeholders, and action labels without explicit translation bindings.
+4. Runtime translation was therefore being used as a post-render safety layer instead of resolving these strings at source.
 
-## Fix
+## Impact
 
-- Generated the Supabase synchronization file from the actual localization-center script order in `index.html`.
-- Added deterministic key/value hashes and exact local parity checks.
-- Exempted only `runtimeTemplates.<name>.source` metadata from the visible-English rejection rule.
-- Added idempotent version updates and deactivation of obsolete system-owned keys only.
-- Preserved user-created keys.
-- Added an exact post-sync parity query returning `parity_ok`.
+- Mixed-language risk after filters or re-rendering.
+- Arabic flash in the 404 redirect path.
+- Source-surface audit remained open.
+- English users could receive Arabic permission, budget, empty-state, print, or export messages.
+
+## Fix approach
+
+- Added a dedicated Arabic/English catalog: `childrenExpensesA51`.
+- Added source-level translation resolution through `ceT()` before dynamic DOM creation.
+- Added explicit `data-i18n`, `data-i18n-placeholder`, and `data-i18n-aria-label` bindings to confirmed static surfaces.
+- Made `404.html` select language and direction from the saved language before DOM content is shown.
+- Preserved stored Arabic business values such as expense categories and payment values; only visible presentation strings were localized.

@@ -41,6 +41,16 @@
     }catch(e){ warn(e); }
     return Promise.resolve({ok:false,error:'Children Expenses Supabase storage is not ready'});
   }
+  function ceT(key,fallback,params){
+    var full='childrenExpensesA51.'+String(key||'');
+    var value=fallback;
+    try{
+      var c=window.PETATOE_LOCALIZATION_CENTER;
+      if(c&&typeof c.translate==='function') value=c.translate(full,fallback);
+    }catch(e){ warn(e); }
+    Object.keys(params||{}).forEach(function(name){ value=String(value).replace(new RegExp('\\{'+name+'\\}','g'),String(params[name])); });
+    return value;
+  }
   function byId(id){ return document.getElementById(id); }
   function val(id){ var el=byId(id); return el ? String(el.value||'').trim() : ''; }
   function setVal(id,v){ var el=byId(id); if(el) el.value = v == null ? '' : String(v); }
@@ -71,8 +81,8 @@
     if(m) return {year:m[1], month:pad2(m[2]), day:pad2(m[3]||'01')};
     return null;
   }
-  function monthOf(date){ var p=dateParts(date); return p ? (p.year+'-'+p.month) : (String(date||'').slice(0,7) || 'غير محدد'); }
-  function yearOf(date){ var p=dateParts(date); return p ? p.year : (String(date||'').slice(0,4) || 'غير محدد'); }
+  function monthOf(date){ var p=dateParts(date); return p ? (p.year+'-'+p.month) : (String(date||'').slice(0,7) || ceT('common.unspecified','غير محدد')); }
+  function yearOf(date){ var p=dateParts(date); return p ? p.year : (String(date||'').slice(0,4) || ceT('common.unspecified','غير محدد')); }
   function normalizedMonth(value){ return monthOf(value); }
   function escText(v){
     if(window.PETATOESafeRender && typeof window.PETATOESafeRender.escapeHTML === 'function') return window.PETATOESafeRender.escapeHTML(v);
@@ -106,7 +116,7 @@
     }catch(e){ warn(e); }
     return true;
   }
-  function deny(msg){ if(window.toast) window.toast(msg||'ليس لديك صلاحية لتنفيذ هذا الإجراء'); else alert(msg||'ليس لديك صلاحية لتنفيذ هذا الإجراء'); }
+  function deny(msg){ if(window.toast) window.toast(msg||ceT('permission.default','ليس لديك صلاحية لتنفيذ هذا الإجراء')); else alert(msg||ceT('permission.default','ليس لديك صلاحية لتنفيذ هذا الإجراء')); }
   function setVisible(el, show){ if(el) el.style.display = show ? '' : 'none'; }
   var activeTab='budget';
   var childrenAnnualTrendChart = null;
@@ -158,10 +168,10 @@
   }
   function budgetStatus(budget, spent){
     budget = Number(budget)||0; spent = Number(spent)||0;
-    if(budget<=0) return {text:'بدون ميزانية', cls:'is-neutral'};
-    if(spent>budget) return {text:'تجاوز الميزانية', cls:'is-danger'};
-    if(spent>=budget*0.85) return {text:'اقترب من الحد', cls:'is-warning'};
-    return {text:'داخل الميزانية', cls:'is-ok'};
+    if(budget<=0) return {text:ceT('budget.none','بدون ميزانية'), cls:'is-neutral'};
+    if(spent>budget) return {text:ceT('budget.exceeded','تجاوز الميزانية'), cls:'is-danger'};
+    if(spent>=budget*0.85) return {text:ceT('budget.nearLimit','اقترب من الحد'), cls:'is-warning'};
+    return {text:ceT('budget.within','داخل الميزانية'), cls:'is-ok'};
   }
   function currentRowsInternal(){
     var rows=read().slice().sort(function(a,b){ return String(b.date||'').localeCompare(String(a.date||'')) || String(b.createdAt||'').localeCompare(String(a.createdAt||'')); });
@@ -178,7 +188,7 @@
     var el=byId(id); if(!el) return;
     var current = keep==null ? el.value : keep;
     while(el.firstChild) el.removeChild(el.firstChild);
-    var opt=document.createElement('option'); opt.value='all'; opt.textContent=allLabel||'الكل'; el.appendChild(opt);
+    var opt=document.createElement('option'); opt.value='all'; opt.textContent=allLabel||ceT('common.all','الكل'); el.appendChild(opt);
     items.forEach(function(x){ var o=document.createElement('option'); o.value=x; o.textContent=x; el.appendChild(o); });
     el.value = current && Array.prototype.some.call(el.options,function(o){return o.value===current;}) ? current : 'all';
   }
@@ -186,7 +196,7 @@
     var el=byId(id); if(!el) return;
     var current = keep==null ? el.value : keep;
     while(el.firstChild) el.removeChild(el.firstChild);
-    var opt=document.createElement('option'); opt.value='all'; opt.textContent=allLabel||'الكل'; el.appendChild(opt);
+    var opt=document.createElement('option'); opt.value='all'; opt.textContent=allLabel||ceT('common.all','الكل'); el.appendChild(opt);
     (pairs||[]).forEach(function(pair){ var o=document.createElement('option'); o.value=pair[0]; o.textContent=pair[1]; el.appendChild(o); });
     el.value = current && Array.prototype.some.call(el.options,function(o){return o.value===current;}) ? current : 'all';
   }
@@ -219,11 +229,11 @@
     if(monthEl) monthEl.value = selectedMonth;
     var years = unique(rows.filter(function(r){return matchesLogFilterInternal(r,'year');}).map(function(r){return yearOf(r.date);})).sort().reverse();
     if(years.indexOf(currentYear())<0) years.unshift(currentYear());
-    fillSelect('childrenExpensesYear', years, selectedYear, 'كل السنوات');
+    fillSelect('childrenExpensesYear', years, selectedYear, ceT('filters.allYears','كل السنوات'));
     var months = unique(rows.filter(function(r){return matchesLogFilterInternal(r,'month');}).map(function(r){return monthOf(r.date);})).sort().reverse();
     if(months.indexOf(currentMonth())<0) months.unshift(currentMonth());
-    fillSelectPairs('childrenExpensesMonth', months.map(function(monthKey){ return [monthKey, monthNameFromKey(monthKey)]; }), selectedMonth, 'كل الشهور');
-    fillSelect('childrenExpensesChildFilter', unique(rows.filter(function(r){return matchesLogFilterInternal(r,'child');}).map(function(r){return r.child;})).sort(), null, 'كل الأبناء');
+    fillSelectPairs('childrenExpensesMonth', months.map(function(monthKey){ return [monthKey, monthNameFromKey(monthKey)]; }), selectedMonth, ceT('filters.allMonths','كل الشهور'));
+    fillSelect('childrenExpensesChildFilter', unique(rows.filter(function(r){return matchesLogFilterInternal(r,'child');}).map(function(r){return r.child;})).sort(), null, ceT('filters.allChildren','كل الأبناء'));
     var dl=byId('childrenExpenseNames'); if(dl){ while(dl.firstChild) dl.removeChild(dl.firstChild); unique(rows.map(function(r){return r.child;})).sort().forEach(function(n){ var o=document.createElement('option'); o.value=n; dl.appendChild(o); }); }
   }
   function renderKpisInternal(rows){
@@ -246,34 +256,34 @@
     var body=byId('childrenExpensesBody'); if(!body) return;
     while(body.firstChild) body.removeChild(body.firstChild);
     var filtered=currentRowsInternal();
-    if(!filtered.length){ var tr=document.createElement('tr'), td=document.createElement('td'); td.colSpan=8; td.className='children-expenses-empty'; td.textContent='لا توجد مصروفات مسجلة في الفلتر الحالي'; tr.appendChild(td); body.appendChild(tr); return; }
+    if(!filtered.length){ var tr=document.createElement('tr'), td=document.createElement('td'); td.colSpan=8; td.className='children-expenses-empty'; td.textContent=ceT('empty.expenses','لا توجد مصروفات مسجلة في الفلتر الحالي'); tr.appendChild(td); body.appendChild(tr); return; }
     filtered.forEach(function(r,i){
       var tr=document.createElement('tr');
       addCell(tr,i+1); addCell(tr,r.date); addCell(tr,r.child); addCell(tr,r.category); addCell(tr,r.payment); addCell(tr,fmt(r.amount)); addCell(tr,r.notes||'-');
       var td=document.createElement('td'), wrap=document.createElement('div'); wrap.className='children-expenses-row-actions';
-      if(can('edit')){ var edit=document.createElement('button'); edit.type='button'; edit.className='btn btn-ghost'; edit.textContent='تعديل'; edit.addEventListener('click',function(){ editRow(r.id); }); wrap.appendChild(edit); }
-      if(can('delete')){ var del=document.createElement('button'); del.type='button'; del.className='btn btn-danger'; del.textContent='حذف'; del.addEventListener('click',function(){ deleteRow(r.id); }); wrap.appendChild(del); }
-      if(!wrap.childNodes.length){ var ro=document.createElement('span'); ro.className='children-expenses-readonly-note'; ro.textContent='عرض فقط'; wrap.appendChild(ro); }
+      if(can('edit')){ var edit=document.createElement('button'); edit.type='button'; edit.className='btn btn-ghost'; edit.textContent=ceT('common.edit','تعديل'); edit.addEventListener('click',function(){ editRow(r.id); }); wrap.appendChild(edit); }
+      if(can('delete')){ var del=document.createElement('button'); del.type='button'; del.className='btn btn-danger'; del.textContent=ceT('common.delete','حذف'); del.addEventListener('click',function(){ deleteRow(r.id); }); wrap.appendChild(del); }
+      if(!wrap.childNodes.length){ var ro=document.createElement('span'); ro.className='children-expenses-readonly-note'; ro.textContent=ceT('common.readOnly','عرض فقط'); wrap.appendChild(ro); }
       td.appendChild(wrap); tr.appendChild(td); body.appendChild(tr);
     });
     var total=filtered.reduce(function(sum,r){return sum+numberOnly(r.amount);},0);
     var totalTr=document.createElement('tr'); totalTr.className='children-expenses-total-row';
-    addCell(totalTr,'الإجمالي'); addCell(totalTr,''); addCell(totalTr,filtered.length+' عملية'); addCell(totalTr,''); addCell(totalTr,''); addCell(totalTr,fmt(total)); addCell(totalTr,''); addCell(totalTr,'');
+    addCell(totalTr,ceT('common.total','الإجمالي')); addCell(totalTr,''); addCell(totalTr,filtered.length+' عملية'); addCell(totalTr,''); addCell(totalTr,''); addCell(totalTr,fmt(total)); addCell(totalTr,''); addCell(totalTr,'');
     body.appendChild(totalTr);
   }
   function renderBudgetsInternal(rows){
     var body=byId('childrenBudgetsBody'); if(!body) return;
     while(body.firstChild) body.removeChild(body.firstChild);
     var budgets=readBudgets().slice().sort(function(a,b){ return String(b.month||'').localeCompare(String(a.month||'')) || String(a.child||'').localeCompare(String(b.child||'')); });
-    if(!budgets.length){ var tr=document.createElement('tr'), td=document.createElement('td'); td.colSpan=7; td.className='children-expenses-empty'; td.textContent='لا توجد ميزانيات مسجلة حتى الآن'; tr.appendChild(td); body.appendChild(tr); return; }
+    if(!budgets.length){ var tr=document.createElement('tr'), td=document.createElement('td'); td.colSpan=7; td.className='children-expenses-empty'; td.textContent=ceT('budget.noneRecorded','لا توجد ميزانيات مسجلة حتى الآن'); tr.appendChild(td); body.appendChild(tr); return; }
     budgets.forEach(function(b){
       var spent=expenseTotalFor(b.child,b.month,rows), budget=Number(b.amount)||0, remaining=budget-spent, status=budgetStatus(budget,spent);
       var tr=document.createElement('tr');
       addCell(tr,b.month); addCell(tr,b.child); addCell(tr,fmt(budget)); addCell(tr,fmt(spent)); addCell(tr,fmt(remaining),remaining<0?'children-expenses-negative':'');
       var tdStatus=document.createElement('td'), badge=document.createElement('span'); badge.className='children-expenses-status '+status.cls; badge.textContent=status.text; tdStatus.appendChild(badge); tr.appendChild(tdStatus);
       var td=document.createElement('td'), wrap=document.createElement('div'); wrap.className='children-expenses-row-actions';
-      if(canSpecial('children_expenses_budget')){ var edit=document.createElement('button'); edit.type='button'; edit.className='btn btn-ghost'; edit.textContent='تعديل'; edit.addEventListener('click',function(){ editBudget(b.id); }); wrap.appendChild(edit); var del=document.createElement('button'); del.type='button'; del.className='btn btn-danger'; del.textContent='حذف'; del.addEventListener('click',function(){ deleteBudget(b.id); }); wrap.appendChild(del); }
-      if(!wrap.childNodes.length){ var ro=document.createElement('span'); ro.className='children-expenses-readonly-note'; ro.textContent='عرض فقط'; wrap.appendChild(ro); }
+      if(canSpecial('children_expenses_budget')){ var edit=document.createElement('button'); edit.type='button'; edit.className='btn btn-ghost'; edit.textContent=ceT('common.edit','تعديل'); edit.addEventListener('click',function(){ editBudget(b.id); }); wrap.appendChild(edit); var del=document.createElement('button'); del.type='button'; del.className='btn btn-danger'; del.textContent=ceT('common.delete','حذف'); del.addEventListener('click',function(){ deleteBudget(b.id); }); wrap.appendChild(del); }
+      if(!wrap.childNodes.length){ var ro=document.createElement('span'); ro.className='children-expenses-readonly-note'; ro.textContent=ceT('common.readOnly','عرض فقط'); wrap.appendChild(ro); }
       td.appendChild(wrap); tr.appendChild(td); body.appendChild(tr);
     });
   }
@@ -301,7 +311,7 @@
   }
   function groupRows(rows, fieldFn){
     var out={};
-    rows.forEach(function(r){ var key=fieldFn(r)||'غير محدد'; if(!out[key]) out[key]={key:key,count:0,total:0}; out[key].count+=1; out[key].total+=numberOnly(r.amount); });
+    rows.forEach(function(r){ var key=fieldFn(r)||ceT('common.unspecified','غير محدد'); if(!out[key]) out[key]={key:key,count:0,total:0}; out[key].count+=1; out[key].total+=numberOnly(r.amount); });
     return Object.keys(out).map(function(k){return out[k];}).sort(function(a,b){return b.total-a.total || String(a.key).localeCompare(String(b.key));});
   }
   function applyDefaultCurrentYear(id, years){
@@ -324,34 +334,34 @@
   }
   function refillReportFilterSet(rows){
     var state={year:val('childrenReportYear'),month:val('childrenReportMonth'),child:val('childrenReportChild'),category:val('childrenReportCategory')};
-    fillSelect('childrenReportYear', unique(filterRowsByState(rows,state,'year').map(function(r){return yearOf(r.date);})).sort().reverse(), null, 'كل السنوات');
+    fillSelect('childrenReportYear', unique(filterRowsByState(rows,state,'year').map(function(r){return yearOf(r.date);})).sort().reverse(), null, ceT('filters.allYears','كل السنوات'));
     state.year=val('childrenReportYear');
-    fillSelect('childrenReportMonth', unique(filterRowsByState(rows,state,'month').map(function(r){return monthOf(r.date);})).sort().reverse(), null, 'كل الشهور');
+    fillSelect('childrenReportMonth', unique(filterRowsByState(rows,state,'month').map(function(r){return monthOf(r.date);})).sort().reverse(), null, ceT('filters.allMonths','كل الشهور'));
     state.month=val('childrenReportMonth');
-    fillSelect('childrenReportChild', unique(filterRowsByState(rows,state,'child').map(function(r){return r.child;})).sort(), null, 'كل الأبناء');
+    fillSelect('childrenReportChild', unique(filterRowsByState(rows,state,'child').map(function(r){return r.child;})).sort(), null, ceT('filters.allChildren','كل الأبناء'));
     state.child=val('childrenReportChild');
-    fillSelect('childrenReportCategory', unique(filterRowsByState(rows,state,'category').map(function(r){return r.category;})).sort(), null, 'كل الأنواع');
+    fillSelect('childrenReportCategory', unique(filterRowsByState(rows,state,'category').map(function(r){return r.category;})).sort(), null, ceT('filters.allTypes','كل الأنواع'));
   }
   function refillAnnualFilterSet(rows, years){
     var state={year:val('childrenAnnualYear'),child:val('childrenAnnualChild'),category:val('childrenAnnualCategory')};
-    fillSelect('childrenAnnualYear', unique(filterRowsByState(rows,state,'year').map(function(r){return yearOf(r.date);})).sort().reverse(), null, 'كل السنوات');
+    fillSelect('childrenAnnualYear', unique(filterRowsByState(rows,state,'year').map(function(r){return yearOf(r.date);})).sort().reverse(), null, ceT('filters.allYears','كل السنوات'));
     applyDefaultCurrentYear('childrenAnnualYear', years);
     state.year=val('childrenAnnualYear');
-    fillSelect('childrenAnnualChild', unique(filterRowsByState(rows,state,'child').map(function(r){return r.child;})).sort(), null, 'كل الأبناء');
+    fillSelect('childrenAnnualChild', unique(filterRowsByState(rows,state,'child').map(function(r){return r.child;})).sort(), null, ceT('filters.allChildren','كل الأبناء'));
     state.child=val('childrenAnnualChild');
-    fillSelect('childrenAnnualCategory', unique(filterRowsByState(rows,state,'category').map(function(r){return r.category;})).sort(), null, 'كل الأنواع');
+    fillSelect('childrenAnnualCategory', unique(filterRowsByState(rows,state,'category').map(function(r){return r.category;})).sort(), null, ceT('filters.allTypes','كل الأنواع'));
   }
   function refillTrendFilterSet(rows, years){
     var state={year:val('childrenTrendYear'),month:normalizeTrendMonthFilter(val('childrenTrendMonth')),child:val('childrenTrendChild')};
-    fillSelect('childrenTrendYear', unique(filterRowsByState(rows,state,'year').map(function(r){return yearOf(r.date);})).sort().reverse(), null, 'كل السنوات');
+    fillSelect('childrenTrendYear', unique(filterRowsByState(rows,state,'year').map(function(r){return yearOf(r.date);})).sort().reverse(), null, ceT('filters.allYears','كل السنوات'));
     applyDefaultCurrentYear('childrenTrendYear', years);
     state.year=val('childrenTrendYear');
     var monthRows=filterRowsByState(rows,state,'month');
     var available=unique(monthRows.map(function(r){ var m=monthOf(r.date); return m ? m.slice(5,7) : ''; })).filter(Boolean);
     var monthPairs=MONTH_OPTIONS.filter(function(pair){ return available.indexOf(pair[0])!==-1; });
-    fillSelectPairs('childrenTrendMonth', monthPairs, null, 'كل الشهور');
+    fillSelectPairs('childrenTrendMonth', monthPairs, null, ceT('filters.allMonths','كل الشهور'));
     state.month=normalizeTrendMonthFilter(val('childrenTrendMonth'));
-    fillSelect('childrenTrendChild', unique(filterRowsByState(rows,state,'child').map(function(r){return r.child;})).sort(), null, 'كل الأبناء');
+    fillSelect('childrenTrendChild', unique(filterRowsByState(rows,state,'child').map(function(r){return r.child;})).sort(), null, ceT('filters.allChildren','كل الأبناء'));
   }
   function fillReportFiltersInternal(rows){
     rows = Array.isArray(rows) ? rows : read();
@@ -368,17 +378,17 @@
   function renderGroupTableInternal(id, rows, label){
     var body=byId(id); if(!body) return;
     while(body.firstChild) body.removeChild(body.firstChild);
-    if(!rows.length){ addEmpty(body,3,'لا توجد بيانات في هذا التقرير'); return; }
+    if(!rows.length){ addEmpty(body,3,ceT('empty.report','لا توجد بيانات في هذا التقرير')); return; }
     rows.forEach(function(r){ var tr=document.createElement('tr'); addCell(tr,r.key); addCell(tr,r.count); addCell(tr,fmt(r.total)); body.appendChild(tr); });
     var totalCount=rows.reduce(function(s,r){return s+numberOnly(r.count);},0), totalAmount=rows.reduce(function(s,r){return s+numberOnly(r.total);},0);
     var totalTr=document.createElement('tr'); totalTr.className='children-expenses-total-row';
-    addCell(totalTr,'الإجمالي'); addCell(totalTr,totalCount); addCell(totalTr,fmt(totalAmount)); body.appendChild(totalTr);
+    addCell(totalTr,ceT('common.total','الإجمالي')); addCell(totalTr,totalCount); addCell(totalTr,fmt(totalAmount)); body.appendChild(totalTr);
   }
   function renderMonthReportInternal(rows, targetId){
     var body=byId(targetId||'childrenReportByMonth'); if(!body) return;
     while(body.firstChild) body.removeChild(body.firstChild);
     var months=groupRows(rows,function(r){return monthOf(r.date);});
-    if(!months.length){ addEmpty(body,5,'لا توجد بيانات شهرية في الفلتر الحالي'); return; }
+    if(!months.length){ addEmpty(body,5,ceT('empty.monthly','لا توجد بيانات شهرية في الفلتر الحالي')); return; }
     var budgets=readBudgets();
     var totalCount=0, totalExpense=0, totalBudget=0;
     months.forEach(function(m){
@@ -388,7 +398,7 @@
       var tr=document.createElement('tr'); addCell(tr,m.key); addCell(tr,m.count); addCell(tr,fmt(m.total)); addCell(tr,fmt(budgetTotal)); addCell(tr,fmt(remaining),remaining<0?'children-expenses-negative':''); body.appendChild(tr);
     });
     var totalTr=document.createElement('tr'); totalTr.className='children-expenses-total-row';
-    addCell(totalTr,'الإجمالي'); addCell(totalTr,totalCount); addCell(totalTr,fmt(totalExpense)); addCell(totalTr,fmt(totalBudget)); addCell(totalTr,fmt(totalBudget-totalExpense),(totalBudget-totalExpense)<0?'children-expenses-negative':''); body.appendChild(totalTr);
+    addCell(totalTr,ceT('common.total','الإجمالي')); addCell(totalTr,totalCount); addCell(totalTr,fmt(totalExpense)); addCell(totalTr,fmt(totalBudget)); addCell(totalTr,fmt(totalBudget-totalExpense),(totalBudget-totalExpense)<0?'children-expenses-negative':''); body.appendChild(totalTr);
   }
   function renderReportSummaryInternal(rows, targetId){
     var box=byId(targetId||'childrenReportSummary'); if(!box) return;
@@ -396,7 +406,7 @@
     var total=rows.reduce(function(s,r){return s+numberOnly(r.amount);},0), count=rows.length;
     var topChild=groupRows(rows,function(r){return r.child;})[0];
     var topCat=groupRows(rows,function(r){return r.category;})[0];
-    [['إجمالي التقرير',fmt(total)],['عدد العمليات',String(count)],['أعلى ابن',topChild?topChild.key+' — '+fmt(topChild.total):'-'],['أعلى بند',topCat?topCat.key+' — '+fmt(topCat.total):'-']].forEach(function(x){ var c=document.createElement('div'); c.className='children-expenses-report-pill'; var s=document.createElement('span'); s.textContent=x[0]; var b=document.createElement('b'); b.textContent=x[1]; c.appendChild(s); c.appendChild(b); box.appendChild(c); });
+    [[ceT('reports.reportTotal','إجمالي التقرير'),fmt(total)],[ceT('reports.operationCount','عدد العمليات'),String(count)],[ceT('reports.topChild','أعلى ابن'),topChild?topChild.key+' — '+fmt(topChild.total):'-'],[ceT('reports.topCategory','أعلى بند'),topCat?topCat.key+' — '+fmt(topCat.total):'-']].forEach(function(x){ var c=document.createElement('div'); c.className='children-expenses-report-pill'; var s=document.createElement('span'); s.textContent=x[0]; var b=document.createElement('b'); b.textContent=x[1]; c.appendChild(s); c.appendChild(b); box.appendChild(c); });
   }
   function renderReportsInternal(rows){
     fillReportFiltersInternal(rows);
@@ -426,7 +436,7 @@
     var totals={}, counts={}, max=0, total=0;
     months.forEach(function(mm){ totals[mm]=0; counts[mm]=0; });
     filtered.forEach(function(r){ var mo=monthOf(r.date), m=String(mo||'').slice(5,7); if(!totals.hasOwnProperty(m)) return; totals[m]+=numberOnly(r.amount); counts[m]+=1; total+=numberOnly(r.amount); if(totals[m]>max) max=totals[m]; });
-    if(summary){ [['إجمالي الاتجاه',fmt(total)],['عدد العمليات',String(filtered.length)],['متوسط شهري',fmt(total/12)]].forEach(function(x){ var p=document.createElement('div'); p.className='children-expenses-trend-pill'; var s=document.createElement('span'); s.textContent=x[0]; var b=document.createElement('b'); b.textContent=x[1]; p.appendChild(s); p.appendChild(b); summary.appendChild(p); }); }
+    if(summary){ [[ceT('reports.trendTotal','إجمالي الاتجاه'),fmt(total)],[ceT('reports.operationCount','عدد العمليات'),String(filtered.length)],[ceT('reports.monthlyAverage','متوسط شهري'),fmt(total/12)]].forEach(function(x){ var p=document.createElement('div'); p.className='children-expenses-trend-pill'; var s=document.createElement('span'); s.textContent=x[0]; var b=document.createElement('b'); b.textContent=x[1]; p.appendChild(s); p.appendChild(b); summary.appendChild(p); }); }
     var values=months.map(function(mm){return totals[mm]||0;});
     if(canvas && window.Chart){
       try{
@@ -438,7 +448,7 @@
           data:{
             labels:monthLabels,
             datasets:[{
-              label:'مصروفات الأبناء',
+              label:ceT('reports.childrenExpenses','مصروفات الأبناء'),
               data:values,
               backgroundColor:g,
               borderColor:'rgba(103,232,249,.90)',
@@ -503,7 +513,7 @@
   function resetAnnualFiltersInternal(){ setVal('childrenAnnualYear','all'); setVal('childrenAnnualChild','all'); setVal('childrenAnnualCategory','all'); render(); }
   function csvCell(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }
   function exportReportExcelInternal(){
-    if(!canSpecial('children_expenses_export')){ deny('ليس لديك صلاحية تصدير تقارير مصروفات الأبناء'); return; }
+    if(!canSpecial('children_expenses_export')){ deny(ceT('permission.export','ليس لديك صلاحية تصدير تقارير مصروفات الأبناء')); return; }
     var rows=reportFilterRowsInternal(read());
     if(!rows.length){ if(window.toast) window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير'); else alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات للتصدير'):'لا توجد بيانات للتصدير'); return; }
     var lines=[['التاريخ','الابن','نوع المصروف','طريقة الدفع','المبلغ','ملاحظات'].map(csvCell).join(',')];
@@ -515,7 +525,7 @@
   function openPrintHtml(html, features){try{var blob=new Blob([String(html||'')],{type:'text/html;charset=utf-8'});var url=URL.createObjectURL(blob);var w=window.open(url,'_blank',features||'width=1100,height=800');if(w)setTimeout(function(){try{URL.revokeObjectURL(url)}catch(_e){try{if(window.PETATOECaptureSilentCatch)window.PETATOECaptureSilentCatch('children-expenses/children-legacy-engine.js',_e,{phase:'v6.5.9-risk-cleanup'});}catch(_petatoeSilentCatch){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('children-expenses/children-legacy-engine.js',_petatoeSilentCatch);}}},60000);return w;}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('children-expenses/children-legacy-engine.js',e);return null;}}
   function htmlEsc(v){ return String(v==null?'':v).replace(/[&<>"']/g,function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]; }); }
   function printReportInternal(){
-    if(!canSpecial('children_expenses_export')){ deny('ليس لديك صلاحية طباعة تقارير مصروفات الأبناء'); return; }
+    if(!canSpecial('children_expenses_export')){ deny(ceT('permission.print','ليس لديك صلاحية طباعة تقارير مصروفات الأبناء')); return; }
     var rows=reportFilterRowsInternal(read());
     if(!rows.length){ if(window.toast) window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات للطباعة'):'لا توجد بيانات للطباعة'); else alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات للطباعة'):'لا توجد بيانات للطباعة'); return; }
     var total=rows.reduce(function(s,r){return s+numberOnly(r.amount);},0);
@@ -542,12 +552,12 @@
   }
 
   function render(){
-    ensureAnnualResetPlacement(); if(!can('view')){ var panel=byId('childrenExpenses'); if(panel){ var card=document.createElement('div'); card.className='children-expenses-card'; var h=document.createElement('h3'); h.textContent='غير متاح'; var p=document.createElement('p'); p.textContent='ليس لديك صلاحية عرض قسم مصروفات الأبناء.'; card.appendChild(h); card.appendChild(p); panel.replaceChildren(card); } return; } applyPermissionsUi(); var rows=read(); renderFilters(rows); renderKpis(rows); renderBudgets(rows); renderReports(rows); renderTable(rows); applyPermissionsUi(); applyActiveTab(); }
+    ensureAnnualResetPlacement(); if(!can('view')){ var panel=byId('childrenExpenses'); if(panel){ var card=document.createElement('div'); card.className='children-expenses-card'; var h=document.createElement('h3'); h.textContent=ceT('common.noAccess','غير متاح'); var p=document.createElement('p'); p.textContent=ceT('permission.view','ليس لديك صلاحية عرض قسم مصروفات الأبناء.'); card.appendChild(h); card.appendChild(p); panel.replaceChildren(card); } return; } applyPermissionsUi(); var rows=read(); renderFilters(rows); renderKpis(rows); renderBudgets(rows); renderReports(rows); renderTable(rows); applyPermissionsUi(); applyActiveTab(); }
   function clearForm(){ setVal('childrenExpenseId',''); setVal('childrenExpenseDate',today()); setVal('childrenExpenseChild',''); setVal('childrenExpenseCategory','مصروف يومي'); setVal('childrenExpensePayment','كاش'); setVal('childrenExpenseAmount',''); setVal('childrenExpenseNotes',''); }
   function clearBudgetFormInternal(){ setVal('childrenBudgetMonth',currentMonth()); setVal('childrenBudgetChild',''); setVal('childrenBudgetAmount',''); }
   function resetFiltersInternal(){ setVal('childrenExpensesSearch',''); setVal('childrenExpensesYear',currentYear()); setVal('childrenExpensesMonth',currentMonth()); setVal('childrenExpensesChildFilter','all'); render(); }
   function saveFromFormInternal(){
-    if(!can('add')){ deny('ليس لديك صلاحية إضافة مصروفات الأبناء'); return; }
+    if(!can('add')){ deny(ceT('permission.add','ليس لديك صلاحية إضافة مصروفات الأبناء')); return; }
     var child=val('childrenExpenseChild'), date=val('childrenExpenseDate')||today(), amount=Number(val('childrenExpenseAmount'));
     if(!child){ if(window.toast) window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب اسم الابن'):'اكتب اسم الابن'); else alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب اسم الابن'):'اكتب اسم الابن'); return; }
     if(!isFinite(amount) || amount<=0){ if(window.toast) window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب مبلغ صحيح'):'اكتب مبلغ صحيح'); else alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب مبلغ صحيح'):'اكتب مبلغ صحيح'); return; }
@@ -556,10 +566,10 @@
     var idx=rows.findIndex(function(x){return x.id===id;});
     if(idx>=0){ row.createdAt=rows[idx].createdAt||now; rows[idx]=row; } else rows.push(row);
     write(rows); clearForm(); render();
-    if(window.toast) window.toast(idx>=0?'تم تعديل المصروف':'تم حفظ المصروف');
+    if(window.toast) window.toast(idx>=0?ceT('form.updated','تم تعديل المصروف'):ceT('form.saved','تم حفظ المصروف'));
   }
   function saveBudgetFromFormInternal(){
-    if(!canSpecial('children_expenses_budget')){ deny('ليس لديك صلاحية إدارة ميزانية مصروفات الأبناء'); return; }
+    if(!canSpecial('children_expenses_budget')){ deny(ceT('permission.budget','ليس لديك صلاحية إدارة ميزانية مصروفات الأبناء')); return; }
     var month=val('childrenBudgetMonth')||currentMonth(), child=val('childrenBudgetChild'), amount=Number(val('childrenBudgetAmount'));
     if(!/^\d{4}-\d{2}$/.test(month)){ if(window.toast) window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حدد شهر صحيح'):'حدد شهر صحيح'); else alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حدد شهر صحيح'):'حدد شهر صحيح'); return; }
     if(!child){ if(window.toast) window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب اسم الابن'):'اكتب اسم الابن'); else alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب اسم الابن'):'اكتب اسم الابن'); return; }
@@ -569,29 +579,29 @@
     var row={id:idx>=0?rows[idx].id:makeId('ceb'),month:month,child:child,amount:Math.round(amount*100)/100,createdAt:idx>=0?(rows[idx].createdAt||now):now,updatedAt:now};
     if(idx>=0) rows[idx]=row; else rows.push(row);
     writeBudgets(rows); clearBudgetForm(); render();
-    if(window.toast) window.toast(idx>=0?'تم تعديل الميزانية':'تم حفظ الميزانية');
+    if(window.toast) window.toast(idx>=0?ceT('form.budgetUpdated','تم تعديل الميزانية'):ceT('form.budgetSaved','تم حفظ الميزانية'));
   }
   function editRowInternal(id){
-    if(!can('edit')){ deny('ليس لديك صلاحية تعديل مصروفات الأبناء'); return; }
+    if(!can('edit')){ deny(ceT('permission.edit','ليس لديك صلاحية تعديل مصروفات الأبناء')); return; }
     var r=read().find(function(x){return x.id===id;}); if(!r) return;
     setVal('childrenExpenseId',r.id); setVal('childrenExpenseDate',r.date||today()); setVal('childrenExpenseChild',r.child); setVal('childrenExpenseCategory',r.category||'أخرى'); setVal('childrenExpensePayment',r.payment||'كاش'); setVal('childrenExpenseAmount',r.amount); setVal('childrenExpenseNotes',r.notes||'');
     setTab('entry'); var panel=byId('childrenExpenses'); if(panel) panel.scrollIntoView({behavior:'smooth',block:'start'});
   }
   function editBudgetInternal(id){
-    if(!canSpecial('children_expenses_budget')){ deny('ليس لديك صلاحية إدارة ميزانية مصروفات الأبناء'); return; }
+    if(!canSpecial('children_expenses_budget')){ deny(ceT('permission.budget','ليس لديك صلاحية إدارة ميزانية مصروفات الأبناء')); return; }
     var b=readBudgets().find(function(x){return x.id===id;}); if(!b) return;
     setVal('childrenBudgetMonth',b.month||currentMonth()); setVal('childrenBudgetChild',b.child||''); setVal('childrenBudgetAmount',b.amount||0);
     setTab('budget'); var el=byId('childrenBudgetMonth'); if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
   }
   function deleteRowInternal(id){
-    if(!can('delete')){ deny('ليس لديك صلاحية حذف مصروفات الأبناء'); return; }
+    if(!can('delete')){ deny(ceT('permission.delete','ليس لديك صلاحية حذف مصروفات الأبناء')); return; }
     var rows=read(), r=rows.find(function(x){return x.id===id;}); if(!r) return;
     var deleteExpensePrefix=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف مصروف '):'حذف مصروف ');
     if(!confirm(deleteExpensePrefix+(r.child||'')+'؟')) return;
     write(rows.filter(function(x){return x.id!==id;})); render(); if(window.toast) window.toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حذف المصروف'):'تم حذف المصروف');
   }
   function deleteBudgetInternal(id){
-    if(!canSpecial('children_expenses_budget')){ deny('ليس لديك صلاحية إدارة ميزانية مصروفات الأبناء'); return; }
+    if(!canSpecial('children_expenses_budget')){ deny(ceT('permission.budget','ليس لديك صلاحية إدارة ميزانية مصروفات الأبناء')); return; }
     var rows=readBudgets(), b=rows.find(function(x){return x.id===id;}); if(!b) return;
     var deleteBudgetPrefix=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف ميزانية '):'حذف ميزانية ');
     if(!confirm(deleteBudgetPrefix+(b.child||'')+' '+(b.month||'')+'؟')) return;

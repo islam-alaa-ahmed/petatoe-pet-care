@@ -1218,10 +1218,10 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div id="commissionStatementArea"></div>
 </div>
 <div class="panel" data-pet-module="children-expenses" id="childrenExpenses">
-<div class="section-head children-expenses-head"><div><h2>👨‍👧‍👦 مصروفات الأبناء</h2></div><div class="children-expenses-actions"><button class="btn btn-primary" onclick="PETATOEInlineHandlers.moduleCall('children','render')" type="button">🔄 تحديث</button><button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','clearForm')" type="button">🧹 مسح النموذج</button></div></div>
+<div class="section-head children-expenses-head"><div><h2 data-i18n="childrenExpensesA51.shell.title">👨‍👧‍👦 مصروفات الأبناء</h2></div><div class="children-expenses-actions"><button class="btn btn-primary" onclick="PETATOEInlineHandlers.moduleCall('children','render')" type="button">🔄 تحديث</button><button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','clearForm')" type="button">🧹 مسح النموذج</button></div></div>
 <div class="children-expenses-shell">
 <div class="children-expenses-kpis" id="childrenExpensesKpis"></div>
-<div aria-label="تبويبات مصروفات الأبناء" class="children-expenses-tabs" role="tablist">
+<div aria-label="تبويبات مصروفات الأبناء" data-i18n-aria-label="childrenExpensesA51.shell.tabsLabel" class="children-expenses-tabs" role="tablist">
 <button class="children-expenses-tab active" data-children-expenses-tab="budget" onclick="PETATOEInlineHandlers.moduleCall('children','setTab','budget')" type="button">🎯 الميزانية الشهرية</button>
 <button class="children-expenses-tab" data-children-expenses-tab="entry" onclick="PETATOEInlineHandlers.moduleCall('children','setTab','entry')" type="button">➕ إضافة مصروف</button>
 <button class="children-expenses-tab" data-children-expenses-tab="log" onclick="PETATOEInlineHandlers.moduleCall('children','setTab','log')" type="button">📋 سجل المصروفات</button>
@@ -1233,7 +1233,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="children-expenses-list-head"><div><h3>🎯 الميزانية الشهرية</h3></div></div>
 <div class="children-expenses-budget-form">
 <label>الشهر<input id="childrenBudgetMonth" type="month"/></label>
-<label>اسم الابن<input id="childrenBudgetChild" list="childrenExpenseNames" placeholder="مثال: عمر"/></label>
+<label>اسم الابن<input id="childrenBudgetChild" list="childrenExpenseNames" placeholder="مثال: عمر" data-i18n-placeholder="childrenExpensesA51.shell.childPlaceholder"/></label>
 <label>الميزانية الشهرية<input id="childrenBudgetAmount" min="0" placeholder="0.00" step="0.01" type="number"/></label>
 <div class="children-expenses-budget-actions"><button class="btn btn-primary" onclick="PETATOEInlineHandlers.moduleCall('children','saveBudgetFromForm')" type="button">💾 حفظ الميزانية</button><button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','clearBudgetForm')" type="button">مسح</button></div>
 </div>
@@ -1242,13 +1242,13 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 </div>
 <div class="children-expenses-tab-panel" data-children-expenses-panel="reports">
 <div class="children-expenses-card children-expenses-reports-card">
-<div class="children-expenses-list-head"><div><h3>📊 تقارير مصروفات الأبناء</h3></div><div class="children-expenses-report-actions"><button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','exportReportExcel')" type="button">📊 تصدير Excel</button><button class="btn btn-primary" onclick="PETATOEInlineHandlers.moduleCall('children','printReport')" type="button">🖨️ PDF / طباعة</button></div></div>
+<div class="children-expenses-list-head"><div><h3>📊 تقارير مصروفات الأبناء</h3></div><div class="children-expenses-report-actions"><button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','exportReportExcel')" type="button" data-i18n="childrenExpensesA51.shell.exportExcel">📊 تصدير Excel</button><button class="btn btn-primary" onclick="PETATOEInlineHandlers.moduleCall('children','printReport')" type="button" data-i18n="childrenExpensesA51.shell.printPdf">🖨️ PDF / طباعة</button></div></div>
 <div class="children-expenses-report-filters">
-<label>السنة<select id="childrenReportYear" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل السنوات</option></select></label>
-<label>الشهر<select id="childrenReportMonth" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل الشهور</option></select></label>
-<label>الابن<select id="childrenReportChild" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل الأبناء</option></select></label>
-<label>نوع المصروف<select id="childrenReportCategory" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل الأنواع</option></select></label>
-<button class="btn btn-ghost children-expenses-filter-reset" onclick="PETATOEInlineHandlers.moduleCall('children','resetReportFilters')" type="button">مسح فلاتر التقارير</button>
+<label>السنة<select id="childrenReportYear" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allYears">كل السنوات</option></select></label>
+<label>الشهر<select id="childrenReportMonth" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allMonths">كل الشهور</option></select></label>
+<label>الابن<select id="childrenReportChild" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allChildren">كل الأبناء</option></select></label>
+<label>نوع المصروف<select id="childrenReportCategory" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allTypes">كل الأنواع</option></select></label>
+<button class="btn btn-ghost children-expenses-filter-reset" onclick="PETATOEInlineHandlers.moduleCall('children','resetReportFilters')" type="button" data-i18n="childrenExpensesA51.shell.resetReportFilters">مسح فلاتر التقارير</button>
 </div>
 <div class="children-expenses-report-summary" id="childrenReportSummary"></div>
 <div class="children-expenses-report-stack">
@@ -1261,18 +1261,18 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="children-expenses-tab-panel" data-children-expenses-panel="annual">
 <div class="children-expenses-card children-expenses-annual-card">
 <div class="children-expenses-trend-dashboard">
-<div class="children-expenses-trend-head"><h4>📈 اتجاه المصاريف السنوية تفصيلي شهور</h4><div class="children-expenses-trend-filters"><label>السنة<select id="childrenTrendYear" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل السنوات</option></select></label><label>الشهر<select id="childrenTrendMonth" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل الشهور</option></select></label><label>الابن<select id="childrenTrendChild" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل الأبناء</option></select></label></div></div>
+<div class="children-expenses-trend-head"><h4>📈 اتجاه المصاريف السنوية تفصيلي شهور</h4><div class="children-expenses-trend-filters"><label>السنة<select id="childrenTrendYear" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allYears">كل السنوات</option></select></label><label>الشهر<select id="childrenTrendMonth" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allMonths">كل الشهور</option></select></label><label>الابن<select id="childrenTrendChild" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allChildren">كل الأبناء</option></select></label></div></div>
 <div class="children-expenses-trend-summary" id="childrenTrendSummary"></div>
 <div class="chart monthly-wide-chart children-expenses-monthly-chart"><canvas id="childrenAnnualTrendChart"></canvas></div>
 <div class="children-expenses-trend-bars" id="childrenAnnualTrendDashboard"></div>
 </div>
 <div class="children-expenses-annual-tables-section">
-<div class="children-expenses-list-head children-expenses-annual-tables-head"><div><h3>📅 التقرير السنوي للمصاريف</h3><p>الفلاتر التالية تخص جداول التقرير السنوي فقط.</p></div><div class="children-expenses-report-actions"><button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','exportReportExcel')" type="button">📊 تصدير Excel</button><button class="btn btn-primary" onclick="PETATOEInlineHandlers.moduleCall('children','printReport')" type="button">🖨️ PDF / طباعة</button></div></div>
+<div class="children-expenses-list-head children-expenses-annual-tables-head"><div><h3>📅 التقرير السنوي للمصاريف</h3><p>الفلاتر التالية تخص جداول التقرير السنوي فقط.</p></div><div class="children-expenses-report-actions"><button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','exportReportExcel')" type="button" data-i18n="childrenExpensesA51.shell.exportExcel">📊 تصدير Excel</button><button class="btn btn-primary" onclick="PETATOEInlineHandlers.moduleCall('children','printReport')" type="button" data-i18n="childrenExpensesA51.shell.printPdf">🖨️ PDF / طباعة</button></div></div>
 <div class="children-expenses-annual-filters">
-<label class="children-expenses-annual-year-filter">السنة<select id="childrenAnnualYear" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل السنوات</option></select></label>
-<label class="children-expenses-annual-child-filter">الابن<select id="childrenAnnualChild" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل الأبناء</option></select></label>
+<label class="children-expenses-annual-year-filter">السنة<select id="childrenAnnualYear" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allYears">كل السنوات</option></select></label>
+<label class="children-expenses-annual-child-filter">الابن<select id="childrenAnnualChild" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allChildren">كل الأبناء</option></select></label>
 <div class="children-expenses-annual-type-reset-row">
-<label class="children-expenses-annual-type-filter">نوع المصروف<select id="childrenAnnualCategory" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل الأنواع</option></select></label>
+<label class="children-expenses-annual-type-filter">نوع المصروف<select id="childrenAnnualCategory" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allTypes">كل الأنواع</option></select></label>
 </div>
 </div>
 <div class="children-expenses-report-summary" id="childrenAnnualSummary"></div>
@@ -1291,24 +1291,24 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="children-expenses-form">
 <input id="childrenExpenseId" type="hidden"/>
 <label>التاريخ<input id="childrenExpenseDate" type="date"/></label>
-<label>اسم الابن<input id="childrenExpenseChild" list="childrenExpenseNames" placeholder="مثال: عمر"/><datalist id="childrenExpenseNames"></datalist></label>
+<label>اسم الابن<input id="childrenExpenseChild" list="childrenExpenseNames" placeholder="مثال: عمر" data-i18n-placeholder="childrenExpensesA51.shell.childPlaceholder"/><datalist id="childrenExpenseNames"></datalist></label>
 <label>نوع المصروف<select id="childrenExpenseCategory"><option value="مصروف يومي">مصروف يومي</option><option value="مدرسة">مدرسة</option><option value="دروس">دروس</option><option value="ملابس">ملابس</option><option value="علاج">علاج</option><option value="مواصلات">مواصلات</option><option value="ترفيه">ترفيه</option><option value="أخرى">أخرى</option></select></label>
 <label>طريقة الدفع<select id="childrenExpensePayment"><option value="كاش">كاش</option><option value="تحويل">تحويل</option><option value="بطاقة">بطاقة</option></select></label>
 <label>المبلغ<input id="childrenExpenseAmount" min="0" placeholder="0.00" step="0.01" type="number"/></label>
-<label class="children-expenses-notes">ملاحظات<textarea id="childrenExpenseNotes" placeholder="ملاحظات اختيارية" rows="3"></textarea></label>
+<label class="children-expenses-notes">ملاحظات<textarea id="childrenExpenseNotes" placeholder="ملاحظات اختيارية" data-i18n-placeholder="childrenExpensesA51.shell.optionalNotes" rows="3"></textarea></label>
 </div>
-<div class="children-expenses-form-actions"><button class="btn btn-primary" onclick="PETATOEInlineHandlers.moduleCall('children','saveFromForm')" type="button">💾 حفظ المصروف</button><button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','clearForm')" type="button">إلغاء/مسح</button></div>
+<div class="children-expenses-form-actions"><button class="btn btn-primary" onclick="PETATOEInlineHandlers.moduleCall('children','saveFromForm')" type="button" data-i18n="childrenExpensesA51.shell.saveExpense">💾 حفظ المصروف</button><button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','clearForm')" type="button" data-i18n="childrenExpensesA51.shell.clear">إلغاء/مسح</button></div>
 </div>
 </div>
 <div class="children-expenses-tab-panel" data-children-expenses-panel="log">
 <div class="children-expenses-card children-expenses-list-card">
 <div class="children-expenses-list-head"><div><h3>📋 سجل المصروفات</h3></div></div>
 <div class="children-expenses-filters">
-<input id="childrenExpensesSearch" oninput="PETATOEInlineHandlers.moduleCall('children','render')" placeholder="بحث بالاسم أو النوع أو الملاحظات"/>
-<select id="childrenExpensesYear" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل السنوات</option></select>
-<select id="childrenExpensesMonth" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل الشهور</option></select>
-<select id="childrenExpensesChildFilter" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all">كل الأبناء</option></select>
-<button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','resetFilters')" type="button">مسح الفلاتر</button>
+<input id="childrenExpensesSearch" oninput="PETATOEInlineHandlers.moduleCall('children','render')" placeholder="بحث بالاسم أو النوع أو الملاحظات" data-i18n-placeholder="childrenExpensesA51.shell.searchPlaceholder"/>
+<select id="childrenExpensesYear" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allYears">كل السنوات</option></select>
+<select id="childrenExpensesMonth" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allMonths">كل الشهور</option></select>
+<select id="childrenExpensesChildFilter" onchange="PETATOEInlineHandlers.moduleCall('children','render')"><option value="all" data-i18n="childrenExpensesA51.filters.allChildren">كل الأبناء</option></select>
+<button class="btn btn-ghost" onclick="PETATOEInlineHandlers.moduleCall('children','resetFilters')" type="button" data-i18n="childrenExpensesA51.shell.resetFilters">مسح الفلاتر</button>
 </div>
 <div class="children-expenses-table-wrap"><table class="children-expenses-table"><thead><tr><th>#</th><th>التاريخ</th><th>الابن</th><th>النوع</th><th>طريقة الدفع</th><th>المبلغ</th><th>ملاحظات</th><th>إجراءات</th></tr></thead><tbody id="childrenExpensesBody"></tbody></table></div>
 </div>
@@ -4478,6 +4478,7 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <script src="children-expenses/children-reports.js"></script>
 <script src="children-expenses/children-annual.js"></script>
 <script src="children-expenses/children-charts.js"></script>
+<script src="i18n/localization-center/children-expenses-a5-1.js?v=9.4.23-a5-1"></script>
 <script src="children-expenses/children-legacy-engine.js"></script>
 <script defer="" src="children-expenses/children-expenses-facade.js"></script>
 <script data-petatoe-defer="v6.5.0-phase1" defer="" src="children-expenses/children-expenses-controlled-migration.js"></script>

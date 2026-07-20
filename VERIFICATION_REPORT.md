@@ -1,31 +1,36 @@
-# Verification Report — Phase A4
+# Phase A5.1 — Verification Report
 
-## Local dictionary verification
+## Automated verification
 
-- Active translation keys: 3,822
-- Arabic values: 3,822
-- English values: 3,822
-- Missing Arabic: 0
-- Missing English: 0
-- Empty Arabic: 0
-- Empty English: 0
-- Duplicate keys: 0
-- Visible Arabic values inside English translations: 0
-- Arabic source metadata entries: 9, explicitly classified and preserved
+- JavaScript syntax: all project JavaScript files passed `node --check`.
+- Localization production gates: **17 / 17 passed**.
+- Blocking failures: **0**.
+- Diagnostic source audit remains open, but improved:
+  - Total Arabic lines: **3057 → 3024**
+  - Unbound HTML candidates: **534 → 482**
+  - Runtime UI candidates: **628 → 615**
+  - Source literals: **1852 → 1831**
+  - Explicitly bound HTML: **43 → 96**
+- No new `MutationObserver` or DOM scan was added.
 
-## Automated checks
+## Dictionary verification
 
-- JavaScript syntax: 298 / 298 passed
-- Localization production gates: 17 / 17 passed
-- Blocking failures: 0
-- Diagnostic checks: completed
-- Generated SQL size: approximately 463 KB
-- Generated synchronization rows: 3,822
+The new catalog adds source-level translation keys. The effective dictionary now contains:
 
-## Supabase live verification
+- Arabic: **3923**
+- English: **3923**
+- Missing Arabic: **0**
+- Missing English: **0**
+- Empty values: **0**
+- Duplicate effective keys: **0**
+- Visible Arabic in English values: **0**
 
-The SQL was not executed against the production Supabase project in this environment. Live Runtime ↔ Supabase parity must not be marked complete until:
+New combined dictionary SHA-256:
 
-1. `petatoe_v9_4_23_supabase_localization_dictionary_parity_sync.sql` is run in Supabase SQL Editor.
-2. The final query returns `parity_ok: true`.
-3. `pending_active`, `empty_source`, and `empty_approved` all return 0.
+`f59e20f68b0e7623adf0421c59be92f265f8450fa6eeb913449981cd28fcb79c`
+
+## Not tested
+
+- Live browser Visual QA with every Children Expenses permission combination.
+- Live export/print with Production data.
+- Supabase live parity after adding the new catalog. Run the included SQL file and verify `parity_ok = true` before final certification.

@@ -1,11 +1,26 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta http-equiv="refresh" content="0; url=./index.html" />
-  <title>PETATOE — تحويل</title>
+  <title>PETATOE — Redirecting</title>
+  <script>
+    (function(){
+      var raw='';
+      try{raw=String(localStorage.getItem('petatoe_language')||localStorage.getItem('petatoe_lang')||'').toLowerCase();}catch(_){ }
+      var ar=raw==='ar';
+      document.documentElement.lang=ar?'ar':'en';
+      document.documentElement.dir=ar?'rtl':'ltr';
+      document.addEventListener('DOMContentLoaded',function(){
+        document.title=ar?'PETATOE — تحويل':'PETATOE — Redirecting';
+        var p=document.getElementById('redirectMessage'),a=document.getElementById('redirectLink');
+        if(p)p.firstChild.nodeValue=ar?'جارٍ التحويل إلى PETATOE... ':'Redirecting to PETATOE... ';
+        if(a)a.textContent=ar?'اضغط هنا':'Click here';
+      });
+    })();
+  </script>
 </head>
 <body>
-  <p>جارٍ التحويل إلى PETATOE... <a href="./index.html">اضغط هنا</a></p>
+  <p id="redirectMessage">Redirecting to PETATOE... <a id="redirectLink" href="./index.html">Click here</a></p>
 </body>
 </html>

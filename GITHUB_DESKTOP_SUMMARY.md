@@ -2,23 +2,20 @@
 
 ## Summary
 
-Phase A4 adds a reproducible Supabase localization parity pipeline generated from the effective runtime catalog order. It updates the runtime loader to preserve Arabic source-matching metadata while continuing to reject Arabic text in visible English translations.
+Localize confirmed residual UI strings in the 404 redirect and Children Expenses module at source level.
 
-## Modified
+## Files changed
 
+### Modified
+- `404.html`
 - `index.html`
-- `i18n/localization-center/loader.js`
-
-## Added
-
-- `scripts/localization-supabase-parity-build.js`
+- `children-expenses/children-legacy-engine.js`
 - `LOCALIZATION_SUPABASE_PARITY_SNAPSHOT.json`
 - `petatoe_v9_4_23_supabase_localization_dictionary_parity_sync.sql`
 
-## Not changed
+### Added
+- `i18n/localization-center/children-expenses-a5-1.js`
 
-- Business logic
-- Report calculations
-- Payroll workflow
-- Supabase client configuration
-- Queries or RPC calls used by operational modules
+## Business logic
+
+No changes to expense calculations, monthly budgets, stored category/payment values, permissions logic, CRUD behavior, Supabase queries, or report totals.
