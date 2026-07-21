@@ -5,10 +5,11 @@
   "description": "PETATOE Enterprise Mobile native wrapper based on Capacitor.",
   "scripts": {
     "native:build:web": "node scripts/build-native-web.mjs",
-    "native:sync": "npm run native:build:web && npm run native:install:faceid && npx cap sync ios",
+    "native:install:faceid": "node scripts/install-native-face-id.mjs",
+    "native:install:update": "node scripts/install-native-update.mjs",
+    "native:sync": "npm run native:build:web && npm run native:install:faceid && npm run native:install:update && npx cap sync ios",
     "native:open:ios": "npm run native:sync && npx cap open ios",
-    "native:doctor": "npx cap doctor",
-    "native:install:faceid": "node scripts/install-native-face-id.mjs"
+    "native:doctor": "npx cap doctor"
   },
   "dependencies": {
     "@capacitor/core": "^7.0.0",

@@ -9,10 +9,10 @@ const outDir = path.join(rootDir, 'www');
 const excludedNames = new Set([
   '.git', '.github', '.idea', '.vscode', 'node_modules', 'ios', 'android', 'www',
   'native', 'scripts', 'package-lock.json', 'package.json', 'capacitor.config.ts',
-  'README_NATIVE_IOS.md', 'README_NATIVE_FACE_ID.md'
+  'README_NATIVE_IOS.md', 'README_NATIVE_FACE_ID.md', 'README_NATIVE_UPDATE.md'
 ]);
 const excludedExtensions = new Set(['.zip', '.md', '.sql', '.log']);
-const includedRootFiles = new Set(['index.html', '404.html', 'offline.html', 'manifest.webmanifest', 'browserconfig.xml', 'favicon.ico', 'RELEASE_VERSION']);
+const includedRootFiles = new Set(['index.html', '404.html', 'offline.html', 'manifest.webmanifest', 'browserconfig.xml', 'favicon.ico', 'RELEASE_VERSION', 'native-release.json']);
 
 async function shouldCopy(sourcePath, entryName, isRoot) {
   if (excludedNames.has(entryName)) return false;
@@ -36,16 +36,19 @@ await rm(outDir, { recursive: true, force: true });
 await copyTree(rootDir, outDir, true);
 await mkdir(path.join(outDir, 'native'), { recursive: true });
 await cp(path.join(rootDir, 'native', 'runtime', 'native-biometric-auth.js'), path.join(outDir, 'native', 'native-biometric-auth.js'), { force: true });
+await cp(path.join(rootDir, 'native', 'runtime', 'native-update-coordinator.js'), path.join(outDir, 'native', 'native-update-coordinator.js'), { force: true });
 
 const indexPath = path.join(outDir, 'index.html');
 let html = await readFile(indexPath, 'utf8');
-const tag = '<script src="native/native-biometric-auth.js?v=10.0.0-n2" defer></script>';
-if (!html.includes(tag)) {
+const biometricTag = '<script src="native/native-biometric-auth.js?v=10.0.0-n2" defer></script>';
+const updateTag = '<script src="native/native-update-coordinator.js?v=10.0.0-n3" defer></script>';
+if (!html.includes(biometricTag)) {
   const authScriptPattern = /<script\b[^>]*src=["'][^"']*security\/auth-session\.js[^"']*["'][^>]*><\/script>/i;
-  if (authScriptPattern.test(html)) html = html.replace(authScriptPattern, tag + '\n$&');
-  else html = html.replace(/<\/body>/i, tag + '\n</body>');
+  if (authScriptPattern.test(html)) html = html.replace(authScriptPattern, biometricTag + '\n$&');
+  else html = html.replace(/<\/body>/i, biometricTag + '\n</body>');
 }
+if (!html.includes(updateTag)) html = html.replace(/<\/body>/i, updateTag + '\n</body>');
 const nativeCss = '<style id="petatoe-native-auth-style">html.petatoe-native-ios #petAuthBiometricBtn,html.petatoe-native-ios .pet-auth-biometric,html.petatoe-native-ios .pet-auth-enroll{display:none!important}html.pet-native-auth-pending body{visibility:hidden!important}</style>';
 if (!html.includes('petatoe-native-auth-style')) html = html.replace(/<\/head>/i, nativeCss + '\n</head>');
 await writeFile(indexPath, html);
-console.log(`PETATOE native web bundle created at ${outDir} with native Face ID bridge.`);
+console.log(`PETATOE native web bundle created at ${outDir} with Face ID and safe native update coordination.`);

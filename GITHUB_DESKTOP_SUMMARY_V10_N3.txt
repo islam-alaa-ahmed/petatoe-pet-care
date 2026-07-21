@@ -1,0 +1,10 @@
+PETATOE v10 Native Mobile Wrapper — N3 Safe Native Update Strategy
+
+- Add a native iOS version and build information plugin
+- Add a metadata-only release manifest check for optional and mandatory updates
+- Route updates only to approved App Store, TestFlight, or GitHub HTTPS hosts
+- Avoid runtime download or execution of replacement application code
+- Preserve the N2 Face ID Keychain session during normal application upgrades
+- Add foreground update checks and a native-safe update prompt
+- Include native update installation in the Capacitor sync workflow
+- Document synchronized native versioning and release requirements

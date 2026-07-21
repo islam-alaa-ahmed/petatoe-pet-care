@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "platform": "ios",
+  "latestVersion": "10.0.0",
+  "minimumSupportedVersion": "10.0.0",
+  "updateUrl": "https://github.com/islam-alaa-ahmed/petatoe-pet-care/releases",
+  "publishedAt": "2026-07-22T00:00:00Z",
+  "notes": {
+    "ar": "الإصدار الأساسي لتطبيق PETATOE الأصلي على iPhone.",
+    "en": "Initial PETATOE native iPhone release."
+  }
+}
