@@ -1,3 +1,10 @@
+import {
+  generateAuthenticationOptions,
+  generateRegistrationOptions,
+  verifyAuthenticationResponse,
+  verifyRegistrationResponse,
+} from "jsr:@simplewebauthn/server@13";
+
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -256,6 +263,196 @@ async function listActiveSessions(dbUrl: string, headers: Record<string, string>
   return { ok: true, action: "active_sessions_list", sessions };
 }
 
+
+const passkeyRpName = "PETATOE Enterprise";
+const passkeyRpID = () => String(Deno.env.get("PASSKEY_RP_ID") || "islam-alaa-ahmed.github.io").trim();
+const passkeyAllowedOrigins = () => String(Deno.env.get("PASSKEY_ALLOWED_ORIGINS") || "https://islam-alaa-ahmed.github.io")
+  .split(",").map((value) => value.trim()).filter(Boolean);
+const base64UrlToBytes = (value: string) => {
+  const normalized = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - normalized.length % 4) % 4);
+  const raw = atob(padded);
+  return Uint8Array.from(raw, (char) => char.charCodeAt(0));
+};
+const bytesToBase64Url = (value: Uint8Array) => {
+  let raw = "";
+  value.forEach((byte) => { raw += String.fromCharCode(byte); });
+  return btoa(raw).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+};
+
+async function requireActivePasskeySession(dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap) {
+  const raw = String(body.sessionClientToken || body.sessionToken || "").trim();
+  if (!raw || !user?.id) return false;
+  const tokenHash = await sessionTokenHash(raw, String(user.id));
+  const url = `${dbUrl}/rest/v1/user_sessions?select=id,expires_at,revoked_at&user_id=eq.${encodeURIComponent(String(user.id))}&session_token_hash=eq.${encodeURIComponent(tokenHash)}&revoked_at=is.null&expires_at=gt.${encodeURIComponent(nowIso())}&limit=1`;
+  const response = await fetch(url, { headers });
+  if (!response.ok) return false;
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) && rows.length > 0;
+}
+
+async function savePasskeyChallenge(dbUrl: string, headers: Record<string, string>, userId: string, purpose: string, challenge: string) {
+  const payload = {
+    user_id: userId,
+    purpose,
+    challenge,
+    expires_at: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
+    updated_at: nowIso(),
+  };
+  const response = await fetch(`${dbUrl}/rest/v1/passkey_challenges?on_conflict=user_id,purpose`, {
+    method: "POST",
+    headers: { ...headers, Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error(`PASSKEY_CHALLENGE_SAVE_FAILED:${await response.text()}`);
+}
+
+async function readPasskeyChallenge(dbUrl: string, headers: Record<string, string>, userId: string, purpose: string) {
+  const response = await fetch(`${dbUrl}/rest/v1/passkey_challenges?select=challenge,expires_at&user_id=eq.${encodeURIComponent(userId)}&purpose=eq.${encodeURIComponent(purpose)}&expires_at=gt.${encodeURIComponent(nowIso())}&limit=1`, { headers });
+  if (!response.ok) throw new Error(`PASSKEY_CHALLENGE_READ_FAILED:${await response.text()}`);
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) ? rows[0] || null : null;
+}
+
+async function clearPasskeyChallenge(dbUrl: string, headers: Record<string, string>, userId: string, purpose: string) {
+  await fetch(`${dbUrl}/rest/v1/passkey_challenges?user_id=eq.${encodeURIComponent(userId)}&purpose=eq.${encodeURIComponent(purpose)}`, { method: "DELETE", headers });
+}
+
+async function listUserPasskeys(dbUrl: string, headers: Record<string, string>, userId: string) {
+  const response = await fetch(`${dbUrl}/rest/v1/passkey_credentials?select=*&user_id=eq.${encodeURIComponent(userId)}&revoked_at=is.null&order=created_at.desc`, { headers });
+  if (!response.ok) throw new Error(`PASSKEY_LIST_FAILED:${await response.text()}`);
+  const rows = await response.json().catch(() => []);
+  return Array.isArray(rows) ? rows : [];
+}
+
+async function handlePasskeyAction(action: string, dbUrl: string, headers: Record<string, string>, user: JsonMap, body: JsonMap, req: Request) {
+  const rpID = passkeyRpID();
+  const origins = passkeyAllowedOrigins();
+  const requestedOrigin = String(body.origin || req.headers.get("origin") || "").replace(/\/$/, "");
+  if (!origins.includes(requestedOrigin)) return { status: 400, body: { ok: false, error: "PASSKEY_ORIGIN_NOT_ALLOWED" } };
+  const userId = String(user.id || "");
+  const username = String(user.username || user.legacy_payload?.username || "");
+  const credentials = await listUserPasskeys(dbUrl, headers, userId);
+
+  if (action === "passkey_registration_options") {
+    if (!(await requireActivePasskeySession(dbUrl, headers, user, body))) return { status: 401, body: { ok: false, error: "ACTIVE_SESSION_REQUIRED" } };
+    const options = await generateRegistrationOptions({
+      rpName: passkeyRpName,
+      rpID,
+      userID: new TextEncoder().encode(userId),
+      userName: username,
+      userDisplayName: String(user.full_name || user.fullName || username),
+      attestationType: "none",
+      excludeCredentials: credentials.map((row) => ({ id: String(row.credential_id), transports: row.transports || undefined })),
+      authenticatorSelection: { authenticatorAttachment: "platform", residentKey: "preferred", userVerification: "required" },
+      supportedAlgorithmIDs: [-7, -257],
+    });
+    await savePasskeyChallenge(dbUrl, headers, userId, "registration", options.challenge);
+    return { status: 200, body: { ok: true, action, options } };
+  }
+
+  if (action === "passkey_registration_verify") {
+    if (!(await requireActivePasskeySession(dbUrl, headers, user, body))) return { status: 401, body: { ok: false, error: "ACTIVE_SESSION_REQUIRED" } };
+    const challenge = await readPasskeyChallenge(dbUrl, headers, userId, "registration");
+    if (!challenge) return { status: 400, body: { ok: false, error: "PASSKEY_CHALLENGE_EXPIRED" } };
+    const verification = await verifyRegistrationResponse({
+      response: body.credential as never,
+      expectedChallenge: String(challenge.challenge),
+      expectedOrigin: requestedOrigin,
+      expectedRPID: rpID,
+      requireUserVerification: true,
+    });
+    if (!verification.verified || !verification.registrationInfo) return { status: 400, body: { ok: false, error: "PASSKEY_REGISTRATION_NOT_VERIFIED" } };
+    const info = verification.registrationInfo;
+    const credential = info.credential;
+    const record = {
+      user_id: userId,
+      credential_id: credential.id,
+      public_key: bytesToBase64Url(credential.publicKey),
+      counter: credential.counter,
+      transports: credential.transports || [],
+      device_type: info.credentialDeviceType,
+      backed_up: info.credentialBackedUp,
+      device_name: String(body.deviceName || "Apple Face ID").slice(0, 120),
+      user_agent: req.headers.get("user-agent") || "",
+      last_used_at: nowIso(),
+      revoked_at: null,
+      metadata: { source: "petatoe-passkey", origin: requestedOrigin },
+    };
+    const save = await fetch(`${dbUrl}/rest/v1/passkey_credentials?on_conflict=credential_id`, {
+      method: "POST",
+      headers: { ...headers, Prefer: "resolution=merge-duplicates,return=representation" },
+      body: JSON.stringify(record),
+    });
+    if (!save.ok) return { status: 500, body: { ok: false, error: "PASSKEY_SAVE_FAILED", details: await save.text() } };
+    await clearPasskeyChallenge(dbUrl, headers, userId, "registration");
+    return { status: 200, body: { ok: true, action, verified: true, credentialId: credential.id } };
+  }
+
+  if (action === "passkey_authentication_options") {
+    if (!credentials.length) return { status: 404, body: { ok: false, error: "PASSKEY_NOT_REGISTERED" } };
+    const options = await generateAuthenticationOptions({
+      rpID,
+      allowCredentials: credentials.map((row) => ({ id: String(row.credential_id), transports: row.transports || undefined })),
+      userVerification: "required",
+    });
+    await savePasskeyChallenge(dbUrl, headers, userId, "authentication", options.challenge);
+    return { status: 200, body: { ok: true, action, options } };
+  }
+
+  if (action === "passkey_authentication_verify") {
+    const credentialId = String((body.credential as JsonMap)?.id || "");
+    const row = credentials.find((item) => String(item.credential_id) === credentialId);
+    if (!row) return { status: 404, body: { ok: false, error: "PASSKEY_CREDENTIAL_NOT_FOUND" } };
+    const challenge = await readPasskeyChallenge(dbUrl, headers, userId, "authentication");
+    if (!challenge) return { status: 400, body: { ok: false, error: "PASSKEY_CHALLENGE_EXPIRED" } };
+    const verification = await verifyAuthenticationResponse({
+      response: body.credential as never,
+      expectedChallenge: String(challenge.challenge),
+      expectedOrigin: requestedOrigin,
+      expectedRPID: rpID,
+      requireUserVerification: true,
+      credential: {
+        id: String(row.credential_id),
+        publicKey: base64UrlToBytes(String(row.public_key)),
+        counter: Number(row.counter || 0),
+        transports: row.transports || undefined,
+      },
+    });
+    if (!verification.verified) return { status: 401, body: { ok: false, error: "PASSKEY_AUTHENTICATION_FAILED" } };
+    const update = await fetch(`${dbUrl}/rest/v1/passkey_credentials?credential_id=eq.${encodeURIComponent(credentialId)}&user_id=eq.${encodeURIComponent(userId)}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ counter: verification.authenticationInfo.newCounter, last_used_at: nowIso() }),
+    });
+    if (!update.ok) return { status: 500, body: { ok: false, error: "PASSKEY_COUNTER_UPDATE_FAILED" } };
+    await clearPasskeyChallenge(dbUrl, headers, userId, "authentication");
+    return {
+      status: 200,
+      body: {
+        ok: true,
+        action,
+        verified: true,
+        user: {
+          id: user.id,
+          supabase_id: user.id,
+          username,
+          fullName: user.full_name || user.legacy_payload?.fullName || username,
+          full_name: user.full_name || user.legacy_payload?.fullName || username,
+          email: user.email || user.legacy_payload?.email || "",
+          phone: user.phone || user.legacy_payload?.phone || "",
+          job: user.job || user.legacy_payload?.job || "",
+          role: user.role_code || user.legacy_payload?.role || "viewer",
+          role_code: user.role_code || user.legacy_payload?.role || "viewer",
+          status: user.status || "active",
+        },
+      },
+    };
+  }
+
+  return { status: 400, body: { ok: false, error: "PASSKEY_ACTION_NOT_SUPPORTED" } };
+}
+
 async function audit(dbUrl: string, headers: HeadersInit, payload: JsonMap) {
   try {
     await fetch(`${dbUrl}/rest/v1/login_history`, {
@@ -344,6 +541,31 @@ export default {
         return (action === "reset_password" || action === "mfa_verify")
           ? json({ ok: false, error: "INVALID_OR_EXPIRED_OTP" }, 400)
           : safeSuccess();
+      }
+
+      if (["passkey_registration_options", "passkey_registration_verify", "passkey_authentication_options", "passkey_authentication_verify"].includes(action)) {
+        try {
+          const result = await handlePasskeyAction(action, PETATOE_SUPABASE_URL, dbHeaders, user, body, req);
+          await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+            user_id: user.id,
+            username_attempted: username,
+            event_type: action,
+            success: result.status >= 200 && result.status < 300,
+            failure_reason: result.status >= 400 ? String((result.body as JsonMap).error || "passkey_failed") : null,
+            user_agent: req.headers.get("user-agent"),
+          });
+          return json(result.body, result.status);
+        } catch (error) {
+          await audit(PETATOE_SUPABASE_URL, dbHeaders, {
+            user_id: user.id,
+            username_attempted: username,
+            event_type: action,
+            success: false,
+            failure_reason: String(error?.message || error),
+            user_agent: req.headers.get("user-agent"),
+          });
+          return json({ ok: false, action, error: "PASSKEY_OPERATION_FAILED", details: String(error?.message || error) }, 400);
+        }
       }
 
       if (action === "session_start") {

@@ -580,7 +580,23 @@
   function biometricUsable(){
     return biometricSupported() && window.isSecureContext !== false;
   }
-  function readBiometric(){ return null; }
+  var BIOMETRIC_KEY = 'petatoe_passkey_device_v10';
+  var biometricAutoAttempted = false;
+  function readBiometric(){
+    try{
+      var raw = localStorage.getItem(BIOMETRIC_KEY);
+      if(!raw) return null;
+      var record = JSON.parse(raw);
+      return record && record.username && record.email ? record : null;
+    }catch(_e){ return null; }
+  }
+  function writeBiometric(record){
+    try{
+      if(!record){ localStorage.removeItem(BIOMETRIC_KEY); return false; }
+      localStorage.setItem(BIOMETRIC_KEY, JSON.stringify(record));
+      return true;
+    }catch(_e){ return false; }
+  }
   function biometricButtonHtml(){
     var r = readBiometric();
     if(!r) return '';
@@ -590,21 +606,126 @@
     if(!biometricSupported()) return '';
     return '<label class="pet-auth-check"><input type="checkbox" id="petAuthEnableBiometric"> <span>تفعيل Face ID / بصمة الوجه بعد الدخول</span></label>';
   }
-  function registerBiometric(user){
-    toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم تعطيل التخزين المحلي للبصمة في نسخة Supabase.'):'تم تعطيل التخزين المحلي للبصمة في نسخة Supabase.');
-    return Promise.resolve(false);
+  function publicKeyCreationOptions(options){
+    options = Object.assign({}, options || {});
+    options.challenge = unb64url(options.challenge);
+    if(options.user) options.user = Object.assign({}, options.user, {id:unb64url(options.user.id)});
+    options.excludeCredentials = (options.excludeCredentials || []).map(function(item){ return Object.assign({}, item, {id:unb64url(item.id)}); });
+    return options;
   }
-  function loginWithBiometric(){
-    var r = readBiometric();
-    if(!r){ renderLogin('لم يتم تفعيل Face ID لهذا الجهاز بعد'); return; }
-    if(!biometricUsable()){ renderLogin('Face ID يحتاج HTTPS أو متصفح يدعم WebAuthn'); return; }
-    navigator.credentials.get({publicKey:{challenge:bytes(32), allowCredentials:[{type:'public-key', id:unb64url(r.credentialId)}], userVerification:'required', timeout:60000}}).then(function(assertion){
-      if(!assertion || b64url(assertion.rawId) !== r.credentialId){ renderLogin('تعذر التحقق من Face ID'); return; }
-      var user = findUser(r.username || r.userId);
-      if(!user || !isActive(user)){ renderLogin('المستخدم المرتبط بالبصمة غير متاح'); return; }
-      if(user.mustChangePassword || user.bootstrapCredential){ renderPasswordChange(user, 'يجب تغيير كلمة المرور قبل استخدام Face ID'); return; }
-      openSession(user, 'auth-biometric', {biometric:true});
-    }).catch(function(){ renderLogin('تم إلغاء أو فشل التحقق بالبصمة'); });
+  function publicKeyRequestOptions(options){
+    options = Object.assign({}, options || {});
+    options.challenge = unb64url(options.challenge);
+    options.allowCredentials = (options.allowCredentials || []).map(function(item){ return Object.assign({}, item, {id:unb64url(item.id)}); });
+    return options;
+  }
+  function serializeRegistrationCredential(credential){
+    var response = credential && credential.response;
+    return {
+      id:credential.id,
+      rawId:b64url(credential.rawId),
+      type:credential.type,
+      authenticatorAttachment:credential.authenticatorAttachment || null,
+      clientExtensionResults:credential.getClientExtensionResults ? credential.getClientExtensionResults() : {},
+      response:{
+        clientDataJSON:b64url(response.clientDataJSON),
+        attestationObject:b64url(response.attestationObject),
+        transports:response.getTransports ? response.getTransports() : []
+      }
+    };
+  }
+  function serializeAuthenticationCredential(credential){
+    var response = credential && credential.response;
+    return {
+      id:credential.id,
+      rawId:b64url(credential.rawId),
+      type:credential.type,
+      authenticatorAttachment:credential.authenticatorAttachment || null,
+      clientExtensionResults:credential.getClientExtensionResults ? credential.getClientExtensionResults() : {},
+      response:{
+        clientDataJSON:b64url(response.clientDataJSON),
+        authenticatorData:b64url(response.authenticatorData),
+        signature:b64url(response.signature),
+        userHandle:response.userHandle ? b64url(response.userHandle) : null
+      }
+    };
+  }
+  function biometricIdentity(user){
+    user = user || sessionUser() || window.currentUser || {};
+    return {
+      username:String(user.username || user.name || user.id || '').trim(),
+      email:String(user.email || user.mail || user.userEmail || '').trim().toLowerCase(),
+      purpose:'mfa_email_otp',
+      origin:window.location.origin
+    };
+  }
+  async function registerBiometric(user){
+    if(!biometricUsable()){
+      toast('Face ID يحتاج HTTPS أو متصفح يدعم WebAuthn');
+      return false;
+    }
+    var identity = biometricIdentity(user);
+    if(!identity.username || !identity.email){ toast('البريد الإلكتروني مطلوب لتفعيل Face ID'); return false; }
+    try{
+      await ensureEnterpriseSession(user, 'passkey-enrollment');
+      var optionsResponse = await callSecurityEmail(Object.assign({action:'passkey_registration_options'}, identity, remoteSessionPayload(user, false)));
+      var credential = await navigator.credentials.create({publicKey:publicKeyCreationOptions(optionsResponse.options)});
+      if(!credential) throw new Error('PASSKEY_CREATION_CANCELLED');
+      var verified = await callSecurityEmail(Object.assign({
+        action:'passkey_registration_verify',
+        credential:serializeRegistrationCredential(credential),
+        deviceName:(navigator.platform || 'Apple Face ID')
+      }, identity, remoteSessionPayload(user, false)));
+      if(!verified || !verified.verified) throw new Error('PASSKEY_REGISTRATION_NOT_VERIFIED');
+      writeBiometric({
+        username:identity.username,
+        email:identity.email,
+        credentialId:verified.credentialId || credential.id,
+        enabledAt:now(),
+        origin:window.location.origin
+      });
+      toast('تم تفعيل Face ID لهذا الجهاز');
+      return true;
+    }catch(err){
+      var name = String(err && err.name || '');
+      if(name === 'NotAllowedError' || name === 'AbortError') toast('تم إلغاء تفعيل Face ID');
+      else toast('تعذر تفعيل Face ID: ' + String(err && err.message || err));
+      return false;
+    }
+  }
+  async function loginWithBiometric(options){
+    options = options || {};
+    var record = readBiometric();
+    if(!record){ if(!options.silent) renderLogin('لم يتم تفعيل Face ID لهذا الجهاز بعد'); return false; }
+    if(!biometricUsable()){ if(!options.silent) renderLogin('Face ID يحتاج HTTPS أو متصفح يدعم WebAuthn'); return false; }
+    try{
+      var identity = {username:record.username,email:record.email,purpose:'mfa_email_otp',origin:window.location.origin};
+      var optionsResponse = await callSecurityEmail(Object.assign({action:'passkey_authentication_options'}, identity));
+      var assertion = await navigator.credentials.get({publicKey:publicKeyRequestOptions(optionsResponse.options)});
+      if(!assertion) throw new Error('PASSKEY_ASSERTION_CANCELLED');
+      var verified = await callSecurityEmail(Object.assign({
+        action:'passkey_authentication_verify',
+        credential:serializeAuthenticationCredential(assertion)
+      }, identity));
+      if(!verified || !verified.verified || !verified.user) throw new Error('PASSKEY_AUTHENTICATION_FAILED');
+      var localUser = findUser(record.username);
+      var user = Object.assign({}, verified.user || {}, localUser || {});
+      if(!user || !isActive(user)){ renderLogin('المستخدم المرتبط بالبصمة غير متاح'); return false; }
+      if(user.mustChangePassword || user.bootstrapCredential){ renderPasswordChange(user, 'يجب تغيير كلمة المرور قبل استخدام Face ID'); return false; }
+      writeBiometric(Object.assign({}, record, {lastUsedAt:now(),credentialId:assertion.id}));
+      return openSession(user, 'auth-biometric', {biometric:true,mfaVerified:true});
+    }catch(err){
+      var name = String(err && err.name || '');
+      if(options.silent && (name === 'NotAllowedError' || name === 'AbortError')) return false;
+      var message = (name === 'NotAllowedError' || name === 'AbortError') ? 'تم إلغاء أو فشل التحقق بالبصمة' : 'تعذر التحقق من Face ID';
+      renderLogin(message);
+      return false;
+    }
+  }
+  function scheduleAutomaticBiometricLogin(){
+    if(biometricAutoAttempted || !readBiometric() || !biometricUsable()) return;
+    biometricAutoAttempted = true;
+    setTimeout(function(){ loginWithBiometric({silent:true,automatic:true}); }, 180);
   }
 
   function securityEmailEndpoint(){
@@ -793,7 +914,8 @@
     var username = document.getElementById('petAuthUsername');
     var password = document.getElementById('petAuthPassword');
     var bioBtn = document.getElementById('petAuthBiometricBtn');
-    if(username) setTimeout(function(){ try{ (savedUsername && password ? password : username).focus(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }, 40);
+    if(username && !readBiometric()) setTimeout(function(){ try{ (savedUsername && password ? password : username).focus(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }, 40);
+    scheduleAutomaticBiometricLogin();
     if(bioBtn){ bioBtn.addEventListener('click', function(e){ e.preventDefault(); loginWithBiometric(); }); }
     var forgotBtn = document.getElementById('petForgotPasswordBtn');
     if(forgotBtn){ forgotBtn.addEventListener('click', function(e){ e.preventDefault(); renderForgotPassword('', {username: username && username.value || ''}); }); }
@@ -1042,7 +1164,7 @@
       role_code:user.role_code || user.role || user.userRole || 'viewer',
       status:user.status || 'active',
       loginAt:now(),
-      mfaVerified: source === 'auth-login-mfa' || !!options.mfaVerified
+      mfaVerified: source === 'auth-login-mfa' || source === 'auth-biometric' || !!options.mfaVerified
     };
     if(options.remember) saveBrowserPasswordCredential(options.form, user.username || user.id || user.fullName, true);
     else if(options.remember === false) writeRemember('', false);

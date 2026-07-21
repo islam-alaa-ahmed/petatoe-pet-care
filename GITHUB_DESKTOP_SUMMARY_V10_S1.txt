@@ -1,0 +1,11 @@
+PETATOE Mobile Enterprise UI v10 — S1 Native Biometric Passkey Login
+
+- Replace the disabled local biometric prototype with server-verified WebAuthn passkeys
+- Add automatic Face ID / Touch ID authentication on app launch for enrolled devices
+- Prevent iOS password AutoFill from taking focus before the automatic passkey attempt
+- Require an active PETATOE enterprise session before passkey enrollment
+- Verify passkey challenge, origin, RP ID, user verification, signature and counter in the Supabase Edge Function
+- Store only public-key credential data in Supabase; no biometric templates or passwords
+- Add RLS-protected passkey credential and challenge tables
+- Preserve password, OTP and trusted-device login as fallback paths
+- Update localization parity and the PWA cache version
