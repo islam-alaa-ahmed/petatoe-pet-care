@@ -1,0 +1,8 @@
+PETATOE v9.4.24 — Hotfix M1.2 Mobile Header & Toast
+
+- Measure the real iPhone header height at runtime using ResizeObserver
+- Reserve the exact header offset for page content and anchor scrolling
+- Prevent Dashboard content from starting beneath the fixed header
+- Convert the shared mobile system message into a compact toast below the header
+- Refresh the Service Worker cache and pre-cache the mobile runtime coordinator
+- Keep Desktop, Supabase, reports, payroll, permissions and business logic unchanged
