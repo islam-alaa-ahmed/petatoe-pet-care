@@ -1,0 +1,9 @@
+PETATOE Mobile Enterprise UI v10 — S2 Biometric-First Startup
+
+- Add a biometric-first startup state for enrolled passkey devices
+- Hide the username/password form while the automatic iOS passkey request is active
+- Prevent password-field focus and AutoFill UI from competing with Face ID startup
+- Reveal the normal login form only after passkey cancellation or verification failure
+- Preserve manual passkey, password, OTP, permissions and session fallback behavior
+- Update the PWA cache to 10.0.0-passkey-biometric-first-s2
+- Keep Supabase schema, Edge Functions and business logic unchanged

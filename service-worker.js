@@ -1,7 +1,7 @@
 /* PETATOE PWA Enterprise Service Worker — Phase PWA-1 */
 'use strict';
 
-const APP_VERSION = '10.0.0-passkey-biometric-s1';
+const APP_VERSION = '10.0.0-passkey-biometric-first-s2';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;

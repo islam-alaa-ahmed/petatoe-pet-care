@@ -228,6 +228,11 @@
       '.pet-auth-check{display:flex;align-items:center;gap:9px;margin:10px 0 0;color:rgba(226,232,240,.86);font-size:12px;font-weight:900;cursor:pointer;user-select:none}.pet-auth-check input{width:16px;height:16px;accent-color:#ec4899}',
       '.pet-auth-biometric{width:100%;border:1px solid rgba(244,114,182,.36);border-radius:999px;padding:12px 16px;margin-top:10px;font-family:Cairo,system-ui,sans-serif;font-weight:1000;cursor:pointer;color:#fff;background:linear-gradient(135deg,rgba(236,72,153,.24),rgba(15,23,42,.42));box-shadow:0 12px 28px rgba(236,72,153,.13)}',
       '.pet-auth-biometric:hover{border-color:rgba(244,114,182,.68);background:linear-gradient(135deg,rgba(236,72,153,.34),rgba(15,23,42,.50))}',
+      '.pet-auth-biometric-gate{display:none;position:relative;z-index:2147483055;width:min(260px,72vw);aspect-ratio:1;border:1px solid rgba(56,189,248,.34);border-radius:34px;background:linear-gradient(145deg,rgba(15,23,42,.82),rgba(30,41,59,.64));box-shadow:0 28px 90px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,255,255,.14);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);align-items:center;justify-content:center}',
+      '.pet-auth-biometric-gate-icon{width:92px;height:92px;border:5px solid rgba(14,165,233,.26);border-top-color:#0ea5e9;border-radius:30px;animation:petAuthBioPulse 1.15s ease-in-out infinite;box-shadow:0 0 38px rgba(14,165,233,.22)}',
+      '.pet-auth-overlay.pet-auth-biometric-first .pet-auth-card,.pet-auth-overlay.pet-auth-biometric-first .pet-auth-footer{visibility:hidden;opacity:0;pointer-events:none}',
+      '.pet-auth-overlay.pet-auth-biometric-first .pet-auth-biometric-gate{display:flex}',
+      '@keyframes petAuthBioPulse{0%,100%{transform:scale(.92);opacity:.62}50%{transform:scale(1);opacity:1}}',
       '.pet-auth-footer{position:fixed;left:0;right:0;bottom:0;z-index:2147483100;display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;text-align:center;color:rgba(226,232,240,.9);font-size:13px;font-weight:900;letter-spacing:.1px;pointer-events:auto;padding:17px 18px;background:linear-gradient(180deg,rgba(15,23,42,.38),rgba(15,23,42,.82));border-top:1px solid rgba(255,255,255,.14);backdrop-filter:blur(18px)}',
       '.pet-auth-footer .pet-auth-version{color:#fff;font-weight:1000;letter-spacing:1.4px}',
       '.pet-auth-footer .pet-auth-sep{color:rgba(148,163,184,.55)}',
@@ -716,16 +721,28 @@
       return openSession(user, 'auth-biometric', {biometric:true,mfaVerified:true});
     }catch(err){
       var name = String(err && err.name || '');
-      if(options.silent && (name === 'NotAllowedError' || name === 'AbortError')) return false;
-      var message = (name === 'NotAllowedError' || name === 'AbortError') ? 'تم إلغاء أو فشل التحقق بالبصمة' : 'تعذر التحقق من Face ID';
-      renderLogin(message);
+      var cancelled = name === 'NotAllowedError' || name === 'AbortError';
+      var message = cancelled ? '' : 'تعذر التحقق من Face ID';
+      if(options.automatic){ revealBiometricFallback(message); return false; }
+      renderLogin(cancelled ? 'تم إلغاء أو فشل التحقق بالبصمة' : message);
       return false;
     }
+  }
+  function revealBiometricFallback(message){
+    var overlay = document.getElementById('pet-auth-overlay');
+    if(overlay) overlay.classList.remove('pet-auth-biometric-first');
+    var error = document.getElementById('petAuthError');
+    if(error && message){ error.textContent = String(message); error.classList.add('show'); }
+    var username = document.getElementById('petAuthUsername');
+    var password = document.getElementById('petAuthPassword');
+    setTimeout(function(){ try{ ((username && username.value && password) ? password : username).focus(); }catch(_e){} }, 80);
   }
   function scheduleAutomaticBiometricLogin(){
     if(biometricAutoAttempted || !readBiometric() || !biometricUsable()) return;
     biometricAutoAttempted = true;
-    setTimeout(function(){ loginWithBiometric({silent:true,automatic:true}); }, 180);
+    var overlay = document.getElementById('pet-auth-overlay');
+    if(overlay) overlay.classList.add('pet-auth-biometric-first');
+    setTimeout(function(){ loginWithBiometric({silent:true,automatic:true}); }, 90);
   }
 
   function securityEmailEndpoint(){
@@ -898,6 +915,7 @@
     overlay.id = 'pet-auth-overlay';
     overlay.className = 'pet-auth-overlay';
     overlay.innerHTML = '<div class="pet-auth-brand" aria-label="PETATOE"><img src="img/petatoe-logo-light-transparent.png" alt="PETATOE"><span>Petatoe<small>بيتاتو</small></span></div>' +
+      '<div class="pet-auth-biometric-gate" id="petAuthBiometricGate" role="status" aria-live="polite" aria-label="Face ID"><div class="pet-auth-biometric-gate-icon" aria-hidden="true"></div></div>' +
       '<form class="pet-auth-card" id="petAuthForm" autocomplete="on">' +
       '<div class="pet-auth-logo">🐾</div>' +
       '<div class="pet-auth-field"><label for="petAuthUsername">اسم المستخدم</label><input id="petAuthUsername" name="username" autocomplete="username" value="'+esc(savedUsername)+'" required></div>' +
