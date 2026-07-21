@@ -1,0 +1,9 @@
+PETATOE v10 Native Mobile Wrapper — N1 Capacitor Foundation
+
+- Add Capacitor 7 project configuration for PETATOE iOS
+- Define the stable native bundle identifier com.petatoe.enterprise
+- Add a deterministic native web-bundle builder targeting www
+- Add macOS automation to install, generate, sync and open the iOS project
+- Add Git exclusions for generated Capacitor and Xcode artifacts
+- Document the native iOS development workflow and N1/N2 phase boundary
+- Keep authentication, Supabase, reports, payroll, permissions and business logic unchanged
