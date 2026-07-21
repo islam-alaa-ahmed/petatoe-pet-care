@@ -1,0 +1,8 @@
+PETATOE Mobile Enterprise UI v10 — M1.1 Localization Certification Fix
+
+- Fix the failing GitHub localization-lockdown workflow
+- Register all V10 mobile shell labels in the canonical Arabic and English dictionary
+- Replace hard-coded Arabic mobile UI strings with localization-center key resolution
+- Preserve accessibility labels, drawer search, bottom navigation and empty-state translations
+- Generate updated Supabase localization parity SQL for the new mobileV10 keys
+- Keep routing, permissions, reports, payroll, Desktop and Tablet unchanged

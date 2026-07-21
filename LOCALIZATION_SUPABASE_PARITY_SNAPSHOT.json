@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20T22:04:01.732Z",
+  "generatedAt": "2026-07-21T21:14:48.088Z",
   "source": "index.html localization-center script order",
   "loadedCatalogs": [
     "i18n/localization-center/payroll-ui-a3-4.js",
@@ -20,9 +20,9 @@
     "i18n/localization-center/application-shell-pilot.js"
   ],
   "counts": {
-    "activeKeys": 3923,
-    "arabicValues": 3923,
-    "englishValues": 3923,
+    "activeKeys": 3936,
+    "arabicValues": 3936,
+    "englishValues": 3936,
     "duplicateKeys": 0,
     "missingArabic": 0,
     "missingEnglish": 0,
@@ -32,9 +32,9 @@
     "sourceMetadataArabic": 9
   },
   "hashes": {
-    "arabic": "ff960f5d2c4ba81fc42149dfb3837cf06973258f641b16f174958e114e6dba1e",
-    "english": "11a63b17be857a936d64c75bebe567342edc99e9c5de2a900854c7cc61b8ee1b",
-    "combined": "f59e20f68b0e7623adf0421c59be92f265f8450fa6eeb913449981cd28fcb79c"
+    "arabic": "dd93cc16b4d1355179ac197720777be979c8dcb9ef46a4a679515e640392ad36",
+    "english": "ffd6709f2770aca3d9e8a8c79ff616723053ae43d47d4934a81c45982956d5eb",
+    "combined": "1f916887523328e3d02c1816b63f7a57777a0aa787749e850a00c45951c2ef44"
   },
   "issues": {
     "missingArabic": [],
