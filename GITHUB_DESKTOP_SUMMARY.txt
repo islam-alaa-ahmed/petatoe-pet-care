@@ -1,8 +1,10 @@
-PETATOE v9.4.24 — Operations Master Data Supabase Singleton Fix
+PETATOE Mobile Enterprise UI v10 — M1 Mobile App Shell
 
-- Fix mobile services missing despite being stored in Supabase
-- Replace delete-and-insert master-data writes with a canonical UUID upsert
-- Recover the most complete record when duplicate rows exist
-- Migrate legacy duplicate rows into one canonical master-data record
-- Prevent early empty startup writes from overwriting populated Supabase data
-- Keep UI, appointments, reports, payroll, permissions and localization unchanged
+- Add a dedicated phone-only enterprise app shell
+- Replace the oversized mobile header with a compact Safe Area-aware header
+- Add five-item native-style bottom navigation
+- Add a searchable mobile drawer generated from the canonical permission-aware menu
+- Reuse the existing PETATOE router without changing business logic
+- Unify mobile toast and PWA update positions below the app header
+- Refresh the Service Worker cache and pre-cache the v10 shell assets
+- Keep Desktop, Tablet, Supabase, reports, payroll and permissions unchanged

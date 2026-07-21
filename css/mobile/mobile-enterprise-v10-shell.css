@@ -1,0 +1,144 @@
+/* PETATOE Mobile Enterprise UI v10 — M1 App Shell
+   Scope: mobile phones only. Desktop and tablet layouts remain untouched. */
+@media (max-width: 760px) {
+  :root {
+    --pet-v10-safe-top: env(safe-area-inset-top, 0px);
+    --pet-v10-safe-right: env(safe-area-inset-right, 0px);
+    --pet-v10-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --pet-v10-safe-left: env(safe-area-inset-left, 0px);
+    --pet-v10-header-h: 64px;
+    --pet-v10-nav-h: 68px;
+    --pet-v10-surface: rgba(12, 19, 35, .86);
+    --pet-v10-border: rgba(255,255,255,.13);
+    --pet-v10-accent: #8b5cf6;
+    --pet-v10-text: #f8fafc;
+    --pet-v10-muted: #94a3b8;
+  }
+
+  html, body { min-height: 100%; overscroll-behavior-y: contain; }
+  body { padding-bottom: calc(var(--pet-v10-nav-h) + var(--pet-v10-safe-bottom) + 12px) !important; }
+
+  /* Canonical compact app header. */
+  .topbar {
+    min-height: calc(var(--pet-v10-header-h) + var(--pet-v10-safe-top)) !important;
+    height: calc(var(--pet-v10-header-h) + var(--pet-v10-safe-top)) !important;
+    padding: calc(var(--pet-v10-safe-top) + 8px) calc(var(--pet-v10-safe-right) + 12px) 8px calc(var(--pet-v10-safe-left) + 12px) !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0,1fr) auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    overflow: visible !important;
+    border-bottom: 1px solid var(--pet-v10-border) !important;
+    background: var(--pet-v10-surface) !important;
+    -webkit-backdrop-filter: blur(24px) saturate(150%) !important;
+    backdrop-filter: blur(24px) saturate(150%) !important;
+    box-shadow: 0 10px 30px rgba(2,6,23,.24) !important;
+  }
+
+  body .main, .main {
+    padding-top: calc(var(--pet-v10-header-h) + var(--pet-v10-safe-top) + 10px) !important;
+    padding-bottom: calc(var(--pet-v10-nav-h) + var(--pet-v10-safe-bottom) + 12px) !important;
+  }
+
+  .topbar .top-left,
+  .topbar .top-right { display: contents !important; }
+
+  .topbar .side-launcher,
+  .topbar .reports-btn,
+  .topbar #today,
+  .topbar .pet-language-switcher,
+  .topbar .pet-notification-trigger,
+  .topbar .top-paw-up-btn,
+  .topbar .pill.toggle,
+  .topbar .user { display: none !important; }
+
+  .pet-v10-header-menu,
+  .pet-v10-header-action {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    border: 1px solid var(--pet-v10-border);
+    border-radius: 15px;
+    background: rgba(255,255,255,.07);
+    color: var(--pet-v10-text);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pet-v10-header-menu { grid-column: 1; }
+  .pet-v10-header-brand { grid-column: 2; min-width: 0; display:flex; align-items:center; gap:9px; direction:ltr; }
+  .pet-v10-header-actions { grid-column: 3; display:flex; gap:8px; }
+  .pet-v10-header-logo { width:40px; height:40px; border-radius:13px; object-fit:cover; box-shadow:0 7px 18px rgba(139,92,246,.28); }
+  .pet-v10-header-copy { min-width:0; line-height:1.15; }
+  .pet-v10-header-copy b { display:block; color:var(--pet-v10-text); font-size:15px; letter-spacing:.04em; }
+  .pet-v10-header-copy small { display:block; color:var(--pet-v10-muted); font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; margin-top:3px; }
+  .pet-v10-header-action svg,.pet-v10-header-menu svg { width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:2; }
+
+  /* Hide legacy sidebar on phones; v10 drawer is the only mobile menu. */
+  body .sidebar, body .overlay#overlay { display:none !important; }
+
+  .pet-v10-drawer-backdrop {
+    position: fixed; inset: 0; z-index: 2147482500;
+    background: rgba(2,6,23,.62); opacity:0; pointer-events:none;
+    transition: opacity .22s ease;
+  }
+  .pet-v10-drawer {
+    position: fixed; z-index:2147482600;
+    top:0; bottom:0; right:0;
+    width:min(88vw,360px);
+    padding: calc(var(--pet-v10-safe-top) + 14px) 14px calc(var(--pet-v10-safe-bottom) + 18px);
+    background: rgba(8,15,29,.97);
+    border-left:1px solid var(--pet-v10-border);
+    box-shadow:-24px 0 60px rgba(0,0,0,.45);
+    transform:translateX(105%); transition:transform .25s cubic-bezier(.2,.8,.2,1);
+    display:flex; flex-direction:column; gap:12px;
+    overflow:hidden;
+  }
+  [dir="ltr"] .pet-v10-drawer { right:auto; left:0; transform:translateX(-105%); border-left:0; border-right:1px solid var(--pet-v10-border); }
+  body.pet-v10-drawer-open { overflow:hidden !important; }
+  body.pet-v10-drawer-open .pet-v10-drawer-backdrop { opacity:1; pointer-events:auto; }
+  body.pet-v10-drawer-open .pet-v10-drawer { transform:translateX(0); }
+  .pet-v10-drawer-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:4px; }
+  .pet-v10-drawer-user { min-width:0; display:flex; align-items:center; gap:10px; }
+  .pet-v10-drawer-avatar { width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,#7c3aed,#2563eb);font-weight:900;color:#fff; }
+  .pet-v10-drawer-user-copy { min-width:0; }
+  .pet-v10-drawer-user-copy b,.pet-v10-drawer-user-copy small { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pet-v10-drawer-user-copy b { color:var(--pet-v10-text); font-size:14px; }
+  .pet-v10-drawer-user-copy small { color:var(--pet-v10-muted); font-size:11px; margin-top:3px; }
+  .pet-v10-drawer-close { width:40px;height:40px;border-radius:13px;border:1px solid var(--pet-v10-border);background:rgba(255,255,255,.06);color:#fff;font-size:24px; }
+  .pet-v10-drawer-search { position:relative; }
+  .pet-v10-drawer-search input { width:100%; min-height:46px; border-radius:15px; border:1px solid var(--pet-v10-border); background:rgba(255,255,255,.055); color:#fff; padding:10px 14px; font:700 13px Cairo,system-ui; }
+  .pet-v10-drawer-list { flex:1; overflow:auto; -webkit-overflow-scrolling:touch; display:grid; gap:7px; padding:2px 1px 10px; }
+  .pet-v10-drawer-item { width:100%; min-height:49px; display:flex; align-items:center; gap:11px; padding:10px 13px; border-radius:15px; border:1px solid transparent; background:transparent; color:#e2e8f0; text-align:start; font:800 13px Cairo,system-ui; }
+  .pet-v10-drawer-item .pet-v10-menu-icon { width:34px;height:34px;flex:0 0 34px;border-radius:11px;display:grid;place-items:center;background:rgba(139,92,246,.13);font-size:16px; }
+  .pet-v10-drawer-item.active { background:linear-gradient(135deg,rgba(124,58,237,.26),rgba(37,99,235,.18)); border-color:rgba(139,92,246,.45); color:#fff; }
+  .pet-v10-drawer-empty { color:var(--pet-v10-muted); text-align:center; padding:30px 10px; font-size:13px; }
+
+  /* Native-like bottom navigation. */
+  .pet-v10-bottom-nav {
+    position:fixed; z-index:2147482000;
+    right:0; bottom:0; left:0;
+    height:calc(var(--pet-v10-nav-h) + var(--pet-v10-safe-bottom));
+    padding:7px calc(var(--pet-v10-safe-right) + 8px) calc(var(--pet-v10-safe-bottom) + 6px) calc(var(--pet-v10-safe-left) + 8px);
+    display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); align-items:start; gap:3px;
+    background:rgba(8,15,29,.94); border-top:1px solid var(--pet-v10-border);
+    -webkit-backdrop-filter:blur(24px) saturate(150%); backdrop-filter:blur(24px) saturate(150%);
+    box-shadow:0 -12px 34px rgba(2,6,23,.30);
+  }
+  .pet-v10-nav-btn { min-width:0; min-height:54px; border:0; border-radius:15px; background:transparent; color:#94a3b8; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; padding:4px 2px; font:800 9.5px/1.1 Cairo,system-ui; -webkit-tap-highlight-color:transparent; }
+  .pet-v10-nav-btn svg { width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2; }
+  .pet-v10-nav-btn.active { color:#fff; background:linear-gradient(135deg,rgba(124,58,237,.31),rgba(37,99,235,.20)); box-shadow:inset 0 0 0 1px rgba(139,92,246,.32); }
+  .pet-v10-nav-btn:active,.pet-v10-header-action:active,.pet-v10-header-menu:active,.pet-v10-drawer-item:active { transform:scale(.96); }
+
+  /* Unified mobile layer positions. */
+  #toast.toast,.toast#toast { top:calc(var(--pet-v10-safe-top) + var(--pet-v10-header-h) + 8px) !important; }
+  .petatoe-pwa-update { top:calc(var(--pet-v10-safe-top) + var(--pet-v10-header-h) + 8px) !important; }
+  .pet-modal-overlay,[role="dialog"] { scroll-margin-top:calc(var(--pet-v10-safe-top) + var(--pet-v10-header-h)); }
+}
+
+@media (min-width: 761px) {
+  .pet-v10-header-menu,.pet-v10-header-brand,.pet-v10-header-actions,
+  .pet-v10-bottom-nav,.pet-v10-drawer,.pet-v10-drawer-backdrop { display:none !important; }
+}
