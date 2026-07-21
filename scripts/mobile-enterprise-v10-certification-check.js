@@ -69,7 +69,7 @@ for (const jsFile of jsAssets) {
   requireCheck(hasNamedGuard || hasDirectGuard, `Phone runtime guard: ${jsFile}`, 'Missing an explicit max-width:760px runtime guard.');
 }
 
-requireCheck(worker.includes("const APP_VERSION = '10.0.0-passkey-biometric-first-s2';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
+requireCheck(worker.includes("const APP_VERSION = '10.0.0-passkey-enrollment-recovery-s3';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
 requireCheck(index.includes('viewport-fit=cover'), 'iOS Safe Area viewport', 'viewport-fit=cover is required for installed iPhone PWA mode.');
 requireCheck(workflow.includes('node scripts/mobile-enterprise-v10-certification-check.js'), 'GitHub Actions mobile certification gate', 'The mobile certification script is not wired into GitHub Actions.');
 requireCheck(index.indexOf('mobile-enterprise-v10-shell.js') < index.indexOf('mobile-enterprise-v10-dashboard.js') &&

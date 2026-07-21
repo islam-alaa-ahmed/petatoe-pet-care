@@ -586,6 +586,7 @@
     return biometricSupported() && window.isSecureContext !== false;
   }
   var BIOMETRIC_KEY = 'petatoe_passkey_device_v10';
+  var BIOMETRIC_PENDING_KEY = 'petatoe_passkey_pending_v10';
   var biometricAutoAttempted = false;
   function readBiometric(){
     try{
@@ -599,6 +600,22 @@
     try{
       if(!record){ localStorage.removeItem(BIOMETRIC_KEY); return false; }
       localStorage.setItem(BIOMETRIC_KEY, JSON.stringify(record));
+      localStorage.removeItem(BIOMETRIC_PENDING_KEY);
+      return true;
+    }catch(_e){ return false; }
+  }
+  function readPendingBiometric(){
+    try{
+      var raw = localStorage.getItem(BIOMETRIC_PENDING_KEY);
+      if(!raw) return null;
+      var record = JSON.parse(raw);
+      return record && record.username && record.email ? record : null;
+    }catch(_e){ return null; }
+  }
+  function writePendingBiometric(record){
+    try{
+      if(!record){ localStorage.removeItem(BIOMETRIC_PENDING_KEY); return false; }
+      localStorage.setItem(BIOMETRIC_PENDING_KEY, JSON.stringify(record));
       return true;
     }catch(_e){ return false; }
   }
@@ -673,9 +690,11 @@
     if(!identity.username || !identity.email){ toast('البريد الإلكتروني مطلوب لتفعيل Face ID'); return false; }
     try{
       await ensureEnterpriseSession(user, 'passkey-enrollment');
+      writePendingBiometric({username:identity.username,email:identity.email,startedAt:now(),origin:window.location.origin,state:'creating'});
       var optionsResponse = await callSecurityEmail(Object.assign({action:'passkey_registration_options'}, identity, remoteSessionPayload(user, false)));
       var credential = await navigator.credentials.create({publicKey:publicKeyCreationOptions(optionsResponse.options)});
       if(!credential) throw new Error('PASSKEY_CREATION_CANCELLED');
+      writePendingBiometric({username:identity.username,email:identity.email,credentialId:credential.id,createdAt:now(),origin:window.location.origin,state:'verifying'});
       var verified = await callSecurityEmail(Object.assign({
         action:'passkey_registration_verify',
         credential:serializeRegistrationCredential(credential),
@@ -693,10 +712,28 @@
       return true;
     }catch(err){
       var name = String(err && err.name || '');
-      if(name === 'NotAllowedError' || name === 'AbortError') toast('تم إلغاء تفعيل Face ID');
+      var pending = readPendingBiometric();
+      if(pending) writePendingBiometric(Object.assign({}, pending, {lastError:String(err && err.message || err),failedAt:now()}));
+      if(name === 'NotAllowedError' || name === 'AbortError'){ writePendingBiometric(null); toast('تم إلغاء تفعيل Face ID'); }
       else toast('تعذر تفعيل Face ID: ' + String(err && err.message || err));
       return false;
     }
+  }
+  async function reconcileBiometricEnrollment(){
+    if(readBiometric()) return readBiometric();
+    var pending = readPendingBiometric();
+    if(!pending || !biometricUsable()) return null;
+    try{
+      var status = await callSecurityEmail({action:'passkey_status',username:pending.username,email:pending.email,purpose:'mfa_email_otp',origin:window.location.origin});
+      if(status && status.registered){
+        var record = {username:pending.username,email:pending.email,credentialId:status.credentialId || pending.credentialId || '',enabledAt:status.createdAt || pending.createdAt || now(),origin:window.location.origin,recovered:true};
+        writeBiometric(record);
+        return record;
+      }
+    }catch(_e){
+      window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e);
+    }
+    return null;
   }
   async function loginWithBiometric(options){
     options = options || {};

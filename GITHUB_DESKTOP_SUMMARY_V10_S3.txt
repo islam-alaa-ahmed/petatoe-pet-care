@@ -1,0 +1,10 @@
+PETATOE Mobile Enterprise UI v10 — S3 Passkey Enrollment Recovery
+
+- Fix repeated Face ID/passkey enrollment after Apple completes the save prompt
+- Persist a pending passkey enrollment marker before opening the native iOS dialog
+- Reconcile interrupted enrollment with Supabase on the next application launch
+- Add a passkey_status Edge Function action to confirm server-side credential persistence
+- Restore the local biometric marker automatically when the credential already exists
+- Preserve failed enrollment diagnostics instead of silently restarting enrollment
+- Update the PWA cache to 10.0.0-passkey-enrollment-recovery-s3
+- Keep passwords, OTP, permissions, reports and business workflows unchanged

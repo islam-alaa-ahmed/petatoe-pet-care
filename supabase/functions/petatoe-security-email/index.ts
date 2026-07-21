@@ -334,6 +334,20 @@ async function handlePasskeyAction(action: string, dbUrl: string, headers: Recor
   const username = String(user.username || user.legacy_payload?.username || "");
   const credentials = await listUserPasskeys(dbUrl, headers, userId);
 
+  if (action === "passkey_status") {
+    const latest = credentials[0] || null;
+    return {
+      status: 200,
+      body: {
+        ok: true,
+        action,
+        registered: credentials.length > 0,
+        credentialId: latest ? String(latest.credential_id || "") : null,
+        createdAt: latest ? String(latest.created_at || "") : null,
+      },
+    };
+  }
+
   if (action === "passkey_registration_options") {
     if (!(await requireActivePasskeySession(dbUrl, headers, user, body))) return { status: 401, body: { ok: false, error: "ACTIVE_SESSION_REQUIRED" } };
     const options = await generateRegistrationOptions({
@@ -543,7 +557,7 @@ export default {
           : safeSuccess();
       }
 
-      if (["passkey_registration_options", "passkey_registration_verify", "passkey_authentication_options", "passkey_authentication_verify"].includes(action)) {
+      if (["passkey_status", "passkey_registration_options", "passkey_registration_verify", "passkey_authentication_options", "passkey_authentication_verify"].includes(action)) {
         try {
           const result = await handlePasskeyAction(action, PETATOE_SUPABASE_URL, dbHeaders, user, body, req);
           await audit(PETATOE_SUPABASE_URL, dbHeaders, {
