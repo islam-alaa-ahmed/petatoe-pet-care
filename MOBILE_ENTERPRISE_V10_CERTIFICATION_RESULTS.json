@@ -1,0 +1,246 @@
+{
+  "certification": "PASSED",
+  "suite": "PETATOE Mobile Enterprise UI v10",
+  "checks": 59,
+  "failures": 0,
+  "assets": 10,
+  "generatedAt": "2026-07-21T21:51:12.736Z",
+  "details": [
+    {
+      "name": "Asset exists: css/mobile/mobile-enterprise-v10-shell.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: css/mobile/mobile-enterprise-v10-shell.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-shell.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Asset exists: css/mobile/mobile-enterprise-v10-dashboard.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: css/mobile/mobile-enterprise-v10-dashboard.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-dashboard.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Asset exists: css/mobile/mobile-enterprise-v10-reports.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: css/mobile/mobile-enterprise-v10-reports.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-reports.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Asset exists: css/mobile/mobile-enterprise-v10-management.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: css/mobile/mobile-enterprise-v10-management.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-management.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Asset exists: css/mobile/mobile-enterprise-v10-experience.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: css/mobile/mobile-enterprise-v10-experience.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-experience.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Asset exists: mobile/mobile-enterprise-v10-shell.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: mobile/mobile-enterprise-v10-shell.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: mobile/mobile-enterprise-v10-shell.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Asset exists: mobile/mobile-enterprise-v10-dashboard.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: mobile/mobile-enterprise-v10-dashboard.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: mobile/mobile-enterprise-v10-dashboard.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Asset exists: mobile/mobile-enterprise-v10-reports.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: mobile/mobile-enterprise-v10-reports.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: mobile/mobile-enterprise-v10-reports.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Asset exists: mobile/mobile-enterprise-v10-management.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: mobile/mobile-enterprise-v10-management.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: mobile/mobile-enterprise-v10-management.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Asset exists: mobile/mobile-enterprise-v10-experience.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Single index reference: mobile/mobile-enterprise-v10-experience.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker pre-cache: mobile/mobile-enterprise-v10-experience.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-shell.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-shell.css",
+      "status": "PASS"
+    },
+    {
+      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-shell.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-dashboard.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-dashboard.css",
+      "status": "PASS"
+    },
+    {
+      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-dashboard.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-reports.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-reports.css",
+      "status": "PASS"
+    },
+    {
+      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-reports.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-management.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-management.css",
+      "status": "PASS"
+    },
+    {
+      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-management.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-experience.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-experience.css",
+      "status": "PASS"
+    },
+    {
+      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-experience.css",
+      "status": "PASS"
+    },
+    {
+      "name": "No hard-coded Arabic UI: mobile/mobile-enterprise-v10-shell.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone runtime guard: mobile/mobile-enterprise-v10-shell.js",
+      "status": "PASS"
+    },
+    {
+      "name": "No hard-coded Arabic UI: mobile/mobile-enterprise-v10-dashboard.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone runtime guard: mobile/mobile-enterprise-v10-dashboard.js",
+      "status": "PASS"
+    },
+    {
+      "name": "No hard-coded Arabic UI: mobile/mobile-enterprise-v10-reports.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone runtime guard: mobile/mobile-enterprise-v10-reports.js",
+      "status": "PASS"
+    },
+    {
+      "name": "No hard-coded Arabic UI: mobile/mobile-enterprise-v10-management.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone runtime guard: mobile/mobile-enterprise-v10-management.js",
+      "status": "PASS"
+    },
+    {
+      "name": "No hard-coded Arabic UI: mobile/mobile-enterprise-v10-experience.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone runtime guard: mobile/mobile-enterprise-v10-experience.js",
+      "status": "PASS"
+    },
+    {
+      "name": "Service Worker version lock",
+      "status": "PASS"
+    },
+    {
+      "name": "iOS Safe Area viewport",
+      "status": "PASS"
+    },
+    {
+      "name": "GitHub Actions mobile certification gate",
+      "status": "PASS"
+    },
+    {
+      "name": "V10 runtime load order",
+      "status": "PASS"
+    }
+  ]
+}

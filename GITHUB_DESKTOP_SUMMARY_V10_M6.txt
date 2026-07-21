@@ -1,0 +1,11 @@
+PETATOE Mobile Enterprise UI v10 — M6 Final Mobile Certification Gate
+
+- Add a dedicated Mobile Enterprise UI v10 production certification script
+- Validate all 10 cumulative V10 CSS and JavaScript assets
+- Enforce single index references and Service Worker pre-cache coverage
+- Enforce phone-only CSS and JavaScript boundaries
+- Prevent hard-coded Arabic UI text in V10 mobile runtime files
+- Validate iPhone Safe Area viewport and deterministic V10 load order
+- Add the mobile certification gate to GitHub Actions
+- Generate a machine-readable certification result with 59 passed checks
+- Keep UI, Desktop, Tablet, Supabase, reports, payroll, permissions and business logic unchanged

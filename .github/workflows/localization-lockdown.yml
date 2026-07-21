@@ -28,6 +28,8 @@ jobs:
         run: node scripts/smart-reports-public-api-check.js
       - name: Smart Reports translation stability
         run: node scripts/smart-reports-translation-stability-check.js
+      - name: Mobile Enterprise UI v10 certification
+        run: node scripts/mobile-enterprise-v10-certification-check.js
       - name: JavaScript syntax validation
         shell: bash
         run: |
