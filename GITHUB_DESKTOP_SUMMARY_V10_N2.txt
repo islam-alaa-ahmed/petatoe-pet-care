@@ -1,0 +1,9 @@
+PETATOE v10 Native Mobile Wrapper — N2 Native Face ID
+
+- Add a local Capacitor iOS plugin backed by LocalAuthentication and Keychain
+- Protect the existing PETATOE session with Face ID; never store the password
+- Add direct biometric unlock on subsequent native app launches
+- Invalidate protected sessions when the enrolled biometric set changes
+- Clear the native protected session on manual logout
+- Inject the native bridge only into the Capacitor www build, leaving the GitHub PWA unchanged
+- Automate Swift installation, plugin registration, storyboard patching and NSFaceIDUsageDescription setup
