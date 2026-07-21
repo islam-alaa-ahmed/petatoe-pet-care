@@ -1,7 +1,7 @@
-/* PETATOE PWA Enterprise Service Worker — Phase PWA-1 */
+/* PETATOE PWA Enterprise Service Worker — V10-P1 Update Engine */
 'use strict';
 
-const APP_VERSION = '10.0.0-passkey-enrollment-recovery-s3';
+const APP_VERSION = '10.0.0-pwa-update-engine-p1';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;
@@ -35,27 +35,84 @@ const APP_SHELL = [
   './pwa/pwa-manager.js'
 ];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(STATIC_CACHE)
-      .then((cache) => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+const NETWORK_FIRST_EXTENSIONS = /\.(?:html?|js|mjs|css|json|webmanifest)$/i;
+const CACHE_FIRST_EXTENSIONS = /\.(?:png|jpe?g|gif|webp|svg|ico|woff2?|ttf|otf)$/i;
+
+function freshRequest(input) {
+  const request = input instanceof Request ? input : new Request(input);
+  return new Request(request, { cache: 'no-store' });
+}
+
+async function cacheShell() {
+  const cache = await caches.open(STATIC_CACHE);
+  await Promise.all(APP_SHELL.map(async (url) => {
+    const response = await fetch(freshRequest(url));
+    if (!response || !response.ok) throw new Error(`Unable to pre-cache ${url}`);
+    await cache.put(url, response);
+  }));
+}
+
+async function deleteLegacyCaches() {
+  const keys = await caches.keys();
+  await Promise.all(
+    keys
+      .filter((key) => key.startsWith(CACHE_PREFIX) && ![STATIC_CACHE, RUNTIME_CACHE].includes(key))
+      .map((key) => caches.delete(key))
   );
+}
+
+async function broadcast(message) {
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  clients.forEach((client) => client.postMessage(message));
+}
+
+async function networkFirst(request, fallbackUrl) {
+  const cache = await caches.open(RUNTIME_CACHE);
+  try {
+    const response = await fetch(freshRequest(request));
+    if (response && response.ok && response.type === 'basic') await cache.put(request, response.clone());
+    return response;
+  } catch (error) {
+    return (await cache.match(request)) || (fallbackUrl ? await caches.match(fallbackUrl) : undefined) || Response.error();
+  }
+}
+
+async function cacheFirstWithRevalidate(request) {
+  const cache = await caches.open(RUNTIME_CACHE);
+  const cached = await caches.match(request);
+  const update = fetch(request)
+    .then(async (response) => {
+      if (response && response.ok && response.type === 'basic') await cache.put(request, response.clone());
+      return response;
+    })
+    .catch(() => null);
+  return cached || (await update) || Response.error();
+}
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(cacheShell().then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys()
-      .then((keys) => Promise.all(
-        keys.filter((key) => key.startsWith(CACHE_PREFIX) && ![STATIC_CACHE, RUNTIME_CACHE].includes(key))
-          .map((key) => caches.delete(key))
-      ))
-      .then(() => self.clients.claim())
-  );
+  event.waitUntil((async () => {
+    if ('navigationPreload' in self.registration) {
+      try { await self.registration.navigationPreload.enable(); } catch (_) { /* optional */ }
+    }
+    await deleteLegacyCaches();
+    await self.clients.claim();
+    await broadcast({ type: 'PETATOE_SW_ACTIVATED', version: APP_VERSION });
+  })());
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+  const data = event.data || {};
+  if (data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
+  if (data.type === 'GET_VERSION' && event.source) {
+    event.source.postMessage({ type: 'PETATOE_SW_VERSION', version: APP_VERSION });
+  }
 });
 
 self.addEventListener('fetch', (event) => {
@@ -66,30 +123,29 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
-          return response;
-        })
-        .catch(async () => (await caches.match(request)) || (await caches.match('./index.html')) || caches.match(OFFLINE_URL))
-    );
+    event.respondWith((async () => {
+      try {
+        const preload = await event.preloadResponse;
+        if (preload) {
+          const cache = await caches.open(RUNTIME_CACHE);
+          await cache.put(request, preload.clone());
+          return preload;
+        }
+      } catch (_) { /* continue with network-first */ }
+      return networkFirst(request, OFFLINE_URL);
+    })());
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      const network = fetch(request)
-        .then((response) => {
-          if (response && response.ok && response.type === 'basic') {
-            const copy = response.clone();
-            caches.open(RUNTIME_CACHE).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    })
-  );
+  if (url.pathname.endsWith('/service-worker.js') || NETWORK_FIRST_EXTENSIONS.test(url.pathname)) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  if (CACHE_FIRST_EXTENSIONS.test(url.pathname)) {
+    event.respondWith(cacheFirstWithRevalidate(request));
+    return;
+  }
+
+  event.respondWith(networkFirst(request));
 });

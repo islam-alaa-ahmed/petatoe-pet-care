@@ -39,6 +39,7 @@ const jsAssets = [
 const allAssets = [...cssAssets, ...jsAssets];
 const index = read('index.html');
 const worker = read('service-worker.js');
+const pwaManager = read('pwa/pwa-manager.js');
 const workflow = read('.github/workflows/localization-lockdown.yml');
 
 for (const asset of allAssets) {
@@ -69,7 +70,12 @@ for (const jsFile of jsAssets) {
   requireCheck(hasNamedGuard || hasDirectGuard, `Phone runtime guard: ${jsFile}`, 'Missing an explicit max-width:760px runtime guard.');
 }
 
-requireCheck(worker.includes("const APP_VERSION = '10.0.0-passkey-enrollment-recovery-s3';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
+requireCheck(worker.includes("const APP_VERSION = '10.0.0-pwa-update-engine-p1';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
+requireCheck(worker.includes('NETWORK_FIRST_EXTENSIONS'), 'PWA network-first source policy', 'Service Worker must use a network-first policy for HTML, JavaScript, CSS and JSON resources.');
+requireCheck(worker.includes('PETATOE_SW_ACTIVATED'), 'PWA activation broadcast', 'Service Worker must broadcast activation to controlled clients.');
+requireCheck(pwaManager.includes("updateViaCache: 'none'"), 'PWA update bypass', 'Service Worker registration must bypass the HTTP cache during update checks.');
+requireCheck(pwaManager.includes('registration.update()'), 'PWA active update checks', 'PWA Manager must actively request Service Worker update checks.');
+requireCheck(pwaManager.includes('visibilitychange'), 'PWA foreground update check', 'PWA Manager must check for updates when the installed app returns to the foreground.');
 requireCheck(index.includes('viewport-fit=cover'), 'iOS Safe Area viewport', 'viewport-fit=cover is required for installed iPhone PWA mode.');
 requireCheck(workflow.includes('node scripts/mobile-enterprise-v10-certification-check.js'), 'GitHub Actions mobile certification gate', 'The mobile certification script is not wired into GitHub Actions.');
 requireCheck(index.indexOf('mobile-enterprise-v10-shell.js') < index.indexOf('mobile-enterprise-v10-dashboard.js') &&

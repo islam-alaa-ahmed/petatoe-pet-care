@@ -1,0 +1,11 @@
+PETATOE Mobile Enterprise UI v10 — P1 PWA Update Engine
+
+- Replace cache-first delivery of application code with network-first update-safe delivery
+- Keep icons, images and fonts efficiently cached with background revalidation
+- Actively check for Service Worker updates on startup, focus, foreground return and network recovery
+- Add periodic update checks while the installed PWA remains open
+- Register the Service Worker with updateViaCache disabled
+- Delete legacy PETATOE caches when a new release activates
+- Reload with a cache-busting URL after the new worker takes control
+- Extend Mobile v10 certification with PWA update lifecycle checks
+- Keep authentication, Supabase, reports, payroll, permissions, Desktop and Tablet unchanged

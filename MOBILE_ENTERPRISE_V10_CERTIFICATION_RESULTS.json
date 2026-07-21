@@ -1,10 +1,10 @@
 {
   "certification": "PASSED",
   "suite": "PETATOE Mobile Enterprise UI v10",
-  "checks": 59,
+  "checks": 64,
   "failures": 0,
   "assets": 10,
-  "generatedAt": "2026-07-21T21:51:12.736Z",
+  "generatedAt": "2026-07-21T23:02:09.639Z",
   "details": [
     {
       "name": "Asset exists: css/mobile/mobile-enterprise-v10-shell.css",
@@ -228,6 +228,26 @@
     },
     {
       "name": "Service Worker version lock",
+      "status": "PASS"
+    },
+    {
+      "name": "PWA network-first source policy",
+      "status": "PASS"
+    },
+    {
+      "name": "PWA activation broadcast",
+      "status": "PASS"
+    },
+    {
+      "name": "PWA update bypass",
+      "status": "PASS"
+    },
+    {
+      "name": "PWA active update checks",
+      "status": "PASS"
+    },
+    {
+      "name": "PWA foreground update check",
       "status": "PASS"
     },
     {
