@@ -1,16 +1,25 @@
-# Root Cause Report — PETATOE Enterprise App Icon
+# PETATOE — Operations Services Supabase Root Cause Report
 
-## Root Cause
-The application used only a legacy root `favicon.ico`. It had no Web App Manifest, Apple Touch Icon, Android maskable icons, or explicit icon metadata for installed desktop/mobile shortcuts.
+## Confirmed database state
+- `public.operations_master_data` contains three rows.
+- Two newest rows have `data.services = NULL` / service count `0`.
+- One older row contains `92` services.
+- RLS is enabled, but the active `ALL` policy allows reads and writes.
 
-## Impact
-- Browser tab used the old icon.
-- Add-to-Home-Screen and installed desktop shortcuts had no unified PETATOE identity.
-- iOS, Android, PWA and Windows could fall back to generic or low-resolution icons.
+## Root cause
+`operations/operations-storage.js` treated `operations_master_data` as a replace-all table:
+1. Every write deleted all rows.
+2. It then inserted a new row with a random UUID.
+3. Reads selected only the newest row by timestamp.
+
+Concurrent or early startup writes could therefore create multiple rows, including empty rows. The mobile session then selected the newest empty row while the desktop session continued showing its in-memory cache containing the 92 services.
 
 ## Fix
-- Replaced the root multi-resolution `favicon.ico`.
-- Added a complete PNG icon pack based on the approved glass PETATOE design.
-- Added Apple Touch, standard PWA and maskable icons.
-- Added `manifest.webmanifest` and `browserconfig.xml`.
-- Updated `index.html` and `404.html` icon metadata.
+- Introduce one deterministic canonical UUID for operations master data.
+- Replace delete-and-insert with `upsert` on that UUID.
+- Read up to 50 legacy rows and choose the most complete data row, prioritizing actual services and other reference-data collections.
+- Automatically migrate the selected row into the canonical record and remove legacy duplicates.
+- Protect a populated Supabase record from an empty/default write issued before remote boot finishes.
+
+## Scope
+Only `operations/operations-storage.js` was changed. No UI, reporting, payroll, permissions, localization, appointment logic, or mobile layout code was modified.

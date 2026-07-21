@@ -1,23 +1,8 @@
-PETATOE v9.4.23 — Phase A1 Certification Truth Layer
+PETATOE v9.4.24 — Operations Master Data Supabase Singleton Fix
 
-Files changed/new: 4
-
-Modified:
-- scripts/smart-reports-localization-source-check.js
-
-Added:
-- scripts/localization-validation-manifest.json
-- scripts/run-localization-validation-suite.js
-- scripts/localization-source-surface-audit.js
-
-Summary:
-- Defined one authoritative production localization validation manifest.
-- Separated active production gates, diagnostics, and historical phase validators.
-- Updated Smart Reports source validation to inspect the canonical dictionary store.
-- Added a hard-coded localization source-surface diagnostic.
-- No production runtime or business logic files changed.
-
-Verification:
-- 287/287 JavaScript syntax checks passed.
-- 16/16 production localization gates passed.
-- 0 blocking failures.
+- Fix mobile services missing despite being stored in Supabase
+- Replace delete-and-insert master-data writes with a canonical UUID upsert
+- Recover the most complete record when duplicate rows exist
+- Migrate legacy duplicate rows into one canonical master-data record
+- Prevent early empty startup writes from overwriting populated Supabase data
+- Keep UI, appointments, reports, payroll, permissions and localization unchanged

@@ -1,13 +1,17 @@
 # Verification Report
 
-- Approved 512×512 icon visually reviewed: passed.
-- PNG dimensions checked for 16, 32, 48, 64, 72, 96, 128, 144, 152, 180, 192, 256, 384, 512 and 1024: passed.
-- Multi-resolution ICO contains 16, 32, 48, 64, 128 and 256: passed.
-- Web App Manifest JSON parsing: passed.
-- Manifest icon paths and declared dimensions: passed.
-- `index.html` icon, Apple Touch, Manifest and Windows metadata references: passed.
-- `404.html` metadata references: passed.
-- No JavaScript, Business Logic, Supabase, calculations, permissions or translation data changed.
+- JavaScript syntax (`node --check`): PASS
+- Canonical UUID is valid UUID format: PASS
+- Legacy `delete all + insert random row` path removed: PASS
+- Canonical `upsert(..., { onConflict: 'id' })` added: PASS
+- Multi-row recovery and best-record selection added: PASS
+- Pre-boot empty-write protection added: PASS
+- Modified files: 1
 
-## Not tested
-Actual icon refresh on every physical iOS/Android device and operating-system launcher cache was not available in the container. Existing installed shortcuts may need removal and re-installation because operating systems cache app icons.
+## Expected first-run behavior after deployment
+On the first successful load:
+1. The application reads all current `operations_master_data` rows.
+2. It selects the populated row containing the 92 services.
+3. It writes that data to the canonical singleton row.
+4. It deletes the two empty duplicate rows.
+5. Desktop and mobile subsequently read the same canonical record.

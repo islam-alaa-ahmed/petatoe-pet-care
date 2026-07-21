@@ -26,6 +26,7 @@
 
   var TABLE_APPOINTMENTS = 'operations_appointments';
   var TABLE_MASTER = 'operations_master_data';
+  var CANONICAL_MASTER_ID = '9a7d5db7-2e36-4a67-9e62-4f7a24c8f101';
   var appointmentsCache = [];
   var masterDataCache = null;
   var bootStarted = false;
@@ -119,13 +120,62 @@
     return true;
   }
 
-  async function replaceMasterSupabase(data){
-    if(!isClientReady()) return false;
-    var c = client();
-    var del = await c.from(TABLE_MASTER).delete().not('id', 'is', null);
+  function masterDataScore(data){
+    data = normalizeMasterData(data);
+    var breedCount = Object.keys(data.breeds || {}).reduce(function(total, key){
+      return total + (Array.isArray(data.breeds[key]) ? data.breeds[key].length : 0);
+    }, 0);
+    return ((data.services || []).length * 1000) +
+      ((data.customers || []).length * 100) +
+      ((data.vehicleAssignments || []).length * 50) +
+      ((data.vehicles || []).length * 20) +
+      ((data.drivers || []).length * 20) +
+      ((data.groomers || []).length * 20) +
+      (breedCount * 5) +
+      ((data.animalTypes || []).length) +
+      ((data.sizes || []).length);
+  }
+
+  function selectBestMasterRow(rows){
+    rows = Array.isArray(rows) ? rows : [];
+    var best = null;
+    rows.forEach(function(row){
+      var score = masterDataScore(row && row.data);
+      var stamp = Date.parse((row && (row.updated_at || row.created_at)) || '') || 0;
+      if(!best || score > best.score || (score === best.score && stamp > best.stamp)){
+        best = { row: row, score: score, stamp: stamp };
+      }
+    });
+    return best;
+  }
+
+  async function cleanupLegacyMasterRows(c){
+    var del = await c.from(TABLE_MASTER).delete().neq('id', CANONICAL_MASTER_ID);
     if(del && del.error) throw del.error;
-    var ins = await c.from(TABLE_MASTER).insert([{ data: normalizeMasterData(data), updated_at: new Date().toISOString() }]);
-    if(ins && ins.error) throw ins.error;
+  }
+
+  async function replaceMasterSupabase(data, options){
+    if(!isClientReady()) return false;
+    options = options || {};
+    var c = client();
+    var normalized = normalizeMasterData(data);
+
+    if(options.protectExisting){
+      var existing = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').limit(50);
+      if(existing && existing.error) throw existing.error;
+      var bestExisting = selectBestMasterRow(existing && existing.data);
+      if(bestExisting && bestExisting.score > masterDataScore(normalized)){
+        normalized = normalizeMasterData(bestExisting.row && bestExisting.row.data);
+      }
+    }
+
+    var upsert = await c.from(TABLE_MASTER).upsert([{
+      id: CANONICAL_MASTER_ID,
+      data: normalized,
+      updated_at: new Date().toISOString()
+    }], { onConflict: 'id' });
+    if(upsert && upsert.error) throw upsert.error;
+    await cleanupLegacyMasterRows(c);
     return true;
   }
 
@@ -138,10 +188,24 @@
 
   async function loadMasterSupabase(){
     if(!isClientReady()) return null;
-    var res = await client().from(TABLE_MASTER).select('data,updated_at,created_at').order('updated_at', { ascending:false, nullsFirst:false }).order('created_at', { ascending:false, nullsFirst:false }).limit(1);
+    var c = client();
+    var res = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').limit(50);
     if(res && res.error) throw res.error;
-    var row = Array.isArray(res && res.data) && res.data.length ? res.data[0] : null;
-    return row && row.data ? row.data : null;
+    var best = selectBestMasterRow(res && res.data);
+    if(!best || !best.row || !best.row.data) return null;
+
+    if(best.row.id !== CANONICAL_MASTER_ID || (Array.isArray(res.data) && res.data.length > 1)){
+      try{
+        var heal = await c.from(TABLE_MASTER).upsert([{
+          id: CANONICAL_MASTER_ID,
+          data: normalizeMasterData(best.row.data),
+          updated_at: new Date().toISOString()
+        }], { onConflict: 'id' });
+        if(heal && heal.error) throw heal.error;
+        await cleanupLegacyMasterRows(c);
+      }catch(healError){ warn(healError); }
+    }
+    return best.row.data;
   }
 
   function queueWrite(task){
@@ -207,7 +271,8 @@
       masterDataCache = normalizeMasterData(value);
       masterDataRevision += 1;
       var snapshotMaster = cloneJSON(masterDataCache);
-      queueWrite(function(){ return replaceMasterSupabase(snapshotMaster); });
+      var protectExisting = !bootDone;
+      queueWrite(function(){ return replaceMasterSupabase(snapshotMaster, { protectExisting: protectExisting }); });
       emitChange('masterData');
       return true;
     }
@@ -374,7 +439,7 @@
   }
 
   var api = {
-    version: 'OPS-19-storage-final-extraction',
+    version: 'OPS-20-master-singleton-supabase-fix',
     keys: Object.assign({}, KEYS),
     readJSON: readJSON,
     writeJSON: writeJSON,
