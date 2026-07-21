@@ -1,0 +1,9 @@
+PETATOE Mobile Enterprise UI v10 — M2 Native Dashboard
+
+- Add a dedicated phone-only native Dashboard presentation layer
+- Convert the canonical Dashboard filters into a mobile bottom sheet without changing filter logic
+- Rebuild KPI cards as a readable two-column mobile grid
+- Normalize Dashboard cards, chart containers, payment rows, vehicle cards and quick insights
+- Tune existing Chart.js presentation for phone tick density, padding and responsive height
+- Keep Dashboard calculations, Supabase, permissions, payroll, appointments, Desktop and Tablet unchanged
+- Update the PWA cache to 10.0.0-mobile-dashboard-m2
