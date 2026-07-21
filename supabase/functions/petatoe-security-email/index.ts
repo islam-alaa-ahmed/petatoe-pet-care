@@ -335,6 +335,7 @@ async function handlePasskeyAction(action: string, dbUrl: string, headers: Recor
   const credentials = await listUserPasskeys(dbUrl, headers, userId);
 
   if (action === "passkey_status") {
+    if (!(await requireActivePasskeySession(dbUrl, headers, user, body))) return { status: 401, body: { ok: false, error: "ACTIVE_SESSION_REQUIRED" } };
     const latest = credentials[0] || null;
     return {
       status: 200,
@@ -342,8 +343,9 @@ async function handlePasskeyAction(action: string, dbUrl: string, headers: Recor
         ok: true,
         action,
         registered: credentials.length > 0,
-        credentialId: latest ? String(latest.credential_id || "") : null,
-        createdAt: latest ? String(latest.created_at || "") : null,
+        credentialId: latest ? String(latest.credential_id || "") : "",
+        createdAt: latest ? String(latest.created_at || latest.last_used_at || "") : "",
+        credentialCount: credentials.length,
       },
     };
   }

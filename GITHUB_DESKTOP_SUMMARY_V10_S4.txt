@@ -1,0 +1,11 @@
+PETATOE Mobile Enterprise UI v10 — S4 WebAuthn State Machine Fix
+
+- Fix iOS InvalidStateError after saving an existing Passkey
+- Add a protected passkey_status Edge Function action
+- Check Supabase enrollment state before creating a new credential
+- Recover the browser-local Face ID marker from an existing server credential
+- Treat duplicate-credential InvalidStateError as recoverable when Supabase confirms registration
+- Prevent concurrent duplicate Passkey enrollment calls
+- Run pending enrollment reconciliation before automatic biometric login
+- Update the PWA cache to 10.0.0-passkey-state-machine-s4
+- Keep password, OTP/MFA, permissions, Supabase schema and business logic unchanged

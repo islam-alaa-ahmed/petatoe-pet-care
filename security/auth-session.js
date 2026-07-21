@@ -588,6 +588,7 @@
   var BIOMETRIC_KEY = 'petatoe_passkey_device_v10';
   var BIOMETRIC_PENDING_KEY = 'petatoe_passkey_pending_v10';
   var biometricAutoAttempted = false;
+  var biometricEnrollmentInFlight = false;
   function readBiometric(){
     try{
       var raw = localStorage.getItem(BIOMETRIC_KEY);
@@ -681,42 +682,62 @@
       origin:window.location.origin
     };
   }
+  async function fetchBiometricStatus(identity, user){
+    try{
+      return await callSecurityEmail(Object.assign({action:'passkey_status'}, identity, remoteSessionPayload(user, false)));
+    }catch(_e){
+      window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e);
+      return null;
+    }
+  }
+  function recoverBiometricRecord(identity, status, extra){
+    if(!status || !status.registered) return null;
+    var record = Object.assign({username:identity.username,email:identity.email,credentialId:status.credentialId || '',enabledAt:status.createdAt || now(),origin:window.location.origin,recovered:true}, extra || {});
+    writeBiometric(record);
+    return record;
+  }
   async function registerBiometric(user){
+    if(biometricEnrollmentInFlight) return false;
     if(!biometricUsable()){
       toast('Face ID يحتاج HTTPS أو متصفح يدعم WebAuthn');
       return false;
     }
     var identity = biometricIdentity(user);
     if(!identity.username || !identity.email){ toast('البريد الإلكتروني مطلوب لتفعيل Face ID'); return false; }
+    biometricEnrollmentInFlight = true;
     try{
       await ensureEnterpriseSession(user, 'passkey-enrollment');
+      var existingStatus = await fetchBiometricStatus(identity, user);
+      if(recoverBiometricRecord(identity, existingStatus, {recoveredBy:'registration-preflight'})){
+        toast('تم تفعيل Face ID لهذا الجهاز');
+        return true;
+      }
       writePendingBiometric({username:identity.username,email:identity.email,startedAt:now(),origin:window.location.origin,state:'creating'});
       var optionsResponse = await callSecurityEmail(Object.assign({action:'passkey_registration_options'}, identity, remoteSessionPayload(user, false)));
       var credential = await navigator.credentials.create({publicKey:publicKeyCreationOptions(optionsResponse.options)});
       if(!credential) throw new Error('PASSKEY_CREATION_CANCELLED');
       writePendingBiometric({username:identity.username,email:identity.email,credentialId:credential.id,createdAt:now(),origin:window.location.origin,state:'verifying'});
-      var verified = await callSecurityEmail(Object.assign({
-        action:'passkey_registration_verify',
-        credential:serializeRegistrationCredential(credential),
-        deviceName:(navigator.platform || 'Apple Face ID')
-      }, identity, remoteSessionPayload(user, false)));
+      var verified = await callSecurityEmail(Object.assign({action:'passkey_registration_verify',credential:serializeRegistrationCredential(credential),deviceName:(navigator.platform || 'Apple Face ID')}, identity, remoteSessionPayload(user, false)));
       if(!verified || !verified.verified) throw new Error('PASSKEY_REGISTRATION_NOT_VERIFIED');
-      writeBiometric({
-        username:identity.username,
-        email:identity.email,
-        credentialId:verified.credentialId || credential.id,
-        enabledAt:now(),
-        origin:window.location.origin
-      });
+      writeBiometric({username:identity.username,email:identity.email,credentialId:verified.credentialId || credential.id,enabledAt:now(),origin:window.location.origin});
       toast('تم تفعيل Face ID لهذا الجهاز');
       return true;
     }catch(err){
       var name = String(err && err.name || '');
       var pending = readPendingBiometric();
-      if(pending) writePendingBiometric(Object.assign({}, pending, {lastError:String(err && err.message || err),failedAt:now()}));
+      if(pending) writePendingBiometric(Object.assign({}, pending, {lastError:String(err && err.message || err),errorName:name,failedAt:now()}));
+      if(name === 'InvalidStateError'){
+        var duplicateStatus = await fetchBiometricStatus(identity, user);
+        if(recoverBiometricRecord(identity, duplicateStatus, {recoveredBy:'invalid-state'})){
+          toast('تم تفعيل Face ID لهذا الجهاز');
+          return true;
+        }
+      }
       if(name === 'NotAllowedError' || name === 'AbortError'){ writePendingBiometric(null); toast('تم إلغاء تفعيل Face ID'); }
       else toast('تعذر تفعيل Face ID: ' + String(err && err.message || err));
       return false;
+    }finally{
+      biometricEnrollmentInFlight = false;
     }
   }
   async function reconcileBiometricEnrollment(){
@@ -724,7 +745,7 @@
     var pending = readPendingBiometric();
     if(!pending || !biometricUsable()) return null;
     try{
-      var status = await callSecurityEmail({action:'passkey_status',username:pending.username,email:pending.email,purpose:'mfa_email_otp',origin:window.location.origin});
+      var status = await fetchBiometricStatus({username:pending.username,email:pending.email,purpose:'mfa_email_otp',origin:window.location.origin}, sessionUser() || window.currentUser || {});
       if(status && status.registered){
         var record = {username:pending.username,email:pending.email,credentialId:status.credentialId || pending.credentialId || '',enabledAt:status.createdAt || pending.createdAt || now(),origin:window.location.origin,recovered:true};
         writeBiometric(record);
@@ -775,11 +796,15 @@
     setTimeout(function(){ try{ ((username && username.value && password) ? password : username).focus(); }catch(_e){} }, 80);
   }
   function scheduleAutomaticBiometricLogin(){
-    if(biometricAutoAttempted || !readBiometric() || !biometricUsable()) return;
+    if(biometricAutoAttempted || !biometricUsable()) return;
     biometricAutoAttempted = true;
     var overlay = document.getElementById('pet-auth-overlay');
-    if(overlay) overlay.classList.add('pet-auth-biometric-first');
-    setTimeout(function(){ loginWithBiometric({silent:true,automatic:true}); }, 90);
+    if(overlay && (readBiometric() || readPendingBiometric())) overlay.classList.add('pet-auth-biometric-first');
+    setTimeout(async function(){
+      if(!readBiometric()) await reconcileBiometricEnrollment();
+      if(readBiometric()) await loginWithBiometric({silent:true,automatic:true});
+      else revealBiometricFallback('');
+    }, 90);
   }
 
   function securityEmailEndpoint(){
