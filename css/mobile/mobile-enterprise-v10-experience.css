@@ -1,0 +1,192 @@
+/* PETATOE Mobile Enterprise UI v10 — M5 Experience, Accessibility & Performance */
+@media (max-width: 760px) {
+  :root {
+    --pet-v10-touch-target: 44px;
+    --pet-v10-motion-fast: 140ms;
+    --pet-v10-motion-normal: 220ms;
+  }
+
+  html {
+    overscroll-behavior-y: none;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body.pet-v10-mobile {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  body.pet-v10-mobile button,
+  body.pet-v10-mobile [role="button"],
+  body.pet-v10-mobile input,
+  body.pet-v10-mobile select,
+  body.pet-v10-mobile textarea,
+  body.pet-v10-mobile a {
+    font: inherit;
+  }
+
+  body.pet-v10-mobile button:not(.icon-only):not(.pet-v10-nav-btn),
+  body.pet-v10-mobile [role="button"] {
+    min-height: var(--pet-v10-touch-target);
+  }
+
+  body.pet-v10-mobile button,
+  body.pet-v10-mobile [role="button"],
+  body.pet-v10-mobile a,
+  body.pet-v10-mobile .card,
+  body.pet-v10-mobile .petatoe-v10-table-viewport,
+  body.pet-v10-mobile .petatoe-v10-management-table {
+    transition:
+      transform var(--pet-v10-motion-fast) ease,
+      opacity var(--pet-v10-motion-fast) ease,
+      box-shadow var(--pet-v10-motion-normal) ease,
+      border-color var(--pet-v10-motion-normal) ease;
+  }
+
+  body.pet-v10-mobile button:active:not(:disabled),
+  body.pet-v10-mobile [role="button"]:active,
+  body.pet-v10-mobile a:active {
+    transform: scale(.975);
+  }
+
+  body.pet-v10-mobile :focus-visible {
+    outline: 3px solid color-mix(in srgb, var(--accent, #2f80ed) 70%, white);
+    outline-offset: 2px;
+  }
+
+  body.pet-v10-mobile .pet-v10-scroll-region,
+  body.pet-v10-mobile .pet-v10-report-rail,
+  body.pet-v10-mobile .pet-v10-management-rail,
+  body.pet-v10-mobile .petatoe-v10-table-viewport,
+  body.pet-v10-mobile .petatoe-v10-management-table {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+  }
+
+  body.pet-v10-mobile .pet-v10-scroll-region::-webkit-scrollbar,
+  body.pet-v10-mobile .pet-v10-report-rail::-webkit-scrollbar,
+  body.pet-v10-mobile .pet-v10-management-rail::-webkit-scrollbar,
+  body.pet-v10-mobile .petatoe-v10-table-viewport::-webkit-scrollbar,
+  body.pet-v10-mobile .petatoe-v10-management-table::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pet-v10-pull-indicator {
+    position: fixed;
+    z-index: 10070;
+    inset-inline-start: 50%;
+    top: max(8px, env(safe-area-inset-top));
+    width: 42px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    background: color-mix(in srgb, var(--surface, #fff) 92%, transparent);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, .16);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, -58px) scale(.82);
+    transition: opacity var(--pet-v10-motion-fast) ease, transform var(--pet-v10-motion-normal) cubic-bezier(.2,.8,.2,1);
+  }
+
+  [dir="rtl"] .pet-v10-pull-indicator {
+    transform: translate(50%, -58px) scale(.82);
+  }
+
+  .pet-v10-pull-indicator svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transform: rotate(var(--pet-v10-pull-rotation, 0deg));
+  }
+
+  body.pet-v10-pulling .pet-v10-pull-indicator {
+    opacity: 1;
+    transform: translate(-50%, var(--pet-v10-pull-offset, 10px)) scale(1);
+  }
+
+  [dir="rtl"] body.pet-v10-pulling .pet-v10-pull-indicator {
+    transform: translate(50%, var(--pet-v10-pull-offset, 10px)) scale(1);
+  }
+
+  body.pet-v10-refreshing .pet-v10-pull-indicator svg {
+    animation: pet-v10-spin .72s linear infinite;
+  }
+
+  .pet-v10-route-progress {
+    position: fixed;
+    z-index: 10060;
+    inset-inline: 0;
+    top: var(--petatoe-mobile-header-height, 0px);
+    height: 2px;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .pet-v10-route-progress::before {
+    content: "";
+    display: block;
+    width: 38%;
+    height: 100%;
+    background: currentColor;
+    border-radius: 999px;
+    transform: translateX(-120%);
+  }
+
+  body.pet-v10-route-changing .pet-v10-route-progress {
+    opacity: .8;
+  }
+
+  body.pet-v10-route-changing .pet-v10-route-progress::before {
+    animation: pet-v10-route-progress .7s ease-in-out infinite;
+  }
+
+  body.pet-v10-mobile .pet-v10-reveal-target {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.pet-v10-mobile.pet-v10-motion-enabled .pet-v10-reveal-target:not(.pet-v10-in-view) {
+    opacity: .01;
+    transform: translateY(8px);
+  }
+
+  body.pet-v10-mobile.pet-v10-motion-enabled .pet-v10-reveal-target.pet-v10-in-view {
+    animation: pet-v10-card-in var(--pet-v10-motion-normal) ease both;
+  }
+
+  @keyframes pet-v10-spin { to { transform: rotate(360deg); } }
+  @keyframes pet-v10-route-progress {
+    0% { transform: translateX(-120%); }
+    100% { transform: translateX(360%); }
+  }
+  @keyframes pet-v10-card-in {
+    from { opacity: .01; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --pet-v10-motion-fast: 1ms;
+      --pet-v10-motion-normal: 1ms;
+    }
+
+    body.pet-v10-mobile *,
+    body.pet-v10-mobile *::before,
+    body.pet-v10-mobile *::after {
+      scroll-behavior: auto !important;
+      animation-duration: 1ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 1ms !important;
+    }
+  }
+}

@@ -1,0 +1,12 @@
+PETATOE Mobile Enterprise UI v10 — M5 Experience & Performance Stabilization
+
+- Add a phone-only mobile experience and accessibility layer
+- Normalize touch targets, press feedback and keyboard focus visibility
+- Respect the device reduced-motion preference
+- Add guarded pull-to-refresh for installed standalone PWA mode
+- Add lightweight route-change progress feedback
+- Reveal dynamically rendered cards once using IntersectionObserver
+- Improve horizontal scrolling for report rails and wide tables
+- Add dialog semantics to the existing mobile drawer
+- Update the PWA cache to 10.0.0-mobile-experience-m5
+- Keep Desktop, Tablet, Supabase, calculations, permissions and business workflows unchanged
