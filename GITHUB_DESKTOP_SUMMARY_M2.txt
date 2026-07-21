@@ -1,0 +1,10 @@
+PETATOE v9.4.24 — Phase M2 Mobile Enterprise UI
+
+- Compact the iPhone header while preserving Safe Area support
+- Hide nonessential desktop header controls on mobile only
+- Keep user name, theme, search and navigation actions readable in one row
+- Change Dashboard Quick Insights from four narrow columns to two readable cards per row
+- Add a dedicated non-blocking PWA update bar below the measured header
+- Prevent update messaging from overlapping the iPhone Home Indicator
+- Refresh the Service Worker cache and pre-cache the Phase M2 stylesheet
+- Keep Desktop, Supabase, reports, payroll, permissions and business logic unchanged

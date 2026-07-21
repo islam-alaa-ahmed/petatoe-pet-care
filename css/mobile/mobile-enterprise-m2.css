@@ -1,0 +1,195 @@
+/* PETATOE Mobile Enterprise UI — Phase M2
+   Mobile-only refinement for compact header, readable quick insights,
+   and non-blocking PWA update messaging. Desktop/tablet remain unchanged. */
+
+@media (max-width: 760px) {
+  :root {
+    --pet-mobile-header-gap: 8px;
+  }
+
+  /* Keep the fixed header compact and on one visual row beneath iOS safe area. */
+  .topbar {
+    min-height: calc(58px + var(--pet-safe-top, 0px)) !important;
+    padding-top: calc(6px + var(--pet-safe-top, 0px)) !important;
+    padding-right: calc(8px + var(--pet-safe-right, 0px)) !important;
+    padding-bottom: 6px !important;
+    padding-left: calc(8px + var(--pet-safe-left, 0px)) !important;
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+  }
+
+  .topbar .top-left,
+  .topbar .top-right {
+    gap: 7px !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+  }
+
+  .topbar .top-left {
+    flex: 0 1 auto !important;
+  }
+
+  .topbar .top-right {
+    flex: 1 1 auto !important;
+    justify-content: flex-end !important;
+    overflow: visible !important;
+  }
+
+  .topbar .side-launcher,
+  .topbar .reports-btn,
+  .topbar #today,
+  .topbar .pet-language-switcher,
+  .topbar .pet-notification-trigger,
+  .topbar .launch-text,
+  .topbar #topbarUserRole,
+  .topbar .avatar {
+    display: none !important;
+  }
+
+  .topbar .search,
+  .topbar .top-paw-up-btn,
+  .topbar .pill.toggle {
+    flex: 0 0 46px !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 46px !important;
+    min-height: 46px !important;
+    padding: 0 !important;
+    border-radius: 15px !important;
+  }
+
+  .topbar .pill.toggle {
+    width: auto !important;
+    min-width: 104px !important;
+    padding: 0 10px !important;
+    gap: 7px !important;
+  }
+
+  .topbar .user {
+    order: -1 !important;
+    flex: 0 1 auto !important;
+    min-width: 66px !important;
+    max-width: 92px !important;
+    padding: 0 4px !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .topbar #topbarUserName {
+    display: block !important;
+    max-width: 84px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 13px !important;
+    line-height: 1.2 !important;
+  }
+
+  .topbar .paw-tip {
+    display: none !important;
+  }
+
+  /* Dashboard quick insights: two readable cards per row instead of four narrow columns. */
+  #dashboard #insights,
+  #dashboard .insights {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  #dashboard .insight {
+    min-width: 0 !important;
+    min-height: 150px !important;
+    padding: 14px 12px !important;
+    border-radius: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    text-align: center !important;
+    overflow: hidden !important;
+  }
+
+  #dashboard .insight small,
+  #dashboard .insight span {
+    font-size: 12px !important;
+    line-height: 1.6 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  #dashboard .insight .big,
+  #dashboard .insight b {
+    font-size: clamp(17px, 5vw, 21px) !important;
+    line-height: 1.45 !important;
+    margin: 7px 0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: normal !important;
+  }
+
+  /* In-app update notice: compact bar below the measured header, never behind Home Indicator. */
+  .petatoe-pwa-update {
+    position: fixed !important;
+    top: calc(var(--pet-mobile-header-height, 76px) + 8px) !important;
+    right: calc(10px + var(--pet-safe-right, 0px)) !important;
+    bottom: auto !important;
+    left: calc(10px + var(--pet-safe-left, 0px)) !important;
+    z-index: 2147483300 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    width: auto !important;
+    max-width: none !important;
+    padding: 10px 12px !important;
+    border: 1px solid rgba(255,255,255,.18) !important;
+    border-radius: 15px !important;
+    background: rgba(15,23,42,.96) !important;
+    color: #fff !important;
+    box-shadow: 0 14px 34px rgba(0,0,0,.38) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
+    font: 900 12px/1.5 Cairo, system-ui, sans-serif !important;
+    direction: rtl !important;
+  }
+
+  .petatoe-pwa-update span {
+    min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .petatoe-pwa-update button {
+    flex: 0 0 auto !important;
+    min-height: 38px !important;
+    padding: 7px 12px !important;
+    border: 0 !important;
+    border-radius: 12px !important;
+    background: linear-gradient(135deg,#8b5cf6,#7c3aed) !important;
+    color: #fff !important;
+    font: 900 12px Cairo, system-ui, sans-serif !important;
+  }
+
+  /* Session warning remains centered while respecting compact mobile spacing. */
+  [role="dialog"] .session-warning-actions,
+  .session-timeout-actions,
+  .session-warning-actions {
+    gap: 10px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .topbar .pill.toggle {
+    min-width: 92px !important;
+    padding-inline: 8px !important;
+  }
+
+  .topbar .search,
+  .topbar .top-paw-up-btn {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+  }
+
+  #dashboard .insight {
+    min-height: 138px !important;
+  }
+}
