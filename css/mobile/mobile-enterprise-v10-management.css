@@ -1,0 +1,256 @@
+/* PETATOE Mobile Enterprise UI v10 — M4 Operations & Management Screens
+   Phone-only presentation layer. Business logic and desktop/tablet remain untouched. */
+@media (max-width: 760px) {
+  body.petatoe-v10-management-ready {
+    --v10-management-gap: 12px;
+    --v10-management-radius: 18px;
+    --v10-management-border: rgba(148, 163, 184, .22);
+    --v10-management-control-height: 44px;
+    --v10-management-table-min: 720px;
+  }
+
+  .petatoe-v10-management-surface {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  .petatoe-v10-management-surface > .section-head,
+  .petatoe-v10-management-surface .appointments-hero,
+  .petatoe-v10-management-surface .appointments-card-head,
+  .petatoe-v10-management-surface .wh-statement-head,
+  .petatoe-v10-management-surface .children-expenses-head,
+  .petatoe-v10-management-surface .children-expenses-list-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 10px !important;
+  }
+
+  .petatoe-v10-management-surface > .section-head > div:last-child,
+  .petatoe-v10-management-surface .appointments-actions,
+  .petatoe-v10-management-surface .wh-statement-actions,
+  .petatoe-v10-management-surface .children-expenses-actions,
+  .petatoe-v10-management-surface .actions {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px !important;
+  }
+
+  .petatoe-v10-management-surface button,
+  .petatoe-v10-management-surface .btn,
+  .petatoe-v10-management-surface .exp-btn {
+    min-height: 42px;
+    max-width: 100%;
+    padding: 9px 11px !important;
+    border-radius: 13px !important;
+    font-size: 12px !important;
+    line-height: 1.3;
+  }
+
+  .petatoe-v10-management-card,
+  .petatoe-v10-management-surface .appointments-card,
+  .petatoe-v10-management-surface .wh-card,
+  .petatoe-v10-management-surface .children-expenses-card {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+    margin-top: var(--v10-management-gap) !important;
+    padding: 13px !important;
+    border-radius: var(--v10-management-radius) !important;
+    overflow: hidden;
+  }
+
+  .petatoe-v10-management-surface .grid,
+  .petatoe-v10-management-surface .grid-2,
+  .petatoe-v10-management-surface .grid-3,
+  .petatoe-v10-management-surface .appointments-report-grid,
+  .petatoe-v10-management-surface .vehicle-ops-board,
+  .petatoe-v10-management-surface .vehicle-ops-reports,
+  .petatoe-v10-management-surface .operation-kpi-dashboard,
+  .petatoe-v10-management-surface .wh-kpis,
+  .petatoe-v10-management-surface .wh-statement-kpis,
+  .petatoe-v10-management-surface .children-expenses-kpis,
+  .petatoe-v10-management-surface .payroll-kpis,
+  .petatoe-v10-management-surface .settings-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: var(--v10-management-gap) !important;
+    min-width: 0;
+  }
+
+  .petatoe-v10-management-form,
+  .petatoe-v10-management-filters,
+  .petatoe-v10-management-surface .form,
+  .petatoe-v10-management-surface .filters,
+  .petatoe-v10-management-surface .wh-filter,
+  .petatoe-v10-management-surface .appointments-calendar-controls,
+  .petatoe-v10-management-surface .children-expenses-budget-form {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 9px !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .petatoe-v10-management-surface label,
+  .petatoe-v10-management-surface .field,
+  .petatoe-v10-management-surface .form-group {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .petatoe-v10-management-surface input,
+  .petatoe-v10-management-surface select,
+  .petatoe-v10-management-surface textarea {
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0 !important;
+    min-height: var(--v10-management-control-height);
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    box-sizing: border-box;
+  }
+
+  .petatoe-v10-management-surface textarea {
+    min-height: 96px;
+    resize: vertical;
+  }
+
+  .petatoe-v10-management-rail,
+  .petatoe-v10-management-surface .appointments-tabs,
+  .petatoe-v10-management-surface .wh-tabs,
+  .petatoe-v10-management-surface .children-expenses-tabs,
+  .petatoe-v10-management-surface .payroll-tabs,
+  .petatoe-v10-management-surface .settings-tabs,
+  .petatoe-v10-management-surface .settings-subtabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    width: 100%;
+    max-width: 100%;
+    gap: 8px !important;
+    padding: 2px 2px 8px !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .petatoe-v10-management-rail::-webkit-scrollbar,
+  .petatoe-v10-management-surface .appointments-tabs::-webkit-scrollbar,
+  .petatoe-v10-management-surface .wh-tabs::-webkit-scrollbar,
+  .petatoe-v10-management-surface .children-expenses-tabs::-webkit-scrollbar,
+  .petatoe-v10-management-surface .payroll-tabs::-webkit-scrollbar,
+  .petatoe-v10-management-surface .settings-tabs::-webkit-scrollbar,
+  .petatoe-v10-management-surface .settings-subtabs::-webkit-scrollbar { display: none; }
+
+  .petatoe-v10-management-rail > *,
+  .petatoe-v10-management-surface .appointments-tabs > *,
+  .petatoe-v10-management-surface .wh-tabs > *,
+  .petatoe-v10-management-surface .children-expenses-tabs > *,
+  .petatoe-v10-management-surface .payroll-tabs > *,
+  .petatoe-v10-management-surface .settings-tabs > *,
+  .petatoe-v10-management-surface .settings-subtabs > * {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: max-content;
+    scroll-snap-align: start;
+  }
+
+  .petatoe-v10-management-table {
+    position: relative;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    border: 1px solid var(--v10-management-border);
+    border-radius: 14px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+
+  .petatoe-v10-management-table table {
+    width: max-content !important;
+    min-width: 100% !important;
+    table-layout: auto !important;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .petatoe-v10-management-table-wide table {
+    min-width: var(--v10-management-table-min) !important;
+  }
+
+  .petatoe-v10-management-table th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    min-width: 96px;
+    padding: 11px 10px !important;
+    font-size: 11px !important;
+    line-height: 1.35;
+    white-space: nowrap;
+    background: color-mix(in srgb, var(--card, #111827) 96%, #0f172a) !important;
+    backdrop-filter: blur(14px);
+  }
+
+  .petatoe-v10-management-table td {
+    padding: 11px 10px !important;
+    font-size: 12px !important;
+    line-height: 1.45;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .petatoe-v10-management-surface .modal,
+  .petatoe-v10-management-surface .dialog,
+  .petatoe-v10-management-surface .drawer-panel,
+  .petatoe-v10-management-surface .sheet-panel {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - var(--petatoe-mobile-header-height, 64px) - 24px) !important;
+    overflow: auto;
+    border-radius: 20px !important;
+  }
+
+  #vehicleOperations .vehicle-ops-board,
+  #vehicleOperationsReports .vehicle-ops-reports,
+  #operationKpis .operation-kpi-dashboard,
+  #payrollArea,
+  #salarySlipArea,
+  #commissionStatementArea,
+  #settingsArea,
+  #customer360Area {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  #import .import-methods {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  #import .import-method-card,
+  #import .drop {
+    width: 100%;
+    min-width: 0;
+    border-radius: 16px !important;
+  }
+
+  #records .pager {
+    display: grid !important;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 8px;
+  }
+
+  #records .pager button { width: 100%; }
+  #records #pagerInfo { text-align: center; font-size: 11px; white-space: nowrap; }
+}

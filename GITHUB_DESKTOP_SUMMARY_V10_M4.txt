@@ -1,0 +1,10 @@
+PETATOE Mobile Enterprise UI v10 — M4 Operations & Management Screens
+
+- Add a dedicated phone-only presentation layer for operations and management modules
+- Reflow forms, filters, KPI grids, action groups and cards into readable mobile layouts
+- Convert warehouse, children expenses, payroll and settings tabs into touch-friendly horizontal rails
+- Add unified horizontal table viewports with sticky headers for wide management tables
+- Enhance dynamically rendered module content through a lightweight MutationObserver
+- Improve mobile import cards, records pagination and modal sizing
+- Update the PWA cache to 10.0.0-mobile-management-m4
+- Keep Desktop, Tablet, Supabase, permissions, calculations and business workflows unchanged
