@@ -1,0 +1,10 @@
+PETATOE Mobile Enterprise UI v10 — M3 Mobile Reports & Data Tables
+
+- Add a dedicated phone-only presentation layer for Sales, Vans, Services and Smart Reports
+- Convert report filters and action groups into touch-friendly horizontal rails
+- Reflow desktop multi-column report sections into readable single-column mobile stacks
+- Give report charts stable mobile heights without changing their datasets or calculations
+- Add mobile table viewports with horizontal swipe, sticky headers and sticky first-column support
+- Observe dynamically rendered Smart Reports so new report content receives the same mobile treatment
+- Update the PWA cache to 10.0.0-mobile-reports-m3
+- Keep Desktop, Tablet, Supabase, permissions, exports and business logic unchanged

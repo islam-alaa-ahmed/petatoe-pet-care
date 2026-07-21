@@ -1,0 +1,342 @@
+/* PETATOE Mobile Enterprise UI v10 — M3 Reports & Data Tables
+   Phone-only presentation layer. Business logic and desktop/tablet remain untouched. */
+@media (max-width: 760px) {
+  body.petatoe-v10-reports-ready {
+    --v10-report-gap: 12px;
+    --v10-report-radius: 18px;
+    --v10-report-border: rgba(148, 163, 184, .22);
+    --v10-report-surface: color-mix(in srgb, var(--card, #111827) 92%, transparent);
+    --v10-table-min: 680px;
+  }
+
+  /* Canonical report panels */
+  #sales,
+  #vans,
+  #services,
+  #smart,
+  #smartReportsScreen,
+  .petatoe-v10-report-surface {
+    width: 100%;
+    min-width: 0;
+    overflow: visible;
+  }
+
+  #sales > .section-head,
+  #vans > .section-head,
+  #services > .section-head,
+  #smartReportsScreen > .section-head,
+  .petatoe-v10-report-surface > .section-head {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+  }
+
+  #sales > .section-head > div:last-child,
+  #vans > .section-head > div:last-child,
+  #services > .section-head > div:last-child,
+  #smartReportsScreen > .section-head > div:last-child,
+  .petatoe-v10-report-surface > .section-head > div:last-child {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px !important;
+  }
+
+  #sales .exp-btn,
+  #vans .exp-btn,
+  #services .exp-btn,
+  #smartReportsScreen .exp-btn,
+  .petatoe-v10-report-surface .exp-btn {
+    width: 100%;
+    min-width: 0;
+    min-height: 42px;
+    padding: 9px 10px !important;
+    border-radius: 13px !important;
+    font-size: 12px !important;
+    white-space: nowrap;
+  }
+
+  /* Cards and report groups */
+  #sales .card,
+  #vans .card,
+  #services .card,
+  #smartReportsArea .card,
+  #smartReportsArea .smart-panel,
+  #smartReportsArea .customer-yoy-panel,
+  #smartReportsArea .appointments-report-table-card,
+  .petatoe-v10-report-card {
+    min-width: 0 !important;
+    border-radius: var(--v10-report-radius) !important;
+    padding: 13px !important;
+    margin-top: var(--v10-report-gap) !important;
+    overflow: hidden;
+  }
+
+  #vans .grid-2,
+  #smartReportsArea .grid-2,
+  #smartReportsArea .grid.three,
+  #smartReportsArea .grid.four,
+  #smartReportsArea .contract-kpis,
+  #smartReportsArea .customer-yoy-kpis,
+  #smartReportsArea .inactive-cust-kpis,
+  #smartReportsArea .inactive-tip-kpis,
+  #smartReportsArea .ai-forecast-kpis,
+  #smartReportsArea .contract-rec-grid,
+  #smartReportsArea .insights,
+  #smartReportsArea .customer-yoy-sections {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: var(--v10-report-gap) !important;
+  }
+
+  #smartReportsArea .grid,
+  #smartReportsArea .contract-kpis,
+  #smartReportsArea .customer-yoy-kpis,
+  #smartReportsArea .inactive-cust-kpis,
+  #smartReportsArea .inactive-tip-kpis,
+  #smartReportsArea .ai-forecast-kpis {
+    min-width: 0;
+  }
+
+  /* Filter/action strips become touch-friendly horizontal rails */
+  #sales .year-strip,
+  #vans .year-strip,
+  #smartReportsArea .year-strip,
+  #smartReportsArea .smart-overview-card-year-list,
+  #smartReportsArea .customer-analysis-tabs,
+  #smartReportsArea .advanced-tax-actions,
+  #smartReportsArea .customer-yoy-tax-actions,
+  #smartReportsArea .inactive-sort-actions,
+  #smartReportsArea .new-cust-controls,
+  #smartReportsArea .heatmap-control-row,
+  #smartReportsArea .ai-whatif-controls,
+  .petatoe-v10-report-rail {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 8px !important;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 2px 2px 7px !important;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #sales .year-strip::-webkit-scrollbar,
+  #vans .year-strip::-webkit-scrollbar,
+  #smartReportsArea .year-strip::-webkit-scrollbar,
+  #smartReportsArea .smart-overview-card-year-list::-webkit-scrollbar,
+  #smartReportsArea .customer-analysis-tabs::-webkit-scrollbar,
+  #smartReportsArea .advanced-tax-actions::-webkit-scrollbar,
+  #smartReportsArea .customer-yoy-tax-actions::-webkit-scrollbar,
+  #smartReportsArea .inactive-sort-actions::-webkit-scrollbar,
+  #smartReportsArea .new-cust-controls::-webkit-scrollbar,
+  #smartReportsArea .heatmap-control-row::-webkit-scrollbar,
+  #smartReportsArea .ai-whatif-controls::-webkit-scrollbar,
+  .petatoe-v10-report-rail::-webkit-scrollbar { display: none; }
+
+  #sales .year-strip > *,
+  #vans .year-strip > *,
+  #smartReportsArea .year-strip > *,
+  #smartReportsArea .smart-overview-card-year-list > *,
+  #smartReportsArea .customer-analysis-tabs > *,
+  #smartReportsArea .advanced-tax-actions > *,
+  #smartReportsArea .customer-yoy-tax-actions > *,
+  #smartReportsArea .inactive-sort-actions > *,
+  #smartReportsArea .new-cust-controls > *,
+  #smartReportsArea .heatmap-control-row > *,
+  #smartReportsArea .ai-whatif-controls > *,
+  .petatoe-v10-report-rail > * {
+    flex: 0 0 auto !important;
+    scroll-snap-align: start;
+  }
+
+  /* Chart sizing: readable mobile viewport, no desktop squeeze */
+  #sales .chart,
+  #vans .chart,
+  #services .chart,
+  #smartReportsArea .chart,
+  #smartReportsArea .new-cust-chart,
+  #smartReportsArea .inactive-cust-chart,
+  #smartReportsArea .inactive-lost-trend-chart,
+  .petatoe-v10-report-chart {
+    width: 100% !important;
+    min-width: 0 !important;
+    height: 280px !important;
+    min-height: 280px !important;
+    overflow: hidden;
+  }
+
+  #sales .chart.xl,
+  #vans .chart.xl,
+  #smartReportsArea .chart.xl { height: 320px !important; min-height: 320px !important; }
+
+  #sales canvas,
+  #vans canvas,
+  #services canvas,
+  #smartReportsArea canvas,
+  .petatoe-v10-report-chart canvas {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100% !important;
+  }
+
+  /* Generic table viewport */
+  #sales .table-wrap,
+  #vans .table-wrap,
+  #services .table-wrap,
+  #smartReportsArea .table-wrap,
+  #smartReportsArea .appointments-report-table-wrap,
+  #smartReportsArea .children-expenses-table-wrap,
+  #smartReportsArea .customer-yoy-table,
+  .petatoe-v10-table-viewport {
+    position: relative;
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
+    border: 1px solid var(--v10-report-border);
+    border-radius: 14px;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+
+  #sales .table-wrap table,
+  #vans .table-wrap table,
+  #services .table-wrap table,
+  #smartReportsArea .table-wrap table,
+  #smartReportsArea .appointments-report-table-wrap table,
+  #smartReportsArea .children-expenses-table-wrap table,
+  #smartReportsArea table.customer-yoy-table,
+  .petatoe-v10-table-viewport table {
+    width: max-content !important;
+    min-width: var(--v10-table-min) !important;
+    table-layout: auto !important;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  #sales table th,
+  #vans table th,
+  #services table th,
+  #smartReportsArea table th,
+  .petatoe-v10-table-viewport th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    min-width: 96px;
+    padding: 11px 10px !important;
+    font-size: 11px !important;
+    line-height: 1.35;
+    white-space: nowrap;
+    background: color-mix(in srgb, var(--card, #111827) 96%, #0f172a) !important;
+    backdrop-filter: blur(14px);
+  }
+
+  #sales table td,
+  #vans table td,
+  #services table td,
+  #smartReportsArea table td,
+  .petatoe-v10-table-viewport td {
+    padding: 11px 10px !important;
+    font-size: 12px !important;
+    line-height: 1.45;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  #sales table tbody tr,
+  #vans table tbody tr,
+  #services table tbody tr,
+  #smartReportsArea table tbody tr,
+  .petatoe-v10-table-viewport tbody tr {
+    min-height: 44px;
+  }
+
+  /* Keep the first descriptive column visible while swiping wide reports */
+  .petatoe-v10-table-viewport.petatoe-v10-sticky-first table th:first-child,
+  .petatoe-v10-table-viewport.petatoe-v10-sticky-first table td:first-child {
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 2;
+    background: color-mix(in srgb, var(--card, #111827) 97%, #0f172a) !important;
+    box-shadow: 6px 0 12px rgba(2, 6, 23, .12);
+  }
+
+  .petatoe-v10-table-viewport.petatoe-v10-sticky-first table th:first-child { z-index: 4; }
+
+  /* Smart reports content */
+  #smartReportsArea {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #smartReportsArea .chart-head,
+  #smartReportsArea .customer-activity-panel-head,
+  #smartReportsArea .appointments-report-title,
+  #smartReportsArea .card-title {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    align-items: start !important;
+    gap: 9px !important;
+  }
+
+  #smartReportsArea .chart-head > *,
+  #smartReportsArea .customer-activity-panel-head > *,
+  #smartReportsArea .appointments-report-title > *,
+  #smartReportsArea .card-title > * { min-width: 0; }
+
+  #smartReportsArea .chart-head button,
+  #smartReportsArea .customer-activity-export-btn,
+  #smartReportsArea .customer-yoy-export-btn,
+  #smartReportsArea .btn,
+  #smartReportsArea select,
+  #smartReportsArea input {
+    min-height: 42px;
+    max-width: 100%;
+  }
+
+  #smartReportsArea .customer-yoy-controls,
+  #smartReportsArea .customer-yoy-native-filter,
+  #smartReportsArea .new-cust-controls,
+  #smartReportsArea .ai-whatif-controls {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 8px !important;
+    width: 100%;
+  }
+
+  #smartReportsArea .heatmap-wrap,
+  #smartReportsArea .heatmap-wrap-monthly,
+  #smartReportsArea .customer-yoy-tornado,
+  #smartReportsArea .customer-yoy-rank-tornado-stack {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #smartReportsArea .heatmap-wrap > *,
+  #smartReportsArea .heatmap-wrap-monthly > * { min-width: 620px; }
+
+  #smartReportsArea .kpi-tooltip {
+    position: fixed !important;
+    inset: auto 12px calc(var(--petatoe-mobile-bottom-nav-height, 72px) + env(safe-area-inset-bottom, 0px) + 12px) 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: 48vh;
+    overflow: auto;
+    z-index: 10060 !important;
+  }
+
+  /* Light mode keeps sticky cells opaque enough for readability */
+  body.light-mode .petatoe-v10-table-viewport table th,
+  body.light-mode .petatoe-v10-table-viewport.petatoe-v10-sticky-first table th:first-child,
+  body.light-mode .petatoe-v10-table-viewport.petatoe-v10-sticky-first table td:first-child {
+    background: rgba(255, 255, 255, .96) !important;
+  }
+}
