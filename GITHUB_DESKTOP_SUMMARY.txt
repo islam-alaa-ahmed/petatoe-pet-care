@@ -1,10 +1,12 @@
-PETATOE Mobile Enterprise UI v10 — M1 Mobile App Shell
+PETATOE Operations — Final Production Certification Phase 6
 
-- Add a dedicated phone-only enterprise app shell
-- Replace the oversized mobile header with a compact Safe Area-aware header
-- Add five-item native-style bottom navigation
-- Add a searchable mobile drawer generated from the canonical permission-aware menu
-- Reuse the existing PETATOE router without changing business logic
-- Unify mobile toast and PWA update positions below the app header
-- Refresh the Service Worker cache and pre-cache the v10 shell assets
-- Keep Desktop, Tablet, Supabase, reports, payroll and permissions unchanged
+- Run full JavaScript syntax validation across the composed Operations baseline
+- Pass Enterprise Localization Certification and Production Localization Lockdown
+- Pass Runtime Translation Completion with zero missing runtime phrases
+- Pass Mobile Enterprise UI certification 64/64
+- Pass Native iOS static certification 27/27
+- Pass Startup Permission Guard validation
+- Pass Operations deterministic scenario suite 8/8
+- Document conditional production readiness and remaining live Supabase/browser UAT
+- Add a mandatory live UAT checklist for concurrency, RLS, snapshots, reporting, exports, and deployment parity
+- Make no application runtime or business-logic changes in this certification phase

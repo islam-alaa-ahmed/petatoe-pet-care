@@ -1,0 +1,2 @@
+PETATOE Native iOS static certification: STATIC_GATE_PASSED
+Checks: 27 | Passed: 27 | Failed: 0

@@ -1,0 +1,64 @@
+=== scripts/enterprise-localization-certification-check.js ===
+Enterprise Localization Certification: PASSED
+{
+  "files": 316,
+  "js": 313,
+  "html": 3,
+  "legacyCalls": 0,
+  "staticUiCandidates": 490,
+  "missingStoredTexts": 0,
+  "missingCounterparts": 0,
+  "arabicEntries": 3448,
+  "englishEntries": 3448
+}
+EXIT:0
+=== scripts/localization-production-lockdown-check.js ===
+Production Localization Lockdown: PASSED
+{
+  "filesScanned": 316,
+  "legacyReferences": 0,
+  "adapterDictionaries": 0,
+  "publicAliasReferences": 0,
+  "missingCounterparts": 0,
+  "arabicEntries": 3448,
+  "englishEntries": 3448
+}
+EXIT:0
+=== scripts/runtime-translation-completion-check.js ===
+Runtime Translation Completion: PASSED
+{
+  "status": "PASSED",
+  "usedRuntimePhrases": 213,
+  "storedRuntimePhrases": 231,
+  "missingRuntimePhrases": 0,
+  "missing": []
+}
+EXIT:0
+=== scripts/mobile-enterprise-v10-certification-check.js ===
+PETATOE Mobile Enterprise UI v10 certification: PASSED
+{
+  "checks": 64,
+  "failures": 0,
+  "assets": 10
+}
+EXIT:0
+=== scripts/startup-permission-guard-check.js ===
+Startup Permission Guard: PASSED
+{
+  "authenticatedGuard": true,
+  "identityReadyGuard": true,
+  "aggressiveRetries": 0,
+  "silentNativeAlerts": 0
+}
+EXIT:0
+=== scripts/operations-enterprise-scenario-check.js ===
+PASS financial separation
+PASS completed statuses include closed and confirmed
+PASS customer phone normalization
+PASS cross report consistency
+PASS stable vehicle grouping and unique alias merge
+PASS legacy unique driver alias joins stable id
+PASS ambiguous duplicate driver names do not auto merge
+PASS customer same normalized phone merges
+RESULT 8/8
+EXIT:0
