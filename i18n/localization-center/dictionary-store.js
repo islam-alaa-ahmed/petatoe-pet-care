@@ -26,6 +26,12 @@
   STORE.en.commissions=STORE.en.commissions||{};
   STORE.ar.commissions.persistence=Object.assign({},STORE.ar.commissions.persistence||{},{lockSaveError:'تعذر حفظ قفل الشهر في Supabase',unlockSaveError:'تعذر إلغاء قفل الشهر في Supabase'});
   STORE.en.commissions.persistence=Object.assign({},STORE.en.commissions.persistence||{},{lockSaveError:'Unable to save the month lock in Supabase',unlockSaveError:'Unable to unlock the month in Supabase'});
+  STORE.ar.runtimeSource=STORE.ar.runtimeSource||{};
+  STORE.en.runtimeSource=STORE.en.runtimeSource||{};
+  STORE.ar.runtimeSource['فشل حفظ البيانات في Supabase']='فشل حفظ البيانات في Supabase';
+  STORE.en.runtimeSource['فشل حفظ البيانات في Supabase']='Failed to save data to Supabase';
+  STORE.ar.salesPersistence=Object.assign({},STORE.ar.salesPersistence||{},{supabaseSaveError:'فشل حفظ البيانات في Supabase'});
+  STORE.en.salesPersistence=Object.assign({},STORE.en.salesPersistence||{},{supabaseSaveError:'Failed to save data to Supabase'});
   registerModule('certificationSource',CERTIFICATION_SOURCE);
   window.PETATOE_LOCALIZATION_CENTER_DICTIONARIES=STORE;
   window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,dictionaries:STORE,registerModule:registerModule,getPath:getPath,merge:merge};

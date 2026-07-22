@@ -1,7 +1,7 @@
 (function(){
   if(window.__PETATOE_INVOICE_MANUAL_MULTI_ITEMS_SINGLETON__) return;
   window.__PETATOE_INVOICE_MANUAL_MULTI_ITEMS_SINGLETON__ = true;
-  var STATE={mode:'new',selectedInvoice:'',baseSave:null,baseClear:null,booted:false};
+  var STATE={mode:'new',selectedInvoice:'',baseSave:null,baseClear:null,booted:false,saving:false};
   function id(x){return document.getElementById(x)}
 
   function safeRender(target, html, reason){var el=(typeof target==='string')?id(target):target;if(!el)return false;try{if(window.PETATOESafeRender&&typeof window.PETATOESafeRender.htmlTrusted==='function')return window.PETATOESafeRender.htmlTrusted(el,html,reason||'invoice manual trusted template')}catch(e){console.warn('invoice safeRender fallback',e)}el.textContent='';el.insertAdjacentHTML('beforeend',String(html==null?'':html));return true}
@@ -13,20 +13,34 @@
   function mny(v){try{return typeof money==='function'?money(v):(Number(v||0).toFixed(2)+' SAR')}catch(e){return (Number(v||0).toFixed(2)+' SAR')}}
   function note(v){try{toast(v)}catch(e){if(window.PETATOEDiagnostics&&window.PETATOEDiagnostics.info)window.PETATOEDiagnostics.info('invoice-manual-multi-items',{message:v});}}
   function arr(){try{return (window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[]}catch(e){return []}}
-  function commitManualRowsToSupabase(rows){
+  async function commitManualRowsToSupabase(rows){
+    rows=Array.isArray(rows)?rows.filter(function(r){return r && !r.supabase_id && !r.__petatoeManualSupabasePending;}):[];
+    if(!rows.length) return {ok:true,skipped:true,rows:0};
+    if(!(window.PETATOEDataLayer && typeof window.PETATOEDataLayer.insertSalesRecords==='function')){
+      return {ok:false,error:'PETATOEDataLayer.insertSalesRecords unavailable'};
+    }
+    rows.forEach(function(r){try{r.__petatoeManualSupabasePending=true;}catch(_e){}});
     try{
-      rows=Array.isArray(rows)?rows.filter(function(r){return r && !r.supabase_id && !r.__petatoeManualSupabasePending;}):[];
-      if(!rows.length) return;
-      rows.forEach(function(r){try{r.__petatoeManualSupabasePending=true;}catch(_e){}});
-      if(window.PETATOEDataLayer && typeof window.PETATOEDataLayer.insertSalesRecords==='function'){
-        window.PETATOEDataLayer.insertSalesRecords(rows,{source:'manual-invoice-entry'}).then(function(res){
-          if(!res || !res.ok){console.warn('[PETATOE Manual Invoice] Supabase save failed',res);return;}
-          if(window.PETATOEDataSource && typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
-            window.PETATOEDataSource.refreshSalesRecordsFromSupabase('manual-invoice-supabase-commit');
-          }
-        }).catch(function(e){console.warn('[PETATOE Manual Invoice] Supabase save crashed',e);});
+      var res=await window.PETATOEDataLayer.insertSalesRecords(rows,{source:'manual-invoice-entry'});
+      if(!res || !res.ok){
+        console.warn('[PETATOE Manual Invoice] Supabase save failed',res);
+        return res||{ok:false,error:'Supabase save failed'};
       }
-    }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js:commitManualRowsToSupabase",e);}
+      if(window.PETATOEDataSource && typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
+        await window.PETATOEDataSource.refreshSalesRecordsFromSupabase('manual-invoice-supabase-commit');
+      }
+      return res;
+    }catch(e){
+      console.warn('[PETATOE Manual Invoice] Supabase save crashed',e);
+      return {ok:false,error:e&&e.message?e.message:String(e)};
+    }finally{
+      rows.forEach(function(r){try{delete r.__petatoeManualSupabasePending;}catch(_e){}});
+    }
+  }
+  function setSaveBusy(busy){
+    STATE.saving=!!busy;
+    var btn=id('saveBtn');
+    if(btn){btn.disabled=STATE.saving;btn.setAttribute('aria-busy',STATE.saving?'true':'false');}
   }
   async function deleteInvoiceFromSupabase(no, reason){
     no=invKey(no);
@@ -165,40 +179,50 @@ function renderResults(keepFocus){ensureEntryUi();var active=document.activeElem
   }
   function collectItems(){try{return typeof collectEntryItems==='function'?collectEntryItems():[]}catch(e){return []}}
   async function saveEntry(){
-    try{if(typeof window.petatoeBeforeSaveRecord==='function'&&window.petatoeBeforeSaveRecord()===false)return false}catch(e){console.warn(e)}
-    var common={van:id('e_van')?id('e_van').value:'',date:id('e_date')?normDate(id('e_date').value):'',month:id('e_month')?(typeof normalizeMonth==='function'?normalizeMonth(id('e_month').value,id('e_date')?id('e_date').value:''):id('e_month').value):'',invoice:id('e_invoice')?invKey(id('e_invoice').value):'',client:id('e_client')?id('e_client').value:'',pay:id('e_pay')?id('e_pay').value:''};
-    var items=collectItems();
-    if(!common.date||!common.invoice||!common.client||!items.length){note('املأ التاريخ والعميل وصنف واحد على الأقل');return false}
-    var old=STATE.selectedInvoice?arr().filter(function(r){return invKey(r.invoice)===STATE.selectedInvoice}):[];
-    var rows=items.map(function(it,idx){var r=Object.assign({},old[idx]||{},it,common);r.id=(old[idx]&&old[idx].id)||(Date.now()+Math.random()+idx);r.manualEntry=true;if(!n(r.totalEx)&&n(r.price))r.totalEx=(n(r.price)*(n(r.qty)||1))-Math.abs(n(r.disc));if(!n(r.totalInc))r.totalInc=n(r.totalEx)+n(r.tax);r.disc=Math.abs(n(r.disc));return r});
-    if(STATE.mode==='edit'&&STATE.selectedInvoice){
-      var oldInvoice=STATE.selectedInvoice;
-      var supabaseDelete=await deleteInvoiceFromSupabase(oldInvoice,'manual-invoice-edit-replace');
-      if(!supabaseDelete || supabaseDelete.ok!==true){
-        note('تعذر تحديث الفاتورة في Supabase، لم يتم حفظ التعديل');
-        return false;
-      }
-      rows=stripSupabaseIdentity(rows);
-      setArr(arr().filter(function(r){return invKey(r.invoice)!==oldInvoice}).concat(rows));
-      STATE.selectedInvoice=common.invoice;
-    }else{
-      setArr(arr().concat(rows));
-      try{if(typeof setNextManualInvoiceAfter==='function')setNextManualInvoiceAfter(common.invoice)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
-    }
-    try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
-    try{save()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+    if(STATE.saving)return false;
+    setSaveBusy(true);
     try{
-      if(window.PETATOEReferenceRegistry&&typeof window.PETATOEReferenceRegistry.syncSalesRows==='function'){
-        window.PETATOEReferenceRegistry.syncSalesRows(rows,{source:'manual-invoice'});
+      try{if(typeof window.petatoeBeforeSaveRecord==='function'&&window.petatoeBeforeSaveRecord()===false)return false}catch(e){console.warn(e)}
+      var common={van:id('e_van')?id('e_van').value:'',date:id('e_date')?normDate(id('e_date').value):'',month:id('e_month')?(typeof normalizeMonth==='function'?normalizeMonth(id('e_month').value,id('e_date')?id('e_date').value:''):id('e_month').value):'',invoice:id('e_invoice')?invKey(id('e_invoice').value):'',client:id('e_client')?id('e_client').value:'',pay:id('e_pay')?id('e_pay').value:''};
+      var items=collectItems();
+      if(!common.date||!common.invoice||!common.client||!items.length){note('املأ التاريخ والعميل وصنف واحد على الأقل');return false}
+      var old=STATE.selectedInvoice?arr().filter(function(r){return invKey(r.invoice)===STATE.selectedInvoice}):[];
+      var rows=items.map(function(it,idx){var r=Object.assign({},old[idx]||{},it,common);r.id=(old[idx]&&old[idx].id)||(Date.now()+Math.random()+idx);r.manualEntry=true;if(!n(r.totalEx)&&n(r.price))r.totalEx=(n(r.price)*(n(r.qty)||1))-Math.abs(n(r.disc));if(!n(r.totalInc))r.totalInc=n(r.totalEx)+n(r.tax);r.disc=Math.abs(n(r.disc));return r});
+      if(STATE.mode==='edit'&&STATE.selectedInvoice){
+        var oldInvoice=STATE.selectedInvoice;
+        var supabaseDelete=await deleteInvoiceFromSupabase(oldInvoice,'manual-invoice-edit-replace');
+        if(!supabaseDelete || supabaseDelete.ok!==true){
+          note('تعذر تحديث الفاتورة في Supabase، لم يتم حفظ التعديل');
+          return false;
+        }
+        rows=stripSupabaseIdentity(rows);
+        setArr(arr().filter(function(r){return invKey(r.invoice)!==oldInvoice}).concat(rows));
+        STATE.selectedInvoice=common.invoice;
+      }else{
+        var persistResult=await commitManualRowsToSupabase(rows);
+        if(!persistResult || persistResult.ok!==true){
+          note(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل حفظ البيانات في Supabase'):'Failed to save data to Supabase');
+          return false;
+        }
+        try{if(typeof setNextManualInvoiceAfter==='function')setNextManualInvoiceAfter(common.invoice)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
       }
-    }catch(e){console.warn('PETATOE reference registry sync after manual invoice failed',e)}
-    try{updateItemDatalist()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
-    try{if(typeof renderRecords==='function')renderRecords()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
-    try{if(window.PETATOESalesInvoiceReport&&window.PETATOESalesInvoiceReport.render)window.PETATOESalesInvoiceReport.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
-    try{document.dispatchEvent(new CustomEvent('petatoe:record-saved',{detail:{mode:STATE.mode,invoice:common.invoice}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
-    note((STATE.mode==='edit'?'تم تعديل الفاتورة رقم ':'تم حفظ الفاتورة رقم ')+common.invoice);
-    if(STATE.mode==='edit')setTimeout(function(){loadInvoice(common.invoice)},50);else setMode('new');
-    return true;
+      try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+      try{save()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+      try{
+        if(window.PETATOEReferenceRegistry&&typeof window.PETATOEReferenceRegistry.syncSalesRows==='function'){
+          window.PETATOEReferenceRegistry.syncSalesRows(rows,{source:'manual-invoice'});
+        }
+      }catch(e){console.warn('PETATOE reference registry sync after manual invoice failed',e)}
+      try{updateItemDatalist()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+      try{if(typeof renderRecords==='function')renderRecords()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+      try{if(window.PETATOESalesInvoiceReport&&window.PETATOESalesInvoiceReport.render)window.PETATOESalesInvoiceReport.render()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+      try{document.dispatchEvent(new CustomEvent('petatoe:record-saved',{detail:{mode:STATE.mode,invoice:common.invoice}}))}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}
+      note((STATE.mode==='edit'?'تم تعديل الفاتورة رقم ':'تم حفظ الفاتورة رقم ')+common.invoice);
+      if(STATE.mode==='edit')setTimeout(function(){loadInvoice(common.invoice)},50);else setMode('new');
+      return true;
+    }finally{
+      setSaveBusy(false);
+    }
   }
   function clearEntryForm(){STATE.selectedInvoice='';try{if(typeof buildForm==='function')buildForm()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/invoice-manual-multi-items.js",e);}if(id('entryModeText'))id('entryModeText').textContent='إدخال سجل جديد';renderResults(true)}
   function bindEntryActions(){if(STATE.actionsBound)return;STATE.actionsBound=true;document.addEventListener('click',function(e){var save=e.target&&e.target.closest&&e.target.closest('#saveBtn');if(save){e.preventDefault();e.stopImmediatePropagation();saveEntry();return}var clear=e.target&&e.target.closest&&e.target.closest('#clearEntryBtn');if(clear){e.preventDefault();e.stopImmediatePropagation();clearEntryForm();return}},true)}
