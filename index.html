@@ -684,7 +684,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <label>اسم العميل<div class="appointments-input-action"><input data-op-blur="applyCustomerSuggestion" data-op-change="applyCustomerSuggestion" data-op-pass-self="true" id="appointmentClient" list="appointmentClientSuggestions" placeholder="مثال: أحمد محمد"/><button class="appointments-mini-action" data-op-click="newCustomer" type="button">عميل جديد</button></div><datalist id="appointmentClientSuggestions"></datalist></label>
 <label>رقم الهاتف<input data-op-blur="applyCustomerSuggestion" data-op-input="applyCustomerSuggestion" data-op-pass-self="true" id="appointmentPhone" list="appointmentPhoneSuggestions" placeholder="05xxxxxxxx"/><datalist id="appointmentPhoneSuggestions"></datalist></label>
 <label>العنوان<input id="appointmentAddress" placeholder="عنوان العميل أو الموقع"/></label>
-<label>رابط موقع العميل (Google Maps)<input id="appointmentGoogleMapUrl" inputmode="url" placeholder="https://maps.app.goo.gl/..."/></label>
+<label><span data-i18n="operationsCustomer.fields.appointmentGoogleMaps">رابط موقع العميل (Google Maps)</span><input id="appointmentGoogleMapUrl" inputmode="url" placeholder="https://maps.app.goo.gl/..."/></label>
 </div>
 </div>
 <div class="appointment-form-block appointment-pet-block appointments-span-5">
@@ -909,7 +909,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <input id="appointmentMasterCustomerName" placeholder="الاسم" data-i18n-placeholder="operationsCustomer.fields.name"/>
 <input id="appointmentMasterCustomerAddress" placeholder="العنوان" data-i18n-placeholder="operationsCustomer.fields.address"/>
 <input id="appointmentMasterCustomerPhone" placeholder="الجوال" data-i18n-placeholder="operationsCustomer.fields.mobile"/>
-<input id="appointmentMasterCustomerGoogleMapUrl" placeholder="رابط Google Maps" type="url"/>
+<input id="appointmentMasterCustomerGoogleMapUrl" placeholder="رابط Google Maps" data-i18n-placeholder="operationsCustomer.fields.googleMapsUrl" type="url"/>
 <button class="btn btn-primary" data-op-click="addMasterCustomer" type="button" data-i18n="operationsCustomer.actions.addSave">إضافة / حفظ</button>
 </div>
 <div class="appointments-master-customer-tools">
@@ -918,7 +918,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <input accept=".xlsx,.xls,.csv" data-op-change="handleMasterCustomersExcelImport" data-op-pass-self="true" hidden="" id="appointmentMasterCustomersExcelInput" type="file"/>
 </div>
 <div class="appointments-master-search"><input data-op-input="render" id="appointmentMasterCustomerSearch" placeholder="بحث بالكود / الاسم / العنوان / الجوال / رابط الموقع" data-i18n-placeholder="operationsCustomer.search.masterCustomers"/></div>
-<div class="appointments-master-table-wrap"><table class="appointments-master-table"><thead><tr><th data-i18n="operationsCustomer.fields.code">الكود</th><th data-i18n="operationsCustomer.fields.name">الاسم</th><th data-i18n="operationsCustomer.fields.address">العنوان</th><th data-i18n="operationsCustomer.fields.mobile">الجوال</th><th>رابط الموقع</th><th data-i18n="operationsCustomer.fields.actions">الإجراءات</th></tr></thead><tbody id="appointmentMasterCustomersList"></tbody></table></div>
+<div class="appointments-master-table-wrap"><table class="appointments-master-table"><thead><tr><th data-i18n="operationsCustomer.fields.code">الكود</th><th data-i18n="operationsCustomer.fields.name">الاسم</th><th data-i18n="operationsCustomer.fields.address">العنوان</th><th data-i18n="operationsCustomer.fields.mobile">الجوال</th><th data-i18n="operationsCustomer.fields.locationLink">رابط الموقع</th><th data-i18n="operationsCustomer.fields.actions">الإجراءات</th></tr></thead><tbody id="appointmentMasterCustomersList"></tbody></table></div>
 </div>
 <div class="appointments-master-box" data-master-panel="vehicleStaff">
 <h4>🚐 بيانات السيارات والموظفين</h4>

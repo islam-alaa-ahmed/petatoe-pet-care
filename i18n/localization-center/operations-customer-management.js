@@ -8,8 +8,8 @@
       filters:{allAnimalTypes:'كل أنواع الحيوانات'},
       customersPets:{title:'👥 العملاء والحيوانات'},
       master:{title:'⚙️ البيانات المرجعية للمواعيد',chooseSection:'اختر القسم',animalTypes:'🐾 أنواع الحيوانات',breeds:'🧬 السلالات',sizes:'📏 الأحجام',services:'🛁 الخدمات',customers:'👥 بيانات العملاء',vehicleStaff:'🚐 بيانات السيارات والموظفين'},
-      fields:{code:'الكود',name:'الاسم',address:'العنوان',mobile:'الجوال',actions:'الإجراءات'},
-      search:{masterCustomers:'بحث بالكود / الاسم / العنوان / الجوال'},
+      fields:{code:'الكود',name:'الاسم',address:'العنوان',mobile:'الجوال',googleMapsUrl:'رابط Google Maps',locationLink:'رابط الموقع',appointmentGoogleMaps:'رابط موقع العميل (Google Maps)',actions:'الإجراءات'},
+      search:{masterCustomers:'بحث بالكود / الاسم / العنوان / الجوال / رابط الموقع'},
       empty:{noData:'لا توجد بيانات'},
       fallback:{unknownCustomer:'عميل غير محدد',unknownAnimal:'حيوان غير محدد'},
       pets:{count:'عدد {count}'}
@@ -20,8 +20,8 @@
       filters:{allAnimalTypes:'All Animal Types'},
       customersPets:{title:'👥 Customers & Pets'},
       master:{title:'⚙️ Appointment Master Data',chooseSection:'Choose Section',animalTypes:'🐾 Animal Types',breeds:'🧬 Breeds',sizes:'📏 Sizes',services:'🛁 Services',customers:'👥 Customer Data',vehicleStaff:'🚐 Vehicles & Staff'},
-      fields:{code:'Code',name:'Name',address:'Address',mobile:'Mobile',actions:'Actions'},
-      search:{masterCustomers:'Search by code / name / address / mobile'},
+      fields:{code:'Code',name:'Name',address:'Address',mobile:'Mobile',googleMapsUrl:'Google Maps URL',locationLink:'Location Link',appointmentGoogleMaps:'Customer location link (Google Maps)',actions:'Actions'},
+      search:{masterCustomers:'Search by code / name / address / mobile / location link'},
       empty:{noData:'No data available'},
       fallback:{unknownCustomer:'Unspecified customer',unknownAnimal:'Unspecified animal'},
       pets:{count:'Count {count}'}
