@@ -16,7 +16,7 @@
 
   var APPOINTMENTS_METHODS = [
     'setTab', 'clearForm', 'saveAppointment', 'render', 'edit', 'remove', 'changeStatus',
-    'resetFilters', 'setQuickRange', 'setCalendarView', 'applyCustomerSuggestion',
+    'resetFilters', 'setQuickRange', 'setCalendarView', 'applyCustomerSuggestion', 'searchAppointmentCustomers', 'selectAppointmentCustomer', 'syncNewCustomerFields',
     'refreshPetSuggestions', 'applyPetSuggestion', 'newCustomer', 'refreshBreedOptions',
     'addMasterItem', 'addBreed', 'removeMasterItem', 'editMasterItem', 'resetMasterData',
     'setMasterSection', 'addMasterCustomer', 'editMasterCustomer', 'removeMasterCustomer',

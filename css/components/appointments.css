@@ -2171,3 +2171,18 @@
 .appointments-finance-reset-btn:hover{filter:brightness(1.12)}
 
 .appointments-finance-result-count{width:100%;justify-content:center}}
+
+/* PETATOE Operations — customer smart search */
+.appointment-customer-search-label{position:relative;z-index:8}
+.appointment-customer-search-shell{position:relative}
+.appointment-customer-search-results{position:absolute;inset-inline:0;top:calc(100% + 6px);z-index:80;max-height:320px;overflow:auto;padding:6px;border:1px solid var(--border,#d9dee8);border-radius:14px;background:var(--surface,#fff);box-shadow:0 18px 42px rgba(15,23,42,.18)}
+.appointment-customer-search-results[hidden]{display:none!important}
+.appointment-customer-search-result{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;width:100%;padding:10px 12px;border:0;border-radius:10px;background:transparent;text-align:start;color:inherit;cursor:pointer}
+.appointment-customer-search-result:hover,.appointment-customer-search-result:focus-visible{background:rgba(59,130,246,.1);outline:none}
+.appointment-customer-search-result b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.appointment-customer-search-result span{direction:ltr;unicode-bidi:plaintext;font-weight:700}
+.appointment-customer-search-result small{grid-column:1/-1;color:var(--muted,#64748b)}
+.appointment-customer-search-empty{padding:14px;text-align:center;color:var(--muted,#64748b)}
+.appointment-new-customer-fields{display:contents}
+.appointment-new-customer-fields[hidden]{display:none!important}
+@media (max-width:720px){.appointment-customer-search-results{max-height:260px}.appointment-customer-search-result{grid-template-columns:1fr}.appointment-customer-search-result small{grid-column:auto}}

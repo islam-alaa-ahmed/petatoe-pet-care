@@ -19,6 +19,7 @@
   'use strict';
   function opT(key,params){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsSource.'+key,params,{fallback:key}):key;}
   function opReportT(key,params){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operations.reports.'+key,params,{fallback:key}):key;}
+  function opAppointmentT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operations.appointments.'+key,params,{fallback:fallback||key}):(fallback||key);}
   function opCustomerT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsCustomer.'+key,params,{fallback:fallback||key}):(fallback||key);}
   function opStatusT(status){var map={'مجدول':'statusScheduled','في الطريق':'statusOnTheWay','وصل العميل':'statusArrived','بدأت الجلسة':'statusStarted','تمت الجلسة':'statusCompleted','تم التحصيل':'statusCollected','مغلق':'statusClosed','مؤكد':'statusConfirmed','غير مكتملة':'statusIncomplete','مؤجل':'statusPostponed','ملغي':'statusCancelled','تم':'statusCompleted'};return opT(map[String(status||'')]||'statusUnknown');}
   if(window.PETATOEAppointments) return;
@@ -1223,7 +1224,7 @@
     var customerAddress=r.customerAddressSnapshot||customerSnapshot.address||r.address||'';
     var customerMap=r.customerGoogleMapUrlSnapshot||customerSnapshot.googleMapUrl||appointmentMapUrl(r);
     var groomerName=r.groomerNameSnapshot||r.groomer||'', driverName=r.driverNameSnapshot||r.driver||'', vehicleName=r.vehicleNameSnapshot||r.vehicle||'';
-    setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerSnapshot.id||customerKey(r));setVal('appointmentClient',customerName);setVal('appointmentPhone',customerPhone);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentStart',r.start);setVal('appointmentEnd',r.end);setHistoricalSelectValue(byId('appointmentGroomer'),groomerName);setHistoricalSelectValue(byId('appointmentDriver'),driverName);setHistoricalSelectValue(byId('appointmentVehicle'),vehicleName);preserveSelectSnapshot(byId('appointmentGroomer'),r.groomerId||namedSnapshotId('groomer',groomerName),groomerName);preserveSelectSnapshot(byId('appointmentDriver'),r.driverId||namedSnapshotId('driver',driverName),driverName);preserveSelectSnapshot(byId('appointmentVehicle'),r.vehicleId||namedSnapshotId('vehicle',vehicleName),vehicleName);setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',customerAddress);setVal('appointmentGoogleMapUrl',customerMap);setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
+    setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerSnapshot.id||customerKey(r));setVal('appointmentClient',customerName);setVal('appointmentPhone',customerPhone);setVal('appointmentCustomerSearch',[customerName,customerPhone].filter(Boolean).join(' — '));setNewCustomerMode(false);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentStart',r.start);setVal('appointmentEnd',r.end);setHistoricalSelectValue(byId('appointmentGroomer'),groomerName);setHistoricalSelectValue(byId('appointmentDriver'),driverName);setHistoricalSelectValue(byId('appointmentVehicle'),vehicleName);preserveSelectSnapshot(byId('appointmentGroomer'),r.groomerId||namedSnapshotId('groomer',groomerName),groomerName);preserveSelectSnapshot(byId('appointmentDriver'),r.driverId||namedSnapshotId('driver',driverName),driverName);preserveSelectSnapshot(byId('appointmentVehicle'),r.vehicleId||namedSnapshotId('vehicle',vehicleName),vehicleName);setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',customerAddress);setVal('appointmentGoogleMapUrl',customerMap);setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
     var t=byId('appointmentFormTitle');if(t)t.textContent=opT('editAppointmentTitle');
   }
   function setTab(tab){
@@ -1238,9 +1239,9 @@
     render();
   }
   function clearForm(){
-    ['appointmentId','appointmentCustomerId','appointmentClient','appointmentPhone','appointmentPetName','appointmentAddress','appointmentGoogleMapUrl','appointmentNotes'].forEach(function(id){setVal(id,'')});
+    ['appointmentId','appointmentCustomerId','appointmentCustomerSearch','appointmentClient','appointmentPhone','appointmentPetName','appointmentAddress','appointmentGoogleMapUrl','appointmentNotes'].forEach(function(id){setVal(id,'')});
     refreshLookupSelects();
-    setVal('appointmentAnimalType','');setVal('appointmentBreed','');setVal('appointmentSize','');setVal('appointmentService','');setVal('appointmentPetCount','1');renderAppointmentAnimalsRows([{}]);setVal('appointmentDate',today());setVal('appointmentStart','');setVal('appointmentEnd','');renderAppointmentServicesRows([{}]);setVal('appointmentGroomer','');setVal('appointmentDriver','');setVal('appointmentVehicle','');['appointmentGroomer','appointmentDriver','appointmentVehicle'].forEach(function(id){var el=byId(id);if(el){delete el.dataset.snapshotId;delete el.dataset.snapshotName;}});setVal('appointmentPaymentMethod','');setVal('appointmentSessionPrice','0');setVal('appointmentDiscount','0');setVal('appointmentPaidAmount','0');setVal('appointmentCollectionStatus','غير محصل');setVal('appointmentStatus','مجدول'); refreshPetSuggestions();
+    setVal('appointmentAnimalType','');setVal('appointmentBreed','');setVal('appointmentSize','');setVal('appointmentService','');setVal('appointmentPetCount','1');setNewCustomerMode(false);hideCustomerSearchResults();renderAppointmentAnimalsRows([{}]);setVal('appointmentDate',today());setVal('appointmentStart','');setVal('appointmentEnd','');renderAppointmentServicesRows([{}]);setVal('appointmentGroomer','');setVal('appointmentDriver','');setVal('appointmentVehicle','');['appointmentGroomer','appointmentDriver','appointmentVehicle'].forEach(function(id){var el=byId(id);if(el){delete el.dataset.snapshotId;delete el.dataset.snapshotName;}});setVal('appointmentPaymentMethod','');setVal('appointmentSessionPrice','0');setVal('appointmentDiscount','0');setVal('appointmentPaidAmount','0');setVal('appointmentCollectionStatus','غير محصل');setVal('appointmentStatus','مجدول'); refreshPetSuggestions();
     var t=byId('appointmentFormTitle');if(t)t.textContent=opT('addAppointmentTitle');
   }
   function saveAppointment(){
@@ -1558,7 +1559,47 @@
     }).sort(function(a,b){return String(b.lastVisit||'').localeCompare(String(a.lastVisit||''))||b.appointments.length-a.appointments.length});
   }
 
-  function normalizePhone(v){return String(v||'').replace(/\s+/g,'').trim()}
+  function normalizePhone(v){return String(v||'').replace(/[^0-9+]/g,'').trim()}
+  function customerSearchText(v){return String(v||'').trim().toLowerCase()}
+  function hideCustomerSearchResults(){var box=byId('appointmentCustomerSearchResults');if(!box)return;box.hidden=true;safeHtml(box,'','operations customer smart search clear')}
+  function setNewCustomerMode(enabled){var fields=byId('appointmentNewCustomerFields');if(fields)fields.hidden=!enabled;var search=byId('appointmentCustomerSearch');if(search)search.setAttribute('aria-expanded','false');if(enabled){setVal('appointmentCustomerId','');hideCustomerSearchResults();}}
+  function appointmentCustomerSearchLabel(profile){return [profile&&profile.client,profile&&profile.phone].filter(Boolean).join(' — ')}
+  function rankCustomerProfile(profile,query){
+    var q=customerSearchText(query), qPhone=normalizePhone(query), name=customerSearchText(profile&&profile.client), phone=normalizePhone(profile&&profile.phone);
+    if(!q)return 99;
+    if(qPhone&&phone===qPhone)return 0;
+    if(qPhone&&phone.indexOf(qPhone)===0)return 1;
+    if(name===q)return 2;
+    if(name.indexOf(q)===0)return 3;
+    if(name.indexOf(q)>-1)return 4;
+    if(qPhone&&phone.indexOf(qPhone)>-1)return 5;
+    return 99;
+  }
+  function searchAppointmentCustomers(query){
+    var input=byId('appointmentCustomerSearch'), box=byId('appointmentCustomerSearchResults');
+    query=String(query==null?(input&&input.value||''):query).trim();
+    var selectedId=String(val('appointmentCustomerId')||'').trim();
+    if(selectedId){
+      var selected=buildCustomerProfiles().find(function(c){return String(c.key||'')===selectedId});
+      if(!selected||query!==appointmentCustomerSearchLabel(selected)){
+        ['appointmentCustomerId','appointmentClient','appointmentPhone','appointmentAddress','appointmentGoogleMapUrl'].forEach(function(id){setVal(id,'')});
+      }
+    }
+    if(!box||!query){hideCustomerSearchResults();return [];}
+    var rows=buildCustomerProfiles().map(function(profile){return {profile:profile,rank:rankCustomerProfile(profile,query)}}).filter(function(x){return x.rank<99}).sort(function(a,b){return a.rank-b.rank||String(b.profile.lastVisit||'').localeCompare(String(a.profile.lastVisit||''))||String(a.profile.client||'').localeCompare(String(b.profile.client||''));}).slice(0,8);
+    var html=rows.length?rows.map(function(x){var c=x.profile;return '<button type="button" class="appointment-customer-search-result" data-op-click="selectAppointmentCustomer" data-op-arg1="'+esc(c.key)+'"><b>'+esc(c.client||opAppointmentT('customerFallback',null,'عميل'))+'</b><span>'+esc(c.phone||'-')+'</span>'+(c.address?'<small>'+esc(c.address)+'</small>':'')+'</button>'}).join(''):'<div class="appointment-customer-search-empty">'+esc(opAppointmentT('customerSearchNoResults',null,'لا يوجد عميل مطابق'))+'</div>';
+    safeHtml(box,html,'operations customer smart search results');box.hidden=false;if(input)input.setAttribute('aria-expanded','true');return rows.map(function(x){return x.profile});
+  }
+  function selectAppointmentCustomer(key){
+    var found=buildCustomerProfiles().find(function(c){return String(c.key||'')===String(key||'')});
+    if(!found)return;
+    setVal('appointmentCustomerId',found.key);setVal('appointmentClient',found.client||'');setVal('appointmentPhone',found.phone||'');setVal('appointmentCustomerSearch',appointmentCustomerSearchLabel(found));
+    setNewCustomerMode(false);hideCustomerSearchResults();applyCustomerSuggestion(byId('appointmentCustomerSearch'));
+  }
+  function syncNewCustomerFields(){
+    var name=String(val('appointmentClient')||'').trim(),phone=String(val('appointmentPhone')||'').trim();
+    setVal('appointmentCustomerSearch',[name,phone].filter(Boolean).join(' — '));
+  }
   function findCustomerProfile(mode){
     var name=String(val('appointmentClient')||'').trim(), phone=val('appointmentPhone'), code=String(val('appointmentCustomerId')||'').trim();
     if(!name&&!phone&&!code)return null;
@@ -1570,10 +1611,9 @@
       || null;
   }
   function renderClientSuggestions(){
-    var clients=byId('appointmentClientSuggestions'), phones=byId('appointmentPhoneSuggestions');
-    var profiles=buildCustomerProfiles();
-    if(clients)safeHtml(clients, profiles.map(function(c){return '<option value="'+esc(c.client)+'">'+esc([c.phone,c.address].filter(Boolean).join(' | '))+'</option>'}).join(''), 'operations customer name suggestions');
-    if(phones)safeHtml(phones, profiles.filter(function(c){return c.phone}).map(function(c){return '<option value="'+esc(c.phone)+'">'+esc([c.client,c.address].filter(Boolean).join(' | '))+'</option>'}).join(''), 'operations customer phone suggestions');
+    var oldClients=byId('appointmentClientSuggestions'), oldPhones=byId('appointmentPhoneSuggestions');
+    if(oldClients)safeHtml(oldClients,'','operations legacy customer name suggestions cleared');
+    if(oldPhones)safeHtml(oldPhones,'','operations legacy customer phone suggestions cleared');
   }
   function refreshPetSuggestions(){
     var dl=byId('appointmentPetSuggestions'); if(!dl)return;
@@ -1610,9 +1650,10 @@
     if((!val('appointmentPetCount')||val('appointmentPetCount')==='1')&&found.count)setVal('appointmentPetCount',found.count);
   }
   function newCustomer(){
-    ['appointmentCustomerId','appointmentClient','appointmentPhone','appointmentAnimalType','appointmentBreed','appointmentSize','appointmentPetName','appointmentAddress','appointmentGoogleMapUrl'].forEach(function(id){setVal(id,'')});
+    ['appointmentCustomerId','appointmentCustomerSearch','appointmentClient','appointmentPhone','appointmentAnimalType','appointmentBreed','appointmentSize','appointmentPetName','appointmentAddress','appointmentGoogleMapUrl'].forEach(function(id){setVal(id,'')});
     setVal('appointmentPetCount','1');
     renderAppointmentAnimalsRows([{}]);
+    setNewCustomerMode(true);
     refreshPetSuggestions();
     var c=byId('appointmentClient'); if(c)c.focus();
   }
@@ -1621,6 +1662,8 @@
     var found=findCustomerProfile();
     if(!found){setVal('appointmentCustomerId','');refreshPetSuggestions();return;}
     setVal('appointmentCustomerId',found.key);
+    setNewCustomerMode(false);
+    setVal('appointmentCustomerSearch',appointmentCustomerSearchLabel(found));
     if(srcId!=='appointmentClient'&&!val('appointmentClient'))setVal('appointmentClient',found.client);
     if(srcId==='appointmentPhone'&&found.client)setVal('appointmentClient',found.client);
     if(srcId!=='appointmentPhone'&&!val('appointmentPhone'))setVal('appointmentPhone',found.phone);
@@ -3072,7 +3115,7 @@
     }
   }catch(e){}
 
-  var appointmentsPublicApi={setTab:setTab,clearForm:clearForm,saveAppointment:saveAppointment,render:render,edit:edit,remove:remove,changeStatus:changeStatus,resetFilters:resetFilters,setQuickRange:setQuickRange,setCalendarView:setCalendarView,setFinanceReportFilter:setFinanceReportFilter,resetFinanceReportFilters:resetFinanceReportFilters,showMoreFinanceReportRows:showMoreFinanceReportRows,setAppointmentLocalReportFilter:setAppointmentLocalReportFilter,resetAppointmentLocalReportFilters:resetAppointmentLocalReportFilters,showMoreAppointmentLocalReportRows:showMoreAppointmentLocalReportRows,applyCustomerSuggestion:applyCustomerSuggestion,refreshPetSuggestions:refreshPetSuggestions,applyPetSuggestion:applyPetSuggestion,newCustomer:newCustomer,refreshBreedOptions:refreshBreedOptions,addMasterItem:addMasterItem,addBreed:addBreed,removeMasterItem:removeMasterItem,editMasterItem:editMasterItem,resetMasterData:resetMasterData,setMasterSection:setMasterSection,selectCustomerProfile:selectCustomerProfile,setCustomerSearch:setCustomerSearch,clearCustomerSearch:clearCustomerSearch,refreshCustomersCrm:refreshCustomersCrm,exportCustomersDatabaseReportExcel:exportCustomersDatabaseReportExcel,setCustomerDatabaseReportSearch:setCustomerDatabaseReportSearch,addMasterCustomer:addMasterCustomer,editMasterCustomer:editMasterCustomer,removeMasterCustomer:removeMasterCustomer,triggerMasterCustomersExcelImport:triggerMasterCustomersExcelImport,handleMasterCustomersExcelImport:handleMasterCustomersExcelImport,exportMasterCustomersExcel:exportMasterCustomersExcel,addMasterService:addMasterService,triggerMasterServicesExcelImport:triggerMasterServicesExcelImport,handleMasterServicesExcelImport:handleMasterServicesExcelImport,exportMasterServicesExcel:exportMasterServicesExcel,addAppointmentServiceRow:addAppointmentServiceRow,removeAppointmentServiceRow:removeAppointmentServiceRow,onAppointmentServiceChange:onAppointmentServiceChange,recalculateAppointmentServices:recalculateAppointmentServices,addAppointmentAnimalRow:addAppointmentAnimalRow,removeAppointmentAnimalRow:removeAppointmentAnimalRow,onAppointmentAnimalTypeChange:onAppointmentAnimalTypeChange,addOperationsVehicle:addOperationsVehicle,addOperationsDriver:addOperationsDriver,addOperationsGroomer:addOperationsGroomer,removeOperationsVehicle:removeOperationsVehicle,removeOperationsDriver:removeOperationsDriver,removeOperationsGroomer:removeOperationsGroomer,saveVehicleAssignment:saveVehicleAssignment,editVehicleAssignment:editVehicleAssignment,toggleVehicleAssignment:toggleVehicleAssignment,removeVehicleAssignment:removeVehicleAssignment,applyVehicleStaffAssignment:applyVehicleStaffAssignment,setDispatchDateToday:setDispatchDateToday,setDailyOpsDateToday:setDailyOpsDateToday,printDailyOperations:printDailyOperations,setVehicleOpsDateToday:setVehicleOpsDateToday,renderVehicleOperations:renderVehicleOperations,renderVehicleExecutionReports:renderVehicleExecutionReports,renderOperationsKpiDashboard:renderOperationsKpiDashboard,setVehicleOpsViewTab:setVehicleOpsViewTab,selectVehicleAppointment:selectVehicleAppointment,setVehicleStatusById:setVehicleStatusById,setVehicleStatusByIndex:setVehicleStatusByIndex,nextVehicleStatusById:nextVehicleStatusById,nextVehicleStatusByIndex:nextVehicleStatusByIndex,saveVehicleSessionById:saveVehicleSessionById,saveVehicleSessionByIndex:saveVehicleSessionByIndex,closeVehicleSessionById:closeVehicleSessionById,reopenVehicleSessionById:reopenVehicleSessionById,confirmVehicleSessionById:confirmVehicleSessionById,canVehicleOpsAction:canVehicleOpsAction,handlePaymentAttachment:handlePaymentAttachment,openVehicleDirectionById:openVehicleDirectionById,showAppointmentDetails:showAppointmentDetails,closeAppointmentDetails:closeAppointmentDetails};
+  var appointmentsPublicApi={setTab:setTab,clearForm:clearForm,saveAppointment:saveAppointment,render:render,edit:edit,remove:remove,changeStatus:changeStatus,resetFilters:resetFilters,setQuickRange:setQuickRange,setCalendarView:setCalendarView,setFinanceReportFilter:setFinanceReportFilter,resetFinanceReportFilters:resetFinanceReportFilters,showMoreFinanceReportRows:showMoreFinanceReportRows,setAppointmentLocalReportFilter:setAppointmentLocalReportFilter,resetAppointmentLocalReportFilters:resetAppointmentLocalReportFilters,showMoreAppointmentLocalReportRows:showMoreAppointmentLocalReportRows,applyCustomerSuggestion:applyCustomerSuggestion,searchAppointmentCustomers:searchAppointmentCustomers,selectAppointmentCustomer:selectAppointmentCustomer,syncNewCustomerFields:syncNewCustomerFields,refreshPetSuggestions:refreshPetSuggestions,applyPetSuggestion:applyPetSuggestion,newCustomer:newCustomer,refreshBreedOptions:refreshBreedOptions,addMasterItem:addMasterItem,addBreed:addBreed,removeMasterItem:removeMasterItem,editMasterItem:editMasterItem,resetMasterData:resetMasterData,setMasterSection:setMasterSection,selectCustomerProfile:selectCustomerProfile,setCustomerSearch:setCustomerSearch,clearCustomerSearch:clearCustomerSearch,refreshCustomersCrm:refreshCustomersCrm,exportCustomersDatabaseReportExcel:exportCustomersDatabaseReportExcel,setCustomerDatabaseReportSearch:setCustomerDatabaseReportSearch,addMasterCustomer:addMasterCustomer,editMasterCustomer:editMasterCustomer,removeMasterCustomer:removeMasterCustomer,triggerMasterCustomersExcelImport:triggerMasterCustomersExcelImport,handleMasterCustomersExcelImport:handleMasterCustomersExcelImport,exportMasterCustomersExcel:exportMasterCustomersExcel,addMasterService:addMasterService,triggerMasterServicesExcelImport:triggerMasterServicesExcelImport,handleMasterServicesExcelImport:handleMasterServicesExcelImport,exportMasterServicesExcel:exportMasterServicesExcel,addAppointmentServiceRow:addAppointmentServiceRow,removeAppointmentServiceRow:removeAppointmentServiceRow,onAppointmentServiceChange:onAppointmentServiceChange,recalculateAppointmentServices:recalculateAppointmentServices,addAppointmentAnimalRow:addAppointmentAnimalRow,removeAppointmentAnimalRow:removeAppointmentAnimalRow,onAppointmentAnimalTypeChange:onAppointmentAnimalTypeChange,addOperationsVehicle:addOperationsVehicle,addOperationsDriver:addOperationsDriver,addOperationsGroomer:addOperationsGroomer,removeOperationsVehicle:removeOperationsVehicle,removeOperationsDriver:removeOperationsDriver,removeOperationsGroomer:removeOperationsGroomer,saveVehicleAssignment:saveVehicleAssignment,editVehicleAssignment:editVehicleAssignment,toggleVehicleAssignment:toggleVehicleAssignment,removeVehicleAssignment:removeVehicleAssignment,applyVehicleStaffAssignment:applyVehicleStaffAssignment,setDispatchDateToday:setDispatchDateToday,setDailyOpsDateToday:setDailyOpsDateToday,printDailyOperations:printDailyOperations,setVehicleOpsDateToday:setVehicleOpsDateToday,renderVehicleOperations:renderVehicleOperations,renderVehicleExecutionReports:renderVehicleExecutionReports,renderOperationsKpiDashboard:renderOperationsKpiDashboard,setVehicleOpsViewTab:setVehicleOpsViewTab,selectVehicleAppointment:selectVehicleAppointment,setVehicleStatusById:setVehicleStatusById,setVehicleStatusByIndex:setVehicleStatusByIndex,nextVehicleStatusById:nextVehicleStatusById,nextVehicleStatusByIndex:nextVehicleStatusByIndex,saveVehicleSessionById:saveVehicleSessionById,saveVehicleSessionByIndex:saveVehicleSessionByIndex,closeVehicleSessionById:closeVehicleSessionById,reopenVehicleSessionById:reopenVehicleSessionById,confirmVehicleSessionById:confirmVehicleSessionById,canVehicleOpsAction:canVehicleOpsAction,handlePaymentAttachment:handlePaymentAttachment,openVehicleDirectionById:openVehicleDirectionById,showAppointmentDetails:showAppointmentDetails,closeAppointmentDetails:closeAppointmentDetails};
   window.PETATOEOperationsAppointmentsInternal={
     version:'OPS-15-appointments-actions-adapter',
     actionsAdapter:{
@@ -3125,6 +3168,9 @@
     resetAppointmentLocalReportFilters:resetAppointmentLocalReportFilters,
     showMoreAppointmentLocalReportRows:showMoreAppointmentLocalReportRows,
     applyCustomerSuggestion:applyCustomerSuggestion,
+    searchAppointmentCustomers:searchAppointmentCustomers,
+    selectAppointmentCustomer:selectAppointmentCustomer,
+    syncNewCustomerFields:syncNewCustomerFields,
     refreshPetSuggestions:refreshPetSuggestions,
     applyPetSuggestion:applyPetSuggestion,
     newCustomer:newCustomer,
