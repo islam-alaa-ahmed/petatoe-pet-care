@@ -1,0 +1,6 @@
+PETATOE v10 Native Mobile Wrapper — N4.1 CI/CD Stabilization
+
+- Remove npm cache configuration that required a missing dependency lock file
+- Replace npm ci with npm install in both certification jobs to match the repository's current no-lock-file state
+- Preserve Node.js 22, static native certification, artifact upload, and unsigned iOS Simulator build
+- Keep application code, Face ID, Keychain, Supabase, UI, reports, payroll, permissions, and Pages deployment unchanged
