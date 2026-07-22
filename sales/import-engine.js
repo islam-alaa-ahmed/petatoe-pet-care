@@ -37,11 +37,11 @@
   function isCashText(v){const x=normText(v);return ['cash','كاش','نقدى','نقدي'].some(k=>x===k||x.includes(k));}
   function detectInvoiceType(r){return ((isCashText(r.invoice)||isCashText(r.client)) && safeNum(r.tax)===0)?'CASH':'TAX'}
   function recordDuplicateKey(r){
-    // DUPLICATE_RULE_MULTI_FIELD_FIX:
-    // يتم الحكم على تكرار البند عند تطابق: رقم الفاتورة + العميل + الصنف/الخدمة + السيارة + قيمة الصنف.
-    // لذلك فواتير متعددة البنود لن تظهر كتكرار لمجرد أن رقم الفاتورة واحد.
+    // Unified duplicate policy shared by Excel import and manual invoice entry.
+    const policy=window.PETATOESalesDuplicatePolicy;
+    if(policy&&typeof policy.recordKey==='function')return policy.recordKey(r);
     const lineValue=safeNum(r.totalInc||r.total||r.totalWithVat||r.amount||r.lineTotal||r.price).toFixed(2);
-    const parts=[r.invoice,r.client,r.item,(r.van||r.vehicle||r.car||r.carName||r.vehicleName),lineValue];
+    const parts=[normalizeInvoiceKey(r.invoice),r.client,r.item,(r.van||r.vehicle||r.car||r.carName||r.vehicleName),lineValue];
     return parts.map(x=>normText(x)).join('|');
   }
   function makeError(row,col,msg,value){return {row,col,cell:cellRef(row,col),msg,value};}

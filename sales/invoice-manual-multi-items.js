@@ -188,6 +188,18 @@ function renderResults(keepFocus){ensureEntryUi();var active=document.activeElem
       if(!common.date||!common.invoice||!common.client||!items.length){note('املأ التاريخ والعميل وصنف واحد على الأقل');return false}
       var old=STATE.selectedInvoice?arr().filter(function(r){return invKey(r.invoice)===STATE.selectedInvoice}):[];
       var rows=items.map(function(it,idx){var r=Object.assign({},old[idx]||{},it,common);r.id=(old[idx]&&old[idx].id)||(Date.now()+Math.random()+idx);r.manualEntry=true;if(!n(r.totalEx)&&n(r.price))r.totalEx=(n(r.price)*(n(r.qty)||1))-Math.abs(n(r.disc));if(!n(r.totalInc))r.totalInc=n(r.totalEx)+n(r.tax);r.disc=Math.abs(n(r.disc));return r});
+      var duplicatePolicy=window.PETATOESalesDuplicatePolicy;
+      if(!duplicatePolicy||typeof duplicatePolicy.validate!=='function'){
+        note(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر تشغيل فحص تكرار الفاتورة'):'Unable to run invoice duplicate validation');
+        return false;
+      }
+      var duplicateCheck=duplicatePolicy.validate(rows,arr(),{excludeInvoice:(STATE.mode==='edit'&&STATE.selectedInvoice)?STATE.selectedInvoice:''});
+      if(!duplicateCheck.ok){
+        var firstDuplicate=duplicateCheck.duplicates&&duplicateCheck.duplicates[0];
+        var duplicateMessage=(firstDuplicate&&firstDuplicate.type==='within-batch')?'يوجد بند مكرر داخل الفاتورة الحالية':'هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة';
+        note(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime(duplicateMessage):duplicateMessage);
+        return false;
+      }
       if(STATE.mode==='edit'&&STATE.selectedInvoice){
         var oldInvoice=STATE.selectedInvoice;
         rows=stripSupabaseIdentity(rows);

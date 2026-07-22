@@ -32,6 +32,14 @@
   STORE.en.runtimeSource['فشل حفظ البيانات في Supabase']='Failed to save data to Supabase';
   STORE.ar.salesPersistence=Object.assign({},STORE.ar.salesPersistence||{},{supabaseSaveError:'فشل حفظ البيانات في Supabase'});
   STORE.en.salesPersistence=Object.assign({},STORE.en.salesPersistence||{},{supabaseSaveError:'Failed to save data to Supabase'});
+  STORE.ar.runtimeSource['تعذر تشغيل فحص تكرار الفاتورة']='تعذر تشغيل فحص تكرار الفاتورة';
+  STORE.en.runtimeSource['تعذر تشغيل فحص تكرار الفاتورة']='Unable to run invoice duplicate validation';
+  STORE.ar.runtimeSource['يوجد بند مكرر داخل الفاتورة الحالية']='يوجد بند مكرر داخل الفاتورة الحالية';
+  STORE.en.runtimeSource['يوجد بند مكرر داخل الفاتورة الحالية']='A duplicate item exists within the current invoice';
+  STORE.ar.runtimeSource['هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة']='هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة';
+  STORE.en.runtimeSource['هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة']='This item already exists with the same invoice number, customer, service, vehicle, and value';
+  STORE.ar.salesDuplicatePolicy=Object.assign({},STORE.ar.salesDuplicatePolicy||{},{unavailable:'تعذر تشغيل فحص تكرار الفاتورة',withinInvoice:'يوجد بند مكرر داخل الفاتورة الحالية',existing:'هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة'});
+  STORE.en.salesDuplicatePolicy=Object.assign({},STORE.en.salesDuplicatePolicy||{},{unavailable:'Unable to run invoice duplicate validation',withinInvoice:'A duplicate item exists within the current invoice',existing:'This item already exists with the same invoice number, customer, service, vehicle, and value'});
   registerModule('certificationSource',CERTIFICATION_SOURCE);
   window.PETATOE_LOCALIZATION_CENTER_DICTIONARIES=STORE;
   window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,dictionaries:STORE,registerModule:registerModule,getPath:getPath,merge:merge};
