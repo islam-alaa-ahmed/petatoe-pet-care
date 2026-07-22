@@ -120,6 +120,14 @@
     var r = a.collect();
     if(!r.client){ alert(t('requiredClient','Enter the customer name')); return; }
     if(!r.date){ alert(t('requiredDate','Select the appointment date')); return; }
+    var hasService = Array.isArray(r.services) && r.services.some(function(service){
+      service = service || {};
+      return String(service.code || service.name || service.service || '').trim();
+    });
+    if(!hasService && !String(r.service || '').trim()){
+      alert(t('requiredService','Select at least one service'));
+      return;
+    }
     var rows = a.read();
     var profile = a.findCustomerProfile();
     if(profile){
@@ -185,15 +193,16 @@
   }
 
   function actionChangeStatus(id, status){
-    var a = adapter();
-    if(!a) return callTarget('changeStatus', [id, status]);
-    var rows = a.read();
-    rows.forEach(function(x){
-      if(String(x.id) === String(id)) x.status = a.normalizeStatus(status);
-    });
-    a.write(rows);
-    a.render();
-    a.toast(t('statusUpdated','Appointment status updated'));
+    var normalizedStatus = normalizeStatusValue(status);
+    var legacyApi = legacy();
+    if(legacyApi && typeof legacyApi.setVehicleStatusById === 'function'){
+      return legacyApi.setVehicleStatusById(id, normalizedStatus);
+    }
+    var statusActions = window.PETATOEOperationsStatusActions;
+    if(statusActions && typeof statusActions.setVehicleStatusById === 'function'){
+      return statusActions.setVehicleStatusById(id, normalizedStatus);
+    }
+    return callTarget('changeStatus', [id, normalizedStatus]);
   }
 
   window.PETATOEOperationsAppointmentsActions = {
