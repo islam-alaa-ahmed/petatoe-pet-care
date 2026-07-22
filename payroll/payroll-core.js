@@ -26,6 +26,7 @@
      No LocalStorage migration: payroll starts from Supabase data only.
      UI remains synchronous through this runtime cache, while writes persist async to Supabase. */
   var PAYROLL_MASTER_ROW_ID='payroll_master';
+  var COMMISSION_SNAPSHOT_ROW_ID='commission_monthly_snapshots';
   var payrollCache={};
   payrollCache[EMP_KEY]=[];
   payrollCache[SLIP_KEY]=[];
@@ -60,7 +61,7 @@
     if(v&&typeof v==='object')delete v._persistPromise;
     return v;
   }
-  function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4},commissionSnapshots:payrollCache[COMM_SNAPSHOT_KEY]||{},payrollSlips:(Array.isArray(payrollCache[SLIP_KEY])?payrollCache[SLIP_KEY]:[]).map(sanitizePayrollSlip)}}
+  function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4},payrollSlips:(Array.isArray(payrollCache[SLIP_KEY])?payrollCache[SLIP_KEY]:[]).map(sanitizePayrollSlip)}}
   function persistMaster(){
     var R=payrollRepo();
     if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
@@ -68,6 +69,15 @@
       if(res&&!res.ok)throw new Error(res.error||'Payroll master save failed');
       return res||{ok:true};
     }).catch(function(e){console.warn('PETATOEPayroll master persist failed',e);toastMsg(payrollT('errors.masterSave','تعذر حفظ تهيئة الرواتب في Supabase'));throw e});
+  }
+
+  function persistCommissionSnapshots(next){
+    var R=payrollRepo();
+    if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
+    return R.saveSingleton('payroll_master_data',COMMISSION_SNAPSHOT_ROW_ID,next&&typeof next==='object'?next:{}).then(function(res){
+      if(res&&!res.ok)throw new Error(res.error||'Commission snapshots save failed');
+      return res||{ok:true};
+    }).catch(function(e){console.warn('PETATOEPayroll commission snapshot persist failed',e);throw e});
   }
   function stablePayload(row){
     var v=cloneVal(row||{});
@@ -134,7 +144,8 @@
     if(key===SLIP_KEY){
       return persistArrayTable('payroll_slips',val,prev,slipPersistenceExtra).then(function(res){return persistMaster().then(function(){return res})});
     }
-    if(key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY||key===COMM_SNAPSHOT_KEY){return persistMaster();}
+    if(key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY){return persistMaster();}
+    if(key===COMM_SNAPSHOT_KEY){return persistCommissionSnapshots(val);}
     return Promise.resolve({ok:true,skipped:true});
   }
   function refreshPayrollViews(){
@@ -156,11 +167,16 @@
       var emps=typeof R.listPayrollEmployees==='function'?await R.listPayrollEmployees():await R.listJsonRows('payroll_employees',{order:'created_at'});
       var slipsRows=await R.listJsonRows('payroll_slips',{order:'created_at'});
       var master=await R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{});
+      var canonicalSnapshots=await R.getSingleton('payroll_master_data',COMMISSION_SNAPSHOT_ROW_ID,{});
+      if((!canonicalSnapshots||typeof canonicalSnapshots!=='object'||Array.isArray(canonicalSnapshots)||!Object.keys(canonicalSnapshots).length)&&master.commissionSnapshots&&typeof master.commissionSnapshots==='object'&&!Array.isArray(master.commissionSnapshots)&&Object.keys(master.commissionSnapshots).length){
+        canonicalSnapshots=cloneVal(master.commissionSnapshots);
+        await R.saveSingleton('payroll_master_data',COMMISSION_SNAPSHOT_ROW_ID,canonicalSnapshots);
+      }
       payrollCache[EMP_KEY]=Array.isArray(emps)?emps:[];
       payrollCache[SLIP_KEY]=mergePayrollSlipSources(Array.isArray(master.payrollSlips)?master.payrollSlips:[],Array.isArray(slipsRows)?slipsRows:[]);
       payrollCache[JOB_TYPES_KEY]=Array.isArray(master.jobTypes)?master.jobTypes:[];
       payrollCache[EMP_CONFIG_KEY]=employeeConfigNormalize(master.employeeConfig||payrollCache[EMP_CONFIG_KEY]);
-      payrollCache[COMM_SNAPSHOT_KEY]=master.commissionSnapshots&&typeof master.commissionSnapshots==='object'?master.commissionSnapshots:{};
+      payrollCache[COMM_SNAPSHOT_KEY]=canonicalSnapshots&&typeof canonicalSnapshots==='object'&&!Array.isArray(canonicalSnapshots)?canonicalSnapshots:{};
       payrollLoaded=true;
       console.log('✅ PETATOE Payroll Supabase storage loaded', {employees:payrollCache[EMP_KEY].length, slips:payrollCache[SLIP_KEY].length});
       refreshPayrollViews();

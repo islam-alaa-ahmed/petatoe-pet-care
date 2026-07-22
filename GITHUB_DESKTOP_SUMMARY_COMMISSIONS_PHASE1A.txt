@@ -1,0 +1,11 @@
+PETATOE Commissions — Single Commission Snapshot Source Phase 1A
+
+- Establish commission_monthly_snapshots as the canonical monthly commission snapshot source
+- Make payroll core load commission snapshots from the same canonical Supabase row used by the commissions module
+- Make the payroll read facade hydrate its commission cache from the canonical source
+- Remove commissionSnapshots from future payroll_master payload writes to prevent independent copies
+- Migrate legacy payroll_master commissionSnapshots only when the canonical row is empty
+- Wait for Supabase confirmation before reporting successful month lock or unlock
+- Restore the previous in-memory snapshot cache when persistence fails
+- Add locked status, schema version, and ISO lock timestamp to newly locked months
+- Keep commission formulas, invoice data, report design, payroll approvals, Operations, and Supabase schema unchanged

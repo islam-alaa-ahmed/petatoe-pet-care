@@ -7,6 +7,7 @@
   if(window.PETATOEPayrollReadFacade && window.PETATOEPayrollReadFacade.__supabaseOnly) return;
 
   var MASTER_ROW_ID = 'payroll_master';
+  var COMMISSION_SNAPSHOT_ROW_ID = 'commission_monthly_snapshots';
   var DEFAULT_JOB_TYPES = ['مدير','محاسب','مندوب مبيعات','جروومر','سائق','إداري'];
   var cache = {
     employees: [],
@@ -50,7 +51,6 @@
     master = asObject(master);
     if(Array.isArray(master.jobTypes)) cache.jobTypes = master.jobTypes.slice();
     if(master.employeeConfig && typeof master.employeeConfig === 'object') cache.employeeConfig = clone(master.employeeConfig, cache.employeeConfig);
-    if(master.commissionSnapshots && typeof master.commissionSnapshots === 'object') cache.commissionSnapshots = clone(master.commissionSnapshots, {});
   }
   function mergeSlipSources(fullRows, flatRows){
     fullRows = asArray(fullRows).map(normalizeSlip);
@@ -77,9 +77,15 @@
       var emps = R.listPayrollEmployees ? await R.listPayrollEmployees() : [];
       var slips = R.listJsonRows ? await R.listJsonRows('payroll_slips',{order:'created_at'}) : [];
       var master = R.getSingleton ? await R.getSingleton('payroll_master_data', MASTER_ROW_ID, {}) : {};
+      var canonicalSnapshots = R.getSingleton ? await R.getSingleton('payroll_master_data', COMMISSION_SNAPSHOT_ROW_ID, {}) : {};
+      if((!canonicalSnapshots || typeof canonicalSnapshots !== 'object' || Array.isArray(canonicalSnapshots) || !Object.keys(canonicalSnapshots).length) && master && master.commissionSnapshots && typeof master.commissionSnapshots === 'object' && !Array.isArray(master.commissionSnapshots) && Object.keys(master.commissionSnapshots).length){
+        canonicalSnapshots = clone(master.commissionSnapshots, {});
+        if(R.saveSingleton) await R.saveSingleton('payroll_master_data', COMMISSION_SNAPSHOT_ROW_ID, canonicalSnapshots);
+      }
       cache.employees = asArray(emps).map(normalizeEmployee);
       cache.slips = mergeSlipSources(master && master.payrollSlips, slips);
       setCacheFromMaster(master);
+      cache.commissionSnapshots = clone(canonicalSnapshots, {});
       cache.loaded = true;
       cache.lastError = '';
       try{ window.dispatchEvent(new CustomEvent('petatoe:payroll-read-facade-refreshed',{detail:snapshot()})); }catch(_e){}
