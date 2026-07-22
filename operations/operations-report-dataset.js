@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  if(window.PETATOEOperationsReportDataset && window.PETATOEOperationsReportDataset.version === 'OPS-RPT-4C') return;
+  if(window.PETATOEOperationsReportDataset && window.PETATOEOperationsReportDataset.version === 'OPS-RPT-4D') return;
 
   var COMPLETED = ['تمت الجلسة','تم التحصيل','مغلق','مؤكد'];
   var CLOSED = ['مغلق','مؤكد','غير مكتملة'];
@@ -232,8 +232,46 @@
     }).sort(function(a,b){return text(a.name).localeCompare(text(b.name),'ar');});
   }
 
+
+  function reportSnapshot(rows, options){
+    var source=Array.isArray(rows)?rows:[];
+    var normalized=build(source,options);
+    var financials=aggregateFinancials(source,options);
+    var groups={
+      vehicle:groupRows(source,'vehicle','بدون سيارة',options),
+      driver:groupRows(source,'driver','بدون سائق',options),
+      groomer:groupRows(source,'groomer','بدون جرومر',options),
+      customer:groupRows(source,'customer','عميل غير محدد',options)
+    };
+    return {rows:source.slice(),normalized:normalized,financials:financials,groups:groups};
+  }
+
+  function consistencyAudit(rows, options){
+    var snapshot=reportSnapshot(rows,options), issues=[];
+    var expectedCount=snapshot.rows.length;
+    ['vehicle','driver','groomer','customer'].forEach(function(entity){
+      var groupedCount=snapshot.groups[entity].reduce(function(sum,g){return sum+g.rows.length;},0);
+      if(groupedCount!==expectedCount)issues.push({code:'group-count-mismatch',entity:entity,expected:expectedCount,actual:groupedCount});
+      var groupFinancial=snapshot.groups[entity].reduce(function(acc,g){
+        var f=aggregateFinancials(g.rows,options);
+        acc.bookedValue+=f.bookedValue;
+        acc.executedRevenue+=f.executedRevenue;
+        acc.collectedRevenue+=f.collectedRevenue;
+        acc.outstandingBalance+=f.outstandingBalance;
+        acc.cancelledValue+=f.cancelledValue;
+        return acc;
+      },{bookedValue:0,executedRevenue:0,collectedRevenue:0,outstandingBalance:0,cancelledValue:0});
+      ['bookedValue','executedRevenue','collectedRevenue','outstandingBalance','cancelledValue'].forEach(function(metric){
+        if(Math.abs(num(groupFinancial[metric])-num(snapshot.financials[metric]))>0.001){
+          issues.push({code:'group-financial-mismatch',entity:entity,metric:metric,expected:num(snapshot.financials[metric]),actual:num(groupFinancial[metric])});
+        }
+      });
+    });
+    return {passed:issues.length===0,issues:issues,snapshot:snapshot};
+  }
+
   window.PETATOEOperationsReportDataset={
-    version:'OPS-RPT-4C',
+    version:'OPS-RPT-4D',
     completedStatuses:COMPLETED.slice(),
     closedStatuses:CLOSED.slice(),
     normalizePhone:normalizePhone,
@@ -249,6 +287,8 @@
     financialRole:financialRole,
     aggregateFinancials:aggregateFinancials,
     filterByFinancialRole:filterByFinancialRole,
-    groupRows:groupRows
+    groupRows:groupRows,
+    reportSnapshot:reportSnapshot,
+    consistencyAudit:consistencyAudit
   };
 })();

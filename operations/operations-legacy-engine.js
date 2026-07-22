@@ -2163,27 +2163,46 @@
 
   function dailyOpsDate(){var d=val('appointmentDailyOpsDate');if(!d){d=today();setVal('appointmentDailyOpsDate',d)}return d}
   function setDailyOpsDateToday(){setVal('appointmentDailyOpsDate',today());render()}
-  function dailyOpsRows(){var day=dailyOpsDate();return read().map(function(r){return calcFinancials(r)}).filter(function(r){return String(r.date||'')===String(day)}).sort(function(a,b){return String(a.vehicle||'').localeCompare(String(b.vehicle||''),'ar')||String(a.start||'').localeCompare(String(b.start||''))||String(a.client||'').localeCompare(String(b.client||''),'ar')})}
+  function dailyOpsRows(){
+    var day=dailyOpsDate();
+    return read().map(function(r){return calcFinancials(r)}).filter(function(r){return String(r.date||'')===String(day)}).sort(function(a,b){return String(a.vehicle||'').localeCompare(String(b.vehicle||''),'ar')||String(a.start||'').localeCompare(String(b.start||''))||String(a.client||'').localeCompare(String(b.client||''),'ar')});
+  }
+  function dailyOperationsModel(){
+    var rows=dailyOpsRows(), ds=window.PETATOEOperationsReportDataset;
+    var vehicles=ds&&typeof ds.groupRows==='function'?ds.groupRows(rows,'vehicle','بدون سيارة',{calcFinancials:calcFinancials,normalizeStatus:normalizeStatus}):groupBy(rows,'vehicle','بدون سيارة');
+    var groomers=ds&&typeof ds.groupRows==='function'?ds.groupRows(rows,'groomer','بدون جرومر',{calcFinancials:calcFinancials,normalizeStatus:normalizeStatus}):groupBy(rows,'groomer','بدون جرومر');
+    var drivers=ds&&typeof ds.groupRows==='function'?ds.groupRows(rows,'driver','بدون سائق',{calcFinancials:calcFinancials,normalizeStatus:normalizeStatus}):groupBy(rows,'driver','بدون سائق');
+    var completedStatuses=ds&&Array.isArray(ds.completedStatuses)?ds.completedStatuses:['تمت الجلسة','تم التحصيل','مغلق','مؤكد'];
+    return {day:dailyOpsDate(),rows:rows,vehicles:vehicles,groomers:groomers,drivers:drivers,completed:countAnyStatus(rows,completedStatuses),cancelled:countStatus(rows,'ملغي'),postponed:countStatus(rows,'مؤجل')};
+  }
+  function dailyOperationsSectionsHtml(model){
+    return model.vehicles.map(function(g){
+      var body=g.rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.start||'-')+'</td><td>'+esc(r.end||'-')+'</td><td>'+esc(r.customerNameSnapshot||r.client||'-')+'</td><td>'+esc(r.customerPhoneSnapshot||r.phone||'-')+'</td><td>'+esc(r.customerAddressSnapshot||r.address||'-')+'</td><td>'+esc([(r.serviceNameSnapshot||r.service),r.animalType,r.breed,r.size,r.petName].filter(Boolean).join(' - ')||'-')+'</td><td>'+esc(r.groomerNameSnapshot||r.groomer||'-')+'</td><td>'+esc(r.driverNameSnapshot||r.driver||'-')+'</td><td>'+esc(r.paymentMethod||'-')+'</td><td>'+esc(normalizeStatus(r.status))+'</td><td>'+esc(r.notes||'')+'</td></tr>'}).join('');
+      return '<div class="appointments-daily-vehicle"><div class="appointments-daily-vehicle-head"><h4>🚐 '+esc(g.name)+'</h4><span>'+g.rows.length+' مواعيد</span></div><div class="appointments-report-table-wrap"><table class="appointments-report-table appointments-daily-table"><thead><tr><th>#</th><th>من</th><th>إلى</th><th>العميل</th><th>الهاتف</th><th>العنوان</th><th>الخدمة / الحيوان</th><th>الجرومر</th><th>السائق</th><th>الدفع</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="12">إجمالي '+esc(g.name)+': '+g.rows.length+' مواعيد</td></tr></tfoot></table></div></div>';
+    }).join('');
+  }
+  function dailyOperationsReportHtml(model){
+    if(!model.rows.length)return '<div class="appointments-empty appointments-calendar-empty">لا توجد مواعيد في تاريخ '+esc(model.day)+'</div>';
+    return '<div class="appointments-daily-print-header"><h3>كشف التشغيل اليومي</h3><p>التاريخ: '+esc(model.day)+' | إجمالي المواعيد: '+model.rows.length+'</p></div>'+dailyOperationsSectionsHtml(model);
+  }
   function renderDailyOperations(){
     var wrap=byId('appointmentsDailyOperations'), summary=byId('appointmentsDailyOpsSummary');
     if(!wrap&&!summary)return;
-    var day=dailyOpsDate();
-    var rows=dailyOpsRows();
-    var vehicles=groupBy(rows,'vehicle','بدون سيارة'), groomers=groupBy(rows,'groomer','بدون جرومر'), drivers=groupBy(rows,'driver','بدون سائق');
-    var completed=countAnyStatus(rows,['تمت الجلسة','تم التحصيل']), cancelled=countStatus(rows,'ملغي'), postponed=countStatus(rows,'مؤجل');
-    if(summary){safeHtml(summary,'<div class="appointments-dispatch-summary-card"><span>📅 تاريخ الكشف</span><b>'+esc(day)+'</b><small>كشف تشغيل يومي</small></div><div class="appointments-dispatch-summary-card"><span>إجمالي المواعيد</span><b>'+rows.length+'</b><small>'+vehicles.length+' سيارات</small></div><div class="appointments-dispatch-summary-card"><span>المكتمل</span><b>'+completed+'</b><small>مؤجل: '+postponed+' | ملغي: '+cancelled+'</small></div><div class="appointments-dispatch-summary-card"><span>الموارد</span><b>'+groomers.length+'</b><small>'+drivers.length+' سائقين | '+vehicles.length+' سيارات</small></div>','operations dispatch print summary')}
-    if(!wrap)return;
-    if(!rows.length){safeHtml(wrap, '<div class="appointments-empty appointments-calendar-empty">لا توجد مواعيد في تاريخ '+esc(day)+'</div>', 'operations legacy render');return;}
-    var sections=vehicles.map(function(g){
-      var body=g.rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.start||'-')+'</td><td>'+esc(r.end||'-')+'</td><td>'+esc(r.client||'-')+'</td><td>'+esc(r.phone||'-')+'</td><td>'+esc(r.address||'-')+'</td><td>'+esc([r.service,r.animalType,r.breed,r.size,r.petName].filter(Boolean).join(' - ')||'-')+'</td><td>'+esc(r.groomer||'-')+'</td><td>'+esc(r.driver||'-')+'</td><td>'+esc(r.paymentMethod||'-')+'</td><td>'+esc(normalizeStatus(r.status))+'</td><td>'+esc(r.notes||'')+'</td></tr>'}).join('');
-      return '<div class="appointments-daily-vehicle"><div class="appointments-daily-vehicle-head"><h4>🚐 '+esc(g.name)+'</h4><span>'+g.rows.length+' مواعيد</span></div><div class="appointments-report-table-wrap"><table class="appointments-report-table appointments-daily-table"><thead><tr><th>#</th><th>من</th><th>إلى</th><th>العميل</th><th>الهاتف</th><th>العنوان</th><th>الخدمة / الحيوان</th><th>الجرومر</th><th>السائق</th><th>الدفع</th><th>الحالة</th><th>ملاحظات</th></tr></thead><tbody>'+body+'</tbody><tfoot><tr><td colspan="12">إجمالي '+esc(g.name)+': '+g.rows.length+' مواعيد</td></tr></tfoot></table></div></div>'
-    }).join('');
-    safeHtml(wrap, '<div class="appointments-daily-print-header"><h3>كشف التشغيل اليومي</h3><p>التاريخ: '+esc(day)+' | إجمالي المواعيد: '+rows.length+'</p></div>'+sections, 'operations legacy render');
+    var model=dailyOperationsModel();
+    if(summary){safeHtml(summary,'<div class="appointments-dispatch-summary-card"><span>📅 تاريخ الكشف</span><b>'+esc(model.day)+'</b><small>كشف تشغيل يومي</small></div><div class="appointments-dispatch-summary-card"><span>إجمالي المواعيد</span><b>'+model.rows.length+'</b><small>'+model.vehicles.length+' سيارات</small></div><div class="appointments-dispatch-summary-card"><span>المكتمل</span><b>'+model.completed+'</b><small>مؤجل: '+model.postponed+' | ملغي: '+model.cancelled+'</small></div><div class="appointments-dispatch-summary-card"><span>الموارد</span><b>'+model.groomers.length+'</b><small>'+model.drivers.length+' سائقين | '+model.vehicles.length+' سيارات</small></div>','operations dispatch print summary')}
+    if(wrap)safeHtml(wrap,dailyOperationsReportHtml(model),'operations legacy render');
   }
   function printDailyOperations(){
-    var area=byId('appointmentsDailyOperations');
-    if(!area||!String(area.textContent||'').trim()){renderDailyOperations();area=byId('appointmentsDailyOperations')}
-    window.print();
+    var model=dailyOperationsModel();
+    var reportHtml=dailyOperationsReportHtml(model);
+    var iframe=document.createElement('iframe');
+    iframe.setAttribute('aria-hidden','true');
+    iframe.style.position='fixed';iframe.style.width='0';iframe.style.height='0';iframe.style.border='0';iframe.style.right='0';iframe.style.bottom='0';
+    document.body.appendChild(iframe);
+    var doc=iframe.contentDocument||iframe.contentWindow.document;
+    var css='body{font-family:Arial,Tahoma,sans-serif;direction:rtl;color:#111;margin:18px}h3,p{margin:0 0 10px}.appointments-daily-vehicle{margin:0 0 22px;break-inside:avoid}.appointments-daily-vehicle-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.appointments-report-table-wrap{overflow:visible}table{width:100%;border-collapse:collapse;font-size:11px}th,td{border:1px solid #bbb;padding:6px;text-align:right;vertical-align:top}th{background:#eee}tfoot td{font-weight:bold;background:#f6f6f6}@page{size:landscape;margin:10mm}';
+    doc.open();doc.write('<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>كشف التشغيل اليومي '+esc(model.day)+'</title><style>'+css+'</style></head><body>'+reportHtml+'</body></html>');doc.close();
+    setTimeout(function(){try{iframe.contentWindow.focus();iframe.contentWindow.print();}finally{setTimeout(function(){iframe.remove()},1000)}},120);
   }
 
 
