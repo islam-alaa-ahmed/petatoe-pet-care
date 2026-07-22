@@ -1486,11 +1486,13 @@
     }).sort(function(a,b){return b.count-a.count||String(a.name).localeCompare(String(b.name),'ar')})
   }
   function customerKey(r){
+    var dataset=window.PETATOEOperationsReportDataset;
+    if(dataset&&typeof dataset.customerIdentityKey==='function')return dataset.customerIdentityKey(r);
     var cid=String((r&&r.customerId)||'').trim();
-    if(cid)return cid;
-    var phone=String((r&&r.phone)||'').replace(/\s+/g,'').trim();
-    var name=String((r&&r.client)||'').trim();
-    return phone?('phone:'+phone):('name:'+name.toLowerCase());
+    if(cid)return 'customer:'+cid.toLowerCase();
+    var phone=normalizeCustomerPhone((r&&r.phone)||'');
+    var name=normalizeCustomerName((r&&r.client)||'');
+    return phone?('phone:'+phone):(name?('name:'+name):'');
   }
   function buildCustomerProfiles(){
     var map={};
@@ -1996,6 +1998,10 @@
   function setDispatchDateToday(){setVal('appointmentDispatchDate',today());render()}
   function dispatchDate(){var d=val('appointmentDispatchDate');if(!d){d=today();setVal('appointmentDispatchDate',d)}return d}
   function groupBy(rows,field,emptyLabel){
+    var dataset=window.PETATOEOperationsReportDataset;
+    if(dataset&&typeof dataset.groupRows==='function'&&['vehicle','driver','groomer','service','customer'].indexOf(field)>-1){
+      return dataset.groupRows(rows,field,emptyLabel,{calcFinancials:calcFinancials,normalizeStatus:normalizeStatus});
+    }
     var map={};
     (rows||[]).forEach(function(r){var key=String(r[field]||'').trim()||emptyLabel||'غير محدد';(map[key]=map[key]||[]).push(r)});
     return Object.keys(map).sort(function(a,b){return a.localeCompare(b,'ar')}).map(function(k){return {name:k,rows:map[k].sort(function(a,b){return String(a.start||'').localeCompare(String(b.start||''))})}})
@@ -2632,7 +2638,11 @@
   function fmtMins(n){if(n==null)return '-';if(n<60)return opT('minutesShort',{value:n});var h=Math.floor(n/60), m=n%60;return opT('hoursMinutesShort',{hours:h,minutes:m})}
   function executionMetrics(rows){
     rows=rows||[];
-    var completed=countAnyStatus(rows,['تمت الجلسة','تم التحصيل']), collected=rows.reduce(function(a,r){return a+Number(calcFinancials(r).paidAmount||0)},0), remaining=rows.reduce(function(a,r){return a+Number(calcFinancials(r).remainingAmount||0)},0);
+    var dataset=window.PETATOEOperationsReportDataset;
+    var normalized=dataset&&typeof dataset.build==='function'?dataset.build(rows,{calcFinancials:calcFinancials,normalizeStatus:normalizeStatus}):null;
+    var completed=normalized?normalized.filter(function(x){return x.statusClass.completed}).length:countAnyStatus(rows,['تمت الجلسة','تم التحصيل','مغلق','مؤكد']);
+    var collected=normalized?normalized.reduce(function(a,x){return a+Number(x.financials.paidAmount||0)},0):rows.reduce(function(a,r){return a+Number(calcFinancials(r).paidAmount||0)},0);
+    var remaining=normalized?normalized.reduce(function(a,x){return a+Number(x.financials.remainingAmount||0)},0):rows.reduce(function(a,r){return a+Number(calcFinancials(r).remainingAmount||0)},0);
     var arrival=[], session=[], lateStart=0, lateEnd=0;
     rows.forEach(function(r){
       var go=logDate(r,'في الطريق'), arrived=logDate(r,'وصل العميل'), started=logDate(r,'بدأت الجلسة'), ended=logDate(r,'تمت الجلسة')||logDate(r,'تم التحصيل');
@@ -2707,15 +2717,17 @@
   function kpiCard(icon,title,value,sub,cls){return '<div class="operation-kpi-card-mini '+(cls||'')+'"><span>'+esc(icon)+'</span><b>'+esc(value)+'</b><small>'+esc(title)+'</small>'+(sub?'<em>'+esc(sub)+'</em>':'')+'</div>'}
   function operationsKpiStats(rows){
     var m=executionMetrics(rows), total=rows.length;
-    var completed=countAnyStatus(rows,['تمت الجلسة','تم التحصيل','مغلق','مؤكد']);
-    var closed=countAnyStatus(rows,['مغلق','مؤكد','غير مكتملة']);
-    var confirmed=countAnyStatus(rows,['مؤكد']);
-    var incomplete=countAnyStatus(rows,['غير مكتملة']);
-    var cancelled=countAnyStatus(rows,['ملغي']);
+    var dataset=window.PETATOEOperationsReportDataset;
+    var normalized=dataset&&typeof dataset.build==='function'?dataset.build(rows,{calcFinancials:calcFinancials,normalizeStatus:normalizeStatus}):null;
+    var completed=normalized?normalized.filter(function(x){return x.statusClass.completed}).length:countAnyStatus(rows,['تمت الجلسة','تم التحصيل','مغلق','مؤكد']);
+    var closed=normalized?normalized.filter(function(x){return x.statusClass.closed}).length:countAnyStatus(rows,['مغلق','مؤكد','غير مكتملة']);
+    var confirmed=normalized?normalized.filter(function(x){return x.statusClass.confirmed}).length:countAnyStatus(rows,['مؤكد']);
+    var incomplete=normalized?normalized.filter(function(x){return x.statusClass.incomplete}).length:countAnyStatus(rows,['غير مكتملة']);
+    var cancelled=normalized?normalized.filter(function(x){return x.statusClass.cancelled}).length:countAnyStatus(rows,['ملغي']);
     var reopened=rows.filter(function(r){return historyHas(r,['reopen','إعادة فتح الجلسة'])}).length;
     var backMoves=rows.reduce(function(a,r){return a+historyCountByAction(r,['rollback','تراجع حالة الطلب'])},0);
-    var collectedRows=rows.filter(function(r){return Number(calcFinancials(r).paidAmount||0)>0});
-    var unpaid=rows.filter(function(r){return Number(calcFinancials(r).paidAmount||0)<=0});
+    var collectedRows=normalized?normalized.filter(function(x){return x.paymentClass==='paid'||x.paymentClass==='partial'}):rows.filter(function(r){return Number(calcFinancials(r).paidAmount||0)>0});
+    var unpaid=normalized?normalized.filter(function(x){return x.paymentClass==='unpaid'}):rows.filter(function(r){return Number(calcFinancials(r).paidAmount||0)<=0});
     return {total:total,metrics:m,completed:completed,closed:closed,confirmed:confirmed,incomplete:incomplete,cancelled:cancelled,reopened:reopened,backMoves:backMoves,collectedRows:collectedRows.length,unpaid:unpaid.length,collected:m.collected,remaining:m.remaining,late:m.lateStart+m.lateEnd};
   }
   function operationKpiPerformanceRows(rows,field,emptyLabel){
