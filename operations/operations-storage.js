@@ -32,6 +32,7 @@
   var bootStarted = false;
   var bootDone = false;
   var appointmentsRevision = 0;
+  var appointmentsServerState = Object.create(null);
   var masterDataRevision = 0;
   var masterServerStamp = null;
   var masterServerRevision = 0;
@@ -93,32 +94,187 @@
     return row && typeof row === 'object' ? row : {};
   }
 
-  async function deleteAppointmentIdsSupabase(c, ids){
-    ids = Array.isArray(ids) ? ids.filter(Boolean) : [];
-    for(var i=0;i<ids.length;i+=200){
-      var chunk = ids.slice(i, i+200);
-      if(!chunk.length) continue;
-      var del = await c.from(TABLE_APPOINTMENTS).delete().in('id', chunk);
-      if(del && del.error) throw del.error;
-    }
+  function stableSerialize(value){
+    if(value == null || typeof value !== 'object') return JSON.stringify(value);
+    if(Array.isArray(value)) return '[' + value.map(stableSerialize).join(',') + ']';
+    return '{' + Object.keys(value).sort().map(function(key){
+      return JSON.stringify(key) + ':' + stableSerialize(value[key]);
+    }).join(',') + '}';
+  }
+
+  function stableAppointmentFingerprint(row){
+    row = row && typeof row === 'object' ? row : {};
+    var copy = cloneJSON(row) || {};
+    delete copy.updated_at;
+    delete copy.updatedAt;
+    delete copy.created_at;
+    delete copy.createdAt;
+    try{ return stableSerialize(copy); }
+    catch(e){ try{ return JSON.stringify(copy); }catch(ignore){ return String(copy); } }
+  }
+
+  function normalizeAppointmentServerRow(row){
+    row = row && typeof row === 'object' ? row : {};
+    var data = normalizeAppointmentRow(row);
+    var uid = safeText(row.appointment_uid || appointmentUid(data));
+    return {
+      id: row.id || null,
+      uid: uid,
+      data: data,
+      updatedAt: safeText(row.updated_at || row.created_at),
+      fingerprint: stableAppointmentFingerprint(data)
+    };
+  }
+
+  function mapAppointmentServerRows(rows){
+    var map = Object.create(null);
+    (Array.isArray(rows) ? rows : []).forEach(function(row){
+      var normalized = normalizeAppointmentServerRow(row);
+      if(normalized.uid) map[normalized.uid] = normalized;
+    });
+    return map;
+  }
+
+  function rememberAppointmentServerRows(rows){
+    appointmentsServerState = mapAppointmentServerRows(rows);
+  }
+
+  function appointmentConflictError(uid){
+    var error = new Error('OPERATIONS_APPOINTMENT_WRITE_CONFLICT:' + safeText(uid));
+    error.code = 'OPERATIONS_APPOINTMENT_WRITE_CONFLICT';
+    error.appointmentUid = safeText(uid);
+    return error;
+  }
+
+  async function loadAppointmentServerRows(c){
+    var res = await c.from(TABLE_APPOINTMENTS)
+      .select('id,appointment_uid,data,appointment_date,created_at,updated_at')
+      .order('appointment_date', { ascending:true })
+      .order('created_at', { ascending:true });
+    if(res && res.error) throw res.error;
+    return Array.isArray(res && res.data) ? res.data : [];
+  }
+
+  async function updateAppointmentServerRow(c, current, data){
+    var query = c.from(TABLE_APPOINTMENTS)
+      .update(appointmentPayload(data))
+      .eq('id', current.id);
+    if(current.updatedAt) query = query.eq('updated_at', current.updatedAt);
+    var res = await query.select('id,appointment_uid,data,appointment_date,created_at,updated_at');
+    if(res && res.error) throw res.error;
+    if(!Array.isArray(res && res.data) || !res.data.length) throw appointmentConflictError(current.uid);
+    return res.data[0];
+  }
+
+  async function insertAppointmentServerRow(c, data){
+    var res = await c.from(TABLE_APPOINTMENTS)
+      .insert([appointmentPayload(data)])
+      .select('id,appointment_uid,data,appointment_date,created_at,updated_at');
+    if(res && res.error) throw res.error;
+    if(!Array.isArray(res && res.data) || !res.data.length) throw new Error('OPERATIONS_APPOINTMENT_INSERT_FAILED');
+    return res.data[0];
+  }
+
+  async function deleteAppointmentServerRow(c, current){
+    var query = c.from(TABLE_APPOINTMENTS).delete().eq('id', current.id);
+    if(current.updatedAt) query = query.eq('updated_at', current.updatedAt);
+    var res = await query.select('id');
+    if(res && res.error) throw res.error;
+    if(!Array.isArray(res && res.data) || !res.data.length) throw appointmentConflictError(current.uid);
     return true;
   }
 
-  async function replaceAppointmentsSupabase(rows){
+  async function persistAppointmentsSupabase(rows){
     if(!isClientReady()) return false;
     rows = Array.isArray(rows) ? rows : [];
     var c = client();
-    var existing = await c.from(TABLE_APPOINTMENTS).select('id');
-    if(existing && existing.error) throw existing.error;
-    var oldIds = (Array.isArray(existing && existing.data) ? existing.data : []).map(function(r){ return r && r.id; }).filter(Boolean);
-    if(!rows.length){
-      await deleteAppointmentIdsSupabase(c, oldIds);
-      return true;
+    var remoteRows = await loadAppointmentServerRows(c);
+    var remoteMap = mapAppointmentServerRows(remoteRows);
+    var baselineMap = appointmentsServerState || Object.create(null);
+    var desiredMap = Object.create(null);
+    var desiredOrder = [];
+
+    rows.forEach(function(row){
+      var uid = appointmentUid(row);
+      if(!uid || desiredMap[uid]) return;
+      desiredMap[uid] = row;
+      desiredOrder.push(uid);
+    });
+
+    var resultMap = Object.create(null);
+    Object.keys(remoteMap).forEach(function(uid){ resultMap[uid] = remoteMap[uid]; });
+
+    for(var i=0;i<desiredOrder.length;i++){
+      var uid = desiredOrder[i];
+      var desired = desiredMap[uid];
+      var desiredFingerprint = stableAppointmentFingerprint(desired);
+      var baseline = baselineMap[uid] || null;
+      var remote = remoteMap[uid] || null;
+      var localChanged = !baseline || desiredFingerprint !== baseline.fingerprint;
+      var remoteChanged = !!(baseline && remote && remote.fingerprint !== baseline.fingerprint);
+
+      if(baseline && !remote){
+        if(localChanged) throw appointmentConflictError(uid);
+        delete resultMap[uid];
+        continue;
+      }
+
+      if(!baseline && remote){
+        if(desiredFingerprint !== remote.fingerprint) throw appointmentConflictError(uid);
+        resultMap[uid] = remote;
+        continue;
+      }
+
+      if(remote && remoteChanged && localChanged && desiredFingerprint !== remote.fingerprint){
+        throw appointmentConflictError(uid);
+      }
+
+      if(remote && remoteChanged && !localChanged){
+        resultMap[uid] = remote;
+        continue;
+      }
+
+      if(remote && !localChanged){
+        resultMap[uid] = remote;
+        continue;
+      }
+
+      if(remote){
+        resultMap[uid] = normalizeAppointmentServerRow(await updateAppointmentServerRow(c, remote, desired));
+      }else{
+        resultMap[uid] = normalizeAppointmentServerRow(await insertAppointmentServerRow(c, desired));
+      }
     }
-    var payload = rows.map(appointmentPayload);
-    var ins = await c.from(TABLE_APPOINTMENTS).insert(payload);
-    if(ins && ins.error) throw ins.error;
-    await deleteAppointmentIdsSupabase(c, oldIds);
+
+    var baselineUids = Object.keys(baselineMap);
+    for(var j=0;j<baselineUids.length;j++){
+      var removedUid = baselineUids[j];
+      if(desiredMap[removedUid]) continue;
+      var remoteForDelete = remoteMap[removedUid];
+      var baselineForDelete = baselineMap[removedUid];
+      if(!remoteForDelete){
+        delete resultMap[removedUid];
+        continue;
+      }
+      if(remoteForDelete.fingerprint !== baselineForDelete.fingerprint){
+        throw appointmentConflictError(removedUid);
+      }
+      await deleteAppointmentServerRow(c, remoteForDelete);
+      delete resultMap[removedUid];
+    }
+
+    var mergedRows = [];
+    desiredOrder.forEach(function(uid){
+      if(resultMap[uid]) mergedRows.push(resultMap[uid].data);
+    });
+    Object.keys(resultMap).forEach(function(uid){
+      if(!desiredMap[uid]) mergedRows.push(resultMap[uid].data);
+    });
+
+    appointmentsCache = cloneJSON(mergedRows);
+    appointmentsRevision += 1;
+    appointmentsServerState = resultMap;
+    emitChange('appointments');
     return true;
   }
 
@@ -221,9 +377,9 @@
 
   async function loadAppointmentsSupabase(){
     if(!isClientReady()) return [];
-    var res = await client().from(TABLE_APPOINTMENTS).select('data,appointment_date,created_at').order('appointment_date', { ascending:true }).order('created_at', { ascending:true });
-    if(res && res.error) throw res.error;
-    return (Array.isArray(res && res.data) ? res.data : []).map(normalizeAppointmentRow);
+    var rows = await loadAppointmentServerRows(client());
+    rememberAppointmentServerRows(rows);
+    return rows.map(normalizeAppointmentRow);
   }
 
   async function loadMasterSupabase(){
@@ -313,7 +469,7 @@
       appointmentsCache = Array.isArray(value) ? cloneJSON(value) : [];
       appointmentsRevision += 1;
       var snapshot = cloneJSON(appointmentsCache);
-      queueWrite(function(){ return replaceAppointmentsSupabase(snapshot); });
+      queueWrite(function(){ return persistAppointmentsSupabase(snapshot); });
       emitChange('appointments');
       return true;
     }
@@ -490,7 +646,7 @@
   }
 
   var api = {
-    version: 'OPS-20-master-singleton-supabase-fix',
+    version: 'OPS-21-appointment-row-persistence-safety',
     keys: Object.assign({}, KEYS),
     readJSON: readJSON,
     writeJSON: writeJSON,
