@@ -1,12 +1,7 @@
-PETATOE Operations — Final Production Certification Phase 6
+PETATOE Commissions — Phase 1A Localization Lockdown Hotfix
 
-- Run full JavaScript syntax validation across the composed Operations baseline
-- Pass Enterprise Localization Certification and Production Localization Lockdown
-- Pass Runtime Translation Completion with zero missing runtime phrases
-- Pass Mobile Enterprise UI certification 64/64
-- Pass Native iOS static certification 27/27
-- Pass Startup Permission Guard validation
-- Pass Operations deterministic scenario suite 8/8
-- Document conditional production readiness and remaining live Supabase/browser UAT
-- Add a mandatory live UAT checklist for concurrency, RLS, snapshots, reporting, exports, and deployment parity
-- Make no application runtime or business-logic changes in this certification phase
+- Register the two new commission month-lock persistence error messages in the canonical Localization Center
+- Add complete Arabic and English runtime mappings for lock-save and unlock-save failures
+- Resolve Enterprise Localization Certification missingStoredTexts from 2 to 0
+- Resolve Runtime Translation Completion missingRuntimePhrases from 2 to 0
+- Keep commission calculations, snapshot persistence, payroll integration, Supabase schema, and UI layout unchanged

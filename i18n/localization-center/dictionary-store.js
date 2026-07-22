@@ -16,6 +16,16 @@
   STORE.en.operationsCustomer.fields=Object.assign({},STORE.en.operationsCustomer.fields||{},{googleMapsUrl:'Google Maps URL',locationLink:'Location Link',appointmentGoogleMaps:'Customer location link (Google Maps)'});
   STORE.ar.operationsCustomer.search=Object.assign({},STORE.ar.operationsCustomer.search||{},{masterCustomers:'بحث بالكود / الاسم / العنوان / الجوال / رابط الموقع'});
   STORE.en.operationsCustomer.search=Object.assign({},STORE.en.operationsCustomer.search||{},{masterCustomers:'Search by code / name / address / mobile / location link'});
+  STORE.ar.runtimeSource=STORE.ar.runtimeSource||{};
+  STORE.en.runtimeSource=STORE.en.runtimeSource||{};
+  STORE.ar.runtimeSource['تعذر حفظ قفل الشهر في Supabase']='تعذر حفظ قفل الشهر في Supabase';
+  STORE.en.runtimeSource['تعذر حفظ قفل الشهر في Supabase']='Unable to save the month lock in Supabase';
+  STORE.ar.runtimeSource['تعذر إلغاء قفل الشهر في Supabase']='تعذر إلغاء قفل الشهر في Supabase';
+  STORE.en.runtimeSource['تعذر إلغاء قفل الشهر في Supabase']='Unable to unlock the month in Supabase';
+  STORE.ar.commissions=STORE.ar.commissions||{};
+  STORE.en.commissions=STORE.en.commissions||{};
+  STORE.ar.commissions.persistence=Object.assign({},STORE.ar.commissions.persistence||{},{lockSaveError:'تعذر حفظ قفل الشهر في Supabase',unlockSaveError:'تعذر إلغاء قفل الشهر في Supabase'});
+  STORE.en.commissions.persistence=Object.assign({},STORE.en.commissions.persistence||{},{lockSaveError:'Unable to save the month lock in Supabase',unlockSaveError:'Unable to unlock the month in Supabase'});
   registerModule('certificationSource',CERTIFICATION_SOURCE);
   window.PETATOE_LOCALIZATION_CENTER_DICTIONARIES=STORE;
   window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,dictionaries:STORE,registerModule:registerModule,getPath:getPath,merge:merge};
