@@ -190,13 +190,23 @@ function renderResults(keepFocus){ensureEntryUi();var active=document.activeElem
       var rows=items.map(function(it,idx){var r=Object.assign({},old[idx]||{},it,common);r.id=(old[idx]&&old[idx].id)||(Date.now()+Math.random()+idx);r.manualEntry=true;if(!n(r.totalEx)&&n(r.price))r.totalEx=(n(r.price)*(n(r.qty)||1))-Math.abs(n(r.disc));if(!n(r.totalInc))r.totalInc=n(r.totalEx)+n(r.tax);r.disc=Math.abs(n(r.disc));return r});
       if(STATE.mode==='edit'&&STATE.selectedInvoice){
         var oldInvoice=STATE.selectedInvoice;
-        var supabaseDelete=await deleteInvoiceFromSupabase(oldInvoice,'manual-invoice-edit-replace');
-        if(!supabaseDelete || supabaseDelete.ok!==true){
+        rows=stripSupabaseIdentity(rows);
+        if(!(window.PETATOEDataLayer&&typeof window.PETATOEDataLayer.replaceSalesInvoice==='function')){
           note('تعذر تحديث الفاتورة في Supabase، لم يتم حفظ التعديل');
           return false;
         }
-        rows=stripSupabaseIdentity(rows);
-        setArr(arr().filter(function(r){return invKey(r.invoice)!==oldInvoice}).concat(rows));
+        var replaceResult=await window.PETATOEDataLayer.replaceSalesInvoice(oldInvoice,rows,{source:'manual-invoice-edit'});
+        if(!replaceResult || replaceResult.ok!==true){
+          console.warn('[PETATOE Manual Invoice] Atomic invoice replacement failed',oldInvoice,replaceResult);
+          note('تعذر تحديث الفاتورة في Supabase، لم يتم حفظ التعديل');
+          return false;
+        }
+        if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
+          var refreshResult=await window.PETATOEDataSource.refreshSalesRecordsFromSupabase('manual-invoice-edit-atomic-replace');
+          if(refreshResult&&refreshResult.ok===false){
+            console.warn('[PETATOE Manual Invoice] Refresh after atomic replacement failed',refreshResult);
+          }
+        }
         STATE.selectedInvoice=common.invoice;
       }else{
         var persistResult=await commitManualRowsToSupabase(rows);

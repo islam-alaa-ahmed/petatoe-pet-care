@@ -373,6 +373,36 @@
     return res;
   }
 
+  async function replaceSalesInvoice(oldInvoiceNo, rows, options){
+    options = options || {};
+    oldInvoiceNo = asText(oldInvoiceNo);
+    if(!oldInvoiceNo) return fail('Cannot replace sales invoice: original invoice number is empty');
+    var payload = normalizeRows(rows).map(mapSalesRecordForSupabase).filter(function(r){
+      return r.invoice_no || r.item_name || r.client_name || r.total_inc || r.total_ex;
+    });
+    if(!payload.length) return fail('Cannot replace sales invoice: replacement rows are empty');
+    var ready = ensureClient();
+    if(ready.error) return ready.error;
+    if(typeof ready.client.rpc !== 'function') return fail('Supabase RPC is not available for atomic invoice replacement');
+    try{
+      var result = await ready.client.rpc('petatoe_replace_sales_invoice', {
+        p_old_invoice_no: oldInvoiceNo,
+        p_rows: payload
+      });
+      var out = unwrap(result);
+      if(!out.ok) return out;
+      return ok(out.data, {
+        table:'sales_records',
+        source:options.source || 'manual-invoice-edit',
+        oldInvoiceNo:oldInvoiceNo,
+        replacementRows:payload.length,
+        atomic:true
+      });
+    }catch(error){
+      return fail(error && error.message ? error.message : String(error), error);
+    }
+  }
+
   async function deleteAllSalesRecords(){
     var ready = ensureClient();
     if(ready.error) return ready.error;
@@ -443,6 +473,7 @@
     readSalesRecords: readSalesRecords,
     deleteSalesRecord: deleteSalesRecord,
     deleteSalesInvoice: deleteSalesInvoice,
+    replaceSalesInvoice: replaceSalesInvoice,
     deleteAllSalesRecords: deleteAllSalesRecords,
     updateSalesRecord: updateSalesRecord,
     getLastCommit: getLastCommit,
