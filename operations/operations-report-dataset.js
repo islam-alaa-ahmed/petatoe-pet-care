@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  if(window.PETATOEOperationsReportDataset && window.PETATOEOperationsReportDataset.version === 'OPS-RPT-4B') return;
+  if(window.PETATOEOperationsReportDataset && window.PETATOEOperationsReportDataset.version === 'OPS-RPT-4C') return;
 
   var COMPLETED = ['تمت الجلسة','تم التحصيل','مغلق','مؤكد'];
   var CLOSED = ['مغلق','مؤكد','غير مكتملة'];
@@ -38,6 +38,67 @@
     return name?'name:'+name:'';
   }
 
+
+  function customerIdentityTokens(row){
+    row=row||{};
+    var snapshot=row.customerSnapshot&&typeof row.customerSnapshot==='object'?row.customerSnapshot:{};
+    var aliases=Array.isArray(row.aliases)?row.aliases:(Array.isArray(snapshot.aliases)?snapshot.aliases:[]);
+    var tokens=[];
+    function add(prefix,value,normalizer){
+      var v=normalizer?normalizer(value):lower(value);
+      if(v)tokens.push(prefix+v);
+    }
+    add('customer:',row.customerId||snapshot.id||row.customerCode||snapshot.code,lower);
+    add('code:',row.customerCode||snapshot.code||row.code,lower);
+    add('phone:',row.customerPhoneSnapshot||snapshot.phone||row.phone,normalizePhone);
+    add('name:',row.customerNameSnapshot||snapshot.name||row.client||row.name,normalizeName);
+    aliases.forEach(function(alias){
+      if(alias&&typeof alias==='object'){
+        add('customer:',alias.id||alias.customerId,lower);
+        add('code:',alias.code||alias.customerCode,lower);
+        add('phone:',alias.phone,normalizePhone);
+        add('name:',alias.name,normalizeName);
+      }else{
+        add('alias:',alias,normalizeName);
+      }
+    });
+    return tokens.filter(function(v,i,a){return a.indexOf(v)===i;});
+  }
+
+  function buildCustomerIdentityIndex(rows){
+    var tokenToKey={};
+    (Array.isArray(rows)?rows:[]).forEach(function(row){
+      var preferred=customerIdentityKey(row);
+      if(!preferred)return;
+      customerIdentityTokens(row).forEach(function(token){
+        if(!tokenToKey[token])tokenToKey[token]=preferred;
+      });
+    });
+    return tokenToKey;
+  }
+
+  function resolveCustomerIdentity(row,index){
+    var tokens=customerIdentityTokens(row);
+    for(var i=0;i<tokens.length;i++)if(index&&index[tokens[i]])return index[tokens[i]];
+    return customerIdentityKey(row);
+  }
+
+  function entityAliasRegistry(rows,entity){
+    var cfg=ENTITY_FIELDS[entity]||{id:[entity+'Id'],name:[entity+'NameSnapshot',entity]};
+    var names={};
+    (Array.isArray(rows)?rows:[]).forEach(function(row){
+      var id=firstValue(row,cfg.id), name=firstValue(row,cfg.name);
+      if(!id||!name)return;
+      var nk=normalizeName(name);
+      if(!nk)return;
+      if(!names[nk])names[nk]={id:id,ambiguous:false};
+      else if(lower(names[nk].id)!==lower(id))names[nk].ambiguous=true;
+    });
+    var out={};
+    Object.keys(names).forEach(function(k){if(!names[k].ambiguous)out[k]=names[k].id;});
+    return out;
+  }
+
   var ENTITY_FIELDS={
     vehicle:{id:['vehicleId'],name:['vehicleNameSnapshot','vehicle']},
     driver:{id:['driverId'],name:['driverNameSnapshot','driver']},
@@ -51,13 +112,14 @@
     return '';
   }
 
-  function entityIdentity(row, entity, emptyLabel){
+  function entityIdentity(row, entity, emptyLabel, registry, customerIndex){
     var cfg=ENTITY_FIELDS[entity]||{id:[entity+'Id'],name:[entity+'NameSnapshot',entity]};
     var id=firstValue(row,cfg.id), name=firstValue(row,cfg.name);
     if(entity==='customer'){
-      var customerKey=customerIdentityKey(row);
+      var customerKey=resolveCustomerIdentity(row,customerIndex);
       return {key:customerKey||('empty:'+text(emptyLabel||'غير محدد')),name:name||text(emptyLabel||'غير محدد'),id:id};
     }
+    if(!id&&name&&registry&&registry[normalizeName(name)])id=registry[normalizeName(name)];
     return {key:id?entity+':'+lower(id):(name?entity+'-name:'+normalizeName(name):'empty:'+text(emptyLabel||'غير محدد')),name:name||text(emptyLabel||'غير محدد'),id:id};
   }
 
@@ -151,11 +213,16 @@
   }
 
   function groupRows(rows, entity, emptyLabel, options){
-    var map={};
-    build(rows,options).forEach(function(item){
-      var ident=item.entities[entity]||entityIdentity(item.source,entity,emptyLabel);
+    var sourceRows=Array.isArray(rows)?rows:[];
+    var map={}, registry=entity==='customer'?null:entityAliasRegistry(sourceRows,entity);
+    var customerIndex=entity==='customer'?buildCustomerIdentityIndex(sourceRows):null;
+    build(sourceRows,options).forEach(function(item){
+      var ident=entityIdentity(item.source,entity,emptyLabel,registry,customerIndex);
       var key=ident.key||('empty:'+text(emptyLabel||'غير محدد'));
-      if(!map[key])map[key]={key:key,id:ident.id||'',name:ident.name||text(emptyLabel||'غير محدد'),rows:[],datasetRows:[]};
+      var stamp=text(item.source.date)+'T'+text(item.source.start||'00:00');
+      if(!map[key])map[key]={key:key,id:ident.id||'',name:ident.name||text(emptyLabel||'غير محدد'),rows:[],datasetRows:[],latestStamp:''};
+      if(stamp>=map[key].latestStamp&&ident.name){map[key].name=ident.name;map[key].latestStamp=stamp;}
+      if(!map[key].id&&ident.id)map[key].id=ident.id;
       map[key].rows.push(item.source);
       map[key].datasetRows.push(item);
     });
@@ -166,12 +233,16 @@
   }
 
   window.PETATOEOperationsReportDataset={
-    version:'OPS-RPT-4B',
+    version:'OPS-RPT-4C',
     completedStatuses:COMPLETED.slice(),
     closedStatuses:CLOSED.slice(),
     normalizePhone:normalizePhone,
     normalizeName:normalizeName,
     customerIdentityKey:customerIdentityKey,
+    customerIdentityTokens:customerIdentityTokens,
+    buildCustomerIdentityIndex:buildCustomerIdentityIndex,
+    resolveCustomerIdentity:resolveCustomerIdentity,
+    entityAliasRegistry:entityAliasRegistry,
     entityIdentity:entityIdentity,
     normalizeRow:normalizeRow,
     build:build,

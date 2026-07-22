@@ -1496,10 +1496,24 @@
     return phone?('phone:'+phone):(name?('name:'+name):'');
   }
   function buildCustomerProfiles(){
-    var map={};
+    var map={}, tokenIndex={};
+    var dataset=window.PETATOEOperationsReportDataset;
+    function tokensFor(record){
+      if(dataset&&typeof dataset.customerIdentityTokens==='function')return dataset.customerIdentityTokens(record);
+      var key=customerKey(record);return key?[key]:[];
+    }
+    function resolveProfileKey(record){
+      var tokens=tokensFor(record), found='';
+      for(var i=0;i<tokens.length;i++){if(tokenIndex[tokens[i]]){found=tokenIndex[tokens[i]];break;}}
+      return found||customerKey(record)||tokens[0]||'';
+    }
+    function registerProfileIdentity(key,record){
+      tokensFor(record).forEach(function(token){if(token&&!tokenIndex[token])tokenIndex[token]=key;});
+    }
     read().map(function(r){return calcFinancials(r)}).forEach(function(r){
-      var key=customerKey(r); if(!key)return;
-      if(!map[key])map[key]={key:key,client:r.client||'عميل غير محدد',phone:r.phone||'',address:r.address||'',googleMapUrl:appointmentMapUrl(r),notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
+      var key=resolveProfileKey(r); if(!key)return;
+      if(!map[key])map[key]={key:key,client:r.customerNameSnapshot||(r.customerSnapshot&&r.customerSnapshot.name)||r.client||'عميل غير محدد',phone:r.customerPhoneSnapshot||(r.customerSnapshot&&r.customerSnapshot.phone)||r.phone||'',address:r.customerAddressSnapshot||(r.customerSnapshot&&r.customerSnapshot.address)||r.address||'',googleMapUrl:r.customerGoogleMapUrlSnapshot||(r.customerSnapshot&&r.customerSnapshot.googleMapUrl)||appointmentMapUrl(r),notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:'',currentData:null};
+      registerProfileIdentity(key,r);
       var c=map[key], visitStamp=String(r.date||'')+'T'+String(r.start||'00:00');
       if(!c.latestVisitStamp||visitStamp>=c.latestVisitStamp){
         c.latestVisitStamp=visitStamp;
@@ -1520,20 +1534,30 @@
         if(!c.pets[petKey])c.pets[petKey]={animalType:ap.animalType||'',breed:ap.breed||'',size:ap.size||'',petName:ap.petName||'',count:0,visits:0,services:{}};
         c.pets[petKey].count=Math.max(c.pets[petKey].count,Number(ap.petCount||ap.count||1));
         c.pets[petKey].visits+=1;
-        if(r.service)c.pets[petKey].services[r.service]=(c.pets[petKey].services[r.service]||0)+1;
+        (Array.isArray(r.services)&&r.services.length?r.services:[{name:r.service||''}]).forEach(function(svc){
+          var serviceName=svc.serviceNameSnapshot||svc.name||r.service||'';
+          if(serviceName)c.pets[petKey].services[serviceName]=(c.pets[petKey].services[serviceName]||0)+1;
+        });
       });
     });
     (readMasterData().customers||[]).forEach(function(mc){
       mc=cleanMasterCustomer(mc); if(!mc)return;
-      var key=mc.code||mc.phone||mc.name; if(!key)return;
-      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
-      if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address;
+      var masterRecord={customerId:mc.id||mc.customerId||mc.code,customerCode:mc.code,name:mc.name,client:mc.name,phone:mc.phone,address:mc.address,googleMapUrl:mc.googleMapUrl,aliases:mc.aliases};
+      var key=resolveProfileKey(masterRecord); if(!key)return;
+      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',googleMapUrl:mc.googleMapUrl||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:'',currentData:null};
+      registerProfileIdentity(key,masterRecord);
+      map[key].currentData={id:mc.id||mc.customerId||'',code:mc.code||'',name:mc.name||'',phone:mc.phone||'',address:mc.address||'',googleMapUrl:mc.googleMapUrl||''};
+      if(mc.name)map[key].client=mc.name;
+      if(mc.phone)map[key].phone=mc.phone;
+      if(mc.address)map[key].address=mc.address;
+      if(mc.googleMapUrl)map[key].googleMapUrl=mc.googleMapUrl;
     });
     return Object.keys(map).map(function(k){
       var c=map[k]; c.petsList=Object.keys(c.pets).map(function(pk){var pet=c.pets[pk];pet.label=pk;pet.topServices=Object.keys(pet.services).sort(function(a,b){return pet.services[b]-pet.services[a]}).slice(0,3);return pet});
       return c;
     }).sort(function(a,b){return String(b.lastVisit||'').localeCompare(String(a.lastVisit||''))||b.appointments.length-a.appointments.length});
   }
+
   function normalizePhone(v){return String(v||'').replace(/\s+/g,'').trim()}
   function findCustomerProfile(mode){
     var name=String(val('appointmentClient')||'').trim(), phone=val('appointmentPhone'), code=String(val('appointmentCustomerId')||'').trim();
@@ -1896,7 +1920,13 @@
   function localReportTable(key,title,icon,baseRows,field,fallback,totalLabel,limit,transform){
     key=appointmentReportKey(key);baseRows=Array.isArray(baseRows)?baseRows:[];
     var filtered=filterAppointmentLocalReportRows(key,baseRows);
-    var rows=typeof transform==='function'?transform(filtered):(field?reportRowsByField(filtered,field,fallback):filtered);
+    var entityFields=['vehicle','driver','groomer','service','customer'];
+    var reportDataset=window.PETATOEOperationsReportDataset;
+    var rows;
+    if(typeof transform==='function')rows=transform(filtered);
+    else if(field&&entityFields.indexOf(field)>-1&&reportDataset&&typeof reportDataset.groupRows==='function'){
+      rows=reportDataset.groupRows(filtered,field,fallback,{calcFinancials:calcFinancials,normalizeStatus:normalizeStatus}).map(function(g){return {key:g.key,id:g.id,name:g.name,count:g.rows.length};});
+    }else rows=field?reportRowsByField(filtered,field,fallback):filtered;
     rows=Array.isArray(rows)?rows:[];
     var total=rows.reduce(function(sum,r){return sum+Number(r.count||0)},0);
     var hardMax=Number(limit||0);
@@ -1951,7 +1981,10 @@
       +localReportTable('by_vehicle','تقرير المواعيد حسب السيارة','🚐',rows,'vehicle','بدون سيارة','إجمالي السيارات')
       +localReportTable('by_payment','تقرير المواعيد حسب طريقة الدفع','💳',rows,'paymentMethod','غير محدد','إجمالي طرق الدفع')
       +localReportTable('by_collection','تقرير المواعيد حسب حالة التحصيل','🧾',rows,function(r){var item=dataset&&dataset.normalizeRow?dataset.normalizeRow(r,datasetOptions):null;return item?(item.paymentClass==='paid'?'محصل بالكامل':item.paymentClass==='partial'?'محصل جزئي':'غير محصل'):(r.collectionStatus||'غير محدد')},'غير محدد','إجمالي حالات التحصيل')
-      +localReportTable('repeat_clients','العملاء الأكثر تكرارًا','👥',rows,null,'عميل غير محدد','إجمالي المواعيد المتكررة',0,function(filteredRows){var map={};(dataset&&dataset.build?dataset.build(filteredRows,datasetOptions):[]).forEach(function(item){var key=item.customerKey||'unknown';if(!map[key])map[key]={name:item.entities.customer.name||'عميل غير محدد',count:0};map[key].count+=1;});return Object.keys(map).map(function(k){return map[k]}).filter(function(r){return r.count>1}).sort(function(a,b){return b.count-a.count});})
+      +localReportTable('repeat_clients','العملاء الأكثر تكرارًا','👥',rows,null,'عميل غير محدد','إجمالي المواعيد المتكررة',0,function(filteredRows){
+        if(dataset&&typeof dataset.groupRows==='function')return dataset.groupRows(filteredRows,'customer','عميل غير محدد',datasetOptions).map(function(g){return {key:g.key,id:g.id,name:g.name,count:g.rows.length};}).filter(function(r){return r.count>1}).sort(function(a,b){return b.count-a.count||String(a.name).localeCompare(String(b.name),'ar')});
+        var map={};filteredRows.forEach(function(r){var key=customerKey(r)||'unknown';if(!map[key])map[key]={name:r.client||'عميل غير محدد',count:0};map[key].count+=1;});return Object.keys(map).map(function(k){return map[k]}).filter(function(r){return r.count>1}).sort(function(a,b){return b.count-a.count});
+      })
       +'</div>','operations finance reports full render');
   }
 
