@@ -86,12 +86,31 @@
       appendImportAudit('override',{time:new Date().toISOString(),user:u.username||u.fullName||u.id||'Super Admin',rows:(importData||[]).length,errors:(lastImportErrors||[]).length,mode:importMode,replace:!!replace,reason:reason||''});
     }catch(e){ try{ console.warn('[PETATOE Import Override] audit failed', e); }catch(_e){} }
   }
+
+  async function assertImportPeriodsUnlocked(rows, replace){
+    const guard=window.PETATOECommissionPeriodGuard;
+    if(!guard){
+      if(typeof toast==='function')toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر التحقق من قفل شهر العمولات'):'Unable to verify the commission month lock');
+      return false;
+    }
+    const result=replace&&typeof guard.assertReplaceAllowed==='function'?await guard.assertReplaceAllowed():await guard.assertRowsUnlocked(rows||[]);
+    if(!result||result.ok!==true){
+      const periods=result&&result.lockedPeriods&&result.lockedPeriods.length?result.lockedPeriods.join('، '):'';
+      const key=replace?'لا يمكن استبدال بيانات المبيعات أثناء وجود شهور عمولات مقفلة':'لا يمكن رفع فواتير تخص شهر عمولات مقفول';
+      const message=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime(key):key)+(periods?' — '+periods:'');
+      renderErrors([makeError(1,1,key,periods||'')]);
+      if(typeof toast==='function')toast(message);
+      return false;
+    }
+    return true;
+  }
   async function forceImportAfterOverride(reason){
     if(!(importData&&importData.length)){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات قابلة للرفع بعد التخطي'):'لا توجد بيانات قابلة للرفع بعد التخطي'); return; }
     const replace=!!pendingOverrideReplace;
     auditOverride(reason, replace);
     const existingRows=dsRecords().slice();
     const uploadRows=(importData||[]).slice();
+    if(!(await assertImportPeriodsUnlocked(uploadRows,replace)))return false;
     const nextRows=replace?uploadRows:existingRows.concat(uploadRows);
     return await commitImportedRows(nextRows,'import-override-confirmed','تم رفع البيانات إلى Supabase بتجاوز قواعد التحقق بواسطة Super Admin',{uploadRows:uploadRows,replace:replace});
   }
@@ -524,6 +543,7 @@
     if(errs.length){renderErrors(errs);return;}
     var existingRows=dsRecords().slice();
     var uploadRows=(importData||[]).slice();
+    if(!(await assertImportPeriodsUnlocked(uploadRows,!!replace)))return false;
     var nextRows=replace?uploadRows:existingRows.concat(uploadRows);
     await commitImportedRows(nextRows,'import-confirmed','تم رفع البيانات الرسمية إلى Supabase بنجاح',{uploadRows:uploadRows,replace:!!replace});
   };

@@ -37,6 +37,22 @@
       rows.forEach(function(r){try{delete r.__petatoeManualSupabasePending;}catch(_e){}});
     }
   }
+
+  async function assertCommissionRowsUnlocked(rows){
+    var guard=window.PETATOECommissionPeriodGuard;
+    if(!guard||typeof guard.assertRowsUnlocked!=='function'){
+      note(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر التحقق من قفل شهر العمولات'):'Unable to verify the commission month lock');
+      return false;
+    }
+    var result=await guard.assertRowsUnlocked(rows||[]);
+    if(!result||result.ok!==true){
+      var periods=result&&result.lockedPeriods&&result.lockedPeriods.length?result.lockedPeriods.join('، '):'';
+      var msg='لا يمكن تعديل فواتير شهر عمولات مقفول';
+      note((window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime(msg):msg)+(periods?' — '+periods:''));
+      return false;
+    }
+    return true;
+  }
   function setSaveBusy(busy){
     STATE.saving=!!busy;
     var btn=id('saveBtn');
@@ -158,8 +174,10 @@ function renderResults(keepFocus){ensureEntryUi();var active=document.activeElem
   async function deleteInvoice(no){
     normalizeLegacyInvoices();
     no=invKey(no);
-    var cnt=arr().filter(function(r){return invKey(r.invoice)===no}).length;
+    var invoiceRows=arr().filter(function(r){return invKey(r.invoice)===no});
+    var cnt=invoiceRows.length;
     if(!cnt){note('الفاتورة غير موجودة');return false}
+    if(!(await assertCommissionRowsUnlocked(invoiceRows)))return false;
     var deleteInvoicePrefix=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حذف الفاتورة رقم '):'حذف الفاتورة رقم ');if(!confirm(deleteInvoicePrefix+no+' بالكامل؟\nعدد البنود: '+cnt))return false;
     var supabaseDelete=await deleteInvoiceFromSupabase(no,'manual-invoice-delete-button');
     if(!supabaseDelete || supabaseDelete.ok!==true){
@@ -188,6 +206,8 @@ function renderResults(keepFocus){ensureEntryUi();var active=document.activeElem
       if(!common.date||!common.invoice||!common.client||!items.length){note('املأ التاريخ والعميل وصنف واحد على الأقل');return false}
       var old=STATE.selectedInvoice?arr().filter(function(r){return invKey(r.invoice)===STATE.selectedInvoice}):[];
       var rows=items.map(function(it,idx){var r=Object.assign({},old[idx]||{},it,common);r.id=(old[idx]&&old[idx].id)||(Date.now()+Math.random()+idx);r.manualEntry=true;if(!n(r.totalEx)&&n(r.price))r.totalEx=(n(r.price)*(n(r.qty)||1))-Math.abs(n(r.disc));if(!n(r.totalInc))r.totalInc=n(r.totalEx)+n(r.tax);r.disc=Math.abs(n(r.disc));return r});
+      var lockRows=(STATE.mode==='edit'&&STATE.selectedInvoice)?old.concat(rows):rows;
+      if(!(await assertCommissionRowsUnlocked(lockRows)))return false;
       var duplicatePolicy=window.PETATOESalesDuplicatePolicy;
       if(!duplicatePolicy||typeof duplicatePolicy.validate!=='function'){
         note(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر تشغيل فحص تكرار الفاتورة'):'Unable to run invoice duplicate validation');

@@ -18,6 +18,14 @@
   STORE.en.operationsCustomer.search=Object.assign({},STORE.en.operationsCustomer.search||{},{masterCustomers:'Search by code / name / address / mobile / location link'});
   STORE.ar.runtimeSource=STORE.ar.runtimeSource||{};
   STORE.en.runtimeSource=STORE.en.runtimeSource||{};
+  STORE.ar.runtimeSource['تعذر التحقق من قفل شهر العمولات']='تعذر التحقق من قفل شهر العمولات';
+  STORE.en.runtimeSource['تعذر التحقق من قفل شهر العمولات']='Unable to verify the commission month lock';
+  STORE.ar.runtimeSource['لا يمكن تعديل فواتير شهر عمولات مقفول']='لا يمكن تعديل فواتير شهر عمولات مقفول';
+  STORE.en.runtimeSource['لا يمكن تعديل فواتير شهر عمولات مقفول']='Invoices in a locked commission month cannot be changed';
+  STORE.ar.runtimeSource['لا يمكن رفع فواتير تخص شهر عمولات مقفول']='لا يمكن رفع فواتير تخص شهر عمولات مقفول';
+  STORE.en.runtimeSource['لا يمكن رفع فواتير تخص شهر عمولات مقفول']='Invoices for a locked commission month cannot be imported';
+  STORE.ar.runtimeSource['لا يمكن استبدال بيانات المبيعات أثناء وجود شهور عمولات مقفلة']='لا يمكن استبدال بيانات المبيعات أثناء وجود شهور عمولات مقفلة';
+  STORE.en.runtimeSource['لا يمكن استبدال بيانات المبيعات أثناء وجود شهور عمولات مقفلة']='Sales data cannot be replaced while commission months are locked';
   STORE.ar.runtimeSource['تعذر حفظ قفل الشهر في Supabase']='تعذر حفظ قفل الشهر في Supabase';
   STORE.en.runtimeSource['تعذر حفظ قفل الشهر في Supabase']='Unable to save the month lock in Supabase';
   STORE.ar.runtimeSource['تعذر إلغاء قفل الشهر في Supabase']='تعذر إلغاء قفل الشهر في Supabase';

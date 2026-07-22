@@ -149,6 +149,10 @@
     try{
       var payload = normalizeRows(rows);
       if(!payload.length) return ok([], { inserted:0, table:table });
+      if(table==='sales_records'){
+        var lockCheck=await enforceCommissionPeriodGuard(payload,{replace:false});
+        if(!lockCheck.ok)return lockCheck;
+      }
       var res = await ready.client.from(table).insert(payload, options);
       var out = unwrap(res);
       if(out.ok) out.inserted = Array.isArray(out.data) ? out.data.length : payload.length;
@@ -166,6 +170,10 @@
     try{
       var payload = normalizeRows(rows);
       if(!payload.length) return ok([], { upserted:0, table:table });
+      if(table==='sales_records'){
+        var lockCheck=await enforceCommissionPeriodGuard(payload,{replace:false});
+        if(!lockCheck.ok)return lockCheck;
+      }
       var res = await ready.client.from(table).upsert(payload, options);
       var out = unwrap(res);
       if(out.ok) out.upserted = Array.isArray(out.data) ? out.data.length : payload.length;
@@ -176,11 +184,30 @@
     }
   }
 
+  function currentSalesRowsMatching(filters){
+    filters=filters||{};
+    var rows=[];
+    try{rows=(window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync?window.PETATOEDataSource.getRecordsSync():[])||[];}catch(_e){}
+    return rows.filter(function(row){
+      return Object.keys(filters).every(function(key){
+        var aliases={invoice_no:['invoice_no','invoice'],id:['id','supabase_id'],legacy_id:['legacy_id','id']};
+        var keys=aliases[key]||[key];
+        return keys.some(function(k){return String(row&&row[k]!=null?row[k]:'')===String(filters[key]);});
+      });
+    });
+  }
+
   async function update(table, values, filters){
     filters = filters || {};
     var ready = ensureClient();
     if(ready.error) return ready.error;
     try{
+      if(table==='sales_records'){
+        var currentRows=currentSalesRowsMatching(filters);
+        var candidateRows=currentRows.length?currentRows.map(function(row){return Object.assign({},row,values||{});}):[values||{}];
+        var lockCheck=await enforceCommissionPeriodGuard(currentRows.concat(candidateRows),{replace:false});
+        if(!lockCheck.ok)return lockCheck;
+      }
       var q = ready.client.from(table).update(values || {});
       Object.keys(filters).forEach(function(k){ q = q.eq(k, filters[k]); });
       return unwrap(await q);
@@ -194,6 +221,11 @@
     var ready = ensureClient();
     if(ready.error) return ready.error;
     try{
+      if(table==='sales_records'){
+        var currentRows=currentSalesRowsMatching(filters);
+        var lockCheck=await enforceCommissionPeriodGuard(currentRows,{replace:false});
+        if(!lockCheck.ok)return lockCheck;
+      }
       var q = ready.client.from(table).delete();
       Object.keys(filters).forEach(function(k){ q = q.eq(k, filters[k]); });
       return unwrap(await q);
@@ -299,9 +331,25 @@
       source: 'supabase'
     };
   }
+
+  async function enforceCommissionPeriodGuard(rows, options){
+    options=options||{};
+    var guard=window.PETATOECommissionPeriodGuard;
+    if(!guard)return fail('Commission period guard is unavailable');
+    try{
+      var result=options.replace&&typeof guard.assertReplaceAllowed==='function'?await guard.assertReplaceAllowed():await guard.assertRowsUnlocked(rows||[]);
+      if(!result||result.ok!==true){
+        return fail(result&&result.error?result.error:'COMMISSION_PERIOD_LOCKED',{lockedPeriods:(result&&result.lockedPeriods)||[]});
+      }
+      return ok(result);
+    }catch(e){return fail(e&&e.message?e.message:String(e));}
+  }
   async function insertSalesRecords(rows, options){
     options = options || {};
-    var payload = normalizeRows(rows).map(mapSalesRecordForSupabase).filter(function(r){
+    var rawRows=normalizeRows(rows);
+    var lockCheck=await enforceCommissionPeriodGuard(rawRows,{replace:!!options.replace});
+    if(!lockCheck.ok)return lockCheck;
+    var payload = rawRows.map(mapSalesRecordForSupabase).filter(function(r){
       return r.invoice_no || r.item_name || r.client_name || r.total_inc || r.total_ex;
     });
     if(!payload.length) return ok([], { table:'sales_records', inserted:0, source:'sales_import', warning:'NO_VALID_ROWS' });
@@ -368,6 +416,10 @@
   async function deleteSalesInvoice(invoiceNo){
     invoiceNo = asText(invoiceNo);
     if(!invoiceNo) return fail('Cannot delete sales invoice: invoice number is empty');
+    var currentRows=[];
+    try{currentRows=(window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync?window.PETATOEDataSource.getRecordsSync():[]).filter(function(r){return asText(r.invoice||r.invoice_no)===invoiceNo;});}catch(_e){}
+    var lockCheck=await enforceCommissionPeriodGuard(currentRows,{replace:false});
+    if(!lockCheck.ok)return lockCheck;
     var res = await remove('sales_records', { invoice_no: invoiceNo });
     if(res && res.ok) res.deleted = Array.isArray(res.data) ? res.data.length : null;
     return res;
@@ -377,7 +429,12 @@
     options = options || {};
     oldInvoiceNo = asText(oldInvoiceNo);
     if(!oldInvoiceNo) return fail('Cannot replace sales invoice: original invoice number is empty');
-    var payload = normalizeRows(rows).map(mapSalesRecordForSupabase).filter(function(r){
+    var rawRows=normalizeRows(rows);
+    var originalRows=[];
+    try{originalRows=(window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync?window.PETATOEDataSource.getRecordsSync():[]).filter(function(r){return asText(r.invoice||r.invoice_no)===oldInvoiceNo;});}catch(_e){}
+    var lockCheck=await enforceCommissionPeriodGuard(originalRows.concat(rawRows),{replace:false});
+    if(!lockCheck.ok)return lockCheck;
+    var payload = rawRows.map(mapSalesRecordForSupabase).filter(function(r){
       return r.invoice_no || r.item_name || r.client_name || r.total_inc || r.total_ex;
     });
     if(!payload.length) return fail('Cannot replace sales invoice: replacement rows are empty');
@@ -406,6 +463,8 @@
   async function deleteAllSalesRecords(){
     var ready = ensureClient();
     if(ready.error) return ready.error;
+    var lockCheck=await enforceCommissionPeriodGuard([],{replace:true});
+    if(!lockCheck.ok)return lockCheck;
     try{
       var res;
       if(ready.client.from('sales_records').not){
