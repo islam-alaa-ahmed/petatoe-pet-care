@@ -33,6 +33,8 @@
   var bootDone = false;
   var appointmentsRevision = 0;
   var masterDataRevision = 0;
+  var masterServerStamp = null;
+  var masterServerRevision = 0;
   var writeQueue = Promise.resolve();
   var lastWriteError = null;
 
@@ -120,33 +122,33 @@
     return true;
   }
 
-  function masterDataScore(data){
-    data = normalizeMasterData(data);
-    var breedCount = Object.keys(data.breeds || {}).reduce(function(total, key){
-      return total + (Array.isArray(data.breeds[key]) ? data.breeds[key].length : 0);
-    }, 0);
-    return ((data.services || []).length * 1000) +
-      ((data.customers || []).length * 100) +
-      ((data.vehicleAssignments || []).length * 50) +
-      ((data.vehicles || []).length * 20) +
-      ((data.drivers || []).length * 20) +
-      ((data.groomers || []).length * 20) +
-      (breedCount * 5) +
-      ((data.animalTypes || []).length) +
-      ((data.sizes || []).length);
+  function rowStamp(row){
+    return safeText(row && (row.updated_at || row.created_at));
   }
 
-  function selectBestMasterRow(rows){
+  function newestMasterRow(rows){
     rows = Array.isArray(rows) ? rows : [];
-    var best = null;
+    var newest = null;
     rows.forEach(function(row){
-      var score = masterDataScore(row && row.data);
-      var stamp = Date.parse((row && (row.updated_at || row.created_at)) || '') || 0;
-      if(!best || score > best.score || (score === best.score && stamp > best.stamp)){
-        best = { row: row, score: score, stamp: stamp };
+      if(!row || !row.data) return;
+      var stamp = Date.parse(rowStamp(row)) || 0;
+      if(!newest || stamp > newest.stamp){
+        newest = { row: row, stamp: stamp };
       }
     });
-    return best;
+    return newest && newest.row;
+  }
+
+  function canonicalMasterRow(rows){
+    rows = Array.isArray(rows) ? rows : [];
+    return rows.find(function(row){ return row && row.id === CANONICAL_MASTER_ID && row.data; }) || null;
+  }
+
+  function masterConflictError(remoteRow){
+    var error = new Error('OPERATIONS_MASTER_DATA_CONFLICT');
+    error.code = 'OPERATIONS_MASTER_DATA_CONFLICT';
+    error.remoteRow = remoteRow || null;
+    return error;
   }
 
   async function cleanupLegacyMasterRows(c){
@@ -154,27 +156,65 @@
     if(del && del.error) throw del.error;
   }
 
+  function acceptRemoteMasterRow(row){
+    if(!row || !row.data) return;
+    masterDataCache = normalizeMasterData(row.data);
+    masterServerStamp = rowStamp(row) || null;
+    masterServerRevision += 1;
+    emitChange('masterData');
+  }
+
   async function replaceMasterSupabase(data, options){
     if(!isClientReady()) return false;
     options = options || {};
     var c = client();
     var normalized = normalizeMasterData(data);
+    var expectedStamp = options.expectedStamp == null ? masterServerStamp : options.expectedStamp;
+    var nextStamp = new Date().toISOString();
 
-    if(options.protectExisting){
-      var existing = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').limit(50);
-      if(existing && existing.error) throw existing.error;
-      var bestExisting = selectBestMasterRow(existing && existing.data);
-      if(bestExisting && bestExisting.score > masterDataScore(normalized)){
-        normalized = normalizeMasterData(bestExisting.row && bestExisting.row.data);
+    var current = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').eq('id', CANONICAL_MASTER_ID).maybeSingle();
+    if(current && current.error) throw current.error;
+    var currentRow = current && current.data;
+
+    if(currentRow){
+      var currentStamp = rowStamp(currentRow);
+      if(!expectedStamp || currentStamp !== expectedStamp){
+        acceptRemoteMasterRow(currentRow);
+        throw masterConflictError(currentRow);
       }
+
+      var update = await c.from(TABLE_MASTER)
+        .update({ data: normalized, updated_at: nextStamp })
+        .eq('id', CANONICAL_MASTER_ID)
+        .eq('updated_at', expectedStamp)
+        .select('id,data,updated_at,created_at');
+      if(update && update.error) throw update.error;
+      var updatedRows = Array.isArray(update && update.data) ? update.data : [];
+      if(updatedRows.length !== 1){
+        var latest = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').eq('id', CANONICAL_MASTER_ID).maybeSingle();
+        if(latest && latest.error) throw latest.error;
+        acceptRemoteMasterRow(latest && latest.data);
+        throw masterConflictError(latest && latest.data);
+      }
+      masterServerStamp = rowStamp(updatedRows[0]) || nextStamp;
+    }else{
+      if(expectedStamp){
+        throw masterConflictError(null);
+      }
+      var insert = await c.from(TABLE_MASTER).insert([{
+        id: CANONICAL_MASTER_ID,
+        data: normalized,
+        updated_at: nextStamp
+      }]).select('id,data,updated_at,created_at');
+      if(insert && insert.error){
+        var raced = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').eq('id', CANONICAL_MASTER_ID).maybeSingle();
+        if(raced && !raced.error && raced.data) acceptRemoteMasterRow(raced.data);
+        throw insert.error;
+      }
+      var insertedRows = Array.isArray(insert && insert.data) ? insert.data : [];
+      masterServerStamp = insertedRows.length ? (rowStamp(insertedRows[0]) || nextStamp) : nextStamp;
     }
 
-    var upsert = await c.from(TABLE_MASTER).upsert([{
-      id: CANONICAL_MASTER_ID,
-      data: normalized,
-      updated_at: new Date().toISOString()
-    }], { onConflict: 'id' });
-    if(upsert && upsert.error) throw upsert.error;
     await cleanupLegacyMasterRows(c);
     return true;
   }
@@ -191,21 +231,31 @@
     var c = client();
     var res = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').limit(50);
     if(res && res.error) throw res.error;
-    var best = selectBestMasterRow(res && res.data);
-    if(!best || !best.row || !best.row.data) return null;
-
-    if(best.row.id !== CANONICAL_MASTER_ID || (Array.isArray(res.data) && res.data.length > 1)){
-      try{
-        var heal = await c.from(TABLE_MASTER).upsert([{
-          id: CANONICAL_MASTER_ID,
-          data: normalizeMasterData(best.row.data),
-          updated_at: new Date().toISOString()
-        }], { onConflict: 'id' });
-        if(heal && heal.error) throw heal.error;
-        await cleanupLegacyMasterRows(c);
-      }catch(healError){ warn(healError); }
+    var rows = Array.isArray(res && res.data) ? res.data : [];
+    var canonical = canonicalMasterRow(rows);
+    var selected = canonical || newestMasterRow(rows);
+    if(!selected || !selected.data){
+      masterServerStamp = null;
+      return null;
     }
-    return best.row.data;
+
+    if(!canonical){
+      var migratedStamp = new Date().toISOString();
+      var migrate = await c.from(TABLE_MASTER).insert([{
+        id: CANONICAL_MASTER_ID,
+        data: normalizeMasterData(selected.data),
+        updated_at: migratedStamp
+      }]).select('id,data,updated_at,created_at');
+      if(migrate && migrate.error) throw migrate.error;
+      var migratedRows = Array.isArray(migrate && migrate.data) ? migrate.data : [];
+      selected = migratedRows[0] || { id:CANONICAL_MASTER_ID, data:selected.data, updated_at:migratedStamp };
+    }
+
+    masterServerStamp = rowStamp(selected) || null;
+    if(rows.length > 1 || !canonical){
+      try{ await cleanupLegacyMasterRows(c); }catch(cleanupError){ warn(cleanupError); }
+    }
+    return selected.data;
   }
 
   function queueWrite(task){
@@ -271,8 +321,8 @@
       masterDataCache = normalizeMasterData(value);
       masterDataRevision += 1;
       var snapshotMaster = cloneJSON(masterDataCache);
-      var protectExisting = !bootDone;
-      queueWrite(function(){ return replaceMasterSupabase(snapshotMaster, { protectExisting: protectExisting }); });
+      var expectedStamp = masterServerStamp;
+      queueWrite(function(){ return replaceMasterSupabase(snapshotMaster, { expectedStamp: expectedStamp }); });
       emitChange('masterData');
       return true;
     }
