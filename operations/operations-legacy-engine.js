@@ -489,15 +489,15 @@
     var master=readMasterData(), map={};
     (master.customers||[]).forEach(function(c){c=cleanMasterCustomer(c); if(c)map[String(c.code||c.phone||c.name).toLowerCase()]=c;});
     buildCustomerProfiles().forEach(function(p){
-      var c=cleanMasterCustomer({code:p.key,name:p.client,phone:p.phone,address:p.address,googleMapUrl:p.googleMapUrl||''}); if(!c)return;
+      var c=cleanMasterCustomer({code:p.key,name:p.client,phone:p.phone,address:p.address}); if(!c)return;
       var key=String(c.code||c.phone||c.name).toLowerCase();
       map[key]=Object.assign({},c,map[key]||{});
     });
     (readMasterData().customers||[]).forEach(function(mc){
       mc=cleanMasterCustomer(mc); if(!mc)return;
       var key=mc.code||mc.phone||mc.name; if(!key)return;
-      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',googleMapUrl:mc.googleMapUrl||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
-      if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address; if(mc.googleMapUrl)map[key].googleMapUrl=mc.googleMapUrl;
+      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
+      if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address;
     });
     return Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return String(a.name||a.code).localeCompare(String(b.name||b.code),'ar')});
   }
@@ -509,10 +509,10 @@
     writeMasterData(master); return true;
   }
   function addMasterCustomer(){
-    var c={code:val('appointmentMasterCustomerCode'),name:val('appointmentMasterCustomerName'),address:val('appointmentMasterCustomerAddress'),phone:val('appointmentMasterCustomerPhone'),googleMapUrl:val('appointmentMasterCustomerGoogleMapUrl')};
+    var c={code:val('appointmentMasterCustomerCode'),name:val('appointmentMasterCustomerName'),address:val('appointmentMasterCustomerAddress'),phone:val('appointmentMasterCustomerPhone')};
     if(!c.name&&!c.phone){alert(opT('enterCustomerOrPhone'));return;}
     upsertMasterCustomer(c);
-    ['appointmentMasterCustomerCode','appointmentMasterCustomerName','appointmentMasterCustomerAddress','appointmentMasterCustomerPhone','appointmentMasterCustomerGoogleMapUrl'].forEach(function(id){setVal(id,'')});
+    ['appointmentMasterCustomerCode','appointmentMasterCustomerName','appointmentMasterCustomerAddress','appointmentMasterCustomerPhone'].forEach(function(id){setVal(id,'')});
     toast(opT('customerSaved'));
   }
   function editMasterCustomer(code){
@@ -520,8 +520,7 @@
     var name=prompt(opT('customerName'),row.name||''); if(name==null)return;
     var phone=prompt(opT('mobile'),row.phone||''); if(phone==null)return;
     var address=prompt(opT('address'),row.address||''); if(address==null)return;
-    var googleMapUrl=prompt('Google Maps URL',row.googleMapUrl||''); if(googleMapUrl==null)return;
-    upsertMasterCustomer({code:row.code,name:name,phone:phone,address:address,googleMapUrl:googleMapUrl});
+    upsertMasterCustomer({code:row.code,name:name,phone:phone,address:address});
   }
   function removeMasterCustomer(code){
     if(!confirm(opT('confirmDeleteCustomer')))return;
@@ -530,8 +529,8 @@
     writeMasterData(master);toast(opT('customerDeleted'));
   }
   function masterCustomersExportRows(){
-    return [[opT('code'),opT('name'),opT('address'),opT('mobile'),'Google Maps URL']].concat(masterCustomerRows().map(function(c){
-      return [c.code||'',c.name||'',c.address||'',c.phone||'',c.googleMapUrl||''];
+    return [[opT('code'),opT('name'),opT('address'),opT('mobile')]].concat(masterCustomerRows().map(function(c){
+      return [c.code||'',c.name||'',c.address||'',c.phone||''];
     }));
   }
   function exportMasterCustomersExcel(){
@@ -560,7 +559,6 @@
     if(['الاسم','اسم','name','customername','client','clientname'].indexOf(v)>-1)return 'name';
     if(['العنوان','عنوان','address','location'].indexOf(v)>-1)return 'address';
     if(['الجوال','جوال','الموبايل','موبايل','الهاتف','هاتف','phone','mobile','jawal','tel'].indexOf(v)>-1)return 'phone';
-    if(['رابطجوجلماب','رابطالموقع','موقعجوجلماب','googlemapsurl','googlemapurl','mapurl','locationurl'].indexOf(v)>-1)return 'googleMapUrl';
     return '';
   }
   function parseMasterCustomersSheetRows(data){
@@ -570,14 +568,13 @@
     var header=rows[0]||[], map={}, known=0;
     header.forEach(function(h,i){var k=masterCustomerHeaderKey(h); if(k){map[k]=i; known++;}});
     var start=known>=2?1:0;
-    if(known<2)map={code:0,name:1,address:2,phone:3,googleMapUrl:4};
+    if(known<2)map={code:0,name:1,address:2,phone:3};
     return rows.slice(start).map(function(r){
       return cleanMasterCustomer({
         code:r[map.code],
         name:r[map.name],
         address:r[map.address],
-        phone:r[map.phone],
-        googleMapUrl:r[map.googleMapUrl]
+        phone:r[map.phone]
       });
     }).filter(Boolean);
   }
@@ -612,15 +609,15 @@
     };
     reader.readAsArrayBuffer(file);
   }
-  function activeVehicleAssignments(){return (readMasterData().vehicleAssignments||[]).map(cleanVehicleAssignment).filter(function(v){return v&&v.vehicle&&!v.disabled})}
+  function activeVehicleAssignments(){return (readMasterData().vehicleAssignments||[]).map(cleanVehicleAssignment).filter(function(v){return v&&v.vehicle&&!v.disabled&&v.groomer&&v.driver})}
   function vehicleAssignmentMap(){var m={};activeVehicleAssignments().forEach(function(v){if(v&&v.vehicle)m[v.vehicle]=v});return m}
   function applyVehicleStaffAssignment(){
-    var v=val('appointmentVehicle');
-    if(!v)return;
-    var row=vehicleAssignmentMap()[v];
+    var vehicle=val('appointmentVehicle');
+    if(!vehicle)return;
+    var row=vehicleAssignmentMap()[vehicle];
     if(!row)return;
-    if(row.groomer)setVal('appointmentGroomer',row.groomer);
-    if(row.driver)setVal('appointmentDriver',row.driver);
+    setVal('appointmentGroomer',row.groomer||'');
+    setVal('appointmentDriver',row.driver||'');
   }
   function saveVehicleAssignment(){
     var vehicle=val('appointmentMasterVehicle'), groomer=val('appointmentMasterGroomer'), driver=val('appointmentMasterDriver');
@@ -628,9 +625,6 @@
     if(!groomer){alert(opT('selectGroomer'));return;}
     if(!driver){alert(opT('selectDriver'));return;}
     var master=readMasterData(), done=false, previousDisabled=false;
-    master.vehicles=normalizeNamedList((master.vehicles||[]).concat([vehicle]));
-    master.groomers=normalizeNamedList((master.groomers||[]).concat([groomer]));
-    master.drivers=normalizeNamedList((master.drivers||[]).concat([driver]));
     master.vehicleAssignments=(master.vehicleAssignments||[]).map(function(v){
       if(String(v.vehicle)===String(vehicle)){
         done=true; previousDisabled=!!v.disabled;
@@ -705,10 +699,8 @@
     input=(input&&input.target&&input.target.files)?input.target:input;
     var file=input&&input.files&&input.files[0]; if(!file)return;
     var finish=function(list){
-      var master=readMasterData(), merged={};
-      (master.services||[]).map(cleanMasterService).filter(Boolean).forEach(function(s){merged[String(s.code||s.name).toLowerCase()]=s;});
-      list.forEach(function(s){s=cleanMasterService(s);if(s)merged[String(s.code||s.name).toLowerCase()]=Object.assign({},merged[String(s.code||s.name).toLowerCase()]||{},s,{updatedAt:new Date().toISOString()});});
-      master.services=Object.keys(merged).map(function(k){return merged[k]});
+      var master=readMasterData(); master.services=[];
+      list.forEach(function(s){s=cleanMasterService(s);if(s)master.services.push(s);});
       writeMasterData(master); renderMasterData();
       toast(opT('servicesImported',{count:list.length})); alert(opT('servicesImportedSuccess',{count:list.length}));
     };
@@ -740,8 +732,8 @@
   function renderMasterCustomers(){
     var body=byId('appointmentMasterCustomersList'); if(!body)return;
     var q=String(val('appointmentMasterCustomerSearch')||'').toLowerCase();
-    var rows=masterCustomerRows().filter(function(c){return !q||[c.code,c.name,c.address,c.phone,c.googleMapUrl].join(' ').toLowerCase().indexOf(q)>-1});
-    var html=rows.length?rows.map(function(c){var mapLink=c.googleMapUrl?'<a href="'+esc(c.googleMapUrl)+'" target="_blank" rel="noopener noreferrer">فتح الموقع</a>':'-';return '<tr><td>'+esc(c.code||'-')+'</td><td>'+esc(c.name||'-')+'</td><td>'+esc(c.address||'-')+'</td><td>'+esc(c.phone||'-')+'</td><td>'+mapLink+'</td><td><button type="button" class="appointments-master-action" data-op-click="editMasterCustomer" data-op-arg1="'+esc(c.code)+'">'+esc(opT('edit'))+'</button><button type="button" class="appointments-master-action danger" data-op-click="removeMasterCustomer" data-op-arg1="'+esc(c.code)+'">'+esc(opT('delete'))+'</button></td></tr>'}).join(''):'<tr><td colspan="6" class="appointments-empty appointments-master-empty">'+esc(opT('noCustomerData'))+'</td></tr>';
+    var rows=masterCustomerRows().filter(function(c){return !q||[c.code,c.name,c.address,c.phone].join(' ').toLowerCase().indexOf(q)>-1});
+    var html=rows.length?rows.map(function(c){return '<tr><td>'+esc(c.code||'-')+'</td><td>'+esc(c.name||'-')+'</td><td>'+esc(c.address||'-')+'</td><td>'+esc(c.phone||'-')+'</td><td><button type="button" class="appointments-master-action" data-op-click="editMasterCustomer" data-op-arg1="'+esc(c.code)+'">'+esc(opT('edit'))+'</button><button type="button" class="appointments-master-action danger" data-op-click="removeMasterCustomer" data-op-arg1="'+esc(c.code)+'">'+esc(opT('delete'))+'</button></td></tr>'}).join(''):'<tr><td colspan="5" class="appointments-empty appointments-master-empty">'+esc(opT('noCustomerData'))+'</td></tr>';
     safeHtml(body,html,'operations master customers table');
   }
   function setupVehicleNamesForAppointments(){
@@ -782,10 +774,10 @@
     return normalizeNamedList(out);
   }
   function renderVehicleAssignments(){
-    var master=readMasterData(), cars=setupVehicleNamesForAppointments(), groomers=payrollEmployeeNamesByJob('groomer'), drivers=payrollEmployeeNamesByJob('driver');
-    var legacyAssignmentVehicles=normalizeNamedList((master.vehicleAssignments||[]).map(function(v){return v.vehicle}).filter(Boolean));
-    legacyAssignmentVehicles.forEach(function(x){if(cars.indexOf(x)===-1)cars.push(x)});
-    cars=normalizeNamedList(cars);
+    var master=readMasterData();
+    var cars=normalizeNamedList((master.vehicles||[]).concat(setupVehicleNamesForAppointments()));
+    var groomers=normalizeNamedList((master.groomers||[]).concat(payrollEmployeeNamesByJob('groomer')));
+    var drivers=normalizeNamedList((master.drivers||[]).concat(payrollEmployeeNamesByJob('driver')));
     var v=byId('appointmentMasterVehicle'), g=byId('appointmentMasterGroomer'), d=byId('appointmentMasterDriver');
     if(v){var ov=v.value;safeHtml(v,optionList(cars,opT('selectVehicle'),ov),'operations master vehicle select')}
     if(g){var og=g.value;safeHtml(g,optionList(groomers,opT('selectGroomerOption'),og),'operations master groomer select')}
@@ -795,7 +787,7 @@
     var html=assignmentRows.length?assignmentRows.map(function(r){
       var disabled=!!r.disabled, status=disabled?opT('disabled'):opT('active'), toggleLabel=disabled?opT('enable'):opT('disable');
       return '<tr class="'+(disabled?'appointments-master-disabled':'')+'"><td>'+esc(r.vehicle||'-')+'</td><td>'+esc(r.groomer||'-')+'</td><td>'+esc(r.driver||'-')+'</td><td>'+esc(status)+'</td><td><button type="button" class="appointments-master-action" data-op-click="editVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">'+esc(opT('edit'))+'</button><button type="button" class="appointments-master-action" data-op-click="toggleVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">'+toggleLabel+'</button><button type="button" class="appointments-master-action danger" data-op-click="removeVehicleAssignment" data-op-arg1="'+esc(r.vehicle)+'">'+esc(opT('deleteAssignment'))+'</button></td></tr>';
-    }).join(''):'<tr><td colspan="6" class="appointments-empty appointments-master-empty">'+esc(opT('noVehicleAssignments'))+'</td></tr>';
+    }).join(''):'<tr><td colspan="5" class="appointments-empty appointments-master-empty">'+esc(opT('noVehicleAssignments'))+'</td></tr>';
     safeHtml(body,html,'operations master vehicle assignments table');
   }
   function renderMasterData(){
@@ -1088,9 +1080,17 @@
     var h=Math.max(0,Math.min(23,Number(m[1])||0));
     return pad(h)+':00';
   }
-  function assignedVehicleNames(){
-    var names=activeVehicleAssignments().map(function(v){return v&&v.vehicle||''}).filter(Boolean);
-    return uniqueSorted(names);
+  function appointmentVehicleNames(){
+    var master=readMasterData();
+    return normalizeNamedList((master.vehicles||[]).concat(setupVehicleNamesForAppointments()));
+  }
+  function appointmentDriverNames(){
+    var master=readMasterData();
+    return normalizeNamedList((master.drivers||[]).concat(payrollEmployeeNamesByJob('driver')));
+  }
+  function appointmentGroomerNames(){
+    var master=readMasterData();
+    return normalizeNamedList((master.groomers||[]).concat(payrollEmployeeNamesByJob('groomer')));
   }
   function refreshTimeSelects(){
     var st=byId('appointmentStart'), en=byId('appointmentEnd');
@@ -1099,13 +1099,10 @@
   }
   function refreshLookupSelects(){
     var g=byId('appointmentGroomer'), d=byId('appointmentDriver'), v=byId('appointmentVehicle');
-    var master=readMasterData(), activeLinks=activeVehicleAssignments();
-    var groomers=normalizeNamedList((master.groomers||[]).concat(payrollEmployeeNamesByJob('groomer')).concat(activeLinks.map(function(x){return x.groomer}).filter(Boolean)));
-    var drivers=normalizeNamedList((master.drivers||[]).concat(payrollEmployeeNamesByJob('driver')).concat(activeLinks.map(function(x){return x.driver}).filter(Boolean)));
-    var assignedCars=normalizeNamedList((master.vehicles||[]).concat(setupVehicleNamesForAppointments()).concat(activeLinks.map(function(x){return x.vehicle}).filter(Boolean)));
+    var groomers=appointmentGroomerNames(), drivers=appointmentDriverNames(), vehicles=appointmentVehicleNames();
     if(g){var old=g.value;safeHtml(g,optionList(groomers,opT('selectGroomerOption'),old),'operations groomer select')}
     if(d){var oldd=d.value;safeHtml(d,optionList(drivers,opT('selectDriverOption'),oldd),'operations driver select')}
-    if(v){var oldv=v.value;safeHtml(v,optionList(assignedCars,opT('selectVehicle'),oldv),'operations vehicle select')}
+    if(v){var oldv=v.value;safeHtml(v,optionList(vehicles,opT('selectVehicle'),oldv),'operations vehicle select')}
     applyVehicleStaffAssignment();
     refreshTimeSelects();
   }
@@ -1131,9 +1128,8 @@
     return calcFinancials({id:val('appointmentId')||('APT-'+Date.now()),customerId:val('appointmentCustomerId'),client:val('appointmentClient'),phone:val('appointmentPhone'),animalType:firstAnimal.animalType||val('appointmentAnimalType'),breed:firstAnimal.breed||val('appointmentBreed'),size:firstAnimal.size||val('appointmentSize'),petName:firstAnimal.petName||val('appointmentPetName'),petCount:animals.reduce(function(a,x){return a+(Number(x.petCount||1)||1)},0)||Number(val('appointmentPetCount')||1),animals:animals,service:(svcCalc.services||[]).map(function(s){return s.name}).join(' + '),services:svcCalc.services,date:val('appointmentDate'),start:normalizeHourValue(val('appointmentStart')),end:normalizeHourValue(val('appointmentEnd')),groomer:val('appointmentGroomer'),driver:val('appointmentDriver'),vehicle:val('appointmentVehicle'),paymentMethod:val('appointmentPaymentMethod'),sessionPrice:svcCalc.gross,discount:svcCalc.discount,paidAmount:numVal('appointmentPaidAmount'),collectionStatus:val('appointmentCollectionStatus'),status:normalizeStatus(val('appointmentStatus')||'مجدول'),address:val('appointmentAddress'),googleMapUrl:normalizeGoogleMapUrl(val('appointmentGoogleMapUrl')),notes:val('appointmentNotes'),updatedAt:new Date().toISOString()});
   }
   function fill(r){
-    setVal('appointmentVehicle',r.vehicle);setVal('appointmentGroomer',r.groomer);setVal('appointmentDriver',r.driver);
     refreshLookupSelects();
-    setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerKey(r));setVal('appointmentClient',r.client);setVal('appointmentPhone',r.phone);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentStart',r.start);setVal('appointmentEnd',r.end);setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',r.address);setVal('appointmentGoogleMapUrl',appointmentMapUrl(r));setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
+    setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerKey(r));setVal('appointmentClient',r.client);setVal('appointmentPhone',r.phone);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentStart',r.start);setVal('appointmentEnd',r.end);setVal('appointmentGroomer',r.groomer);setVal('appointmentDriver',r.driver);setVal('appointmentVehicle',r.vehicle);setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',r.address);setVal('appointmentGoogleMapUrl',appointmentMapUrl(r));setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
     var t=byId('appointmentFormTitle');if(t)t.textContent=opT('editAppointmentTitle');
   }
   function setTab(tab){
@@ -1418,8 +1414,8 @@
     (readMasterData().customers||[]).forEach(function(mc){
       mc=cleanMasterCustomer(mc); if(!mc)return;
       var key=mc.code||mc.phone||mc.name; if(!key)return;
-      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',googleMapUrl:mc.googleMapUrl||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
-      if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address; if(mc.googleMapUrl)map[key].googleMapUrl=mc.googleMapUrl;
+      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
+      if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address;
     });
     return Object.keys(map).map(function(k){
       var c=map[k]; c.petsList=Object.keys(c.pets).map(function(pk){var pet=c.pets[pk];pet.label=pk;pet.topServices=Object.keys(pet.services).sort(function(a,b){return pet.services[b]-pet.services[a]}).slice(0,3);return pet});
