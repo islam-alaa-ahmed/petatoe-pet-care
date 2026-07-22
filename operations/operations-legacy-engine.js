@@ -829,6 +829,39 @@
   }
 
   function serviceRowsMaster(){return (readMasterData().services||[]).map(cleanMasterService).filter(Boolean).sort(masterServiceSort)}
+  function stableSnapshotId(prefix,value){
+    value=String(value||'').trim().toLowerCase();
+    if(!value)return '';
+    var hash=2166136261;
+    for(var i=0;i<value.length;i++){hash^=value.charCodeAt(i);hash=Math.imul(hash,16777619);}
+    return String(prefix||'ref')+':'+(hash>>>0).toString(36);
+  }
+  function serviceSnapshotId(service){
+    service=service&&typeof service==='object'?service:{};
+    var code=String(service.code||service.serviceCode||service.id||'').trim();
+    return code?('service:'+code.toLowerCase()):stableSnapshotId('service',service.name||service.serviceName||service.service||'');
+  }
+  function namedSnapshotId(kind,value){return stableSnapshotId(kind,String(value||'').trim());}
+  function preserveSelectSnapshot(select,id,name){
+    if(!select)return;
+    select.dataset.snapshotId=String(id||'');
+    select.dataset.snapshotName=String(name||select.value||'');
+  }
+  function setHistoricalSelectValue(select,value){
+    if(!select)return;
+    value=String(value||'').trim();
+    if(!value){select.value='';return;}
+    var exists=Array.prototype.some.call(select.options||[],function(option){return String(option.value||'')===value;});
+    if(!exists){var option=document.createElement('option');option.value=value;option.textContent=value;select.appendChild(option);}
+    select.value=value;
+  }
+  function currentSelectSnapshot(select,kind){
+    if(!select)return {id:'',name:''};
+    var name=String(select.value||'').trim();
+    var savedName=String(select.dataset.snapshotName||'').trim();
+    var savedId=String(select.dataset.snapshotId||'').trim();
+    return {id:(savedId&&savedName===name)?savedId:namedSnapshotId(kind,name),name:name};
+  }
   function serviceOptionHtml(selected){
     selected=String(selected||'');
     var rows=serviceRowsMaster(), exists=false;
@@ -893,14 +926,16 @@
   function appointmentServiceRowHtml(row){
     row=row||{}; var rowId=String(row.rowId||('srv-'+Date.now()+'-'+Math.floor(Math.random()*10000)));
     var code=String(row.code||row.serviceCode||row.key||'');
-    var name=String(row.name||row.serviceName||row.service||'');
-    var selected=code||name;
-    var unitPrice=Number(row.unitPrice||row.basePrice||row.price||0)||0;
+    var name=String(row.name||row.serviceName||row.service||row.serviceNameSnapshot||'');
+    var snapshotId=String(row.serviceId||row.serviceSnapshotId||'');
+    var selected=snapshotId&&name?name:(code||name);
+    if(!snapshotId)snapshotId=serviceSnapshotId({code:code,name:name});
+    var unitPrice=Number(row.unitPrice!=null?row.unitPrice:(row.basePrice!=null?row.basePrice:row.price))||0;
     var targetCount=Math.max(1,Number(row.animalCount||1)||1);
     var gross=Number(row.gross||row.totalBeforeDiscount||(unitPrice*targetCount))||0;
     var discount=Number(row.discount||0)||0;
     var net=Math.max(0,gross-discount);
-    return '<div class="appointment-services-grid appointment-service-row" data-service-row-id="'+esc(rowId)+'">'
+    return '<div class="appointment-services-grid appointment-service-row" data-service-row-id="'+esc(rowId)+'" data-service-snapshot-id="'+esc(snapshotId)+'" data-service-snapshot-name="'+esc(name)+'">'
       +'<select class="appointment-service-select" data-op-change="onAppointmentServiceChange" data-op-pass-self="true">'+serviceOptionHtml(selected)+'</select>'
       +'<select class="appointment-service-targets" data-op-change="recalculateAppointmentServices" title="'+esc(opT('applyServiceTo'))+'">'+serviceTargetOptionsHtml(row.animalTargets||row.targets||[])+'</select>'
       +'<input class="appointment-service-price" type="number" min="0" step="0.01" value="'+esc(unitPrice||0)+'" readonly title="'+esc(opT('unitServicePrice'))+'"/>'
@@ -944,6 +979,9 @@
       var svc=findMasterService(key)||{};
       var name=String(svc.name||((sel&&sel.options&&sel.selectedIndex>-1)?sel.options[sel.selectedIndex].text:'')||key);
       var code=String(svc.code||key);
+      var snapshotName=String(row.getAttribute('data-service-snapshot-name')||'');
+      var snapshotId=String(row.getAttribute('data-service-snapshot-id')||'');
+      var serviceId=(snapshotId&&snapshotName===name)?snapshotId:serviceSnapshotId({code:code,name:name});
       var unitPrice=Number(priceEl&&priceEl.value||svc.price||0)||0;
       var animalTargets=targetSel?[String(targetSel.value||'__all__')]:['__all__'];
       if(!animalTargets.length||!animalTargets[0])animalTargets=['__all__'];
@@ -951,7 +989,7 @@
       var gross=unitPrice*animalCount;
       var discount=Math.max(0,Number(discEl&&discEl.value||0)||0);
       if(discount>gross)discount=gross;
-      out.push({code:code,name:name,unitPrice:unitPrice,price:gross,animalTargets:animalTargets,animalCount:animalCount,discount:discount,net:Math.max(0,gross-discount)});
+      out.push({serviceId:serviceId,serviceNameSnapshot:name,code:code,name:name,unitPrice:unitPrice,price:gross,gross:gross,animalTargets:animalTargets,animalCount:animalCount,discount:discount,net:Math.max(0,gross-discount)});
     });
     return out;
   }
@@ -977,8 +1015,23 @@
   }
   function normalizeAppointmentServicesForFill(r){
     var rows=Array.isArray(r&&r.services)?r.services:[];
-    if(rows.length)return rows.map(function(x){return {code:x.code||x.serviceCode||'',name:x.name||x.serviceName||x.service||'',unitPrice:Number(x.unitPrice||x.basePrice||x.price||0)||0,price:Number(x.unitPrice||x.basePrice||x.price||0)||0,discount:Number(x.discount||0)||0,animalTargets:x.animalTargets||x.targets||[],animalCount:Number(x.animalCount||1)||1}});
-    if(r&&r.service)return [{name:r.service,price:Number(r.sessionPrice||0)||0,discount:Number(r.discount||0)||0,animalTargets:['__all__']}];
+    if(rows.length)return rows.map(function(x){
+      x=x||{};
+      var count=Math.max(1,Number(x.animalCount||1)||1);
+      var unitPrice;
+      if(x.unitPrice!=null&&x.unitPrice!=='')unitPrice=Number(x.unitPrice)||0;
+      else if(x.basePrice!=null&&x.basePrice!=='')unitPrice=Number(x.basePrice)||0;
+      else if(x.price!=null&&x.price!=='')unitPrice=(Number(x.price)||0)/count;
+      else unitPrice=0;
+      var name=x.name||x.serviceName||x.service||x.serviceNameSnapshot||'';
+      var code=x.code||x.serviceCode||'';
+      return {serviceId:x.serviceId||x.serviceSnapshotId||serviceSnapshotId({code:code,name:name}),serviceNameSnapshot:name,code:code,name:name,unitPrice:unitPrice,price:unitPrice,discount:Number(x.discount||0)||0,animalTargets:x.animalTargets||x.targets||[],animalCount:count};
+    });
+    if(r&&r.service){
+      var legacyCount=Math.max(1,Number(r.petCount||1)||1);
+      var legacyUnit=(Number(r.sessionPrice||0)||0)/legacyCount;
+      return [{serviceId:serviceSnapshotId({name:r.service}),serviceNameSnapshot:r.service,name:r.service,unitPrice:legacyUnit,price:legacyUnit,discount:Number(r.discount||0)||0,animalTargets:['__all__'],animalCount:legacyCount}];
+    }
     return [{}];
   }
   function animalTypeOptions(selected){
@@ -1125,11 +1178,22 @@
     var animals=collectAppointmentAnimals();
     syncLegacyAnimalFields(animals);
     var firstAnimal=animals[0]||{};
-    return calcFinancials({id:val('appointmentId')||('APT-'+Date.now()),customerId:val('appointmentCustomerId'),client:val('appointmentClient'),phone:val('appointmentPhone'),animalType:firstAnimal.animalType||val('appointmentAnimalType'),breed:firstAnimal.breed||val('appointmentBreed'),size:firstAnimal.size||val('appointmentSize'),petName:firstAnimal.petName||val('appointmentPetName'),petCount:animals.reduce(function(a,x){return a+(Number(x.petCount||1)||1)},0)||Number(val('appointmentPetCount')||1),animals:animals,service:(svcCalc.services||[]).map(function(s){return s.name}).join(' + '),services:svcCalc.services,date:val('appointmentDate'),start:normalizeHourValue(val('appointmentStart')),end:normalizeHourValue(val('appointmentEnd')),groomer:val('appointmentGroomer'),driver:val('appointmentDriver'),vehicle:val('appointmentVehicle'),paymentMethod:val('appointmentPaymentMethod'),sessionPrice:svcCalc.gross,discount:svcCalc.discount,paidAmount:numVal('appointmentPaidAmount'),collectionStatus:val('appointmentCollectionStatus'),status:normalizeStatus(val('appointmentStatus')||'مجدول'),address:val('appointmentAddress'),googleMapUrl:normalizeGoogleMapUrl(val('appointmentGoogleMapUrl')),notes:val('appointmentNotes'),updatedAt:new Date().toISOString()});
+    var vehicleRef=currentSelectSnapshot(byId('appointmentVehicle'),'vehicle');
+    var driverRef=currentSelectSnapshot(byId('appointmentDriver'),'driver');
+    var groomerRef=currentSelectSnapshot(byId('appointmentGroomer'),'groomer');
+    var customerId=val('appointmentCustomerId')||namedSnapshotId('customer',val('appointmentPhone')||val('appointmentClient'));
+    var customerSnapshot={id:customerId,name:val('appointmentClient'),phone:val('appointmentPhone'),address:val('appointmentAddress'),googleMapUrl:normalizeGoogleMapUrl(val('appointmentGoogleMapUrl'))};
+    return calcFinancials({id:val('appointmentId')||('APT-'+Date.now()),customerId:customerId,customerNameSnapshot:customerSnapshot.name,customerPhoneSnapshot:customerSnapshot.phone,customerAddressSnapshot:customerSnapshot.address,customerGoogleMapUrlSnapshot:customerSnapshot.googleMapUrl,customerSnapshot:customerSnapshot,client:customerSnapshot.name,phone:customerSnapshot.phone,animalType:firstAnimal.animalType||val('appointmentAnimalType'),breed:firstAnimal.breed||val('appointmentBreed'),size:firstAnimal.size||val('appointmentSize'),petName:firstAnimal.petName||val('appointmentPetName'),petCount:animals.reduce(function(a,x){return a+(Number(x.petCount||1)||1)},0)||Number(val('appointmentPetCount')||1),animals:animals,service:(svcCalc.services||[]).map(function(s){return s.name}).join(' + '),services:svcCalc.services,date:val('appointmentDate'),start:normalizeHourValue(val('appointmentStart')),end:normalizeHourValue(val('appointmentEnd')),groomerId:groomerRef.id,groomerNameSnapshot:groomerRef.name,groomer:groomerRef.name,driverId:driverRef.id,driverNameSnapshot:driverRef.name,driver:driverRef.name,vehicleId:vehicleRef.id,vehicleNameSnapshot:vehicleRef.name,vehicle:vehicleRef.name,paymentMethod:val('appointmentPaymentMethod'),sessionPrice:svcCalc.gross,discount:svcCalc.discount,paidAmount:numVal('appointmentPaidAmount'),collectionStatus:val('appointmentCollectionStatus'),status:normalizeStatus(val('appointmentStatus')||'مجدول'),address:customerSnapshot.address,googleMapUrl:customerSnapshot.googleMapUrl,notes:val('appointmentNotes'),updatedAt:new Date().toISOString()});
   }
   function fill(r){
     refreshLookupSelects();
-    setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerKey(r));setVal('appointmentClient',r.client);setVal('appointmentPhone',r.phone);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentStart',r.start);setVal('appointmentEnd',r.end);setVal('appointmentGroomer',r.groomer);setVal('appointmentDriver',r.driver);setVal('appointmentVehicle',r.vehicle);setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',r.address);setVal('appointmentGoogleMapUrl',appointmentMapUrl(r));setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
+    var customerSnapshot=r.customerSnapshot||{};
+    var customerName=r.customerNameSnapshot||customerSnapshot.name||r.client||'';
+    var customerPhone=r.customerPhoneSnapshot||customerSnapshot.phone||r.phone||'';
+    var customerAddress=r.customerAddressSnapshot||customerSnapshot.address||r.address||'';
+    var customerMap=r.customerGoogleMapUrlSnapshot||customerSnapshot.googleMapUrl||appointmentMapUrl(r);
+    var groomerName=r.groomerNameSnapshot||r.groomer||'', driverName=r.driverNameSnapshot||r.driver||'', vehicleName=r.vehicleNameSnapshot||r.vehicle||'';
+    setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerSnapshot.id||customerKey(r));setVal('appointmentClient',customerName);setVal('appointmentPhone',customerPhone);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentStart',r.start);setVal('appointmentEnd',r.end);setHistoricalSelectValue(byId('appointmentGroomer'),groomerName);setHistoricalSelectValue(byId('appointmentDriver'),driverName);setHistoricalSelectValue(byId('appointmentVehicle'),vehicleName);preserveSelectSnapshot(byId('appointmentGroomer'),r.groomerId||namedSnapshotId('groomer',groomerName),groomerName);preserveSelectSnapshot(byId('appointmentDriver'),r.driverId||namedSnapshotId('driver',driverName),driverName);preserveSelectSnapshot(byId('appointmentVehicle'),r.vehicleId||namedSnapshotId('vehicle',vehicleName),vehicleName);setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',customerAddress);setVal('appointmentGoogleMapUrl',customerMap);setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
     var t=byId('appointmentFormTitle');if(t)t.textContent=opT('editAppointmentTitle');
   }
   function setTab(tab){
@@ -1146,7 +1210,7 @@
   function clearForm(){
     ['appointmentId','appointmentCustomerId','appointmentClient','appointmentPhone','appointmentPetName','appointmentAddress','appointmentGoogleMapUrl','appointmentNotes'].forEach(function(id){setVal(id,'')});
     refreshLookupSelects();
-    setVal('appointmentAnimalType','');setVal('appointmentBreed','');setVal('appointmentSize','');setVal('appointmentService','');setVal('appointmentPetCount','1');renderAppointmentAnimalsRows([{}]);setVal('appointmentDate',today());setVal('appointmentStart','');setVal('appointmentEnd','');renderAppointmentServicesRows([{}]);setVal('appointmentGroomer','');setVal('appointmentDriver','');setVal('appointmentVehicle','');setVal('appointmentPaymentMethod','');setVal('appointmentSessionPrice','0');setVal('appointmentDiscount','0');setVal('appointmentPaidAmount','0');setVal('appointmentCollectionStatus','غير محصل');setVal('appointmentStatus','مجدول'); refreshPetSuggestions();
+    setVal('appointmentAnimalType','');setVal('appointmentBreed','');setVal('appointmentSize','');setVal('appointmentService','');setVal('appointmentPetCount','1');renderAppointmentAnimalsRows([{}]);setVal('appointmentDate',today());setVal('appointmentStart','');setVal('appointmentEnd','');renderAppointmentServicesRows([{}]);setVal('appointmentGroomer','');setVal('appointmentDriver','');setVal('appointmentVehicle','');['appointmentGroomer','appointmentDriver','appointmentVehicle'].forEach(function(id){var el=byId(id);if(el){delete el.dataset.snapshotId;delete el.dataset.snapshotName;}});setVal('appointmentPaymentMethod','');setVal('appointmentSessionPrice','0');setVal('appointmentDiscount','0');setVal('appointmentPaidAmount','0');setVal('appointmentCollectionStatus','غير محصل');setVal('appointmentStatus','مجدول'); refreshPetSuggestions();
     var t=byId('appointmentFormTitle');if(t)t.textContent=opT('addAppointmentTitle');
   }
   function saveAppointment(){
