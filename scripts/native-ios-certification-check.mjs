@@ -29,6 +29,12 @@ if (exists('capacitor.config.ts')) {
   add('web-dir', /webDir\s*:\s*['"]www['"]/.test(config), 'expected www');
 }
 
+if (exists('scripts/install-native-face-id.mjs')) {
+  const installer = read('scripts/install-native-face-id.mjs');
+  add('face-id-plist-installation', /NSFaceIDUsageDescription/.test(installer) && /Info\.plist/.test(installer), 'installer writes the required Face ID privacy key');
+  add('face-id-plist-idempotent', /faceIdKeyPattern/.test(installer) && /replace\(faceIdKeyPattern/.test(installer), 'existing key is updated without duplication');
+}
+
 if (exists('native/ios/PetatoeNativeAuthPlugin.swift')) {
   const swift = read('native/ios/PetatoeNativeAuthPlugin.swift');
   add('local-authentication', /import\s+LocalAuthentication/.test(swift), 'LocalAuthentication imported');

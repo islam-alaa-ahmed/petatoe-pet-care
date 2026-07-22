@@ -1,0 +1,7 @@
+PETATOE v10 Native Mobile Wrapper — N4.2 Face ID Plist Installation Fix
+
+- Fix the confirmed iOS CI failure caused by a missing NSFaceIDUsageDescription key
+- Move Face ID privacy-key installation into the native Face ID installer used by every workflow
+- Make Info.plist patching idempotent to prevent duplicate privacy keys
+- Extend static certification to verify the installer owns and updates the Face ID plist entry
+- Keep Face ID logic, Keychain policy, Supabase, UI, reports, payroll, permissions, and Pages unchanged
