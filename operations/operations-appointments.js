@@ -156,7 +156,8 @@
         code: r.customerId || (typeof a.customerKey === 'function' ? a.customerKey(r) : ''),
         name: r.client,
         phone: r.phone,
-        address: r.address
+        address: r.address,
+        googleMapUrl: r.googleMapUrl || ''
       });
     }
     a.write(rows);

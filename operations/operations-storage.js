@@ -371,10 +371,11 @@
         name: String(c.name || c.client || '').trim(),
         address: String(c.address || '').trim(),
         phone: String(c.phone || c.mobile || c.jawal || '').trim(),
+        googleMapUrl: String(c.googleMapUrl || c.customerMapLink || c.mapUrl || c.locationUrl || '').trim(),
         updatedAt: c.updatedAt || ''
       };
       if(!row.code) row.code = row.phone ? ('phone:' + row.phone.replace(/\s+/g,'')) : (row.name ? ('name:' + row.name.toLowerCase()) : '');
-      if(!row.code && !row.name && !row.phone && !row.address) return;
+      if(!row.code && !row.name && !row.phone && !row.address && !row.googleMapUrl) return;
       map[String(row.code || row.phone || row.name).toLowerCase()] = row;
     });
     return Object.keys(map).map(function(k){ return map[k]; }).sort(function(a,b){ return String(a.name || a.code).localeCompare(String(b.name || b.code),'ar'); });

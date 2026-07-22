@@ -909,6 +909,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <input id="appointmentMasterCustomerName" placeholder="الاسم" data-i18n-placeholder="operationsCustomer.fields.name"/>
 <input id="appointmentMasterCustomerAddress" placeholder="العنوان" data-i18n-placeholder="operationsCustomer.fields.address"/>
 <input id="appointmentMasterCustomerPhone" placeholder="الجوال" data-i18n-placeholder="operationsCustomer.fields.mobile"/>
+<input id="appointmentMasterCustomerGoogleMapUrl" placeholder="رابط Google Maps" type="url"/>
 <button class="btn btn-primary" data-op-click="addMasterCustomer" type="button" data-i18n="operationsCustomer.actions.addSave">إضافة / حفظ</button>
 </div>
 <div class="appointments-master-customer-tools">
@@ -916,8 +917,8 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <button class="btn btn-ghost" data-op-click="exportMasterCustomersExcel" type="button" data-i18n="operationsCustomer.actions.exportCustomersExcel">📤 تصدير البيانات Excel</button>
 <input accept=".xlsx,.xls,.csv" data-op-change="handleMasterCustomersExcelImport" data-op-pass-self="true" hidden="" id="appointmentMasterCustomersExcelInput" type="file"/>
 </div>
-<div class="appointments-master-search"><input data-op-input="render" id="appointmentMasterCustomerSearch" placeholder="بحث بالكود / الاسم / العنوان / الجوال" data-i18n-placeholder="operationsCustomer.search.masterCustomers"/></div>
-<div class="appointments-master-table-wrap"><table class="appointments-master-table"><thead><tr><th data-i18n="operationsCustomer.fields.code">الكود</th><th data-i18n="operationsCustomer.fields.name">الاسم</th><th data-i18n="operationsCustomer.fields.address">العنوان</th><th data-i18n="operationsCustomer.fields.mobile">الجوال</th><th data-i18n="operationsCustomer.fields.actions">الإجراءات</th></tr></thead><tbody id="appointmentMasterCustomersList"></tbody></table></div>
+<div class="appointments-master-search"><input data-op-input="render" id="appointmentMasterCustomerSearch" placeholder="بحث بالكود / الاسم / العنوان / الجوال / رابط الموقع" data-i18n-placeholder="operationsCustomer.search.masterCustomers"/></div>
+<div class="appointments-master-table-wrap"><table class="appointments-master-table"><thead><tr><th data-i18n="operationsCustomer.fields.code">الكود</th><th data-i18n="operationsCustomer.fields.name">الاسم</th><th data-i18n="operationsCustomer.fields.address">العنوان</th><th data-i18n="operationsCustomer.fields.mobile">الجوال</th><th>رابط الموقع</th><th data-i18n="operationsCustomer.fields.actions">الإجراءات</th></tr></thead><tbody id="appointmentMasterCustomersList"></tbody></table></div>
 </div>
 <div class="appointments-master-box" data-master-panel="vehicleStaff">
 <h4>🚐 بيانات السيارات والموظفين</h4>
