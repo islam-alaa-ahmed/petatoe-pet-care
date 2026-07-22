@@ -315,6 +315,15 @@
   function hasOfficialDataLayer(){
     return !!(window.PETATOEDataLayer && typeof window.PETATOEDataLayer.insertSalesRecords === 'function');
   }
+  function setImportProgress(stage, details){
+    try{
+      window.__PETATOE_IMPORT_PROGRESS__={
+        stage:String(stage||''),
+        time:new Date().toISOString(),
+        details:details||null
+      };
+    }catch(_e){}
+  }
   async function commitImportedRows(nextRows, eventName, message, options){
     options = options || {};
     const uploadRows = Array.isArray(options.uploadRows) ? options.uploadRows.slice() : ((importData || []).slice());
@@ -323,17 +332,21 @@
 
     if(hasOfficialDataLayer()){
       try{
+        setImportProgress('preparing',{rows:uploadRows.length,replace:!!options.replace});
         if(typeof toast==='function') toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('جاري رفع البيانات الرسمية إلى Supabase...'):'جاري رفع البيانات الرسمية إلى Supabase...');
+        setImportProgress('validating',{rows:uploadRows.length,replace:!!options.replace});
         supabaseResult = await window.PETATOEDataLayer.insertSalesRecords(uploadRows, {
           mode: importMode,
           replace: !!options.replace,
-          source: eventName || 'excel-import'
+          source: eventName || 'excel-import',
+          onProgress:function(stage){ setImportProgress(stage,{rows:uploadRows.length,replace:!!options.replace}); }
         });
         if(!supabaseResult || !supabaseResult.ok){
           const msg=(supabaseResult&&supabaseResult.error&&supabaseResult.error.message)?supabaseResult.error.message:'فشل حفظ البيانات في Supabase';
           console.error('[PETATOE Import] Supabase save failed', supabaseResult);
           renderErrors([makeError(1,1,'فشل الرفع إلى Supabase',msg)]);
           if(typeof toast==='function') toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل الرفع إلى Supabase — راجع Console'):'فشل الرفع إلى Supabase — راجع Console');
+          setImportProgress('failed',{rows:uploadRows.length,replace:!!options.replace,error:msg});
           window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase',rows:uploadRows.length,result:supabaseResult};
           return false;
         }
@@ -351,6 +364,7 @@
         console.error('[PETATOE Import] Supabase save crashed', e);
         renderErrors([makeError(1,1,'حدث خطأ أثناء الرفع إلى Supabase',e&&e.message?e.message:String(e))]);
         if(typeof toast==='function') toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حدث خطأ أثناء الرفع إلى Supabase'):'حدث خطأ أثناء الرفع إلى Supabase');
+        setImportProgress('failed',{rows:uploadRows.length,replace:!!options.replace,error:String(e&&e.message?e.message:e)});
         window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase',rows:uploadRows.length,error:String(e&&e.message?e.message:e)};
         return false;
       }
@@ -377,6 +391,7 @@
     lastImportErrors=[];
     const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
     const box=document.getElementById('importErrors'); if(box){box.style.display='none'; clearNode(box);}
+    setImportProgress(ok?'completed':'failed',{rows:uploadRows.length,replace:!!options.replace,transactional:!!(supabaseResult&&supabaseResult.transactional)});
     window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:ok,target:'supabase',rows:uploadRows.length,result:supabaseResult};
     appendImportAudit('import',{time:new Date().toISOString(),ok:!!ok,target:'supabase',rows:uploadRows.length,mode:importMode,replace:!!options.replace,source:eventName||'sales-import'});
     if(typeof toast==='function')toast(message || (ok?'تم رفع البيانات الرسمية إلى Supabase بنجاح':'تمت محاولة حفظ البيانات'));

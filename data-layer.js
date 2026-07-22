@@ -355,17 +355,42 @@
     if(!payload.length) return ok([], { table:'sales_records', inserted:0, source:'sales_import', warning:'NO_VALID_ROWS' });
     var replaceResult = null;
     if(options.replace){
-      replaceResult = await deleteAllSalesRecords();
-      if(!replaceResult || !replaceResult.ok){
-        return {
-          ok:false,
-          data:null,
-          error: replaceResult && replaceResult.error ? replaceResult.error : 'Failed to clear existing sales_records before replace import',
+      var ready = ensureClient();
+      if(ready.error) return ready.error;
+      if(typeof ready.client.rpc !== 'function') return fail('Supabase RPC is not available for transactional sales replacement');
+      try{
+        if(typeof options.onProgress === 'function') options.onProgress('replacing');
+        var rpcResponse = await ready.client.rpc('petatoe_replace_all_sales_records', { p_rows:payload });
+        var rpcResult = unwrap(rpcResponse);
+        if(!rpcResult.ok){
+          return {
+            ok:false,
+            data:null,
+            error:rpcResult.error,
+            table:'sales_records',
+            inserted:0,
+            replaceRequested:true,
+            transactional:true
+          };
+        }
+        replaceResult = rpcResult.data || {};
+        var insertedCount = Number(replaceResult.inserted_rows == null ? payload.length : replaceResult.inserted_rows);
+        if(insertedCount !== payload.length){
+          return fail('Transactional sales replacement row-count mismatch', { expected:payload.length, inserted:insertedCount, result:replaceResult });
+        }
+        if(typeof options.onProgress === 'function') options.onProgress('finalizing');
+        return ok({ rows:insertedCount }, {
           table:'sales_records',
-          inserted:0,
+          inserted:insertedCount,
+          deleted:Number(replaceResult.deleted_rows || 0),
+          batches:1,
+          source:'sales_import',
           replaceRequested:true,
-          replaceDeleteResult: replaceResult
-        };
+          transactional:true,
+          replaceResult:replaceResult
+        });
+      }catch(error){
+        return fail(error && error.message ? error.message : String(error), error);
       }
     }
     var chunkSize = options.chunkSize || 500;
