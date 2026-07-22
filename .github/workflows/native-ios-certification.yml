@@ -1,0 +1,59 @@
+name: Native iOS Certification
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'native/**'
+      - 'scripts/build-native-web.mjs'
+      - 'scripts/install-native-face-id.mjs'
+      - 'scripts/install-native-update.mjs'
+      - 'scripts/native-ios-certification-check.mjs'
+      - 'capacitor.config.ts'
+      - 'native-release.json'
+      - 'package.json'
+      - '.github/workflows/native-ios-certification.yml'
+
+jobs:
+  static-certification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run native:certify
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-ios-certification-results
+          path: NATIVE_IOS_CERTIFICATION_RESULTS.json
+
+  ios-simulator-build:
+    runs-on: macos-15
+    needs: static-certification
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+      - run: npm ci --no-audit --no-fund
+      - run: npm run native:build:web
+      - run: npx cap add ios
+      - run: npm run native:install:faceid
+      - run: npm run native:install:update
+      - run: npx cap sync ios
+      - name: Validate Face ID usage description
+        run: /usr/libexec/PlistBuddy -c "Print :NSFaceIDUsageDescription" ios/App/App/Info.plist
+      - name: Build unsigned iOS Simulator app
+        run: |
+          xcodebuild \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build

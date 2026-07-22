@@ -9,7 +9,9 @@
     "native:install:update": "node scripts/install-native-update.mjs",
     "native:sync": "npm run native:build:web && npm run native:install:faceid && npm run native:install:update && npx cap sync ios",
     "native:open:ios": "npm run native:sync && npx cap open ios",
-    "native:doctor": "npx cap doctor"
+    "native:doctor": "npx cap doctor",
+    "native:certify": "node scripts/native-ios-certification-check.mjs",
+    "native:ci:ios": "npm run native:certify && npm run native:build:web && npx cap add ios && npm run native:install:faceid && npm run native:install:update && npx cap sync ios"
   },
   "dependencies": {
     "@capacitor/core": "^7.0.0",

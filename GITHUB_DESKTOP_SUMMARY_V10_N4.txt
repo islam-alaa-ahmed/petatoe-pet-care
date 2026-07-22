@@ -1,0 +1,9 @@
+PETATOE v10 Native Mobile Wrapper — N4 Native iPhone Certification Gate
+
+- Add a repeatable static certification gate for the Capacitor iOS architecture
+- Validate native Face ID, device-only Keychain and biometric-set invalidation invariants
+- Validate safe native update metadata and approved update hosts
+- Add a macOS GitHub Actions job that generates and compiles the unsigned iOS Simulator project
+- Publish machine-readable certification results as a workflow artifact
+- Add the mandatory physical-iPhone release blocker test plan
+- Keep UI, Supabase schema and business workflows unchanged

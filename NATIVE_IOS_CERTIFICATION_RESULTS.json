@@ -1,0 +1,135 @@
+{
+  "certification": "STATIC_GATE_PASSED",
+  "generatedAt": "2026-07-21T23:58:17.395Z",
+  "checks": 25,
+  "passed": 25,
+  "failed": 0,
+  "limitation": "Xcode compilation, code signing, Face ID, Keychain persistence and real-device lifecycle tests require macOS/Xcode and an iPhone.",
+  "details": [
+    {
+      "name": "required:capacitor.config.ts",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:native/ios/PetatoeNativeAuthPlugin.swift",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:native/ios/PetatoeViewController.swift",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:native/runtime/native-biometric-auth.js",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:native/ios/PetatoeNativeUpdatePlugin.swift",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:native/runtime/native-update-coordinator.js",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:native-release.json",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:scripts/build-native-web.mjs",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:scripts/install-native-face-id.mjs",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:scripts/install-native-update.mjs",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "required:scripts/setup-native-ios.sh",
+      "ok": true,
+      "detail": "present"
+    },
+    {
+      "name": "bundle-id",
+      "ok": true,
+      "detail": "expected com.petatoe.enterprise"
+    },
+    {
+      "name": "web-dir",
+      "ok": true,
+      "detail": "expected www"
+    },
+    {
+      "name": "local-authentication",
+      "ok": true,
+      "detail": "LocalAuthentication imported"
+    },
+    {
+      "name": "keychain-device-only",
+      "ok": true,
+      "detail": "device-only Keychain access"
+    },
+    {
+      "name": "biometry-current-set",
+      "ok": true,
+      "detail": "invalidates when biometrics change"
+    },
+    {
+      "name": "no-password-storage",
+      "ok": true,
+      "detail": "no application password fields are persisted"
+    },
+    {
+      "name": "native-version-source",
+      "ok": true,
+      "detail": "reads signed bundle metadata"
+    },
+    {
+      "name": "approved-update-hosts",
+      "ok": true,
+      "detail": "approved hosts enforced"
+    },
+    {
+      "name": "no-runtime-eval",
+      "ok": true,
+      "detail": "no downloaded code execution"
+    },
+    {
+      "name": "release-json-valid",
+      "ok": true,
+      "detail": "valid JSON"
+    },
+    {
+      "name": "release-version-present",
+      "ok": true,
+      "detail": "version metadata present"
+    },
+    {
+      "name": "capacitor-core",
+      "ok": true,
+      "detail": "dependency present"
+    },
+    {
+      "name": "capacitor-ios",
+      "ok": true,
+      "detail": "dependency present"
+    },
+    {
+      "name": "certification-script",
+      "ok": true,
+      "detail": "npm command present"
+    }
+  ]
+}
