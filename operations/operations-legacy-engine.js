@@ -241,6 +241,18 @@
     window.open(status.url,'_blank','noopener,noreferrer');
     return true;
   };
+  function normalizeCustomerPhone(v){return String(v||'').replace(/[^0-9+]/g,'').replace(/^00/,'+').trim()}
+  function normalizeCustomerName(v){return String(v||'').trim().toLowerCase().replace(/\s+/g,' ')}
+  function customerIdentityTokens(c){
+    c=c&&typeof c==='object'?c:{};
+    var out=[];
+    function add(v){v=String(v||'').trim().toLowerCase();if(v&&out.indexOf(v)===-1)out.push(v)}
+    add(c.code||c.customerId||c.key||'');
+    var phone=normalizeCustomerPhone(c.phone||c.mobile||c.jawal||'');if(phone)add('phone:'+phone);
+    var name=normalizeCustomerName(c.name||c.client||'');if(name)add('name:'+name);
+    (Array.isArray(c.aliases)?c.aliases:[]).forEach(add);
+    return out;
+  }
   function cleanMasterCustomer(c){
     c=c&&typeof c==='object'?c:{};
     var code=String(c.code||c.customerId||c.key||'').trim();
@@ -248,9 +260,10 @@
     var phone=String(c.phone||c.mobile||c.jawal||'').trim();
     var address=String(c.address||'').trim();
     var googleMapUrl=normalizeGoogleMapUrl(c.googleMapUrl||c.customerMapLink||c.mapUrl||c.locationUrl||'');
-    if(!code){code=phone?('phone:'+phone.replace(/\s+/g,'')):(name?('name:'+name.toLowerCase()):'');}
+    if(!code){code=phone?('phone:'+normalizeCustomerPhone(phone)):(name?('name:'+normalizeCustomerName(name)):'');}
     if(!code&&!name&&!phone&&!address&&!googleMapUrl)return null;
-    return {code:code,name:name,address:address,phone:phone,googleMapUrl:googleMapUrl,updatedAt:c.updatedAt||''};
+    var aliases=customerIdentityTokens(c);customerIdentityTokens({code:code,name:name,phone:phone}).forEach(function(x){if(aliases.indexOf(x)===-1)aliases.push(x)});
+    return {code:code,name:name,address:address,phone:phone,googleMapUrl:googleMapUrl,updatedAt:c.updatedAt||'',fieldUpdatedAt:Object.assign({},c.fieldUpdatedAt||{}),aliases:aliases};
   }
   function normalizeMasterCustomers(list){
     var map={};
@@ -497,15 +510,31 @@
       mc=cleanMasterCustomer(mc); if(!mc)return;
       var key=mc.code||mc.phone||mc.name; if(!key)return;
       if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
-      if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address;
+      if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address; if(mc.googleMapUrl)map[key].googleMapUrl=mc.googleMapUrl;
     });
     return Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return String(a.name||a.code).localeCompare(String(b.name||b.code),'ar')});
   }
-  function upsertMasterCustomer(c){
+  function customerRowsMatch(a,b){
+    var aa=customerIdentityTokens(a),bb=customerIdentityTokens(b);
+    return aa.some(function(x){return bb.indexOf(x)>-1});
+  }
+  function upsertMasterCustomer(c,options){
     c=cleanMasterCustomer(c); if(!c)return false;
-    var master=readMasterData(), key=String(c.code||c.phone||c.name).toLowerCase(), done=false;
-    master.customers=(master.customers||[]).map(function(x){var cx=cleanMasterCustomer(x); if(cx&&String(cx.code||cx.phone||cx.name).toLowerCase()===key){done=true;return Object.assign({},cx,c,{updatedAt:new Date().toISOString()});} return cx||x;}).filter(Boolean);
-    if(!done)master.customers.push(Object.assign({},c,{updatedAt:new Date().toISOString()}));
+    options=options&&typeof options==='object'?options:{};
+    var master=readMasterData(), now=new Date().toISOString(), found=-1;
+    (master.customers||[]).some(function(x,i){var cx=cleanMasterCustomer(x);if(cx&&customerRowsMatch(cx,c)){found=i;return true}return false});
+    var current=found>-1?cleanMasterCustomer(master.customers[found]):null;
+    var changed=Array.isArray(options.changedFields)?options.changedFields.slice():['name','phone','address','googleMapUrl'];
+    var merged=current?Object.assign({},current):Object.assign({},c,{fieldUpdatedAt:{}});
+    merged.fieldUpdatedAt=Object.assign({},merged.fieldUpdatedAt||{});
+    ['name','phone','address','googleMapUrl'].forEach(function(field){
+      var incoming=String(c[field]||'').trim();
+      if(changed.indexOf(field)>-1&&incoming){merged[field]=incoming;merged.fieldUpdatedAt[field]=now}
+    });
+    if(c.code&&(!merged.code||changed.indexOf('code')>-1))merged.code=c.code;
+    merged.aliases=customerIdentityTokens(merged);customerIdentityTokens(current||{}).concat(customerIdentityTokens(c)).forEach(function(x){if(merged.aliases.indexOf(x)===-1)merged.aliases.push(x)});
+    merged.updatedAt=now;
+    if(found>-1)master.customers[found]=merged;else master.customers.push(merged);
     writeMasterData(master); return true;
   }
   function addMasterCustomer(){
@@ -1182,7 +1211,7 @@
     var driverRef=currentSelectSnapshot(byId('appointmentDriver'),'driver');
     var groomerRef=currentSelectSnapshot(byId('appointmentGroomer'),'groomer');
     var customerId=val('appointmentCustomerId')||namedSnapshotId('customer',val('appointmentPhone')||val('appointmentClient'));
-    var customerSnapshot={id:customerId,name:val('appointmentClient'),phone:val('appointmentPhone'),address:val('appointmentAddress'),googleMapUrl:normalizeGoogleMapUrl(val('appointmentGoogleMapUrl'))};
+    var customerSnapshot={id:customerId,name:val('appointmentClient'),phone:val('appointmentPhone'),address:val('appointmentAddress'),googleMapUrl:normalizeGoogleMapUrl(val('appointmentGoogleMapUrl')),capturedAt:new Date().toISOString()};
     return calcFinancials({id:val('appointmentId')||('APT-'+Date.now()),customerId:customerId,customerNameSnapshot:customerSnapshot.name,customerPhoneSnapshot:customerSnapshot.phone,customerAddressSnapshot:customerSnapshot.address,customerGoogleMapUrlSnapshot:customerSnapshot.googleMapUrl,customerSnapshot:customerSnapshot,client:customerSnapshot.name,phone:customerSnapshot.phone,animalType:firstAnimal.animalType||val('appointmentAnimalType'),breed:firstAnimal.breed||val('appointmentBreed'),size:firstAnimal.size||val('appointmentSize'),petName:firstAnimal.petName||val('appointmentPetName'),petCount:animals.reduce(function(a,x){return a+(Number(x.petCount||1)||1)},0)||Number(val('appointmentPetCount')||1),animals:animals,service:(svcCalc.services||[]).map(function(s){return s.name}).join(' + '),services:svcCalc.services,date:val('appointmentDate'),start:normalizeHourValue(val('appointmentStart')),end:normalizeHourValue(val('appointmentEnd')),groomerId:groomerRef.id,groomerNameSnapshot:groomerRef.name,groomer:groomerRef.name,driverId:driverRef.id,driverNameSnapshot:driverRef.name,driver:driverRef.name,vehicleId:vehicleRef.id,vehicleNameSnapshot:vehicleRef.name,vehicle:vehicleRef.name,paymentMethod:val('appointmentPaymentMethod'),sessionPrice:svcCalc.gross,discount:svcCalc.discount,paidAmount:numVal('appointmentPaidAmount'),collectionStatus:val('appointmentCollectionStatus'),status:normalizeStatus(val('appointmentStatus')||'مجدول'),address:customerSnapshot.address,googleMapUrl:customerSnapshot.googleMapUrl,notes:val('appointmentNotes'),updatedAt:new Date().toISOString()});
   }
   function fill(r){
@@ -1233,16 +1262,22 @@
     var conflicts=findConflicts(r,rows);
     if(conflicts.length){alert(opT('appointmentConflictHeader')+'\n'+conflicts.map(function(c){return opT('appointmentConflictLine',{reason:c.reason,client:(c.row.client||opT('unspecifiedCustomer')),start:(c.row.start||'?'),end:(c.row.end||'?')})}).join('\n'));return}
 
-    var idx=rows.findIndex(function(x){return String(x.id)===String(r.id)});
+    var idx=rows.findIndex(function(x){return String(x.id)===String(r.id)}), oldRow=null, customerChanged=['name','phone','address','googleMapUrl'];
     if(idx>-1){
-      var oldRow=Object.assign({},rows[idx]);
+      oldRow=Object.assign({},rows[idx]);
+      customerChanged=[];
+      if(String(oldRow.client||'').trim()!==String(r.client||'').trim())customerChanged.push('name');
+      if(normalizeCustomerPhone(oldRow.phone)!==normalizeCustomerPhone(r.phone))customerChanged.push('phone');
+      if(String(oldRow.address||'').trim()!==String(r.address||'').trim())customerChanged.push('address');
+      if(appointmentMapUrl(oldRow)!==appointmentMapUrl(r))customerChanged.push('googleMapUrl');
+      if(!customerChanged.length&&oldRow.customerSnapshot&&oldRow.customerSnapshot.capturedAt)r.customerSnapshot.capturedAt=oldRow.customerSnapshot.capturedAt;
       rows[idx]=Object.assign({},rows[idx],r);
       pushExecutionLog(rows[idx],'edit',{oldStatus:normalizeStatus(oldRow.status),status:normalizeStatus(rows[idx].status),changes:summarizeAppointmentChanges(oldRow,rows[idx])});
     }else{
       rows.unshift(r);
       pushExecutionLog(rows[0],'create',{status:normalizeStatus(rows[0].status),notes:opT('appointmentCreatedFromManagement')});
     }
-    upsertMasterCustomer({code:r.customerId||customerKey(r),name:r.client,phone:r.phone,address:r.address,googleMapUrl:appointmentMapUrl(r)});
+    upsertMasterCustomer({code:r.customerId||customerKey(r),name:r.client,phone:r.phone,address:r.address,googleMapUrl:appointmentMapUrl(r)},{changedFields:customerChanged});
     write(rows);clearForm();setTab('log');toast(opT('appointmentSaved'));
   }
   function toast(msg){try{if(typeof window.toast==='function')window.toast(msg);else if(typeof window.toastSafe==='function')window.toastSafe(msg)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-legacy-engine.js",e);}}
@@ -1462,8 +1497,18 @@
     read().map(function(r){return calcFinancials(r)}).forEach(function(r){
       var key=customerKey(r); if(!key)return;
       if(!map[key])map[key]={key:key,client:r.client||'عميل غير محدد',phone:r.phone||'',address:r.address||'',googleMapUrl:appointmentMapUrl(r),notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
-      var c=map[key];
-      if(r.client)c.client=r.client; if(r.phone)c.phone=r.phone; if(r.address)c.address=r.address; if(appointmentMapUrl(r))c.googleMapUrl=appointmentMapUrl(r);
+      var c=map[key], visitStamp=String(r.date||'')+'T'+String(r.start||'00:00');
+      if(!c.latestVisitStamp||visitStamp>=c.latestVisitStamp){
+        c.latestVisitStamp=visitStamp;
+        if(r.client)c.client=r.customerNameSnapshot||(r.customerSnapshot&&r.customerSnapshot.name)||r.client;
+        if(r.phone)c.phone=r.customerPhoneSnapshot||(r.customerSnapshot&&r.customerSnapshot.phone)||r.phone;
+        if(r.address)c.address=r.customerAddressSnapshot||(r.customerSnapshot&&r.customerSnapshot.address)||r.address;
+        if(appointmentMapUrl(r))c.googleMapUrl=r.customerGoogleMapUrlSnapshot||(r.customerSnapshot&&r.customerSnapshot.googleMapUrl)||appointmentMapUrl(r);
+        c.lastService=(r.services||[]).map(function(x){return x.serviceNameSnapshot||x.name||''}).filter(Boolean).join(' + ')||r.service||'';
+        c.lastVehicle=r.vehicleNameSnapshot||r.vehicle||'';
+        c.lastDriver=r.driverNameSnapshot||r.driver||'';
+        c.lastGroomer=r.groomerNameSnapshot||r.groomer||'';
+      }
       c.appointments.push(r); c.total+=Number(r.totalAmount||0); c.paid+=Number(r.paidAmount||0); c.remaining+=Number(r.remainingAmount||0);
       if(r.date){ if(!c.firstVisit||r.date<c.firstVisit)c.firstVisit=r.date; if(!c.lastVisit||r.date>c.lastVisit)c.lastVisit=r.date; }
       var appointmentAnimals=Array.isArray(r.animals)&&r.animals.length?r.animals:[{animalType:r.animalType||'',breed:r.breed||'',size:r.size||'',petName:r.petName||'',petCount:r.petCount||1}];

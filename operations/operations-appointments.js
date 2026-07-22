@@ -144,8 +144,18 @@
     }
 
     var idx = rows.findIndex(function(x){ return String(x.id) === String(r.id); });
+    var oldRow = null;
+    var customerChangedFields = ['name','phone','address','googleMapUrl'];
     if(idx > -1){
-      var oldRow = Object.assign({}, rows[idx]);
+      oldRow = Object.assign({}, rows[idx]);
+      customerChangedFields = [];
+      if(String(oldRow.client || '').trim() !== String(r.client || '').trim()) customerChangedFields.push('name');
+      if(String(oldRow.phone || '').replace(/[^0-9+]/g,'') !== String(r.phone || '').replace(/[^0-9+]/g,'')) customerChangedFields.push('phone');
+      if(String(oldRow.address || '').trim() !== String(r.address || '').trim()) customerChangedFields.push('address');
+      var oldMap = typeof a.appointmentMapUrl === 'function' ? a.appointmentMapUrl(oldRow) : (oldRow.googleMapUrl || '');
+      var newMap = typeof a.appointmentMapUrl === 'function' ? a.appointmentMapUrl(r) : (r.googleMapUrl || '');
+      if(String(oldMap || '') !== String(newMap || '')) customerChangedFields.push('googleMapUrl');
+      if(!customerChangedFields.length && oldRow.customerSnapshot && oldRow.customerSnapshot.capturedAt && r.customerSnapshot) r.customerSnapshot.capturedAt = oldRow.customerSnapshot.capturedAt;
       rows[idx] = Object.assign({}, rows[idx], r);
       a.pushExecutionLog(rows[idx], 'edit', {
         oldStatus: a.normalizeStatus(oldRow.status),
@@ -166,7 +176,7 @@
         phone: r.phone,
         address: r.address,
         googleMapUrl: r.googleMapUrl || ''
-      });
+      }, { changedFields: customerChangedFields });
     }
     a.write(rows);
     a.clearForm();

@@ -578,7 +578,9 @@
         address: String(c.address || '').trim(),
         phone: String(c.phone || c.mobile || c.jawal || '').trim(),
         googleMapUrl: String(c.googleMapUrl || c.customerMapLink || c.mapUrl || c.locationUrl || '').trim(),
-        updatedAt: c.updatedAt || ''
+        updatedAt: c.updatedAt || '',
+        fieldUpdatedAt: Object.assign({}, c.fieldUpdatedAt || {}),
+        aliases: Array.isArray(c.aliases) ? c.aliases.map(function(x){ return String(x || '').trim().toLowerCase(); }).filter(Boolean) : []
       };
       if(!row.code) row.code = row.phone ? ('phone:' + row.phone.replace(/\s+/g,'')) : (row.name ? ('name:' + row.name.toLowerCase()) : '');
       if(!row.code && !row.name && !row.phone && !row.address && !row.googleMapUrl) return;
