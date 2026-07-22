@@ -1,7 +1,7 @@
 (function(){
   'use strict';
 
-  if(window.PETATOEOperationsReportDataset && window.PETATOEOperationsReportDataset.version === 'OPS-RPT-4A') return;
+  if(window.PETATOEOperationsReportDataset && window.PETATOEOperationsReportDataset.version === 'OPS-RPT-4B') return;
 
   var COMPLETED = ['تمت الجلسة','تم التحصيل','مغلق','مؤكد'];
   var CLOSED = ['مغلق','مؤكد','غير مكتملة'];
@@ -98,6 +98,58 @@
     return (Array.isArray(rows)?rows:[]).map(function(r){return normalizeRow(r,options);});
   }
 
+  function financialRole(item){
+    item=item||{};
+    var state=item.statusClass||{};
+    if(state.cancelled) return 'cancelled';
+    if(state.postponed) return 'postponed';
+    if(state.completed) return 'executed';
+    return 'booked';
+  }
+
+  function aggregateFinancials(rows, options){
+    return build(rows,options).reduce(function(a,item){
+      var f=item.financials||{}, total=num(f.totalAmount), paid=num(f.paidAmount), remaining=Math.max(0,num(f.remainingAmount));
+      var role=financialRole(item);
+      a.appointmentCount+=1;
+      if(role!=='cancelled'){
+        a.bookedCount+=1;
+        a.bookedValue+=total;
+      }
+      if(role==='executed'){
+        a.executedCount+=1;
+        a.executedRevenue+=total;
+        a.collectedRevenue+=paid;
+        a.outstandingBalance+=remaining;
+        if(item.paymentClass==='paid')a.fullyPaidCount+=1;
+        else if(item.paymentClass==='partial')a.partiallyPaidCount+=1;
+        else a.unpaidCount+=1;
+      }else if(role==='booked'||role==='postponed'){
+        a.advanceCollected+=paid;
+      }
+      if(role==='cancelled'){
+        a.cancelledCount+=1;
+        a.cancelledValue+=total;
+        a.cancelledPaidAmount+=paid;
+      }
+      if(role==='postponed'){
+        a.postponedCount+=1;
+        a.postponedValue+=total;
+      }
+      return a;
+    },{
+      appointmentCount:0,bookedCount:0,executedCount:0,cancelledCount:0,postponedCount:0,
+      fullyPaidCount:0,partiallyPaidCount:0,unpaidCount:0,
+      bookedValue:0,executedRevenue:0,collectedRevenue:0,advanceCollected:0,
+      outstandingBalance:0,cancelledValue:0,cancelledPaidAmount:0,postponedValue:0
+    });
+  }
+
+  function filterByFinancialRole(rows, role, options){
+    var wanted=Array.isArray(role)?role:[role];
+    return build(rows,options).filter(function(item){return wanted.indexOf(financialRole(item))>-1}).map(function(item){return item.source;});
+  }
+
   function groupRows(rows, entity, emptyLabel, options){
     var map={};
     build(rows,options).forEach(function(item){
@@ -114,7 +166,7 @@
   }
 
   window.PETATOEOperationsReportDataset={
-    version:'OPS-RPT-4A',
+    version:'OPS-RPT-4B',
     completedStatuses:COMPLETED.slice(),
     closedStatuses:CLOSED.slice(),
     normalizePhone:normalizePhone,
@@ -123,6 +175,9 @@
     entityIdentity:entityIdentity,
     normalizeRow:normalizeRow,
     build:build,
+    financialRole:financialRole,
+    aggregateFinancials:aggregateFinancials,
+    filterByFinancialRole:filterByFinancialRole,
     groupRows:groupRows
   };
 })();

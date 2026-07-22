@@ -18,6 +18,7 @@
 (function(){
   'use strict';
   function opT(key,params){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsSource.'+key,params,{fallback:key}):key;}
+  function opReportT(key,params){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operations.reports.'+key,params,{fallback:key}):key;}
   function opCustomerT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsCustomer.'+key,params,{fallback:fallback||key}):(fallback||key);}
   function opStatusT(status){var map={'مجدول':'statusScheduled','في الطريق':'statusOnTheWay','وصل العميل':'statusArrived','بدأت الجلسة':'statusStarted','تمت الجلسة':'statusCompleted','تم التحصيل':'statusCollected','مغلق':'statusClosed','مؤكد':'statusConfirmed','غير مكتملة':'statusIncomplete','مؤجل':'statusPostponed','ملغي':'statusCancelled','تم':'statusCompleted'};return opT(map[String(status||'')]||'statusUnknown');}
   if(window.PETATOEAppointments) return;
@@ -1913,36 +1914,44 @@
   function renderReports(){
     var el=byId('appointmentsReports');if(!el)return;
     var rows=read().map(function(r){return calcFinancials(r)});
-    var todayRows=rows.filter(function(r){return sameDate(r,today())});
-    var now=new Date(), monthRows=rows.filter(function(r){return inRange(r,monthStart(now),monthEnd(now))});
-    var byStatus={};rows.forEach(function(r){var st=normalizeStatus(r.status);byStatus[st]=(byStatus[st]||0)+1});
-    var uniqueClients=new Set(rows.map(function(r){return String(r.client||'').trim()}).filter(Boolean)).size;
-    var allFin=sumFinancial(rows), todayFin=sumFinancial(todayRows), monthFin=sumFinancial(monthRows);
-    var avg=allFin.count?allFin.total/allFin.count:0;
+    var dataset=window.PETATOEOperationsReportDataset;
+    var datasetOptions={calcFinancials:calcFinancials,normalizeStatus:normalizeStatus};
+    var normalized=dataset&&typeof dataset.build==='function'?dataset.build(rows,datasetOptions):[];
+    var financials=dataset&&typeof dataset.aggregateFinancials==='function'?dataset.aggregateFinancials(rows,datasetOptions):null;
+    var executedRows=dataset&&typeof dataset.filterByFinancialRole==='function'?dataset.filterByFinancialRole(rows,'executed',datasetOptions):rows.filter(function(r){return ['تمت الجلسة','تم التحصيل','مغلق','مؤكد'].indexOf(normalizeStatus(r.status))>-1});
+    var todayExecuted=executedRows.filter(function(r){return sameDate(r,today())});
+    var now=new Date(), monthExecuted=executedRows.filter(function(r){return inRange(r,monthStart(now),monthEnd(now))});
+    var customerKeys={};
+    if(normalized.length){normalized.forEach(function(item){if(item.customerKey)customerKeys[item.customerKey]=true;});}
+    else rows.forEach(function(r){var k=String(r.customerId||r.phone||r.client||'').trim();if(k)customerKeys[k]=true;});
+    var uniqueClients=Object.keys(customerKeys).length;
+    var executedFin=sumFinancial(executedRows), todayFin=sumFinancial(todayExecuted), monthFin=sumFinancial(monthExecuted);
+    var bookedValue=financials?financials.bookedValue:sumFinancial(rows.filter(function(r){return normalizeStatus(r.status)!=='ملغي'})).total;
+    var cancelledValue=financials?financials.cancelledValue:sumFinancial(rows.filter(function(r){return normalizeStatus(r.status)==='ملغي'})).total;
+    var collectedRevenue=financials?financials.collectedRevenue:executedFin.paid;
+    var outstandingBalance=financials?financials.outstandingBalance:executedFin.remaining;
+    var avg=executedFin.count?executedFin.total/executedFin.count:0;
     var cards='<div class="appointments-report-summary-grid appointments-finance-summary-grid">'
-      +'<div class="appointments-report-card"><span>إجمالي المواعيد</span><b>'+rows.length+'</b></div>'
-      +'<div class="appointments-report-card"><span>عدد العملاء</span><b>'+uniqueClients+'</b></div>'
-      +'<div class="appointments-report-card"><span>إيراد اليوم</span><b>'+money(todayFin.total)+'</b></div>'
-      +'<div class="appointments-report-card"><span>إيراد الشهر</span><b>'+money(monthFin.total)+'</b></div>'
-      +'<div class="appointments-report-card"><span>إجمالي الإيرادات</span><b>'+money(allFin.total)+'</b></div>'
-      +'<div class="appointments-report-card"><span>إجمالي المحصل</span><b>'+money(allFin.paid)+'</b></div>'
-      +'<div class="appointments-report-card"><span>إجمالي المتبقي</span><b>'+money(allFin.remaining)+'</b></div>'
-      +'<div class="appointments-report-card"><span>متوسط قيمة الجلسة</span><b>'+money(avg)+'</b></div>'
+      +'<div class="appointments-report-card"><span>'+esc(opReportT('totalAppointments'))+'</span><b>'+rows.length+'</b></div>'
+      +'<div class="appointments-report-card"><span>'+esc(opReportT('customersCount'))+'</span><b>'+uniqueClients+'</b></div>'
+      +'<div class="appointments-report-card"><span>'+esc(opReportT('bookedValue'))+'</span><b>'+money(bookedValue)+'</b></div>'
+      +'<div class="appointments-report-card"><span>'+esc(opReportT('executedRevenue'))+'</span><b>'+money(executedFin.total)+'</b><small>'+money(todayFin.total)+' / '+money(monthFin.total)+'</small></div>'
+      +'<div class="appointments-report-card"><span>'+esc(opReportT('collectedRevenue'))+'</span><b>'+money(collectedRevenue)+'</b></div>'
+      +'<div class="appointments-report-card"><span>'+esc(opReportT('outstandingBalance'))+'</span><b>'+money(outstandingBalance)+'</b></div>'
+      +'<div class="appointments-report-card"><span>'+esc(opReportT('cancelledValue'))+'</span><b>'+money(cancelledValue)+'</b></div>'
+      +'<div class="appointments-report-card"><span>'+esc(opReportT('averageExecutedSession'))+'</span><b>'+money(avg)+'</b></div>'
       +'</div>';
-    var clientRows=reportRowsByField(rows,function(r){var n=String(r.client||'').trim();var p=String(r.phone||'').trim();return n?(p?n+' - '+p:n):''},'عميل غير محدد').filter(function(r){return r.count>1}).slice(0,20);
-    var notCollected=rows.filter(function(r){return r.collectionStatus==='غير محصل'||r.remainingAmount>0});
-    var fullyCollected=rows.filter(function(r){return r.collectionStatus==='محصل بالكامل'||(r.totalAmount>0&&r.remainingAmount<=0)});
     safeHtml(el,cards+'<div class="appointments-report-tables appointments-appointment-reports-fullwidth">'
-      +financeTable('التقرير المالي للمواعيد - كل البيانات','💰',rows,'الإجمالي المالي',{reportKey:'finance_all',localFinanceFilters:true,paginate:true})
-      +financeTable('المبالغ غير المحصلة / المتبقية','⏳',rows.filter(function(r){return r.collectionStatus==='غير محصل'||r.remainingAmount>0}),'إجمالي المتبقي',{reportKey:'finance_remaining',localFinanceFilters:true,paginate:true})
-      +financeTable('المواعيد المحصلة بالكامل','✅',rows.filter(function(r){return r.collectionStatus==='محصل بالكامل'||(r.totalAmount>0&&r.remainingAmount<=0)}),'إجمالي المحصل بالكامل',{reportKey:'finance_paid',localFinanceFilters:true,paginate:true})
+      +financeTable(opReportT('executedFinancialReport'),'💰',executedRows,opReportT('executedFinancialTotal'),{reportKey:'finance_all',localFinanceFilters:true,paginate:true})
+      +financeTable(opReportT('outstandingExecuted'),'⏳',executedRows.filter(function(r){var item=dataset&&dataset.normalizeRow?dataset.normalizeRow(r,datasetOptions):null;return item?item.paymentClass!=='paid':Number(r.remainingAmount||0)>0}),opReportT('executedOutstandingTotal'),{reportKey:'finance_remaining',localFinanceFilters:true,paginate:true})
+      +financeTable(opReportT('fullyCollectedExecuted'),'✅',executedRows.filter(function(r){var item=dataset&&dataset.normalizeRow?dataset.normalizeRow(r,datasetOptions):null;return item?item.paymentClass==='paid':(Number(r.totalAmount||0)>0&&Number(r.remainingAmount||0)<=0)}),opReportT('executedCollectedTotal'),{reportKey:'finance_paid',localFinanceFilters:true,paginate:true})
       +localReportTable('by_status','تقرير المواعيد حسب الحالة','📌',rows,function(r){return normalizeStatus(r.status)},'مجدول','إجمالي الحالات')
       +localReportTable('by_groomer','تقرير المواعيد حسب الجرومر','✂️',rows,'groomer','بدون جرومر','إجمالي الجرومرز')
       +localReportTable('by_driver','تقرير المواعيد حسب السائق','🚗',rows,'driver','بدون سائق','إجمالي السائقين')
       +localReportTable('by_vehicle','تقرير المواعيد حسب السيارة','🚐',rows,'vehicle','بدون سيارة','إجمالي السيارات')
       +localReportTable('by_payment','تقرير المواعيد حسب طريقة الدفع','💳',rows,'paymentMethod','غير محدد','إجمالي طرق الدفع')
-      +localReportTable('by_collection','تقرير المواعيد حسب حالة التحصيل','🧾',rows,'collectionStatus','غير محدد','إجمالي حالات التحصيل')
-      +localReportTable('repeat_clients','العملاء الأكثر تكرارًا','👥',rows,null,'عميل غير محدد','إجمالي المواعيد المتكررة',0,function(filteredRows){return reportRowsByField(filteredRows,function(r){var n=String(r.client||'').trim();var p=String(r.phone||'').trim();return n?(p?n+' - '+p:n):''},'عميل غير محدد').filter(function(r){return r.count>1})})
+      +localReportTable('by_collection','تقرير المواعيد حسب حالة التحصيل','🧾',rows,function(r){var item=dataset&&dataset.normalizeRow?dataset.normalizeRow(r,datasetOptions):null;return item?(item.paymentClass==='paid'?'محصل بالكامل':item.paymentClass==='partial'?'محصل جزئي':'غير محصل'):(r.collectionStatus||'غير محدد')},'غير محدد','إجمالي حالات التحصيل')
+      +localReportTable('repeat_clients','العملاء الأكثر تكرارًا','👥',rows,null,'عميل غير محدد','إجمالي المواعيد المتكررة',0,function(filteredRows){var map={};(dataset&&dataset.build?dataset.build(filteredRows,datasetOptions):[]).forEach(function(item){var key=item.customerKey||'unknown';if(!map[key])map[key]={name:item.entities.customer.name||'عميل غير محدد',count:0};map[key].count+=1;});return Object.keys(map).map(function(k){return map[k]}).filter(function(r){return r.count>1}).sort(function(a,b){return b.count-a.count});})
       +'</div>','operations finance reports full render');
   }
 
@@ -2641,8 +2650,8 @@
     var dataset=window.PETATOEOperationsReportDataset;
     var normalized=dataset&&typeof dataset.build==='function'?dataset.build(rows,{calcFinancials:calcFinancials,normalizeStatus:normalizeStatus}):null;
     var completed=normalized?normalized.filter(function(x){return x.statusClass.completed}).length:countAnyStatus(rows,['تمت الجلسة','تم التحصيل','مغلق','مؤكد']);
-    var collected=normalized?normalized.reduce(function(a,x){return a+Number(x.financials.paidAmount||0)},0):rows.reduce(function(a,r){return a+Number(calcFinancials(r).paidAmount||0)},0);
-    var remaining=normalized?normalized.reduce(function(a,x){return a+Number(x.financials.remainingAmount||0)},0):rows.reduce(function(a,r){return a+Number(calcFinancials(r).remainingAmount||0)},0);
+    var collected=normalized?normalized.filter(function(x){return x.statusClass.completed}).reduce(function(a,x){return a+Number(x.financials.paidAmount||0)},0):rows.filter(function(r){return ['تمت الجلسة','تم التحصيل','مغلق','مؤكد'].indexOf(normalizeStatus(r.status))>-1}).reduce(function(a,r){return a+Number(calcFinancials(r).paidAmount||0)},0);
+    var remaining=normalized?normalized.filter(function(x){return x.statusClass.completed}).reduce(function(a,x){return a+Number(x.financials.remainingAmount||0)},0):rows.filter(function(r){return ['تمت الجلسة','تم التحصيل','مغلق','مؤكد'].indexOf(normalizeStatus(r.status))>-1}).reduce(function(a,r){return a+Number(calcFinancials(r).remainingAmount||0)},0);
     var arrival=[], session=[], lateStart=0, lateEnd=0;
     rows.forEach(function(r){
       var go=logDate(r,'في الطريق'), arrived=logDate(r,'وصل العميل'), started=logDate(r,'بدأت الجلسة'), ended=logDate(r,'تمت الجلسة')||logDate(r,'تم التحصيل');
@@ -2667,8 +2676,11 @@
     if(!canVehicleOpsAction('reports')){if(summary)summary.textContent='';if(wrap)safeHtml(wrap,vehicleOpsNoAccessHtml(opT('vehicleOperationsReports')),'vehicle reports permission denied');return;}
     renderVehicleReportOptions();
     var rows=vehicleExecutionReportRows(), m=executionMetrics(rows);
-    var collectedFull=rows.filter(function(r){return String(r.collectionStatus||'')==='محصل بالكامل'||normalizeStatus(r.status)==='تم التحصيل'}).length;
-    var uncollected=rows.filter(function(r){return Number(calcFinancials(r).paidAmount||0)<=0}).length;
+    var reportDataset=window.PETATOEOperationsReportDataset, reportOptions={calcFinancials:calcFinancials,normalizeStatus:normalizeStatus};
+    var reportNormalized=reportDataset&&reportDataset.build?reportDataset.build(rows,reportOptions):[];
+    var executedNormalized=reportNormalized.filter(function(x){return x.statusClass.completed});
+    var collectedFull=executedNormalized.filter(function(x){return x.paymentClass==='paid'}).length;
+    var uncollected=executedNormalized.filter(function(x){return x.paymentClass==='unpaid'}).length;
     if(summary){if(window.PETATOESafeRender&&window.PETATOESafeRender.clear){window.PETATOESafeRender.clear(summary)}else{summary.textContent=''}
       +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('totalOperationsSessions'))+'</span><b>'+m.count+'</b><small>'+esc(opT('byPeriodAndVehicle'))+'</small></div>'
       +'<div class="appointments-dispatch-summary-card"><span>'+esc(opT('completed'))+'</span><b>'+m.completed+'</b><small>'+esc(opT('fullyCollected'))+': '+collectedFull+'</small></div>'
@@ -2726,8 +2738,8 @@
     var cancelled=normalized?normalized.filter(function(x){return x.statusClass.cancelled}).length:countAnyStatus(rows,['ملغي']);
     var reopened=rows.filter(function(r){return historyHas(r,['reopen','إعادة فتح الجلسة'])}).length;
     var backMoves=rows.reduce(function(a,r){return a+historyCountByAction(r,['rollback','تراجع حالة الطلب'])},0);
-    var collectedRows=normalized?normalized.filter(function(x){return x.paymentClass==='paid'||x.paymentClass==='partial'}):rows.filter(function(r){return Number(calcFinancials(r).paidAmount||0)>0});
-    var unpaid=normalized?normalized.filter(function(x){return x.paymentClass==='unpaid'}):rows.filter(function(r){return Number(calcFinancials(r).paidAmount||0)<=0});
+    var collectedRows=normalized?normalized.filter(function(x){return x.statusClass.completed&&(x.paymentClass==='paid'||x.paymentClass==='partial')}):rows.filter(function(r){return ['تمت الجلسة','تم التحصيل','مغلق','مؤكد'].indexOf(normalizeStatus(r.status))>-1&&Number(calcFinancials(r).paidAmount||0)>0});
+    var unpaid=normalized?normalized.filter(function(x){return x.statusClass.completed&&x.paymentClass==='unpaid'}):rows.filter(function(r){return ['تمت الجلسة','تم التحصيل','مغلق','مؤكد'].indexOf(normalizeStatus(r.status))>-1&&Number(calcFinancials(r).paidAmount||0)<=0});
     return {total:total,metrics:m,completed:completed,closed:closed,confirmed:confirmed,incomplete:incomplete,cancelled:cancelled,reopened:reopened,backMoves:backMoves,collectedRows:collectedRows.length,unpaid:unpaid.length,collected:m.collected,remaining:m.remaining,late:m.lateStart+m.lateEnd};
   }
   function operationKpiPerformanceRows(rows,field,emptyLabel){
