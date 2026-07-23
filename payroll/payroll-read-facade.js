@@ -35,6 +35,7 @@
   function normalizeEmployee(emp){
     emp = emp && typeof emp === 'object' ? clone(emp,{}) : {};
     emp.id = emp.id || emp.employee_id || emp.employeeId || emp.supabase_id || '';
+    emp.commissionEmployeeId = emp.commissionEmployeeId || emp.commission_employee_id || '';
     emp.code = emp.code || emp.employee_code || '';
     emp.job = emp.job || emp.job_title || '';
     emp.status = emp.status || 'active';

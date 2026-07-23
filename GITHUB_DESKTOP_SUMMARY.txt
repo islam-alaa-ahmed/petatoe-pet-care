@@ -1,11 +1,11 @@
-PETATOE Commissions — Snapshot Certification Phase 2B.4
+PETATOE Payroll — Stable ID Commission Integration Phase 3A
 
-- Add SHA-256 certification hashes for newly locked commission snapshots
-- Upgrade new snapshots to commission-snapshot-v4
-- Add deterministic financial-material canonicalization before hashing
-- Add snapshotId, revisionNumber, previousSnapshotHash, and revisionHistory
-- Record createdAt and createdBy audit metadata for every new revision
-- Add financial audit metadata for invoice lines, eligibility totals, eligible net sales, and commission totals
-- Verify the certified snapshot hash immediately after persistence
-- Add verifySnapshot, compareSnapshots, reproduceSnapshot, and hashSnapshot APIs
-- Preserve commission eligibility, identity resolution, invoice-line traceability, payroll formulas, Operations, and UI layout
+- Replace modern payroll commission name matching with employeeId/personId matching
+- Accept payroll employee, linked user, Supabase, and explicit commission identity keys
+- Prevent employees with identical names from sharing commission results
+- Keep employee commission linkage stable after display-name changes
+- Reject unresolved name-only commission rows in identity-aware snapshots
+- Preserve legacy name fallback only for pre-identity snapshots
+- Include matched employee and vehicle IDs in payroll commission details
+- Normalize commissionEmployeeId in the Payroll Supabase read facade
+- Preserve payroll formulas, approval workflow, commission tiers, Supabase schema, Operations, and UI layout

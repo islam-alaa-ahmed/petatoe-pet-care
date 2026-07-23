@@ -50,21 +50,26 @@
 
   function employeeAliases(emp){
     emp = emp || {};
-    var raw = [
-      emp.commissionEmployeeName,
-      emp.name,
-      emp.fullName,
-      emp.employeeName,
-      emp.username,
-      emp.userKey,
-      emp.code
-    ];
+    var raw = [emp.commissionEmployeeName,emp.name,emp.fullName,emp.employeeName,emp.username,emp.userKey,emp.code];
     var out = [];
-    raw.forEach(function(item){
-      item = norm(item);
-      if(item && out.indexOf(item) === -1) out.push(item);
-    });
+    raw.forEach(function(item){ item = norm(item); if(item && out.indexOf(item) === -1) out.push(item); });
     return out;
+  }
+
+  function employeeIdentityKeys(emp){
+    emp = emp || {};
+    var raw = [emp.commissionEmployeeId,emp.employeeId,emp.employee_id,emp.id,emp.supabase_id,emp.userId,emp.user_id];
+    var out = [];
+    raw.forEach(function(item){ item = str(item).trim(); if(item && out.indexOf(item) === -1) out.push(item); });
+    return out;
+  }
+
+  function rowIdentity(row){ row=row||{}; return str(row.employeeId||row.employee_id||row.personId||row.person_id).trim(); }
+  function snapshotHasIdentity(snap){
+    if(!snap || typeof snap !== 'object') return false;
+    if(str(snap.identitySchemaVersion).indexOf('commission-identity-') === 0) return true;
+    if(/^commission-snapshot-v(?:2|3|4|[5-9]|[1-9][0-9]+)/.test(str(snap.schemaVersion))) return true;
+    return ['groomer','driver','sales'].some(function(type){ return asArray(snap[type]).some(function(row){ return !!rowIdentity(row); }); });
   }
 
   function commissionDetail(emp, period){
@@ -72,34 +77,30 @@
     var snaps = R && typeof R.commissionSnapshots === 'function' ? R.commissionSnapshots() : {};
     var snap = asObject(snaps)[period];
     var mappedName = str(emp && emp.commissionEmployeeName).trim();
-    var aliases = mappedName ? [norm(mappedName)] : employeeAliases(emp);
+    var ids = employeeIdentityKeys(emp);
     var matches = [];
+    var identitySnapshot = snapshotHasIdentity(snap);
 
-    if(!snap){
-      return { total: 0, matches: matches, source: 'no_snapshot', mappedName: mappedName, mode: mappedName ? 'manual' : 'legacy' };
-    }
+    if(!snap) return { total:0, matches:matches, source:'no_snapshot', mappedName:mappedName, mode:'identity', employeeIds:ids };
 
     ['groomer','driver','sales'].forEach(function(type){
       asArray(snap[type]).forEach(function(row){
-        var person = norm(commissionPersonName(row));
-        if(person && aliases.indexOf(person) > -1){
-          matches.push({
-            type: type,
-            person: commissionPersonName(row),
-            car: row && row.car || '',
-            commission: num(row && row.commission)
-          });
-        }
+        var id = rowIdentity(row);
+        if(id && ids.indexOf(id) > -1) matches.push({type:type,person:commissionPersonName(row),employeeId:id,car:row&&row.car||'',vehicleId:row&&row.vehicleId||'',commission:num(row&&row.commission)});
       });
     });
 
-    return {
-      total: matches.reduce(function(total, item){ return total + num(item.commission); }, 0),
-      matches: matches,
-      source: matches.length ? 'matched' : 'not_matched',
-      mappedName: mappedName,
-      mode: mappedName ? 'manual' : 'legacy'
-    };
+    if(!matches.length && !identitySnapshot){
+      var aliases = mappedName ? [norm(mappedName)] : employeeAliases(emp);
+      ['groomer','driver','sales'].forEach(function(type){
+        asArray(snap[type]).forEach(function(row){
+          var person = norm(commissionPersonName(row));
+          if(!rowIdentity(row) && person && aliases.indexOf(person) > -1) matches.push({type:type,person:commissionPersonName(row),employeeId:'',car:row&&row.car||'',vehicleId:row&&row.vehicleId||'',commission:num(row&&row.commission),legacyNameMatch:true});
+        });
+      });
+    }
+
+    return {total:matches.reduce(function(total,item){return total+num(item.commission);},0),matches:matches,source:matches.length?'matched':'not_matched',mappedName:mappedName,mode:matches.some(function(item){return item.legacyNameMatch;})?'legacy':'identity',employeeIds:ids,identitySnapshot:identitySnapshot};
   }
 
   function employeeForSlip(slip){

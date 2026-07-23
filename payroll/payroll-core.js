@@ -419,6 +419,19 @@
     var raw=[emp.name,emp.userKey,emp.username,emp.email,emp.phone,linked&&linked.fullName,linked&&linked.name,linked&&linked.displayName,linked&&linked.username,linked&&linked.email,linked&&linked.phone];
     var out=[];raw.forEach(function(x){x=norm(x);if(x&&out.indexOf(x)===-1)out.push(x)});return out;
   }
+  function commissionIdentityKeys(emp){
+    emp=emp||{};
+    var linked=emp.userId?getUserById(emp.userId):null;
+    var raw=[emp.commissionEmployeeId,emp.employeeId,emp.employee_id,emp.id,emp.supabase_id,emp.userId,emp.user_id,linked&&linked.supabase_id,linked&&linked.user_id,linked&&linked.id];
+    var out=[];raw.forEach(function(x){x=String(x==null?'':x).trim();if(x&&out.indexOf(x)===-1)out.push(x)});return out;
+  }
+  function commissionRowIdentity(row){row=row||{};return String(row.employeeId||row.employee_id||row.personId||row.person_id||'').trim()}
+  function commissionSnapshotHasIdentity(snap){
+    if(!snap||typeof snap!=='object')return false;
+    if(String(snap.identitySchemaVersion||'').indexOf('commission-identity-')===0)return true;
+    if(/^commission-snapshot-v(?:2|3|4|[5-9]|[1-9][0-9]+)/.test(String(snap.schemaVersion||'')))return true;
+    return ['groomer','driver','sales'].some(function(k){return (snap[k]||[]).some(function(r){return !!commissionRowIdentity(r)})});
+  }
   function commissionPersonName(row){row=row||{};return row.person||row.name||row.employee||row.employeeName||row.salesPerson||row.driver||row.groomer||''}
   function payrollEmployeeNames(){
     var out=[];
@@ -442,17 +455,26 @@
   }
   function commissionFor(emp,period){return commissionDetail(emp,period).total}
   function commissionDetail(emp,period){
-    var snap=readCommissionSnapshots()[period];var mappedName=String((emp||{}).commissionEmployeeName||'').trim();var aliases=mappedName?[norm(mappedName)]:commissionAliases(emp);var matches=[];
-    if(!snap)return {total:0,matches:matches,source:'no_snapshot',mappedName:mappedName,mode:mappedName?'manual':'legacy'};
-    ['groomer','driver','sales'].forEach(function(k){(snap[k]||[]).forEach(function(r){var person=norm(commissionPersonName(r));if(person&&aliases.indexOf(person)>-1)matches.push({type:k,person:commissionPersonName(r),car:r.car||'',commission:num(r.commission)})})});
-    return {total:matches.reduce(function(sum,x){return sum+num(x.commission)},0),matches:matches,source:matches.length?'matched':'not_matched',mappedName:mappedName,mode:mappedName?'manual':'legacy'};
+    emp=emp||{};
+    var snap=readCommissionSnapshots()[period],matches=[],ids=commissionIdentityKeys(emp),identitySnapshot=commissionSnapshotHasIdentity(snap);
+    var mappedName=String(emp.commissionEmployeeName||'').trim();
+    if(!snap)return {total:0,matches:matches,source:'no_snapshot',mappedName:mappedName,mode:'identity',employeeIds:ids};
+    ['groomer','driver','sales'].forEach(function(k){(snap[k]||[]).forEach(function(r){
+      var rowId=commissionRowIdentity(r);
+      if(rowId&&ids.indexOf(rowId)>-1)matches.push({type:k,person:commissionPersonName(r),employeeId:rowId,car:r.car||'',vehicleId:r.vehicleId||'',commission:num(r.commission)});
+    })});
+    if(!matches.length&&!identitySnapshot){
+      var aliases=mappedName?[norm(mappedName)]:commissionAliases(emp);
+      ['groomer','driver','sales'].forEach(function(k){(snap[k]||[]).forEach(function(r){var person=norm(commissionPersonName(r));if(!commissionRowIdentity(r)&&person&&aliases.indexOf(person)>-1)matches.push({type:k,person:commissionPersonName(r),employeeId:'',car:r.car||'',vehicleId:r.vehicleId||'',commission:num(r.commission),legacyNameMatch:true})})});
+    }
+    return {total:matches.reduce(function(sum,x){return sum+num(x.commission)},0),matches:matches,source:matches.length?'matched':'not_matched',mappedName:mappedName,mode:matches.some(function(x){return x.legacyNameMatch})?'legacy':'identity',employeeIds:ids,identitySnapshot:identitySnapshot};
   }
   function commissionStatusNote(detail){
     detail=detail||{source:'no_snapshot',matches:[]};
     if(detail.source==='no_snapshot')return payrollT('commission.noSnapshot','لم يتم العثور على شهر مقفول في قسم العمولات لنفس فترة كشف الراتب.');
-    if(detail.source==='not_matched')return detail.mode==='manual'?payrollT('commission.noManualMatch','لا توجد عمولة مطابقة لاسم العمولات المرتبط: {name}',{name:detail.mappedName||payrollT('payments.unspecified','غير محدد')}):payrollT('commission.noLegacyMatch','لا توجد عمولة مطابقة لهذا الموظف داخل Snapshot العمولات لنفس الشهر.');
+    if(detail.source==='not_matched')return payrollT('commission.noLegacyMatch','لا توجد عمولة مطابقة لهذا الموظف داخل Snapshot العمولات لنفس الشهر.');
     var names=(detail.matches||[]).map(function(x){return x.person}).filter(Boolean).filter(function(v,i,a){return a.indexOf(v)===i});
-    return payrollT(detail.mode==='manual'?'commission.manualLinked':'commission.legacyLinked',detail.mode==='manual'?'مرتبطة يدويًا بقسم العمولات':'مرتبطة بقسم العمولات بالمنطق القديم')+' — '+(names.length?payrollT('commission.matchedName','الاسم المطابق: {names}',{names:names.join(' / ')}):payrollT('commission.matched','تمت المطابقة'));
+    return payrollT(detail.mode==='legacy'?'commission.legacyLinked':'commission.manualLinked',detail.mode==='legacy'?'مرتبطة بقسم العمولات بالمنطق القديم':'مرتبطة يدويًا بقسم العمولات')+' — '+(names.length?payrollT('commission.matchedName','الاسم المطابق: {names}',{names:names.join(' / ')}):payrollT('commission.matched','تمت المطابقة'));
   }
   function sumLines(lines){return (Array.isArray(lines)?lines:[]).reduce(function(s,x){return s+num(x.value)},0)}
   function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var incentives=num(slip.incentives);var allowances=num(slip.housing)+num(slip.transport);var extraTotal=allowances+commission+incentives+additions;var gross=num(slip.base)+extraTotal;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,incentives:incentives,allowances:allowances,extraTotal:extraTotal,gross:gross,net:net}}
