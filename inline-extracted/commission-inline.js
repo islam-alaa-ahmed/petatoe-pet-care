@@ -189,13 +189,57 @@ function comDateISO(v){
 }
 function rowCar(r){return String((r&& (r.van ?? r.car ?? r.vehicle ?? r['السيارة'])) || 'غير محدد').trim() || 'غير محدد'}
 function rowNetSales(r){
-  const ex=comParseNum(r&&r.totalEx);
-  if(ex) return ex;
-  const inc=comParseNum(r&&r.totalInc), tax=comParseNum(r&&r.tax);
-  if(inc) return inc-tax;
-  const price=comParseNum(r&&r.price), qty=comParseNum(r&&r.qty), disc=comParseNum(r&&r.disc);
-  return Math.max(0,(price*qty)-disc);
+  // Preserve explicit zero and negative values. Falling back merely because totalEx is 0
+  // made the same invoice line produce different results depending on which amount field was filled.
+  if(r&&r.totalEx!==undefined&&r.totalEx!==null&&String(r.totalEx).trim()!=='') return comParseNum(r.totalEx);
+  if(r&&r.totalInc!==undefined&&r.totalInc!==null&&String(r.totalInc).trim()!=='') return comParseNum(r.totalInc)-comParseNum(r.tax);
+  const price=comParseNum(r&&r.price), qty=comParseNum(r&&r.qty), disc=Math.abs(comParseNum(r&&r.disc));
+  return (price*qty)-disc;
 }
+function commissionEligibilityNorm(v){
+  return commissionDigits(v).toLowerCase().trim().replace(/[\u064b-\u065f]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[_\-\/]+/g,' ').replace(/\s+/g,' ');
+}
+function commissionEligibilityText(row){
+  row=row||{};
+  return [row.status,row.invoiceStatus,row.invoice_status,row.state,row.transactionType,row.transaction_type,row.documentType,row.document_type,row.entryType,row.entry_type,row.recordType,row.record_type,row.movementType,row.movement_type,row.operationType,row.operation_type]
+    .map(commissionEligibilityNorm).filter(Boolean).join(' | ');
+}
+function commissionHasEligibilityToken(text,tokens){
+  text=' '+String(text||'')+' ';
+  return (tokens||[]).some(function(token){token=commissionEligibilityNorm(token);return token&&text.indexOf(' '+token+' ')>=0;});
+}
+function classifyCommissionRow(row){
+  row=row||{};
+  const rawAmount=rowNetSales(row);
+  const text=commissionEligibilityText(row);
+  const cancelled=!!(row.cancelled===true||row.canceled===true||row.isCancelled===true||row.isCanceled===true||row.voided===true||row.isVoid===true||row.reversed===true||row.isReversed===true)||commissionHasEligibilityToken(text,['cancelled','canceled','cancel','void','voided','reversed','reversal','ملغي','ملغاه','الغاء','مبطل']);
+  if(cancelled)return {eligible:false,kind:'excluded',reason:'cancelled_or_void',amount:0,rawAmount:rawAmount};
+  const adjustment=!!(row.refund===true||row.isRefund===true||row.returned===true||row.isReturn===true||row.creditNote===true||row.isCreditNote===true)||commissionHasEligibilityToken(text,['refund','refunded','return','returned','credit note','creditnote','credit memo','مرتجع','مرتجعه','اشعار دائن','مردود']);
+  if(adjustment){
+    const adjusted=rawAmount===0?0:-Math.abs(rawAmount);
+    return {eligible:adjusted!==0,kind:'adjustment',reason:adjusted===0?'zero_adjustment':'refund_or_credit',amount:adjusted,rawAmount:rawAmount};
+  }
+  if(rawAmount===0)return {eligible:false,kind:'excluded',reason:'zero_value',amount:0,rawAmount:rawAmount};
+  if(rawAmount<0)return {eligible:true,kind:'adjustment',reason:'negative_value',amount:rawAmount,rawAmount:rawAmount};
+  return {eligible:true,kind:'sale',reason:'eligible_sale',amount:rawAmount,rawAmount:rawAmount};
+}
+function commissionEligibleRows(rows){
+  return (rows||[]).map(function(row){
+    const eligibility=classifyCommissionRow(row);
+    return Object.assign({},row,{__commissionEligibility:eligibility,__commissionAmount:eligibility.amount});
+  }).filter(function(row){return row.__commissionEligibility.eligible;});
+}
+function commissionEligibilitySummary(rows){
+  const summary={total:0,eligible:0,excluded:0,sales:0,adjustments:0,eligibleAmount:0,excludedReasons:{}};
+  (rows||[]).forEach(function(row){
+    const c=classifyCommissionRow(row);summary.total++;
+    if(c.eligible){summary.eligible++;summary.eligibleAmount+=c.amount;if(c.kind==='adjustment')summary.adjustments++;else summary.sales++;}
+    else{summary.excluded++;summary.excludedReasons[c.reason]=(summary.excludedReasons[c.reason]||0)+1;}
+  });
+  summary.eligibleAmount=Math.round((summary.eligibleAmount+Number.EPSILON)*100)/100;
+  return summary;
+}
+window.PETATOECommissionEligibility={classify:classifyCommissionRow,eligibleRows:commissionEligibleRows,summary:commissionEligibilitySummary,netAmount:rowNetSales};
 function getConfig(period){const st=readStore();let cfg=clone(DEFAULT_CONFIG.rules[0].config);(st.rules||[]).sort((a,b)=>String(a.from).localeCompare(String(b.from))).forEach(r=>{if(String(r.from)<=String(period))cfg=clone(r.config)});return cfg}
 function getCars(){const arr=[...new Set(dataRows().map(r=>rowCar(r)).filter(Boolean))].sort();return arr}
 function dataPeriods(){return [...new Set(dataRows().map(r=>String(comDateISO(r.date)).slice(0,7)).filter(p=>/^\d{4}-\d{2}$/.test(p)))].sort()}
@@ -210,7 +254,7 @@ function periodRowsFor(period, carFilter){
     return ok&&(!carFilter||rowCar(r)===carFilter);
   });
 }
-function sumNetByCar(rows){const map={};rows.forEach(r=>{const car=rowCar(r);map[car]=(map[car]||0)+rowNetSales(r);});return map}
+function sumNetByCar(rows){const map={};rows.forEach(r=>{const car=rowCar(r);const amount=(r&&r.__commissionAmount!==undefined)?comParseNum(r.__commissionAmount):classifyCommissionRow(r).amount;map[car]=(map[car]||0)+amount;});Object.keys(map).forEach(function(car){map[car]=Math.round((map[car]+Number.EPSILON)*100)/100;});return map}
 function invoiceCountByCar(rows){const map={}, fallback={};(rows||[]).forEach(r=>{const car=rowCar(r);if(!map[car])map[car]=new Set();fallback[car]=(fallback[car]||0)+1;const inv=String(r.invoice||'').trim();if(inv)map[car].add(inv);});const out={};Object.keys(fallback).forEach(car=>{out[car]=(map[car]&&map[car].size)?map[car].size:fallback[car];});return out}
 function carCellHtml(car,count){return `<div class="com-car-cell"><span class="com-car-name">${safe(car)}</span><span class="com-invoice-count">عدد الفواتير: <b>${fmt0(count||0)}</b></span></div>`}
 function activeEmployee(type,car,period){const st=readStore();const arr=(st.employees&&st.employees[type])||[];const hit=arr.find(e=>String(e.car||'')===String(car)&&String(e.from||'0000-00')<=period&&(!e.to||String(e.to)>=period));return hit?hit.name:'غير محدد'}
@@ -233,13 +277,13 @@ function buildCalc(){
 function buildCalcForPeriod(p, carFilter){
   p=String(p||currentPeriod()).trim();
   carFilter=String(carFilter||'').trim();
-  const rowsForInvoice=periodRowsFor(p,carFilter), invByCar=invoiceCountByCar(rowsForInvoice);
+  const sourceRows=periodRowsFor(p,carFilter), rowsForInvoice=commissionEligibleRows(sourceRows), invByCar=invoiceCountByCar(rowsForInvoice), eligibilitySummary=commissionEligibilitySummary(sourceRows);
   const snap=readSnaps()[p];
   if(snap && Array.isArray(snap.groomer) && Array.isArray(snap.driver) && Array.isArray(snap.sales)){
     const filterCar=arr=>(arr||[]).filter(function(x){return !carFilter || String(x.car||'')===carFilter;});
     const addInv=arr=>filterCar(arr).map(x=>Object.assign({},x,{invoiceCount:invByCar[x.car]||x.invoiceCount||0}));
     const g=addInv(snap.groomer), d=addInv(snap.driver), sl=addInv(snap.sales);
-    return {period:p,rows:rowsForInvoice,cfg:snap.config||getConfig(p),cars:[...new Set([...(g||[]),...(d||[]),...(sl||[])].map(x=>x.car).filter(Boolean))],groomer:g,driver:d,sales:sl,locked:true};
+    return {period:p,rows:rowsForInvoice,eligibilitySummary:snap.eligibilitySummary||eligibilitySummary,cfg:snap.config||getConfig(p),cars:[...new Set([...(g||[]),...(d||[]),...(sl||[])].map(x=>x.car).filter(Boolean))],groomer:g,driver:d,sales:sl,locked:true};
   }
   const rows=rowsForInvoice, cfg=getConfig(p), by=sumNetByCar(rows), cars=Object.keys(by).sort();
   function table(type){return cars.map(car=>{
@@ -260,7 +304,7 @@ function buildCalcForPeriod(p, carFilter){
     const commission=amount*((+sg.rate||0)/100);
     return {type,person:type==='sales'?salesPerson():activeEmployee(type==='groomer'?'groomers':'drivers',car,p),car,invoiceCount:invByCar[car]||0,amount,seg:sg,rate:sg.rate,commission,target:sg.target,ach:sg.target?amount/sg.target*100:0}
   })}
-  return {period:p,rows,cfg,cars,groomer:table('groomer'),driver:table('driver'),sales:table('sales'),locked:false}
+  return {period:p,rows,eligibilitySummary,cfg,cars,groomer:table('groomer'),driver:table('driver'),sales:table('sales'),locked:false}
 };
 function total(rows){return rows.reduce((s,r)=>s+(+r.commission||0),0)}
 function fmt(n){return window.PETATOENumber?PETATOENumber.fmt(n):(+n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -568,7 +612,7 @@ window.commissionSelectRow=function(i,kind){const calc=buildCalc();const arr=kin
 window.commissionAddEmployee=function(type){const st=readStore();st.employees=st.employees||{groomers:[],drivers:[],sales:[]};st.employees[type]=st.employees[type]||[];const name=petBlock5568_q(type+'Name')?.value?.trim();if(!name){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب الاسم أولاً'):'اكتب الاسم أولاً');return}if(type==='sales'){st.employees[type].push({name,active:true});}else{const car=petBlock5568_q(type+'Car')?.value, from=petBlock5568_q(type+'From')?.value||currentPeriod(), to=petBlock5568_q(type+'To')?.value||'';if(!car){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اختر السيارة'):'اختر السيارة');return}st.employees[type].push({name,car,from,to});}writeStore(st);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حفظ الاسم'):'تم حفظ الاسم');renderCommissionSystem()}
 window.commissionDeleteEmployee=function(type,i){const st=readStore();if(st.employees&&st.employees[type]){st.employees[type].splice(i,1);writeStore(st);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم الحذف'):'تم الحذف');renderCommissionSystem()}}
 window.commissionSaveSettings=function(){const st=readStore(), p=currentPeriod();function get(type){return [0,1,2].map(i=>({target:parseNum(petBlock5568_q(type+'Target'+i)?.value),rate:parseNum(petBlock5568_q(type+'Rate'+i)?.value)})).filter(x=>x.target>0).sort((a,b)=>a.target-b.target)}const cfg={groomer:get('groomer'),driver:get('driver'),sales:get('sales')};if(cfg.groomer.length<3||cfg.driver.length<3||cfg.sales.length<3){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('يجب إدخال 3 شرائح لكل فئة'):'يجب إدخال 3 شرائح لكل فئة');return}st.rules=(st.rules||[]).filter(r=>r.from!==p);st.rules.push({from:p,config:cfg,savedAt:new Date().toISOString()});writeStore(st);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حفظ الشرائح من الشهر المختار وما بعده'):'تم حفظ الشرائح من الشهر المختار وما بعده');renderCommissionSystem()}
-window.commissionLockMonth=async function(){const calc=buildCalc(), snaps=readSnaps();if(snaps[calc.period]&&!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('الشهر مقفول بالفعل. هل تريد استبدال Snapshot المحفوظ؟'):'الشهر مقفول بالفعل. هل تريد استبدال Snapshot المحفوظ؟'))return;const now=new Date();snaps[calc.period]={schemaVersion:'commission-snapshot-v1',status:'locked',period:calc.period,cars:calc.cars.length,groomerTotal:total(calc.groomer),driverTotal:total(calc.driver),salesTotal:total(calc.sales),total:total(calc.groomer)+total(calc.driver)+total(calc.sales),config:clone(calc.cfg),groomer:clone(calc.groomer),driver:clone(calc.driver),sales:clone(calc.sales),lockedAt:now.toISOString(),savedAt:now.toLocaleString('ar-EG')};try{await writeSnaps(snaps);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم قفل الشهر وحفظ Snapshot'):'تم قفل الشهر وحفظ Snapshot');renderCommissionSystem()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission snapshot lock failed',e);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر حفظ قفل الشهر في Supabase'):'تعذر حفظ قفل الشهر في Supabase')} }
+window.commissionLockMonth=async function(){const calc=buildCalc(), snaps=readSnaps();if(snaps[calc.period]&&!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('الشهر مقفول بالفعل. هل تريد استبدال Snapshot المحفوظ؟'):'الشهر مقفول بالفعل. هل تريد استبدال Snapshot المحفوظ؟'))return;const now=new Date();snaps[calc.period]={schemaVersion:'commission-snapshot-v1',status:'locked',period:calc.period,cars:calc.cars.length,groomerTotal:total(calc.groomer),driverTotal:total(calc.driver),salesTotal:total(calc.sales),total:total(calc.groomer)+total(calc.driver)+total(calc.sales),config:clone(calc.cfg),groomer:clone(calc.groomer),driver:clone(calc.driver),sales:clone(calc.sales),eligibilitySummary:clone(calc.eligibilitySummary||commissionEligibilitySummary(calc.rows||[])),lockedAt:now.toISOString(),savedAt:now.toLocaleString('ar-EG')};try{await writeSnaps(snaps);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم قفل الشهر وحفظ Snapshot'):'تم قفل الشهر وحفظ Snapshot');renderCommissionSystem()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission snapshot lock failed',e);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر حفظ قفل الشهر في Supabase'):'تعذر حفظ قفل الشهر في Supabase')} }
 window.commissionUnlockMonth=async function(period){period=String(period||'').trim();if(!period){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لم يتم تحديد الشهر'):'لم يتم تحديد الشهر');return}const snaps=readSnaps();if(!snaps[period]){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('الشهر غير موجود في الأرشيف'):'الشهر غير موجود في الأرشيف');renderCommissionSystem();return}if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('هل تريد إلغاء قفل شهر '):'هل تريد إلغاء قفل شهر '+period+'؟ سيتم حذف Snapshot المحفوظ فقط، ويمكنك إعادة احتسابه وقفله من البيانات الحالية.'))return;const removed=snaps[period];delete snaps[period];try{await writeSnaps(snaps);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم إلغاء قفل الشهر من الأرشيف'):'تم إلغاء قفل الشهر من الأرشيف');renderCommissionSystem()}catch(e){snaps[period]=removed;window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission snapshot unlock failed',e);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر إلغاء قفل الشهر في Supabase'):'تعذر إلغاء قفل الشهر في Supabase')} }
 window.commissionRecalcMonth=function(){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم إعادة احتساب الشهر من البيانات الحالية بدون تغيير أي تقرير قديم'):'تم إعادة احتساب الشهر من البيانات الحالية بدون تغيير أي تقرير قديم');renderCommissionSystem()}
 function injectPanel(){if(petBlock5568_q('commissions'))return;const page=document.querySelector('section.page');if(!page)return;const panel=document.createElement('div');panel.id='commissions';panel.className='panel';comSafeHtml(panel,`<div class="com-page"><div class="com-hero"><div><h2>💰 نظام العمولات</h2><p>إدارة وحساب عمولات الجرومرز والسائقين ومسؤول المبيعات على مبيعات السيارات قبل الضريبة، مع حفظ شهري مستقل.</p></div><div class="com-icon">💰</div></div><div class="com-toolbar"><label>السنة</label><select id="comYear" data-commission-render="1"></select><label>الشهر</label><select id="comMonth" data-commission-render="1"></select><label>السيارة</label><select id="comCar" data-commission-render="1"><option value="">كل السيارات</option></select><button class="btn btn-primary" data-commission-action="recalc">🔄 إعادة احتساب الشهر</button><button class="btn btn-green" data-commission-action="lock">🔒 قفل الشهر</button></div><div class="com-kpis" id="comKpis"></div><div class="com-tabs"><button class="com-tab active" data-com-tab="overview">نظرة عامة</button><button class="com-tab" data-com-tab="groomer">عمولات الجرومرز</button><button class="com-tab" data-com-tab="driver">عمولات السائقين</button><button class="com-tab" data-com-tab="sales">مسؤول المبيعات</button><button class="com-tab" data-com-tab="employees">إدارة الأسماء</button><button class="com-tab" data-com-tab="settings">إعدادات الشرائح</button><button class="com-tab" data-com-tab="archive">الأرشيف</button></div><div id="comArea"></div></div>`,'commission panel shell');page.appendChild(panel)}

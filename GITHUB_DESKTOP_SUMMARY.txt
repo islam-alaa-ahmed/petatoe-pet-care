@@ -1,7 +1,12 @@
-PETATOE Commissions — Phase 1A Localization Lockdown Hotfix
+PETATOE Commissions — Commission Eligibility Classifier Phase 2B.1
 
-- Register the two new commission month-lock persistence error messages in the canonical Localization Center
-- Add complete Arabic and English runtime mappings for lock-save and unlock-save failures
-- Resolve Enterprise Localization Certification missingStoredTexts from 2 to 0
-- Resolve Runtime Translation Completion missingRuntimePhrases from 2 to 0
-- Keep commission calculations, snapshot persistence, payroll integration, Supabase schema, and UI layout unchanged
+- Add one canonical commission eligibility classifier for live calculations and snapshots
+- Preserve explicit zero amounts instead of incorrectly falling back to other amount fields
+- Exclude cancelled, voided, and reversed invoice rows from commission sales
+- Convert refunds, returns, and credit notes into deterministic negative adjustments
+- Preserve unlabelled negative values as commission adjustments
+- Remove the fallback clamp that previously converted negative invoice values to zero
+- Aggregate and round eligible net sales per vehicle consistently
+- Count only invoice rows that actually contribute to commission calculations
+- Store an eligibility summary inside newly locked monthly snapshots
+- Keep commission tiers, employee mapping, payroll formulas, Operations, Supabase schema, and UI layout unchanged

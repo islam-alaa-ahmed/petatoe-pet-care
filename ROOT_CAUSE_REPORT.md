@@ -1,25 +1,28 @@
-# PETATOE — Operations Services Supabase Root Cause Report
+# PETATOE v10 — Commissions Phase 2B.1
+## Commission Eligibility Classifier — Root Cause Report
 
-## Confirmed database state
-- `public.operations_master_data` contains three rows.
-- Two newest rows have `data.services = NULL` / service count `0`.
-- One older row contains `92` services.
-- RLS is enabled, but the active `ALL` policy allows reads and writes.
+## Baseline
+`petatoe-pet-care-main (8).zip`
 
-## Root cause
-`operations/operations-storage.js` treated `operations_master_data` as a replace-all table:
-1. Every write deleted all rows.
-2. It then inserted a new row with a random UUID.
-3. Reads selected only the newest row by timestamp.
+## Confirmed root causes
 
-Concurrent or early startup writes could therefore create multiple rows, including empty rows. The mobile session then selected the newest empty row while the desktop session continued showing its in-memory cache containing the 92 services.
+1. `rowNetSales()` treated an explicit `totalEx = 0` as if the field were missing, then fell back to `totalInc - tax` or `price × qty - discount`. The same invoice line could therefore produce a different commission amount depending on which fields were populated.
+2. The fallback formula forced negative values to zero using `Math.max(0, ...)`, so a return/credit represented through price, quantity, and discount could disappear instead of reducing eligible sales.
+3. Commission aggregation accepted every monthly sales row without an explicit eligibility decision for cancelled, voided, reversed, refunded, returned, or credit-note records.
+4. There was no canonical API shared by live calculation and snapshot creation to explain why a row was included, excluded, or treated as a negative adjustment.
 
-## Fix
-- Introduce one deterministic canonical UUID for operations master data.
-- Replace delete-and-insert with `upsert` on that UUID.
-- Read up to 50 legacy rows and choose the most complete data row, prioritizing actual services and other reference-data collections.
-- Automatically migrate the selected row into the canonical record and remove legacy duplicates.
-- Protect a populated Supabase record from an empty/default write issued before remote boot finishes.
+## File responsible
+`inline-extracted/commission-inline.js`
 
-## Scope
-Only `operations/operations-storage.js` was changed. No UI, reporting, payroll, permissions, localization, appointment logic, or mobile layout code was modified.
+## Functions affected
+- `rowNetSales()`
+- `sumNetByCar()`
+- `buildCalcForPeriod()`
+- `commissionLockMonth()` snapshot payload
+
+## Impact before the fix
+- Cancelled or voided invoices could contribute to commission sales.
+- Refunds and credit notes could be added as positive sales or ignored depending on their stored amount sign.
+- Explicit zero values could be replaced by a fallback amount.
+- Negative fallback values could be silently clamped to zero.
+- The monthly snapshot did not retain a summary of included/excluded commission source rows.
