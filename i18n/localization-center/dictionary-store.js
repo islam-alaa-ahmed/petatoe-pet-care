@@ -60,6 +60,18 @@
   STORE.en.runtimeSource['اكتب سبب استبدال Snapshot المحفوظ']='Enter the reason for replacing the saved snapshot';
   STORE.ar.runtimeSource['سبب الاستبدال مطلوب']='سبب الاستبدال مطلوب';
   STORE.en.runtimeSource['سبب الاستبدال مطلوب']='A replacement reason is required';
+  STORE.ar.runtimeSource['تعديل']='تعديل';
+  STORE.en.runtimeSource['تعديل']='Edit';
+  STORE.ar.runtimeSource['حفظ التعديل']='حفظ التعديل';
+  STORE.en.runtimeSource['حفظ التعديل']='Save Changes';
+  STORE.ar.runtimeSource['تم تعديل الاسم']='تم تعديل الاسم';
+  STORE.en.runtimeSource['تم تعديل الاسم']='Name updated successfully';
+  STORE.ar.runtimeSource['تم تغيير الحالة']='تم تغيير الحالة';
+  STORE.en.runtimeSource['تم تغيير الحالة']='Status updated successfully';
+  STORE.ar.runtimeSource['نشط']='نشط';
+  STORE.en.runtimeSource['نشط']='Active';
+  STORE.ar.runtimeSource['متوقف']='متوقف';
+  STORE.en.runtimeSource['متوقف']='Stopped';
   registerModule('certificationSource',CERTIFICATION_SOURCE);
   window.PETATOE_LOCALIZATION_CENTER_DICTIONARIES=STORE;
   window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,dictionaries:STORE,registerModule:registerModule,getPath:getPath,merge:merge};
