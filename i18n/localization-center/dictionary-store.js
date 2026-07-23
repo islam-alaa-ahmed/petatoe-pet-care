@@ -52,6 +52,8 @@
   STORE.en.salesDuplicatePolicy=Object.assign({},STORE.en.salesDuplicatePolicy||{},{unavailable:'Unable to run invoice duplicate validation',withinInvoice:'A duplicate item exists within the current invoice',existing:'This item already exists with the same invoice number, customer, service, vehicle, and value'});
   STORE.ar.runtimeSource=STORE.ar.runtimeSource||{};
   STORE.en.runtimeSource=STORE.en.runtimeSource||{};
+  STORE.ar.runtimeSource['ليس لديك صلاحية لتنفيذ هذا الإجراء']='ليس لديك صلاحية لتنفيذ هذا الإجراء';
+  STORE.en.runtimeSource['ليس لديك صلاحية لتنفيذ هذا الإجراء']='You do not have permission to perform this action';
   STORE.ar.runtimeSource['تعذر حفظ إعدادات العمولات في Supabase']='تعذر حفظ إعدادات العمولات في Supabase';
   STORE.en.runtimeSource['تعذر حفظ إعدادات العمولات في Supabase']='Unable to save commission settings in Supabase';
   STORE.ar.runtimeSource['اكتب سبب استبدال Snapshot المحفوظ']='اكتب سبب استبدال Snapshot المحفوظ';
