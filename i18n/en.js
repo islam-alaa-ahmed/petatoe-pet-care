@@ -103,6 +103,7 @@
       'h42739750':'No valid customer data was found in the file.',
       'hc8feb0f1':'The Excel library is currently unavailable. Try a CSV file or reload the page.',
       'hbc1eb6fc':'Select the vehicle.',
+      'h266b27de':'An employee is already assigned to the same vehicle during an overlapping period.',
       'h811ed232':'Invoice not found.',
       'h0f420500':'Failed to delete the invoice from Supabase. It was not deleted locally.',
       'h01242677':'Invoice deleted.',

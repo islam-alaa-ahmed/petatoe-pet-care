@@ -1,26 +1,40 @@
-# Verification Report
+# Verification Report — Phase 3B
 
-## Syntax
-- `payroll/payroll-core.js`: PASSED
-- `payroll/payroll-computed-facade.js`: PASSED
-- `payroll/payroll-read-facade.js`: PASSED
+## Implemented Controls
 
-## Identity Integration Scenarios
-- Stable payroll employee ID match: PASSED
-- Employee rename with same ID: PASSED
-- Same display name with different IDs does not cross-link: PASSED
-- Linked application user ID match: PASSED
-- Legacy snapshot name fallback: PASSED
-- Modern snapshot name-only unresolved row rejected: PASSED
+- Removed the hard-coded salesperson fallback.
+- Removed the global first-active salesperson selector.
+- Added canonical `PETATOECommissionSalesAssignment` API.
+- Added invoice-row salesperson identity priority when explicit salesperson fields exist.
+- Added vehicle-and-period assignment registry fallback.
+- Added ambiguity detection for conflicting invoice identities.
+- Added ambiguity detection for overlapping registry assignments.
+- Unassigned or ambiguous salesperson rows receive a zero sales commission rate.
+- Added assignment source and status to result traceability and snapshots.
+- Salesperson management now requires vehicle, start month, and optional end month.
+- Added overlap prevention when saving employee assignments.
+- Legacy global salesperson records remain visible as `legacy_unassigned` but are never used for financial calculation.
 
-Result: **6 / 6 PASSED**
+## Runtime Assignment Tests
 
-## Project Gates
+- Vehicle-period registry assignment: PASSED
+- Unassigned vehicle blocked: PASSED
+- Explicit invoice salesperson priority: PASSED
+- Conflicting invoice salesperson identities blocked: PASSED
+- Result: 4 / 4 PASSED
+
+## Static and Project Gates
+
+- `node --check inline-extracted/commission-inline.js`: PASSED
+- `node --check i18n/ar.js`: PASSED
+- `node --check i18n/en.js`: PASSED
+- `node --check i18n/localization-center/dictionary-store.js`: PASSED
 - Enterprise Localization Certification: PASSED
-- Missing stored texts: 0
-- Missing counterparts: 0
+  - missingStoredTexts: 0
+  - missingCounterparts: 0
 - Production Localization Lockdown: PASSED
-- Mobile Enterprise UI v10: 64 / 64 PASSED
+- Mobile Enterprise UI v10 Certification: 64 / 64 PASSED
 
-## Environment Boundary
-Static/runtime-unit verification was completed locally. No live Supabase write, RLS, or browser end-to-end payroll cycle was executed in this environment.
+## Environment Limitation
+
+No live Supabase write or browser end-to-end payroll cycle was executed in this environment. A staging smoke test should assign one salesperson per vehicle and period, recalculate a month, lock the snapshot, refresh, and verify the persisted `assignmentSource` and `assignmentStatus` fields.

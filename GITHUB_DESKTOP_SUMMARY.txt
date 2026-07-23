@@ -1,11 +1,15 @@
-PETATOE Payroll — Stable ID Commission Integration Phase 3A
+PETATOE Commissions — Salesperson Assignment Model Phase 3B
 
-- Replace modern payroll commission name matching with employeeId/personId matching
-- Accept payroll employee, linked user, Supabase, and explicit commission identity keys
-- Prevent employees with identical names from sharing commission results
-- Keep employee commission linkage stable after display-name changes
-- Reject unresolved name-only commission rows in identity-aware snapshots
-- Preserve legacy name fallback only for pre-identity snapshots
-- Include matched employee and vehicle IDs in payroll commission details
-- Normalize commissionEmployeeId in the Payroll Supabase read facade
-- Preserve payroll formulas, approval workflow, commission tiers, Supabase schema, Operations, and UI layout
+- Remove the global first-active salesperson calculation
+- Remove the hard-coded Qasem salesperson fallback
+- Add PETATOECommissionSalesAssignment as the canonical assignment resolver
+- Prefer explicit salesperson identity stored on invoice rows
+- Fall back only to a vehicle-and-period salesperson assignment registry
+- Block ambiguous invoice-level and registry-level assignments
+- Set salesperson commission to zero when assignment is missing or ambiguous
+- Persist assignmentSource and assignmentStatus in commission results, traceability, and snapshots
+- Require vehicle, start month, and optional end month for salesperson assignments
+- Prevent overlapping employee assignments for the same vehicle and period
+- Keep legacy global salesperson records visible but financially inactive
+- Preserve commission tiers, eligibility rules, identity resolution, payroll formulas, Operations, Supabase schema, and existing page layout
+- Keep localization and mobile production gates passing

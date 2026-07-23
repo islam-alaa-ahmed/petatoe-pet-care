@@ -42,6 +42,8 @@
   STORE.en.salesPersistence=Object.assign({},STORE.en.salesPersistence||{},{supabaseSaveError:'Failed to save data to Supabase'});
   STORE.ar.runtimeSource['تعذر تشغيل فحص تكرار الفاتورة']='تعذر تشغيل فحص تكرار الفاتورة';
   STORE.en.runtimeSource['تعذر تشغيل فحص تكرار الفاتورة']='Unable to run invoice duplicate validation';
+  STORE.ar.runtimeSource['يوجد موظف مرتبط بنفس السيارة في فترة متداخلة']='يوجد موظف مرتبط بنفس السيارة في فترة متداخلة';
+  STORE.en.runtimeSource['يوجد موظف مرتبط بنفس السيارة في فترة متداخلة']='An employee is already assigned to the same vehicle during an overlapping period.';
   STORE.ar.runtimeSource['يوجد بند مكرر داخل الفاتورة الحالية']='يوجد بند مكرر داخل الفاتورة الحالية';
   STORE.en.runtimeSource['يوجد بند مكرر داخل الفاتورة الحالية']='A duplicate item exists within the current invoice';
   STORE.ar.runtimeSource['هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة']='هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة';

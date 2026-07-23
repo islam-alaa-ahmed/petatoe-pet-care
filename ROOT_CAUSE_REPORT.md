@@ -1,19 +1,24 @@
-# Phase 3A — Payroll ID Integration
-
-## Baseline
-- `petatoe-pet-care-main (8).zip`
-- Prerequisite overlay: `PETATOE_V10_COMMISSIONS_SNAPSHOT_CERTIFICATION_PHASE2B4.zip`
+# PETATOE Phase 3B — Salesperson Assignment Model
 
 ## Root Cause
-Payroll commission calculation matched commission snapshot rows through display names, `commissionEmployeeName`, and textual aliases. Names are mutable and non-unique, so renaming an employee or creating two employees with the same name could link commission to the wrong payroll employee.
 
-## Fix
-- Added identity-key collection for payroll employees.
-- Payroll now matches modern commission snapshots by `employeeId` / `personId` only.
-- Accepts the payroll employee ID, linked user ID, Supabase ID, or an explicit `commissionEmployeeId` as stable identities.
-- Modern identity-aware snapshots reject unresolved/name-only rows rather than falling back to names.
-- Name matching remains available only for old snapshots that predate identity metadata.
-- Commission details now expose the matched employee and vehicle IDs for auditability.
+The commission engine selected the first active salesperson from `employees.sales` and applied that employee to every vehicle and every month. When no record existed, the engine created a hard-coded fallback employee named `قاسم`.
 
-## Scope Boundary
-No payroll formulas, approval workflow, Supabase schema, commission tier logic, Operations logic, or UI layout was changed.
+This produced a financial attribution risk because the selected employee was not required to be linked to the invoice, vehicle, or commission period.
+
+## Responsible File
+
+- `inline-extracted/commission-inline.js`
+
+## Responsible Logic
+
+- Legacy `salesPerson()` global selector.
+- Sales commission branch inside `buildCalcForPeriod()`.
+- Sales employee form stored only a name and active flag, without vehicle or period boundaries.
+
+## Impact
+
+- One salesperson could receive commissions for all vehicles.
+- Missing salesperson assignments still produced commission through a hard-coded fallback.
+- Two overlapping assignments could not be detected.
+- The snapshot could certify a financially incorrect salesperson attribution.
