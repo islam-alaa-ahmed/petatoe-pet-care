@@ -50,6 +50,14 @@
   STORE.en.runtimeSource['هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة']='This item already exists with the same invoice number, customer, service, vehicle, and value';
   STORE.ar.salesDuplicatePolicy=Object.assign({},STORE.ar.salesDuplicatePolicy||{},{unavailable:'تعذر تشغيل فحص تكرار الفاتورة',withinInvoice:'يوجد بند مكرر داخل الفاتورة الحالية',existing:'هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة'});
   STORE.en.salesDuplicatePolicy=Object.assign({},STORE.en.salesDuplicatePolicy||{},{unavailable:'Unable to run invoice duplicate validation',withinInvoice:'A duplicate item exists within the current invoice',existing:'This item already exists with the same invoice number, customer, service, vehicle, and value'});
+  STORE.ar.runtimeSource=STORE.ar.runtimeSource||{};
+  STORE.en.runtimeSource=STORE.en.runtimeSource||{};
+  STORE.ar.runtimeSource['تعذر حفظ إعدادات العمولات في Supabase']='تعذر حفظ إعدادات العمولات في Supabase';
+  STORE.en.runtimeSource['تعذر حفظ إعدادات العمولات في Supabase']='Unable to save commission settings in Supabase';
+  STORE.ar.runtimeSource['اكتب سبب استبدال Snapshot المحفوظ']='اكتب سبب استبدال Snapshot المحفوظ';
+  STORE.en.runtimeSource['اكتب سبب استبدال Snapshot المحفوظ']='Enter the reason for replacing the saved snapshot';
+  STORE.ar.runtimeSource['سبب الاستبدال مطلوب']='سبب الاستبدال مطلوب';
+  STORE.en.runtimeSource['سبب الاستبدال مطلوب']='A replacement reason is required';
   registerModule('certificationSource',CERTIFICATION_SOURCE);
   window.PETATOE_LOCALIZATION_CENTER_DICTIONARIES=STORE;
   window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,dictionaries:STORE,registerModule:registerModule,getPath:getPath,merge:merge};
