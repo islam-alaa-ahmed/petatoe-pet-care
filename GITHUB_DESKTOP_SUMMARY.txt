@@ -1,12 +1,11 @@
-PETATOE Commissions — Commission Traceability Engine Phase 2B.3
+PETATOE Commissions — Snapshot Certification Phase 2B.4
 
-- Add one canonical PETATOECommissionTraceability API for invoice-to-commission evidence
-- Generate deterministic trace IDs for every source invoice line
-- Capture invoice ID, invoice number, date, customer, line ID, item, quantity, vehicle ID, and eligibility decision
-- Link each eligible line to the resolved employee and vehicle identities
-- Calculate and store the commission contribution of each eligible invoice line
-- Attach trace arrays and summaries to live groomer, driver, and sales commission results
-- Persist source and result traceability in newly locked monthly snapshots
-- Upgrade new snapshots to commission-snapshot-v3 with commission-trace-v1 metadata
-- Preserve backward compatibility for older snapshots without traceability data
-- Keep commission tiers, eligibility rules, payroll formulas, Operations, Supabase schema, and UI layout unchanged
+- Add SHA-256 certification hashes for newly locked commission snapshots
+- Upgrade new snapshots to commission-snapshot-v4
+- Add deterministic financial-material canonicalization before hashing
+- Add snapshotId, revisionNumber, previousSnapshotHash, and revisionHistory
+- Record createdAt and createdBy audit metadata for every new revision
+- Add financial audit metadata for invoice lines, eligibility totals, eligible net sales, and commission totals
+- Verify the certified snapshot hash immediately after persistence
+- Add verifySnapshot, compareSnapshots, reproduceSnapshot, and hashSnapshot APIs
+- Preserve commission eligibility, identity resolution, invoice-line traceability, payroll formulas, Operations, and UI layout

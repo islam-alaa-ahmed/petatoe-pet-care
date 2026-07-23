@@ -1,18 +1,16 @@
-# Root Cause Report — Phase 2B.3
+# PETATOE Commissions — Phase 2B.4 Root Cause Report
 
-## Confirmed root cause
+## Baseline
+`petatoe-pet-care-main (8).zip`, with the cumulative Phase 2B.3 commission file applied before this phase.
 
-The commission engine stored aggregate results per employee and vehicle, but did not persist the invoice and invoice-line contributions that produced each result. The eligibility classifier could determine whether a row contributed, and the identity layer could resolve employee and vehicle IDs, yet no canonical trace record linked those decisions to the calculated commission or the locked snapshot.
+## Confirmed Root Cause
+Commission snapshots stored financial totals and traceability, but had no cryptographic integrity proof, revision chain, actor metadata, or reproducibility API. Replacing a locked month overwrote the active snapshot without a verifiable link to the previous revision.
 
 ## Impact
+- A stored snapshot could not be independently checked for later mutation.
+- Re-locking a month had no revision number or previous-hash chain.
+- Auditors could not prove that the current invoice data reproduces the locked result.
+- Financial metadata was incomplete for certification purposes.
 
-- A commission amount could not be reconciled to its contributing invoice lines.
-- Excluded rows did not have a persisted exclusion reason inside the snapshot.
-- Payroll and later audit screens had no stable reference to request trace details.
-- Historical snapshots contained totals but lacked financial evidence at invoice-line level.
-
-## Limited fix
-
-A canonical `PETATOECommissionTraceability` API was added inside the existing commission engine. It creates deterministic trace IDs, resolves invoice and line references, stores eligibility decisions, links stable employee and vehicle identities, calculates each line's commission contribution, and persists traceability in newly locked snapshots.
-
-No commission tier, eligibility, payroll, Operations, UI layout, or Supabase schema was changed.
+## Scope Implemented
+Only `inline-extracted/commission-inline.js` was changed. Commission formulas, tiers, eligibility policy, employee/vehicle identity logic, traceability logic, payroll formulas, Operations, UI layout, and Supabase schema were not changed.
