@@ -8,6 +8,7 @@
 
   var MASTER_ROW_ID = 'payroll_master';
   var COMMISSION_SNAPSHOT_ROW_ID = 'commission_monthly_snapshots';
+  var COMMISSION_REFERENCE_ROW_ID = 'commission_reference_data';
   var DEFAULT_JOB_TYPES = ['مدير','محاسب','مندوب مبيعات','جروومر','سائق','إداري'];
   var cache = {
     employees: [],
@@ -15,6 +16,7 @@
     jobTypes: DEFAULT_JOB_TYPES.slice(),
     employeeConfig: {prefix:'EMP',next:1,digits:4},
     commissionSnapshots: {},
+    commissionReferenceData: {employees:{groomers:[],drivers:[],sales:[]}},
     loaded: false,
     loading: false,
     lastError: ''
@@ -79,6 +81,7 @@
       var slips = R.listJsonRows ? await R.listJsonRows('payroll_slips',{order:'created_at'}) : [];
       var master = R.getSingleton ? await R.getSingleton('payroll_master_data', MASTER_ROW_ID, {}) : {};
       var canonicalSnapshots = R.getSingleton ? await R.getSingleton('payroll_master_data', COMMISSION_SNAPSHOT_ROW_ID, {}) : {};
+      var commissionReferenceData = R.getSingleton ? await R.getSingleton('payroll_master_data', COMMISSION_REFERENCE_ROW_ID, {}) : {};
       if((!canonicalSnapshots || typeof canonicalSnapshots !== 'object' || Array.isArray(canonicalSnapshots) || !Object.keys(canonicalSnapshots).length) && master && master.commissionSnapshots && typeof master.commissionSnapshots === 'object' && !Array.isArray(master.commissionSnapshots) && Object.keys(master.commissionSnapshots).length){
         canonicalSnapshots = clone(master.commissionSnapshots, {});
         if(R.saveSingleton) await R.saveSingleton('payroll_master_data', COMMISSION_SNAPSHOT_ROW_ID, canonicalSnapshots);
@@ -87,6 +90,7 @@
       cache.slips = mergeSlipSources(master && master.payrollSlips, slips);
       setCacheFromMaster(master);
       cache.commissionSnapshots = clone(canonicalSnapshots, {});
+      cache.commissionReferenceData = clone(commissionReferenceData && typeof commissionReferenceData === 'object' && !Array.isArray(commissionReferenceData) ? commissionReferenceData : {employees:{groomers:[],drivers:[],sales:[]}}, {employees:{groomers:[],drivers:[],sales:[]}});
       cache.loaded = true;
       cache.lastError = '';
       try{ window.dispatchEvent(new CustomEvent('petatoe:payroll-read-facade-refreshed',{detail:snapshot()})); }catch(_e){}
@@ -104,6 +108,7 @@
   function jobTypes(){ return cache.jobTypes.slice(); }
   function employeeConfig(){ return clone(cache.employeeConfig, {}); }
   function commissionSnapshots(){ return clone(cache.commissionSnapshots, {}); }
+  function commissionReferenceData(){ return clone(cache.commissionReferenceData, {employees:{groomers:[],drivers:[],sales:[]}}); }
 
   function getEmployeeById(id){
     id = str(id);
@@ -136,6 +141,7 @@
       statusCounts: statusCounts(),
       hasEmployeeConfig: Object.keys(employeeConfig()).length > 0,
       hasCommissionSnapshots: Object.keys(commissionSnapshots()).length > 0,
+      hasCommissionReferenceData: !!(commissionReferenceData().employees),
       loaded: !!cache.loaded,
       loading: !!cache.loading,
       lastError: cache.lastError || ''
@@ -151,6 +157,7 @@
     jobTypes: jobTypes,
     employeeConfig: employeeConfig,
     commissionSnapshots: commissionSnapshots,
+    commissionReferenceData: commissionReferenceData,
     getEmployeeById: getEmployeeById,
     getSlipById: getSlipById,
     slipsByEmployee: slipsByEmployee,

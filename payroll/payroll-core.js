@@ -392,8 +392,12 @@
   function statusBadge(st){var x=statusInfo(st);return '<span class="payroll-badge '+x[1]+'">'+esc(x[0])+'</span>'}
   function readCommissionSnapshots(){var s=read(COMM_SNAPSHOT_KEY,{});return s&&typeof s==='object'?s:{}}
   function readCommissionStore(){
-    var s=read(COMM_SNAPSHOT_KEY,{});
-    return s&&typeof s==='object'?s:{};
+    var facade=window.PETATOEPayrollReadFacade;
+    if(facade&&typeof facade.commissionReferenceData==='function'){
+      var remote=facade.commissionReferenceData();
+      if(remote&&typeof remote==='object'&&remote.employees)return remote;
+    }
+    return {employees:{groomers:[],drivers:[],sales:[]}};
   }
   function addUniqueCommissionName(out,name){
     name=String(name||'').trim();
@@ -407,6 +411,27 @@
       (Array.isArray(emp[k])?emp[k]:[]).forEach(function(r){addUniqueCommissionName(out,r&&r.name)});
     });
     return out;
+  }
+  function commissionEmployeeDirectory(){
+    var st=readCommissionStore();
+    var emp=(st&&st.employees)||{};
+    var out=[];
+    ['groomers','drivers','sales','groomer','driver'].forEach(function(k){
+      (Array.isArray(emp[k])?emp[k]:[]).forEach(function(r){
+        r=r||{};
+        var name=String(r.name||'').trim();
+        var id=String(r.employeeId||r.employee_id||r.personId||r.person_id||'').trim();
+        if(!name)return;
+        var exists=out.some(function(x){return (id&&x.id===id)||(!id&&!x.id&&norm(x.name)===norm(name))});
+        if(!exists)out.push({id:id,name:name,type:k,active:r.active!==false});
+      });
+    });
+    return out;
+  }
+  function commissionEmployeeByName(name){
+    name=norm(name);
+    if(!name)return null;
+    return commissionEmployeeDirectory().find(function(item){return norm(item.name)===name})||null;
   }
   function snapshotCommissionEmployeeNames(){
     var snaps=readCommissionSnapshots();var out=[];
@@ -826,7 +851,7 @@
     clearJobTypeForm:function(){if(byId('payJobTypeOriginal'))byId('payJobTypeOriginal').value='';if(byId('payJobTypeName'))byId('payJobTypeName').value=''},
     deleteJobType:function(name){if(!confirm(payrollT('confirm.deleteJob','حذف نوع الوظيفة؟')))return;saveJobTypes(jobTypes().filter(function(j){return norm(j)!==norm(name)}));render()},
     addLine:function(kind){var box=byId(kind+'Lines');if(box)safeAppend(box,lineRowHtml(kind,Date.now(),'',''),'payroll line row')},
-    saveEmployee:function(){var arr=employees();var id=(byId('peId')||{}).value||uid('emp');var name=(byId('peName')||{}).value||'';if(!name.trim()){toastMsg(payrollT('messages.enterEmployeeName','اكتب اسم الموظف'));return}var selectedUserId=(byId('peUserId')||{}).value||'';var linkedUser=getUserById(selectedUserId);var code=String((byId('peCode')||{}).value||'').trim();if(!code)code=generateEmployeeCode(id);if(isDuplicateEmployeeCode(code,id)){toastMsg(payrollT('messages.employeeCodeUsed','كود الموظف مستخدم بالفعل'));return}var obj={id:id,code:code,name:name.trim(),job:(byId('peJob')||{}).value||'',userId:selectedUserId,userKey:linkedUser?userLabel(linkedUser):name.trim(),commissionEmployeeName:(byId('peCommissionEmployeeName')||{}).value||'',username:linkedUser?(linkedUser.username||''):'',email:linkedUser?(linkedUser.email||''):'',phone:linkedUser?(linkedUser.phone||''):'',base:num((byId('peBase')||{}).value),housing:num((byId('peHousing')||{}).value),transport:num((byId('peTransport')||{}).value),paymentMethod:(byId('pePaymentMethod')||{}).value||'',status:(byId('peStatus')||{}).value||'active'};var i=arr.findIndex(function(e){return e.id===id});if(i>-1)arr[i]=Object.assign({},arr[i],obj);else arr.push(obj);saveEmployees(arr);toastMsg(payrollT('messages.employeeSaved','تم حفظ الموظف وربطه باليوزر'));render()},
+    saveEmployee:function(){var arr=employees();var id=(byId('peId')||{}).value||uid('emp');var name=(byId('peName')||{}).value||'';if(!name.trim()){toastMsg(payrollT('messages.enterEmployeeName','اكتب اسم الموظف'));return}var selectedUserId=(byId('peUserId')||{}).value||'';var linkedUser=getUserById(selectedUserId);var code=String((byId('peCode')||{}).value||'').trim();if(!code)code=generateEmployeeCode(id);if(isDuplicateEmployeeCode(code,id)){toastMsg(payrollT('messages.employeeCodeUsed','كود الموظف مستخدم بالفعل'));return}var obj={id:id,code:code,name:name.trim(),job:(byId('peJob')||{}).value||'',userId:selectedUserId,userKey:linkedUser?userLabel(linkedUser):name.trim(),commissionEmployeeName:(byId('peCommissionEmployeeName')||{}).value||'',commissionEmployeeId:(function(){var selected=(byId('peCommissionEmployeeName')||{}).value||'';var hit=commissionEmployeeByName(selected);var previous=arr.find(function(e){return e.id===id});return hit&&hit.id?hit.id:(previous&&previous.commissionEmployeeId)||''})(),username:linkedUser?(linkedUser.username||''):'',email:linkedUser?(linkedUser.email||''):'',phone:linkedUser?(linkedUser.phone||''):'',base:num((byId('peBase')||{}).value),housing:num((byId('peHousing')||{}).value),transport:num((byId('peTransport')||{}).value),paymentMethod:(byId('pePaymentMethod')||{}).value||'',status:(byId('peStatus')||{}).value||'active'};var i=arr.findIndex(function(e){return e.id===id});if(i>-1)arr[i]=Object.assign({},arr[i],obj);else arr.push(obj);saveEmployees(arr);toastMsg(payrollT('messages.employeeSaved','تم حفظ الموظف وربطه باليوزر'));render()},
     editEmployee:function(id){state.tab='config';state.configTab='employees';render();setTimeout(function(){var e=getEmployee(id);if(!e)return;byId('peId').value=e.id;byId('peCode').value=e.code||'';byId('peName').value=e.name||'';if(byId('peJob'))byId('peJob').value=e.job||'';if(byId('peUserId'))byId('peUserId').value=e.userId||'';if(byId('peCommissionEmployeeName'))byId('peCommissionEmployeeName').value=e.commissionEmployeeName||'';byId('peBase').value=e.base||0;byId('peHousing').value=e.housing||0;byId('peTransport').value=e.transport||0;if(byId('pePaymentMethod'))byId('pePaymentMethod').value=e.paymentMethod||'';PETATOEPayroll.setEmployeeStatus(e.status||'active')},0)},
     deleteEmployee:function(id){if(!confirm(payrollT('confirm.deleteEmployee','حذف الموظف من قسم الرواتب؟')))return;saveEmployees(employees().filter(function(e){return e.id!==id}));render()},
     clearEmployeeForm:function(){['peId','peCode','peName','peJob','peUserId','peCommissionEmployeeName','peBase','peHousing','peTransport','pePaymentMethod'].forEach(function(id){if(byId(id))byId(id).value=''});if(byId('peStatus'))PETATOEPayroll.setEmployeeStatus('active')},
@@ -897,6 +922,7 @@
     window.addEventListener('petatoe:identity-ready',function(){refreshPayrollViews()});
     document.addEventListener('petatoe:identity-ready',function(){refreshPayrollViews()});
     window.addEventListener('petatoe:permissionschanged',function(){refreshPayrollViews()});
+    window.addEventListener('petatoe:payroll-read-facade-refreshed',function(){if(state.tab==='config'&&state.configTab==='employees')render();});
     document.addEventListener('petatoe:permissionschanged',function(){refreshPayrollViews()});
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(byId('payrollArea'))render();},200)});else setTimeout(function(){if(byId('payrollArea'))render();},200);
   }
