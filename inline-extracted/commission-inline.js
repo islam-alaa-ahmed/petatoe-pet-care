@@ -15,7 +15,8 @@ const DEFAULT_CONFIG={
     driver:[{target:40000,rate:1.06},{target:55000,rate:1.57},{target:70000,rate:1.82}],
     sales:[{target:40000,rate:.5},{target:55000,rate:.75},{target:70000,rate:1}]
   }}],
-  employees:{groomers:[],drivers:[],sales:[{name:'قاسم',active:true}]}
+  employees:{groomers:[],drivers:[],sales:[{name:'قاسم',active:true}]},
+  identity:{schemaVersion:'commission-identity-v1',vehicleAliases:{},employeeAliases:{}}
 };
 let comTab='overview';
 function petBlock5568_q(id){return document.getElementById(id)}
@@ -49,7 +50,11 @@ function mergeCommissionStore(remote,local){
   out.rules=Array.isArray(out.rules)?out.rules:base.rules;
   out.employees=out.employees&&typeof out.employees==='object'?out.employees:base.employees;
   ['groomers','drivers','sales'].forEach(function(k){out.employees[k]=Array.isArray(out.employees[k])?out.employees[k]:[];});
-  return out;
+  out.identity=out.identity&&typeof out.identity==='object'?out.identity:clone(base.identity);
+  out.identity.schemaVersion='commission-identity-v1';
+  out.identity.vehicleAliases=out.identity.vehicleAliases&&typeof out.identity.vehicleAliases==='object'?out.identity.vehicleAliases:{};
+  out.identity.employeeAliases=out.identity.employeeAliases&&typeof out.identity.employeeAliases==='object'?out.identity.employeeAliases:{};
+  return normalizeCommissionStoreIdentities(out);
 }
 function repository(){return window.PETATOESupabaseRepository||null}
 async function readRemoteCommissionPayload(id,def){
@@ -120,6 +125,9 @@ async function hydrateCommissionRemoteOnce(){
     try{
       const remoteStore=await readRemoteCommissionPayload(COMM_REMOTE_STORE_ID,null);
       commissionStoreCache=mergeCommissionStore(remoteStore,null);
+      if(validCommissionStore(remoteStore)&&JSON.stringify(remoteStore)!==JSON.stringify(commissionStoreCache)){
+        await writeRemoteCommissionPayload(COMM_REMOTE_STORE_ID,commissionStoreCache);
+      }
 
       const remoteSnaps=await readRemoteCommissionPayload(COMM_REMOTE_SNAPSHOT_ID,null);
       commissionSnapsCache=validCommissionSnaps(remoteSnaps)?remoteSnaps:{};
@@ -187,7 +195,59 @@ function comDateISO(v){
   if(v instanceof Date&&!isNaN(v))return v.toISOString().slice(0,10);
   return String(v||'');
 }
-function rowCar(r){return String((r&& (r.van ?? r.car ?? r.vehicle ?? r['السيارة'])) || 'غير محدد').trim() || 'غير محدد'}
+function commissionIdentityNorm(v){
+  return commissionDigits(v).toLowerCase().trim().replace(/[\u064b-\u065f]/g,'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[^a-z0-9\u0600-\u06ff]+/g,' ').replace(/\s+/g,' ').trim();
+}
+function commissionIdentityHash(v){
+  var text=commissionIdentityNorm(v)||'unknown',h=2166136261;
+  for(var i=0;i<text.length;i++){h^=text.charCodeAt(i);h=Math.imul(h,16777619);}
+  return (h>>>0).toString(36);
+}
+function commissionVehicleMasters(){
+  var out=[],seen={};
+  function add(v){v=v||{};var id=String(v.id||v.vehicleId||v.vehicle_id||v.code||v.plate||v.name||'').trim(),name=String(v.name||v.vehicle||v.car||v.plate||id).trim();if(!id||!name)return;var k=commissionIdentityNorm(id);if(seen[k])return;seen[k]=1;out.push({id:id,name:name,aliases:[id,name,v.code,v.plate,v.meta].concat(v.aliases||[]).filter(Boolean)});}
+  try{var p=window.PETATOEPermissions;if(p&&typeof p.getVehicleList==='function')(p.getVehicleList()||[]).forEach(add);}catch(_e){}
+  try{var r=window.PETATOEReferenceRegistry;if(r&&typeof r.getVehicles==='function')(r.getVehicles()||[]).forEach(add);}catch(_e2){}
+  try{var f=window.PETATOERepositories&&window.PETATOERepositories.Fleet;if(f&&typeof f.getSync==='function'){var fs=f.getSync()||{};(fs.vehicles||[]).forEach(add);}}catch(_e3){}
+  return out;
+}
+function commissionUserMasters(){
+  var out=[],seen={};
+  function add(u){u=u||{};var id=String(u.supabase_id||u.user_id||u.userId||u.id||u.uid||'').trim(),name=String(u.fullName||u.full_name||u.name||u.username||id).trim();if(!id||!name)return;var k=commissionIdentityNorm(id);if(seen[k])return;seen[k]=1;out.push({id:id,name:name,aliases:[id,name,u.username,u.fullName,u.full_name,u.email].filter(Boolean)});}
+  try{var a=window.__PETATOE_SETTINGS_API__;if(a&&typeof a.users==='function')(a.users()||[]).forEach(add);}catch(_e){}
+  try{var p=window.PETATOEPermissions;if(p&&typeof p.getUsers==='function')(p.getUsers()||[]).forEach(add);}catch(_e2){}
+  try{var f=window.PETATOEPayrollReadFacade;if(f&&typeof f.employees==='function')(f.employees()||[]).forEach(add);}catch(_e3){}
+  return out;
+}
+function commissionResolveIdentity(kind,input,store){
+  input=input||{};store=store||commissionStoreCache||{};
+  var isVehicle=kind==='vehicle', aliases=store.identity&&store.identity[isVehicle?'vehicleAliases':'employeeAliases']||{};
+  var explicit=String(isVehicle?(input.vehicleId||input.vehicle_id||input.carId||input.car_id||input.vanId||input.van_id||''):(input.employeeId||input.employee_id||input.personId||input.person_id||input.userId||input.user_id||input.id||'')).trim();
+  var display=String(isVehicle?(input.van??input.car??input.vehicle??input['السيارة']??input.name??input.plate??''):(input.person??input.employee??input.name??input.fullName??input.full_name??input.username??'')).trim();
+  var masters=isVehicle?commissionVehicleMasters():commissionUserMasters(), tokens=[explicit,display].filter(Boolean).map(commissionIdentityNorm);
+  var resolvedId='';
+  tokens.some(function(t){if(aliases[t]){resolvedId=String(aliases[t]);return true;}return false;});
+  var master=null;
+  if(resolvedId)master=masters.find(function(m){return String(m.id)===resolvedId;})||null;
+  if(!master){master=masters.find(function(m){return m.aliases.some(function(a){return tokens.indexOf(commissionIdentityNorm(a))>=0;});})||null;if(master)resolvedId=String(master.id);}
+  if(!resolvedId)resolvedId=(isVehicle?'legacy-vehicle-':'legacy-employee-')+commissionIdentityHash(explicit||display||'unknown');
+  var resolvedName=String((master&&master.name)||display||(isVehicle?'غير محدد':'غير محدد')).trim()||'غير محدد';
+  if(store.identity){tokens.forEach(function(t){if(t)aliases[t]=resolvedId;});aliases[commissionIdentityNorm(resolvedId)]=resolvedId;}
+  return {id:resolvedId,name:resolvedName,source:master?'master':(explicit?'explicit':'legacy')};
+}
+function normalizeCommissionStoreIdentities(store){
+  store=store||{};store.identity=store.identity||{schemaVersion:'commission-identity-v1',vehicleAliases:{},employeeAliases:{}};
+  ['groomers','drivers','sales'].forEach(function(type){(store.employees[type]||[]).forEach(function(e){
+    var emp=commissionResolveIdentity('employee',e,store);e.employeeId=emp.id;e.name=e.name||emp.name;
+    if(type!=='sales'){var veh=commissionResolveIdentity('vehicle',{vehicleId:e.vehicleId||e.carId,car:e.car},store);e.vehicleId=veh.id;e.car=e.car||veh.name;}
+  });});
+  return store;
+}
+function rowVehicleIdentity(r){return commissionResolveIdentity('vehicle',r||{},commissionStoreCache||readStore())}
+function rowCar(r){return rowVehicleIdentity(r).name}
+function rowVehicleId(r){return rowVehicleIdentity(r).id}
+function commissionEmployeeIdentity(e){return commissionResolveIdentity('employee',e||{},commissionStoreCache||readStore())}
+window.PETATOECommissionIdentity={version:'1.0.0',normalize:commissionIdentityNorm,resolveVehicle:function(v){return commissionResolveIdentity('vehicle',typeof v==='object'?v:{car:v},commissionStoreCache||readStore())},resolveEmployee:function(v){return commissionResolveIdentity('employee',typeof v==='object'?v:{name:v},commissionStoreCache||readStore())},vehicles:commissionVehicleMasters,employees:commissionUserMasters};
 function rowNetSales(r){
   // Preserve explicit zero and negative values. Falling back merely because totalEx is 0
   // made the same invoice line produce different results depending on which amount field was filled.
@@ -251,14 +311,15 @@ function periodRowsFor(period, carFilter){
   return dataRows().filter(function(r){
     var d=comDateISO(r.date);
     var ok=String(d).slice(0,7)===period;
-    return ok&&(!carFilter||rowCar(r)===carFilter);
+    var vehicle=rowVehicleIdentity(r);
+    return ok&&(!carFilter||vehicle.name===carFilter||vehicle.id===carFilter);
   });
 }
-function sumNetByCar(rows){const map={};rows.forEach(r=>{const car=rowCar(r);const amount=(r&&r.__commissionAmount!==undefined)?comParseNum(r.__commissionAmount):classifyCommissionRow(r).amount;map[car]=(map[car]||0)+amount;});Object.keys(map).forEach(function(car){map[car]=Math.round((map[car]+Number.EPSILON)*100)/100;});return map}
-function invoiceCountByCar(rows){const map={}, fallback={};(rows||[]).forEach(r=>{const car=rowCar(r);if(!map[car])map[car]=new Set();fallback[car]=(fallback[car]||0)+1;const inv=String(r.invoice||'').trim();if(inv)map[car].add(inv);});const out={};Object.keys(fallback).forEach(car=>{out[car]=(map[car]&&map[car].size)?map[car].size:fallback[car];});return out}
+function sumNetByCar(rows){const map={};rows.forEach(function(r){const vehicle=rowVehicleIdentity(r),amount=(r&&r.__commissionAmount!==undefined)?comParseNum(r.__commissionAmount):classifyCommissionRow(r).amount;if(!map[vehicle.id])map[vehicle.id]={vehicleId:vehicle.id,car:vehicle.name,amount:0};map[vehicle.id].amount+=amount;});Object.keys(map).forEach(function(id){map[id].amount=Math.round((map[id].amount+Number.EPSILON)*100)/100;});return map}
+function invoiceCountByCar(rows){const map={},fallback={};(rows||[]).forEach(function(r){const id=rowVehicleId(r);if(!map[id])map[id]=new Set();fallback[id]=(fallback[id]||0)+1;const inv=String(r.invoice||'').trim();if(inv)map[id].add(inv);});const out={};Object.keys(fallback).forEach(function(id){out[id]=(map[id]&&map[id].size)?map[id].size:fallback[id];});return out}
 function carCellHtml(car,count){return `<div class="com-car-cell"><span class="com-car-name">${safe(car)}</span><span class="com-invoice-count">عدد الفواتير: <b>${fmt0(count||0)}</b></span></div>`}
-function activeEmployee(type,car,period){const st=readStore();const arr=(st.employees&&st.employees[type])||[];const hit=arr.find(e=>String(e.car||'')===String(car)&&String(e.from||'0000-00')<=period&&(!e.to||String(e.to)>=period));return hit?hit.name:'غير محدد'}
-function salesPerson(){const st=readStore();const arr=(st.employees&&st.employees.sales)||[];return (arr.find(x=>x.active!==false)||arr[0]||{name:'قاسم'}).name||'قاسم'}
+function activeEmployee(type,car,period,vehicleId){const st=readStore();const arr=(st.employees&&st.employees[type])||[];const wantedId=String(vehicleId||commissionResolveIdentity('vehicle',{car:car},st).id);const hit=arr.find(function(e){const eid=String(e.vehicleId||commissionResolveIdentity('vehicle',{car:e.car},st).id);return (eid===wantedId||String(e.car||'')===String(car))&&String(e.from||'0000-00')<=period&&(!e.to||String(e.to)>=period);});if(!hit)return {id:'unassigned-'+type+'-'+wantedId,name:'غير محدد'};const emp=commissionResolveIdentity('employee',hit,st);return {id:emp.id,name:hit.name||emp.name}}
+function salesPerson(){const st=readStore();const arr=(st.employees&&st.employees.sales)||[];const hit=arr.find(x=>x.active!==false)||arr[0]||{name:'قاسم'};const emp=commissionResolveIdentity('employee',hit,st);return {id:emp.id,name:hit.name||emp.name||'قاسم'}}
 function segmentFor(amount,tiers){
   tiers=(tiers||[]).slice().sort((a,b)=>(+a.target||0)-(+b.target||0));
   amount=+amount||0;
@@ -280,14 +341,14 @@ function buildCalcForPeriod(p, carFilter){
   const sourceRows=periodRowsFor(p,carFilter), rowsForInvoice=commissionEligibleRows(sourceRows), invByCar=invoiceCountByCar(rowsForInvoice), eligibilitySummary=commissionEligibilitySummary(sourceRows);
   const snap=readSnaps()[p];
   if(snap && Array.isArray(snap.groomer) && Array.isArray(snap.driver) && Array.isArray(snap.sales)){
-    const filterCar=arr=>(arr||[]).filter(function(x){return !carFilter || String(x.car||'')===carFilter;});
-    const addInv=arr=>filterCar(arr).map(x=>Object.assign({},x,{invoiceCount:invByCar[x.car]||x.invoiceCount||0}));
-    const g=addInv(snap.groomer), d=addInv(snap.driver), sl=addInv(snap.sales);
+    const filterCar=arr=>(arr||[]).filter(function(x){const vehicle=commissionResolveIdentity('vehicle',{vehicleId:x.vehicleId,car:x.car},readStore());return !carFilter || String(x.car||'')===carFilter || vehicle.id===carFilter;});
+    const addInv=arr=>filterCar(arr).map(function(x){const vehicle=commissionResolveIdentity('vehicle',{vehicleId:x.vehicleId,car:x.car},readStore());return Object.assign({},x,{invoiceCount:invByCar[vehicle.id]||x.invoiceCount||0});});
+    const enrichIdentity=function(arr,type){return addInv(arr).map(function(x){const vehicle=commissionResolveIdentity('vehicle',{vehicleId:x.vehicleId,car:x.car},readStore()),employee=commissionResolveIdentity('employee',{employeeId:x.employeeId||x.personId,name:x.person},readStore());return Object.assign({},x,{car:x.car||vehicle.name,vehicleId:x.vehicleId||vehicle.id,person:x.person||employee.name,personId:x.personId||x.employeeId||employee.id,employeeId:x.employeeId||x.personId||employee.id,type:x.type||type});});};const g=enrichIdentity(snap.groomer,'groomer'), d=enrichIdentity(snap.driver,'driver'), sl=enrichIdentity(snap.sales,'sales');
     return {period:p,rows:rowsForInvoice,eligibilitySummary:snap.eligibilitySummary||eligibilitySummary,cfg:snap.config||getConfig(p),cars:[...new Set([...(g||[]),...(d||[]),...(sl||[])].map(x=>x.car).filter(Boolean))],groomer:g,driver:d,sales:sl,locked:true};
   }
-  const rows=rowsForInvoice, cfg=getConfig(p), by=sumNetByCar(rows), cars=Object.keys(by).sort();
-  function table(type){return cars.map(car=>{
-    const amount=by[car]||0;
+  const rows=rowsForInvoice, cfg=getConfig(p), by=sumNetByCar(rows), vehicleIds=Object.keys(by).sort(function(a,b){return String(by[a].car).localeCompare(String(by[b].car),'ar');});
+  function table(type){return vehicleIds.map(function(vehicleId){
+    const car=by[vehicleId].car, amount=by[vehicleId].amount||0;
     const tiers=(cfg[type]||[]).slice().sort((a,b)=>(+a.target||0)-(+b.target||0));
     let sg=segmentFor(amount,tiers);
 
@@ -302,9 +363,10 @@ function buildCalcForPeriod(p, carFilter){
     }
 
     const commission=amount*((+sg.rate||0)/100);
-    return {type,person:type==='sales'?salesPerson():activeEmployee(type==='groomer'?'groomers':'drivers',car,p),car,invoiceCount:invByCar[car]||0,amount,seg:sg,rate:sg.rate,commission,target:sg.target,ach:sg.target?amount/sg.target*100:0}
+    const vehicle=commissionResolveIdentity('vehicle',{vehicleId:vehicleId,car:car},readStore()), employee=type==='sales'?salesPerson():activeEmployee(type==='groomer'?'groomers':'drivers',car,p,vehicle.id);return {type,person:employee.name,personId:employee.id,employeeId:employee.id,car:vehicle.name,vehicleId:vehicle.id,invoiceCount:invByCar[vehicle.id]||0,amount,seg:sg,rate:sg.rate,commission,target:sg.target,ach:sg.target?amount/sg.target*100:0}
   })}
-  return {period:p,rows,eligibilitySummary,cfg,cars,groomer:table('groomer'),driver:table('driver'),sales:table('sales'),locked:false}
+  const cars=vehicleIds.map(function(id){return by[id].car;});
+  return {period:p,rows,eligibilitySummary,cfg,cars:cars,groomer:table('groomer'),driver:table('driver'),sales:table('sales'),locked:false}
 };
 function total(rows){return rows.reduce((s,r)=>s+(+r.commission||0),0)}
 function fmt(n){return window.PETATOENumber?PETATOENumber.fmt(n):(+n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
@@ -382,7 +444,7 @@ function renderOverview(calc){
   const table=cars.length?`<div class="com-table"><table class="com-overview-stacked-table"><thead><tr><th>#</th><th>السيارة</th><th>المبيعات قبل الضريبة</th><th>القسم</th><th>الاسم</th><th>الشريحة</th><th>النسبة</th><th>العمولة</th><th>إجمالي عمولات السيارة</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td colspan="2">الإجمالي</td><td>${petBlock5568_money(totals.amount)}</td><td>المندوب</td><td colspan="3"></td><td>${petBlock5568_money(totals.s)}</td><td rowspan="3">${petBlock5568_money(totals.g+totals.d+totals.s)}</td></tr><tr><td colspan="3"></td><td>السائق</td><td colspan="3"></td><td>${petBlock5568_money(totals.d)}</td></tr><tr><td colspan="3"></td><td>الجرومر</td><td colspan="3"></td><td>${petBlock5568_money(totals.g)}</td></tr></tfoot></table></div>`:empty;
   return `<div class="com-overview-layout"><div class="com-overview-top"><div class="com-side" id="comSide"></div></div><div class="com-card com-overview-report"><h3>💰 نظرة عامة شاملة للعمولات</h3><p>تقرير بعرض الشاشة بالكامل يجمع كل السيارات، ويعرض المندوب والسائق والجرومر تحت بعض لكل سيارة بدل عرضهم جنب بعض. الشريحة الأولى محسوبة من 0 حتى أول حد، والعمولة Flat Tier على إجمالي مبيعات السيارة قبل الضريبة.</p>${table}</div></div>`;
 }
-function renderEmployees(){const st=readStore();const cars=getCars();function table(type,label){const arr=st.employees[type]||[];return `<div class="com-card"><h3>${label}</h3><div class="com-form-grid"><div><label>الاسم</label><input id="${type}Name" placeholder="اسم الموظف"></div>${type==='sales'?'':`<div><label>السيارة</label><select id="${type}Car">${cars.map(c=>`<option>${safe(c)}</option>`).join('')}</select></div><div><label>من شهر</label><input id="${type}From" type="month" value="${currentPeriod()}"></div><div><label>إلى شهر</label><input id="${type}To" type="month"></div>`}</div><div class="com-actions"><button class="btn btn-primary" data-commission-add-employee="${safe(type)}">➕ إضافة</button></div><div class="com-table"><table><thead><tr><th>#</th><th>الاسم</th>${type==='sales'?'':'<th>السيارة</th><th>من</th><th>إلى</th>'}<th>إجراء</th></tr></thead><tbody>${arr.map((e,i)=>`<tr><td>${i+1}</td><td>${safe(e.name)}</td>${type==='sales'?'':`<td>${safe(e.car)}</td><td>${safe(e.from)}</td><td>${safe(e.to||'مستمر')}</td>`}<td><button class="btn btn-danger" data-commission-delete-employee="${safe(type)}" data-commission-index="${i}">حذف</button></td></tr>`).join('')||`<tr><td colspan="6">لا توجد أسماء محفوظة بعد.</td></tr>`}</tbody></table></div></div>`}return `<div class="com-note">إضافة الأسماء لا تغير أي بيانات قديمة. الربط يتم حسب السيارة والفترة، وده جاهز لاحقًا للتحويل إلى SQL Server.</div><div class="com-grid" style="grid-template-columns:1fr;gap:14px">${table('groomers','🐾 إدارة الجرومرز')}${table('drivers','🚚 إدارة السائقين')}${table('sales','📈 إدارة مسؤولي المبيعات')}</div>`}
+function renderEmployees(){const st=readStore();const cars=getCars().map(function(name){return commissionResolveIdentity('vehicle',{car:name},st);});function table(type,label){const arr=st.employees[type]||[];return `<div class="com-card"><h3>${label}</h3><div class="com-form-grid"><div><label>الاسم</label><input id="${type}Name" placeholder="اسم الموظف"></div>${type==='sales'?'':`<div><label>السيارة</label><select id="${type}Car">${cars.map(c=>`<option value="${safe(c.id)}">${safe(c.name)}</option>`).join('')}</select></div><div><label>من شهر</label><input id="${type}From" type="month" value="${currentPeriod()}"></div><div><label>إلى شهر</label><input id="${type}To" type="month"></div>`}</div><div class="com-actions"><button class="btn btn-primary" data-commission-add-employee="${safe(type)}">➕ إضافة</button></div><div class="com-table"><table><thead><tr><th>#</th><th>الاسم</th>${type==='sales'?'':'<th>السيارة</th><th>من</th><th>إلى</th>'}<th>إجراء</th></tr></thead><tbody>${arr.map((e,i)=>`<tr><td>${i+1}</td><td>${safe(e.name)}</td>${type==='sales'?'':`<td>${safe(e.car)}</td><td>${safe(e.from)}</td><td>${safe(e.to||'مستمر')}</td>`}<td><button class="btn btn-danger" data-commission-delete-employee="${safe(type)}" data-commission-index="${i}">حذف</button></td></tr>`).join('')||`<tr><td colspan="6">لا توجد أسماء محفوظة بعد.</td></tr>`}</tbody></table></div></div>`}return `<div class="com-note">إضافة الأسماء لا تغير أي بيانات قديمة. الربط يتم حسب السيارة والفترة، وده جاهز لاحقًا للتحويل إلى SQL Server.</div><div class="com-grid" style="grid-template-columns:1fr;gap:14px">${table('groomers','🐾 إدارة الجرومرز')}${table('drivers','🚚 إدارة السائقين')}${table('sales','📈 إدارة مسؤولي المبيعات')}</div>`}
 function renderSettings(){const p=currentPeriod(), cfg=getConfig(p);function card(type,title){return `<div class="com-tier-card"><h4>${title}</h4>${[0,1,2].map(i=>`<div class="com-tier-row"><input id="${type}Target${i}" type="number" value="${cfg[type][i].target}" placeholder="Target"><input id="${type}Rate${i}" type="number" step="0.01" value="${cfg[type][i].rate}" placeholder="%"></div>`).join('')}</div>`}return `<div class="com-note">أي تعديل للشرائح يتم تطبيقه من الشهر المختار وما بعده فقط. الشهور السابقة تظل على إعداداتها القديمة أو Snapshot المقفل.</div><div class="com-settings-grid">${card('groomer','🐾 شرائح الجرومر')}${card('driver','🚚 شرائح السائق')}${card('sales','📈 شرائح مسؤول المبيعات')}</div><div class="com-actions"><button class="btn btn-green" data-commission-save-settings="1">💾 حفظ الشرائح من هذا الشهر وما بعده</button></div>`}
 
 function commissionCurrentUser(){
@@ -609,10 +671,10 @@ function renderArchive(){const snaps=readSnaps();const keys=Object.keys(snaps).s
 window.renderCommissionSystem=function(){hydrateCommissionRemoteOnce();fillFilters();const calc=buildCalc();renderCommissionKpis(calc);document.querySelectorAll('.com-tab').forEach(b=>b.classList.toggle('active',b.dataset.comTab===comTab));let body='';if(comTab==='overview')body=renderOverview(calc);if(comTab==='groomer')body=`<div class="com-card"><h3>🐾 تقرير عمولات الجرومرز</h3><p>لكل سيارة حسب مبيعاتها قبل الضريبة.</p>${rowsHtml(calc.groomer,'groomer')}</div>`;if(comTab==='driver')body=`<div class="com-card"><h3>🚚 تقرير عمولات السائقين</h3><p>لكل سيارة حسب مبيعاتها قبل الضريبة.</p>${rowsHtml(calc.driver,'driver')}</div>`;if(comTab==='sales')body=`<div class="com-card"><h3>📈 تقرير عمولة مسؤول المبيعات</h3><p>يتم حساب كل سيارة منفصلة: أقل من 40,000 لا يستحق عمولة، ومن 40,000 فأكثر تُحسب الشريحة على كامل مبيعات السيارة.</p>${rowsHtml(calc.sales,'sales')}</div>`;if(comTab==='employees')body=renderEmployees();if(comTab==='settings')body=renderSettings();if(comTab==='archive')body=renderArchive();const area=petBlock5568_q('comArea');if(area)comSafeHtml(area,body,'commission tab body');renderSide(calc)};
 window.setCommissionTab=function(t){comTab=t;renderCommissionSystem()};
 window.commissionSelectRow=function(i,kind){const calc=buildCalc();const arr=kind==='groomer'?calc.groomer:kind==='driver'?calc.driver:calc.sales;const r=arr[i];if(!r)return;const side=petBlock5568_q('comSide');if(side){comSafeHtml(side,`<div class="com-detail-box"><h3>📌 تفاصيل السيارة</h3><div class="row"><span>السيارة</span><b>${safe(r.car)}</b></div><div class="row"><span>عدد الفواتير</span><b>${fmt0(r.invoiceCount||0)}</b></div><div class="row"><span>الموظف</span><b>${safe(r.person)}</b></div><div class="row"><span>المبيعات قبل الضريبة</span><b>${petBlock5568_money(r.amount)}</b></div><div class="row"><span>الهدف الحالي</span><b>${petBlock5568_money(r.target)}</b></div><div class="row"><span>تحقيق الهدف</span><b>${fmt(r.ach)}%</b></div><div class="row"><span>الشريحة</span><b>${segLabel(r.seg)}</b></div><div class="row"><span>النسبة</span><b>${fmt(r.rate)}%</b></div><div class="row"><span>العمولة</span><b>${petBlock5568_money(r.commission)}</b></div></div>`,'commission selected row')}}
-window.commissionAddEmployee=function(type){const st=readStore();st.employees=st.employees||{groomers:[],drivers:[],sales:[]};st.employees[type]=st.employees[type]||[];const name=petBlock5568_q(type+'Name')?.value?.trim();if(!name){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب الاسم أولاً'):'اكتب الاسم أولاً');return}if(type==='sales'){st.employees[type].push({name,active:true});}else{const car=petBlock5568_q(type+'Car')?.value, from=petBlock5568_q(type+'From')?.value||currentPeriod(), to=petBlock5568_q(type+'To')?.value||'';if(!car){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اختر السيارة'):'اختر السيارة');return}st.employees[type].push({name,car,from,to});}writeStore(st);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حفظ الاسم'):'تم حفظ الاسم');renderCommissionSystem()}
+window.commissionAddEmployee=function(type){const st=readStore();st.employees=st.employees||{groomers:[],drivers:[],sales:[]};st.employees[type]=st.employees[type]||[];const name=petBlock5568_q(type+'Name')?.value?.trim();if(!name){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اكتب الاسم أولاً'):'اكتب الاسم أولاً');return}const employee=commissionResolveIdentity('employee',{name:name},st);if(type==='sales'){st.employees[type].push({name:name,employeeId:employee.id,active:true});}else{const carId=petBlock5568_q(type+'Car')?.value, vehicle=commissionResolveIdentity('vehicle',{vehicleId:carId},st), car=vehicle.name, from=petBlock5568_q(type+'From')?.value||currentPeriod(), to=petBlock5568_q(type+'To')?.value||'';if(!carId){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('اختر السيارة'):'اختر السيارة');return}st.employees[type].push({name:name,employeeId:employee.id,car:car,vehicleId:vehicle.id,from:from,to:to});}writeStore(st);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حفظ الاسم'):'تم حفظ الاسم');renderCommissionSystem()}
 window.commissionDeleteEmployee=function(type,i){const st=readStore();if(st.employees&&st.employees[type]){st.employees[type].splice(i,1);writeStore(st);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم الحذف'):'تم الحذف');renderCommissionSystem()}}
 window.commissionSaveSettings=function(){const st=readStore(), p=currentPeriod();function get(type){return [0,1,2].map(i=>({target:parseNum(petBlock5568_q(type+'Target'+i)?.value),rate:parseNum(petBlock5568_q(type+'Rate'+i)?.value)})).filter(x=>x.target>0).sort((a,b)=>a.target-b.target)}const cfg={groomer:get('groomer'),driver:get('driver'),sales:get('sales')};if(cfg.groomer.length<3||cfg.driver.length<3||cfg.sales.length<3){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('يجب إدخال 3 شرائح لكل فئة'):'يجب إدخال 3 شرائح لكل فئة');return}st.rules=(st.rules||[]).filter(r=>r.from!==p);st.rules.push({from:p,config:cfg,savedAt:new Date().toISOString()});writeStore(st);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم حفظ الشرائح من الشهر المختار وما بعده'):'تم حفظ الشرائح من الشهر المختار وما بعده');renderCommissionSystem()}
-window.commissionLockMonth=async function(){const calc=buildCalc(), snaps=readSnaps();if(snaps[calc.period]&&!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('الشهر مقفول بالفعل. هل تريد استبدال Snapshot المحفوظ؟'):'الشهر مقفول بالفعل. هل تريد استبدال Snapshot المحفوظ؟'))return;const now=new Date();snaps[calc.period]={schemaVersion:'commission-snapshot-v1',status:'locked',period:calc.period,cars:calc.cars.length,groomerTotal:total(calc.groomer),driverTotal:total(calc.driver),salesTotal:total(calc.sales),total:total(calc.groomer)+total(calc.driver)+total(calc.sales),config:clone(calc.cfg),groomer:clone(calc.groomer),driver:clone(calc.driver),sales:clone(calc.sales),eligibilitySummary:clone(calc.eligibilitySummary||commissionEligibilitySummary(calc.rows||[])),lockedAt:now.toISOString(),savedAt:now.toLocaleString('ar-EG')};try{await writeSnaps(snaps);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم قفل الشهر وحفظ Snapshot'):'تم قفل الشهر وحفظ Snapshot');renderCommissionSystem()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission snapshot lock failed',e);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر حفظ قفل الشهر في Supabase'):'تعذر حفظ قفل الشهر في Supabase')} }
+window.commissionLockMonth=async function(){const calc=buildCalc(), snaps=readSnaps();if(snaps[calc.period]&&!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('الشهر مقفول بالفعل. هل تريد استبدال Snapshot المحفوظ؟'):'الشهر مقفول بالفعل. هل تريد استبدال Snapshot المحفوظ؟'))return;const now=new Date();snaps[calc.period]={schemaVersion:'commission-snapshot-v2',status:'locked',period:calc.period,cars:calc.cars.length,groomerTotal:total(calc.groomer),driverTotal:total(calc.driver),salesTotal:total(calc.sales),total:total(calc.groomer)+total(calc.driver)+total(calc.sales),config:clone(calc.cfg),groomer:clone(calc.groomer),driver:clone(calc.driver),sales:clone(calc.sales),eligibilitySummary:clone(calc.eligibilitySummary||commissionEligibilitySummary(calc.rows||[])),identitySchemaVersion:'commission-identity-v1',lockedAt:now.toISOString(),savedAt:now.toLocaleString('ar-EG')};try{await writeSnaps(snaps);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم قفل الشهر وحفظ Snapshot'):'تم قفل الشهر وحفظ Snapshot');renderCommissionSystem()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission snapshot lock failed',e);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر حفظ قفل الشهر في Supabase'):'تعذر حفظ قفل الشهر في Supabase')} }
 window.commissionUnlockMonth=async function(period){period=String(period||'').trim();if(!period){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لم يتم تحديد الشهر'):'لم يتم تحديد الشهر');return}const snaps=readSnaps();if(!snaps[period]){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('الشهر غير موجود في الأرشيف'):'الشهر غير موجود في الأرشيف');renderCommissionSystem();return}if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('هل تريد إلغاء قفل شهر '):'هل تريد إلغاء قفل شهر '+period+'؟ سيتم حذف Snapshot المحفوظ فقط، ويمكنك إعادة احتسابه وقفله من البيانات الحالية.'))return;const removed=snaps[period];delete snaps[period];try{await writeSnaps(snaps);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم إلغاء قفل الشهر من الأرشيف'):'تم إلغاء قفل الشهر من الأرشيف');renderCommissionSystem()}catch(e){snaps[period]=removed;window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('commission snapshot unlock failed',e);toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر إلغاء قفل الشهر في Supabase'):'تعذر إلغاء قفل الشهر في Supabase')} }
 window.commissionRecalcMonth=function(){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم إعادة احتساب الشهر من البيانات الحالية بدون تغيير أي تقرير قديم'):'تم إعادة احتساب الشهر من البيانات الحالية بدون تغيير أي تقرير قديم');renderCommissionSystem()}
 function injectPanel(){if(petBlock5568_q('commissions'))return;const page=document.querySelector('section.page');if(!page)return;const panel=document.createElement('div');panel.id='commissions';panel.className='panel';comSafeHtml(panel,`<div class="com-page"><div class="com-hero"><div><h2>💰 نظام العمولات</h2><p>إدارة وحساب عمولات الجرومرز والسائقين ومسؤول المبيعات على مبيعات السيارات قبل الضريبة، مع حفظ شهري مستقل.</p></div><div class="com-icon">💰</div></div><div class="com-toolbar"><label>السنة</label><select id="comYear" data-commission-render="1"></select><label>الشهر</label><select id="comMonth" data-commission-render="1"></select><label>السيارة</label><select id="comCar" data-commission-render="1"><option value="">كل السيارات</option></select><button class="btn btn-primary" data-commission-action="recalc">🔄 إعادة احتساب الشهر</button><button class="btn btn-green" data-commission-action="lock">🔒 قفل الشهر</button></div><div class="com-kpis" id="comKpis"></div><div class="com-tabs"><button class="com-tab active" data-com-tab="overview">نظرة عامة</button><button class="com-tab" data-com-tab="groomer">عمولات الجرومرز</button><button class="com-tab" data-com-tab="driver">عمولات السائقين</button><button class="com-tab" data-com-tab="sales">مسؤول المبيعات</button><button class="com-tab" data-com-tab="employees">إدارة الأسماء</button><button class="com-tab" data-com-tab="settings">إعدادات الشرائح</button><button class="com-tab" data-com-tab="archive">الأرشيف</button></div><div id="comArea"></div></div>`,'commission panel shell');page.appendChild(panel)}

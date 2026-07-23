@@ -1,62 +1,39 @@
-# Verification Report — Phase 2B.1
+# Verification Report — Phase 2B.2
 
-## Implemented behavior
+## Syntax
 
-A canonical runtime API is now exposed as:
+- `inline-extracted/commission-inline.js`: PASSED (`node --check`)
 
-`window.PETATOECommissionEligibility`
+## Identity Scenarios
 
-It provides:
-- `classify(row)`
-- `eligibleRows(rows)`
-- `summary(rows)`
-- `netAmount(row)`
+- vehicle display name resolves to master vehicle ID: PASSED
+- explicit vehicle ID resolves to current master display name: PASSED
+- employee display name resolves to application user ID: PASSED
+- explicit employee ID resolves to current employee display name: PASSED
+- unmatched legacy vehicle receives deterministic stable ID: PASSED
+- whitespace-normalized legacy identity remains stable: PASSED
 
-## Deterministic policy
+Result: **6 / 6 PASSED**
 
-- Normal positive sale: included as positive commission sales.
-- Explicit zero amount: excluded; no fallback amount is substituted.
-- Cancelled / void / reversed row: excluded with amount zero.
-- Refund / return / credit note: included as a negative adjustment using `-abs(net amount)`.
-- Unlabelled negative value: included as a negative adjustment.
-- Missing `totalEx`: falls back to `totalInc - tax`, then `price × qty - abs(discount)` without clamping negatives.
+## Integration Checks
 
-Status detection is limited to status/type fields and explicit boolean flags; item names and customer names are not inspected, preventing false exclusions caused by ordinary descriptive text.
+- commission store identity schema initialized: PASSED
+- existing employee assignments normalized with employee IDs: PASSED
+- driver/groomer assignments normalized with vehicle IDs: PASSED
+- live commission rows include `personId`, `employeeId`, and `vehicleId`: PASSED
+- old snapshots are enriched in memory without rewriting historical display names: PASSED
+- new snapshots use `commission-snapshot-v2` and `commission-identity-v1`: PASSED
+- vehicle totals and invoice counts are grouped by stable vehicle ID: PASSED
+- legacy name compatibility retained: PASSED
 
-## Integration
+## Project Gates
 
-- Live monthly calculations aggregate only classified eligible rows.
-- Invoice counts use only contributing rows.
-- Net sales per vehicle are rounded to two decimals after aggregation.
-- Locked snapshots retain `eligibilitySummary` for reproducibility and audit context.
-- Existing locked snapshot amounts are not recalculated or modified.
+- Enterprise Localization Certification: PASSED
+- missing stored texts: 0
+- missing counterparts: 0
+- Production Localization Lockdown: PASSED
+- Mobile Enterprise UI v10: 64 / 64 PASSED
 
-## Automated checks
+## Environment Limitation
 
-- JavaScript syntax: PASSED.
-- Eligibility classifier scenarios: 8 / 8 PASSED.
-- Positive sale: PASSED.
-- Explicit-zero preservation: PASSED.
-- English cancellation: PASSED.
-- Arabic cancellation: PASSED.
-- Positive refund converted to negative adjustment: PASSED.
-- Negative credit note remains negative: PASSED.
-- Unlabelled negative value: PASSED.
-- Negative fallback formula: PASSED.
-- Eligibility summary totals: PASSED.
-- Enterprise Localization Certification: PASSED (`missingStoredTexts: 0`, `missingCounterparts: 0`).
-- Production Localization Lockdown: PASSED.
-- Mobile Enterprise UI v10: 64 / 64 PASSED.
-
-## Scope exclusions
-
-This phase does not change:
-- commission tiers or rates;
-- employee/vehicle assignment logic;
-- payroll formulas;
-- invoice persistence;
-- Supabase schema;
-- Operations;
-- UI layout.
-
-A live Supabase write was not required because this phase changes only deterministic in-browser commission classification and snapshot metadata creation.
+No live write was performed against the production Supabase project. Verification covers syntax, local runtime identity scenarios, migration logic, and repository certification gates. A smoke test after deployment should open Commissions once to persist identity migration, then verify one driver/groomer assignment and one locked test snapshot.

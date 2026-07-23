@@ -1,28 +1,39 @@
-# PETATOE v10 — Commissions Phase 2B.1
-## Commission Eligibility Classifier — Root Cause Report
+# PETATOE Commissions — Phase 2B.2 Root Cause Report
 
 ## Baseline
-`petatoe-pet-care-main (8).zip`
 
-## Confirmed root causes
+`petatoe-pet-care-main (8).zip` plus the previously delivered Phase 2B.1 commission eligibility file.
 
-1. `rowNetSales()` treated an explicit `totalEx = 0` as if the field were missing, then fell back to `totalInc - tax` or `price × qty - discount`. The same invoice line could therefore produce a different commission amount depending on which fields were populated.
-2. The fallback formula forced negative values to zero using `Math.max(0, ...)`, so a return/credit represented through price, quantity, and discount could disappear instead of reducing eligible sales.
-3. Commission aggregation accepted every monthly sales row without an explicit eligibility decision for cancelled, voided, reversed, refunded, returned, or credit-note records.
-4. There was no canonical API shared by live calculation and snapshot creation to explain why a row was included, excluded, or treated as a negative adjustment.
+## Confirmed Root Cause
 
-## File responsible
-`inline-extracted/commission-inline.js`
+The commission engine used mutable display names as operational keys:
 
-## Functions affected
-- `rowNetSales()`
-- `sumNetByCar()`
-- `buildCalcForPeriod()`
-- `commissionLockMonth()` snapshot payload
+- vehicle sales grouping used the displayed vehicle name;
+- groomer and driver assignments matched `employee.car` to the displayed vehicle name;
+- commission result rows stored only `person` and `car` names;
+- new commission employee assignments did not persist employee or vehicle IDs;
+- snapshots did not declare an identity schema or guarantee identity fields.
 
-## Impact before the fix
-- Cancelled or voided invoices could contribute to commission sales.
-- Refunds and credit notes could be added as positive sales or ignored depending on their stored amount sign.
-- Explicit zero values could be replaced by a fallback amount.
-- Negative fallback values could be silently clamped to zero.
-- The monthly snapshot did not retain a summary of included/excluded commission source rows.
+Changing a name, inconsistent spacing, or two employees with the same display name could therefore change or ambiguously map a live commission calculation.
+
+## Implemented Scope
+
+A canonical compatibility identity layer was added inside the commission engine. It resolves:
+
+- vehicles from explicit row IDs, Setup/Reference/Fleet master records, persisted aliases, then deterministic legacy IDs;
+- employees from explicit IDs, application users, payroll employees, persisted aliases, then deterministic legacy IDs.
+
+Existing commission employee configuration is normalized and migrated to include stable `employeeId` and `vehicleId` fields. Newly added assignments store those IDs immediately.
+
+Live result rows and new snapshots include both stable IDs and frozen display names.
+
+## Deliberately Not Changed
+
+- commission tiers or formulas;
+- invoice eligibility rules from Phase 2B.1;
+- payroll formulas;
+- the current business rule that selects one active global sales employee;
+- Supabase schema;
+- Operations or UI layout.
+
+The global salesperson assignment remains a separate business-mapping issue and was not silently redesigned in this identity-only phase.
