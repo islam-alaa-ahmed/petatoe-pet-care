@@ -1,13 +1,12 @@
-PETATOE Commissions — Employee & Vehicle Identity Resolution Phase 2B.2
+PETATOE Commissions — Commission Traceability Engine Phase 2B.3
 
-- Add one canonical commission identity resolver for vehicles and employees
-- Resolve vehicles from explicit IDs, reference/setup/fleet master data, persisted aliases, and deterministic legacy IDs
-- Resolve employees from explicit IDs, application users, payroll employees, persisted aliases, and deterministic legacy IDs
-- Migrate existing commission employee assignments to stable employeeId and vehicleId values
-- Persist identity aliases in the canonical commission reference store
-- Group live commission sales and invoice counts by stable vehicle ID instead of mutable display name
-- Store personId, employeeId, and vehicleId on calculated commission rows
-- Add identity fields to newly locked commission snapshots using commission-snapshot-v2
-- Enrich legacy snapshots in memory while preserving their historical display names
-- Keep commission formulas, eligibility rules, payroll formulas, Operations, Supabase schema, and UI layout unchanged
-- Leave global salesperson business assignment unchanged for a separate mapping phase
+- Add one canonical PETATOECommissionTraceability API for invoice-to-commission evidence
+- Generate deterministic trace IDs for every source invoice line
+- Capture invoice ID, invoice number, date, customer, line ID, item, quantity, vehicle ID, and eligibility decision
+- Link each eligible line to the resolved employee and vehicle identities
+- Calculate and store the commission contribution of each eligible invoice line
+- Attach trace arrays and summaries to live groomer, driver, and sales commission results
+- Persist source and result traceability in newly locked monthly snapshots
+- Upgrade new snapshots to commission-snapshot-v3 with commission-trace-v1 metadata
+- Preserve backward compatibility for older snapshots without traceability data
+- Keep commission tiers, eligibility rules, payroll formulas, Operations, Supabase schema, and UI layout unchanged

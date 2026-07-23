@@ -1,39 +1,18 @@
-# PETATOE Commissions — Phase 2B.2 Root Cause Report
+# Root Cause Report — Phase 2B.3
 
-## Baseline
+## Confirmed root cause
 
-`petatoe-pet-care-main (8).zip` plus the previously delivered Phase 2B.1 commission eligibility file.
+The commission engine stored aggregate results per employee and vehicle, but did not persist the invoice and invoice-line contributions that produced each result. The eligibility classifier could determine whether a row contributed, and the identity layer could resolve employee and vehicle IDs, yet no canonical trace record linked those decisions to the calculated commission or the locked snapshot.
 
-## Confirmed Root Cause
+## Impact
 
-The commission engine used mutable display names as operational keys:
+- A commission amount could not be reconciled to its contributing invoice lines.
+- Excluded rows did not have a persisted exclusion reason inside the snapshot.
+- Payroll and later audit screens had no stable reference to request trace details.
+- Historical snapshots contained totals but lacked financial evidence at invoice-line level.
 
-- vehicle sales grouping used the displayed vehicle name;
-- groomer and driver assignments matched `employee.car` to the displayed vehicle name;
-- commission result rows stored only `person` and `car` names;
-- new commission employee assignments did not persist employee or vehicle IDs;
-- snapshots did not declare an identity schema or guarantee identity fields.
+## Limited fix
 
-Changing a name, inconsistent spacing, or two employees with the same display name could therefore change or ambiguously map a live commission calculation.
+A canonical `PETATOECommissionTraceability` API was added inside the existing commission engine. It creates deterministic trace IDs, resolves invoice and line references, stores eligibility decisions, links stable employee and vehicle identities, calculates each line's commission contribution, and persists traceability in newly locked snapshots.
 
-## Implemented Scope
-
-A canonical compatibility identity layer was added inside the commission engine. It resolves:
-
-- vehicles from explicit row IDs, Setup/Reference/Fleet master records, persisted aliases, then deterministic legacy IDs;
-- employees from explicit IDs, application users, payroll employees, persisted aliases, then deterministic legacy IDs.
-
-Existing commission employee configuration is normalized and migrated to include stable `employeeId` and `vehicleId` fields. Newly added assignments store those IDs immediately.
-
-Live result rows and new snapshots include both stable IDs and frozen display names.
-
-## Deliberately Not Changed
-
-- commission tiers or formulas;
-- invoice eligibility rules from Phase 2B.1;
-- payroll formulas;
-- the current business rule that selects one active global sales employee;
-- Supabase schema;
-- Operations or UI layout.
-
-The global salesperson assignment remains a separate business-mapping issue and was not silently redesigned in this identity-only phase.
+No commission tier, eligibility, payroll, Operations, UI layout, or Supabase schema was changed.

@@ -1,39 +1,32 @@
-# Verification Report — Phase 2B.2
+# Verification Report — Phase 2B.3
 
 ## Syntax
 
 - `inline-extracted/commission-inline.js`: PASSED (`node --check`)
 
-## Identity Scenarios
+## Traceability integration checks
 
-- vehicle display name resolves to master vehicle ID: PASSED
-- explicit vehicle ID resolves to current master display name: PASSED
-- employee display name resolves to application user ID: PASSED
-- explicit employee ID resolves to current employee display name: PASSED
-- unmatched legacy vehicle receives deterministic stable ID: PASSED
-- whitespace-normalized legacy identity remains stable: PASSED
+- Canonical traceability API: PASSED
+- Deterministic `traceId`: PASSED
+- Invoice ID and invoice number capture: PASSED
+- Invoice-line ID capture: PASSED
+- Eligibility reason capture: PASSED
+- Stable employee and vehicle identity linkage: PASSED
+- Line-level eligible amount capture: PASSED
+- Line-level commission contribution: PASSED
+- Live result trace attachment: PASSED
+- Snapshot trace persistence: PASSED
+- Snapshot schema upgraded to `commission-snapshot-v3`: PASSED
+- Legacy snapshot read fallback: PASSED
 
-Result: **6 / 6 PASSED**
-
-## Integration Checks
-
-- commission store identity schema initialized: PASSED
-- existing employee assignments normalized with employee IDs: PASSED
-- driver/groomer assignments normalized with vehicle IDs: PASSED
-- live commission rows include `personId`, `employeeId`, and `vehicleId`: PASSED
-- old snapshots are enriched in memory without rewriting historical display names: PASSED
-- new snapshots use `commission-snapshot-v2` and `commission-identity-v1`: PASSED
-- vehicle totals and invoice counts are grouped by stable vehicle ID: PASSED
-- legacy name compatibility retained: PASSED
-
-## Project Gates
+## Production gates
 
 - Enterprise Localization Certification: PASSED
-- missing stored texts: 0
-- missing counterparts: 0
+- Missing stored texts: 0
+- Missing counterparts: 0
 - Production Localization Lockdown: PASSED
 - Mobile Enterprise UI v10: 64 / 64 PASSED
 
-## Environment Limitation
+## Environment limitation
 
-No live write was performed against the production Supabase project. Verification covers syntax, local runtime identity scenarios, migration logic, and repository certification gates. A smoke test after deployment should open Commissions once to persist identity migration, then verify one driver/groomer assignment and one locked test snapshot.
+A real Supabase write was not executed from this environment. The JavaScript integration, snapshot payload, syntax, static trace contracts, and project certification gates were verified. A staging smoke test should lock one test month and confirm that `traceabilitySchemaVersion` and the trace payload are present after refresh.
