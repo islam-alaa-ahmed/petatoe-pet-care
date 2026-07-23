@@ -43,6 +43,18 @@ function clone(o){return JSON.parse(JSON.stringify(o||{}))}
 function ym(y,m){return String(y||'').padStart(4,'0')+'-'+String(m||'').padStart(2,'0')}
 function currentPeriod(){return ym(petBlock5568_q('comYear')?.value||new Date().getFullYear(), petBlock5568_q('comMonth')?.value||String(new Date().getMonth()+1).padStart(2,'0'))}
 function validCommissionStore(s){return !!(s&&typeof s==='object'&&s.rules&&s.employees)}
+function commissionValidPeriodKey(value){return /^\d{4}-(0[1-9]|1[0-2])$/.test(String(value||'').trim())}
+function normalizeCommissionSnaps(value){
+  var source=(value&&typeof value==='object'&&!Array.isArray(value))?value:{};
+  var out={};
+  Object.keys(source).forEach(function(key){
+    var period=String(key||'').trim();
+    var snapshot=source[key];
+    if(!commissionValidPeriodKey(period)||!snapshot||typeof snapshot!=='object'||Array.isArray(snapshot))return;
+    out[period]=snapshot;
+  });
+  return out;
+}
 function validCommissionSnaps(s){return !!(s&&typeof s==='object'&&!Array.isArray(s))}
 function mergeCommissionStore(remote,local){
   const base=clone(DEFAULT_CONFIG);
@@ -104,14 +116,14 @@ async function writeStore(s){
   return {ok:true,sourceId:COMM_REMOTE_STORE_ID};
 }
 function readSnaps(){
-  if(validCommissionSnaps(commissionSnapsCache))return clone(commissionSnapsCache);
+  if(validCommissionSnaps(commissionSnapsCache))return clone(normalizeCommissionSnaps(commissionSnapsCache));
   commissionSnapsCache={};
   hydrateCommissionRemoteOnce();
   return clone(commissionSnapsCache);
 }
 async function writeSnaps(s){
-  const next=validCommissionSnaps(s)?clone(s):{};
-  const previous=validCommissionSnaps(commissionSnapsCache)?clone(commissionSnapsCache):{};
+  const next=normalizeCommissionSnaps(s);
+  const previous=normalizeCommissionSnaps(commissionSnapsCache);
   const ok=await writeRemoteCommissionPayload(COMM_REMOTE_SNAPSHOT_ID,next);
   if(!ok){
     commissionSnapsCache=previous;
@@ -135,7 +147,10 @@ async function hydrateCommissionRemoteOnce(){
       }
 
       const remoteSnaps=await readRemoteCommissionPayload(COMM_REMOTE_SNAPSHOT_ID,null);
-      commissionSnapsCache=validCommissionSnaps(remoteSnaps)?remoteSnaps:{};
+      commissionSnapsCache=normalizeCommissionSnaps(remoteSnaps);
+      if(validCommissionSnaps(remoteSnaps)&&JSON.stringify(remoteSnaps)!==JSON.stringify(commissionSnapsCache)){
+        await writeRemoteCommissionPayload(COMM_REMOTE_SNAPSHOT_ID,commissionSnapsCache);
+      }
       commissionRemoteLoaded=true;
       if(document.getElementById('commissions')&&window.renderCommissionSystem)window.renderCommissionSystem();
       return true;
@@ -825,7 +840,7 @@ function renderCommissionStatement(calc){
   return `<div class="com-card com-statement-card com-statement-print" id="commissionStatementExportArea" data-commission-print="1"><div class="com-statement-print-head"><h3>📄 كشف العمولة</h3><div class="com-statement-print-meta"><span>السنة: ${safe(yearLabel)}</span><span>الشهر: ${safe(monthLabel)}</span><span>السيارة: ${safe(carLabel)}</span>${selectedPerson?`<span>الموظف: ${safe(selectedPerson)}</span>`:''}</div></div>${filters}<div class="com-kpis com-statement-kpis"><div class="com-kpi" style="--accent:var(--blue)"><span>إجمالي المبيعات / الخدمات</span><b>${petBlock5568_money(totalAmount)}</b><small>${fmt0(rows.length)} بند عمولة</small></div><div class="com-kpi" style="--accent:var(--yellow)"><span>متوسط نسبة العمولة</span><b>${fmt(avgRate)}%</b><small>حسب إجمالي العمولة إلى المبيعات</small></div><div class="com-kpi" style="--accent:var(--cyan)"><span>إجمالي العمولة</span><b>${petBlock5568_money(totalCommission)}</b><small>إجمالي العمولة المحسوبة</small></div></div><div class="com-actions"><button class="btn btn-green" data-export-type="excel" data-export-target="#commissionStatementExportArea" data-export-filename="PETATOE_commission_statement" data-export-title="كشف العمولة">📊 Excel</button><button class="btn btn-danger" data-export-type="pdf" data-export-target="#commissionStatementExportArea" data-export-filename="PETATOE_commission_statement" data-export-title="كشف العمولة">📄 PDF</button><button class="btn btn-ghost" data-export-type="print" data-export-target="#commissionStatementExportArea" data-export-title="كشف العمولة">🖨️ طباعة</button></div><div class="com-table"><table><thead><tr><th>#</th><th>الفترة</th><th>الموظف</th><th>السيارة</th><th>الشريحة</th><th>المبيعات قبل الضريبة</th><th>النسبة</th><th>العمولة</th></tr></thead><tbody>${body}</tbody><tfoot><tr><td colspan="5">الإجمالي</td><td>${petBlock5568_money(totalAmount)}</td><td>${fmt(avgRate)}%</td><td>${petBlock5568_money(totalCommission)}</td></tr></tfoot></table></div></div>`;
 }
 
-function renderArchive(){const snaps=readSnaps();const keys=Object.keys(snaps).sort().reverse();return `<div class="com-card"><h3>📚 أرشيف العمولات الشهرية</h3><p>كل شهر مقفل يحتفظ بالأرقام والإعدادات كما كانت وقت القفل.</p><div class="com-table"><table><thead><tr><th>الشهر</th><th>السيارات</th><th>Groomers</th><th>Drivers</th><th>Sales</th><th>الإجمالي</th><th>تاريخ الحفظ</th><th>إجراء</th></tr></thead><tbody>${keys.map(k=>{const s=snaps[k];return `<tr><td>${k}</td><td>${fmt0(s.cars||0)}</td><td>${petBlock5568_money(s.groomerTotal||0)}</td><td>${petBlock5568_money(s.driverTotal||0)}</td><td>${petBlock5568_money(s.salesTotal||0)}</td><td>${petBlock5568_money(s.total||0)}</td><td>${safe(s.savedAt||'')}</td><td><button type="button" class="btn btn-danger" data-commission-action="unlock" data-commission-period="${safe(k)}">🔓 إلغاء قفل الشهر</button></td></tr>`}).join('')||'<tr><td colspan="8">لا توجد شهور مقفلة بعد.</td></tr>'}</tbody></table></div></div>`}
+function renderArchive(){const snaps=normalizeCommissionSnaps(readSnaps());const keys=Object.keys(snaps).sort().reverse();return `<div class="com-card"><h3>📚 أرشيف العمولات الشهرية</h3><p>كل شهر مقفل يحتفظ بالأرقام والإعدادات كما كانت وقت القفل.</p><div class="com-table"><table><thead><tr><th>الشهر</th><th>السيارات</th><th>Groomers</th><th>Drivers</th><th>Sales</th><th>الإجمالي</th><th>تاريخ الحفظ</th><th>إجراء</th></tr></thead><tbody>${keys.map(k=>{const s=snaps[k];return `<tr><td>${k}</td><td>${fmt0(s.cars||0)}</td><td>${petBlock5568_money(s.groomerTotal||0)}</td><td>${petBlock5568_money(s.driverTotal||0)}</td><td>${petBlock5568_money(s.salesTotal||0)}</td><td>${petBlock5568_money(s.total||0)}</td><td>${safe(s.savedAt||'')}</td><td><button type="button" class="btn btn-danger" data-commission-action="unlock" data-commission-period="${safe(k)}">🔓 إلغاء قفل الشهر</button></td></tr>`}).join('')||'<tr><td colspan="8">لا توجد شهور مقفلة بعد.</td></tr>'}</tbody></table></div></div>`}
 window.renderCommissionSystem=function(){hydrateCommissionRemoteOnce();fillFilters();const calc=buildCalc();renderCommissionKpis(calc);document.querySelectorAll('.com-tab').forEach(b=>b.classList.toggle('active',b.dataset.comTab===comTab));let body='';if(comTab==='overview')body=renderOverview(calc);if(comTab==='groomer')body=`<div class="com-card"><h3>🐾 تقرير عمولات الجرومرز</h3><p>لكل سيارة حسب مبيعاتها قبل الضريبة.</p>${rowsHtml(calc.groomer,'groomer')}</div>`;if(comTab==='driver')body=`<div class="com-card"><h3>🚚 تقرير عمولات السائقين</h3><p>لكل سيارة حسب مبيعاتها قبل الضريبة.</p>${rowsHtml(calc.driver,'driver')}</div>`;if(comTab==='sales')body=`<div class="com-card"><h3>📈 تقرير عمولة مسؤول المبيعات</h3><p>يتم حساب كل سيارة منفصلة: أقل من 40,000 لا يستحق عمولة، ومن 40,000 فأكثر تُحسب الشريحة على كامل مبيعات السيارة.</p>${rowsHtml(calc.sales,'sales')}</div>`;if(comTab==='employees')body=renderEmployees();if(comTab==='settings')body=renderSettings();if(comTab==='archive')body=renderArchive();const area=petBlock5568_q('comArea');if(area)comSafeHtml(area,body,'commission tab body');renderSide(calc)};
 window.setCommissionTab=function(t){comTab=t;renderCommissionSystem()};
 window.commissionSelectRow=function(i,kind){const calc=buildCalc();const arr=kind==='groomer'?calc.groomer:kind==='driver'?calc.driver:calc.sales;const r=arr[i];if(!r)return;const side=petBlock5568_q('comSide');if(side){comSafeHtml(side,`<div class="com-detail-box"><h3>📌 تفاصيل السيارة</h3><div class="row"><span>السيارة</span><b>${safe(r.car)}</b></div><div class="row"><span>عدد الفواتير</span><b>${fmt0(r.invoiceCount||0)}</b></div><div class="row"><span>الموظف</span><b>${safe(r.person)}</b></div><div class="row"><span>المبيعات قبل الضريبة</span><b>${petBlock5568_money(r.amount)}</b></div><div class="row"><span>الهدف الحالي</span><b>${petBlock5568_money(r.target)}</b></div><div class="row"><span>تحقيق الهدف</span><b>${fmt(r.ach)}%</b></div><div class="row"><span>الشريحة</span><b>${segLabel(r.seg)}</b></div><div class="row"><span>النسبة</span><b>${fmt(r.rate)}%</b></div><div class="row"><span>العمولة</span><b>${petBlock5568_money(r.commission)}</b></div></div>`,'commission selected row')}}
