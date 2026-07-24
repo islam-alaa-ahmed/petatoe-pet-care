@@ -7,6 +7,7 @@
 
   var groups = Object.create(null);
   var states = Object.create(null);
+  var startupInteractive = document.readyState !== 'loading';
   var aliases = {
     operation: 'operations', operations: 'operations', appointments: 'operations',
     payroll: 'payroll', salarySlip: 'payroll', commissionStatement: 'payroll',
@@ -154,6 +155,7 @@
     }, true);
 
     document.addEventListener('petatoe:tabchange', function(event){
+      if(!startupInteractive) return;
       var id = event && event.detail && event.detail.tabId;
       if(!id) return;
       var panel = document.getElementById(id);
@@ -162,6 +164,7 @@
     }, true);
 
     var observer = new MutationObserver(function(mutations){
+      if(!startupInteractive) return;
       for(var i=0;i<mutations.length;i++){
         var target = mutations[i].target;
         if(target && target.nodeType === 1 && target.classList && (target.classList.contains('active') || target.classList.contains('is-active'))){
@@ -173,29 +176,22 @@
     });
     observer.observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['class'] });
 
-    window.addEventListener('load', function(){
-      var schedule = window.requestIdleCallback || function(cb){ return setTimeout(cb, 1); };
-      setTimeout(function(){
-        var order = ['operations','payroll','treasury','warehouses','children'];
-        var i = 0;
-        function next(){
-          if(i >= order.length) return;
-          var group = order[i++];
-          schedule(function(){ ensureGroup(group).catch(function(){}).finally(function(){ setTimeout(next, 1200); }); }, { timeout: 5000 });
-        }
-        next();
-      }, 12000);
-    }, { once: true });
+    function markStartupInteractive(){ startupInteractive = true; }
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', markStartupInteractive, { once: true });
+    else markStartupInteractive();
+
+    /* R4: Mobile feature groups are strictly demand-loaded.
+       Do not preload Operations, Payroll, Treasury, Warehouses or Children after window.load. */
   }
 
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, version: '10.0.12-runtime-ownership-p2-5', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, version: '10.0.16-startup-dependency-r4', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.12-runtime-ownership-p2-5',
+    version: '10.0.16-startup-dependency-r4',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

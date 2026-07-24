@@ -1,0 +1,10 @@
+PETATOE v10.0.16 — Startup Dependency & Strict Mobile Lazy Loading R4
+
+- Confirmed from the real iPhone trace that sales loading completes once in about 2.8 seconds and is not the current bottleneck.
+- Identified premature feature-group hydration during document startup and automatic post-load preloading as the source of unnecessary Operations, Payroll, Treasury, Warehouses, and Children requests.
+- Prevented mutation/tab-driven feature hydration before DOMContentLoaded.
+- Removed the 12-second automatic sequential preload of all heavy mobile modules.
+- Preserved direct on-demand loading when the user opens a screen or selects an Excel file.
+- Preserved one shared promise per lazy group to prevent duplicate module loading.
+- No business logic, calculations, SQL, Supabase schema, permissions, security rules, or UI design changes.
+- Synchronized PETATOE v10.0.16 release tokens and passed all localization, mobile, startup, Smart Reports, and native iOS static checks.
