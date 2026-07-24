@@ -55,11 +55,24 @@
 
   function moduleCall(moduleName, methodName){
     var args = Array.prototype.slice.call(arguments, 2);
-    return call.apply(null, ['PETATOEInlineHandlers.modules.' + moduleName + '.' + methodName].concat(args));
+    var path = 'PETATOEInlineHandlers.modules.' + moduleName + '.' + methodName;
+    var fn = resolvePath(path);
+    if(typeof fn === 'function') return call.apply(null, [path].concat(args));
+
+    var gate = window.PETATOEMobileStartupGate;
+    if(gate && gate.isMobile && typeof gate.ensureGroup === 'function'){
+      return gate.ensureGroup(moduleName).then(function(){
+        return call.apply(null, [path].concat(args));
+      }).catch(function(error){
+        warn('lazy module load failed: ' + moduleName, error);
+        return undefined;
+      });
+    }
+    return call.apply(null, [path].concat(args));
   }
 
   var api = window.PETATOEInlineHandlers || {};
-  api.version = 'v6.1.295';
+  api.version = 'v10.0.8-mobile-startup-gate-p2-1';
   api.resolve = resolvePath;
   api.call = call;
   api.moduleCall = moduleCall;

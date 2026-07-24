@@ -1,0 +1,9 @@
+PETATOE v10.0.8 — Mobile Startup Loading Gate P2.1
+
+- Added a phone-only startup loading gate for heavy independent modules.
+- Deferred Operations, Payroll, Treasury, Warehouses, Children Expenses, and XLSX until needed.
+- Reduced the initial mobile path by 62 scripts and about 990 KB of local JavaScript plus XLSX.
+- Added lazy module hydration through the existing inline-handler and tab-change contracts.
+- Preserved the original desktop parser order and behavior.
+- Synchronized release, Service Worker, localization, smart-router, and certification versions.
+- Localization, Smart Reports, Mobile UI, startup guards, and native iOS static certification passed.

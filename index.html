@@ -5,6 +5,7 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <script src="i18n/bootstrap.js?v=9.0.0-elc-phase6a"></script>
+<script src="performance/mobile-startup-loading-gate.js?v=10.0.8-mobile-startup-gate-p2-1"></script>
 <script>
 (function(){
   try{
@@ -38,7 +39,7 @@
 <meta name="msapplication-TileColor" content="#061832"/>
 <meta name="msapplication-config" content="./browserconfig.xml?v=9.4.23-icon1"/>
 <!-- HEATMAP_REAL_INVOICE_CUTOFF_FIX: uses highest invoice number date per year and blanks future months -->
-<script crossorigin="anonymous" referrerpolicy="no-referrer" data-petatoe-cdn="xlsx" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('xlsx','https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',false);</script>
 <script src="inline-extracted/global-small-utils.js"></script>
 <script src="inline-extracted/critical-date-number-ui-utils.js"></script>
 <script src="data/storage.js"></script>
@@ -82,13 +83,13 @@
 <link href="css/core/module-boundary-guards.css" rel="stylesheet"/>
 <link href="css/mobile/mobile-enterprise-m1.css?v=9.4.24-m1" rel="stylesheet"/>
 <link href="css/mobile/mobile-enterprise-m2.css?v=9.4.24-m2" rel="stylesheet"/>
-<link href="css/mobile/mobile-about-app.css?v=10.0.7-mobile-redesign-m1" rel="stylesheet"/>
+<link href="css/mobile/mobile-about-app.css?v=10.0.8-mobile-startup-gate-p2-1" rel="stylesheet"/>
 <link href="css/mobile/mobile-enterprise-v10-shell.css?v=10.0.0-m1" rel="stylesheet"/>
 <link href="css/mobile/mobile-enterprise-v10-dashboard.css?v=10.0.0-m2" rel="stylesheet"/>
 <link href="css/mobile/mobile-enterprise-v10-reports.css?v=10.0.0-m3" rel="stylesheet"/>
 <link href="css/mobile/mobile-enterprise-v10-management.css?v=10.0.0-m4" rel="stylesheet"/>
 <link href="css/mobile/mobile-enterprise-v10-experience.css?v=10.0.0-m5" rel="stylesheet"/>
-<link href="css/mobile/mobile-enterprise-v10-redesign-m1.css?v=10.0.7-mobile-redesign-m1" rel="stylesheet"/>
+<link href="css/mobile/mobile-enterprise-v10-redesign-m1.css?v=10.0.8-mobile-startup-gate-p2-1" rel="stylesheet"/>
 <style id="petatoe-export-toolbar-removal">
 /* PETATOE v5.1.14 — hide selected inline export bars everywhere */
 .export-toolbar{display:none!important;visibility:hidden!important;height:0!important;min-height:0!important;margin:0!important;padding:0!important;border:0!important;overflow:hidden!important;}
@@ -3969,7 +3970,7 @@ function petatoeUpdateWhatIf(){
 <script src="smart/smart-vehicles.js?v=9.1.8-legacy-cleanup-pack1"></script>
 <script src="smart/smart-customers.js"></script>
 <script src="smart/smart-reports-core.js?v=9.4.20-translation-stability"></script>
-<script src="smart/smart-router.js?v=10.0.7-mobile-redesign-m1"></script>
+<script src="smart/smart-router.js?v=10.0.8-mobile-startup-gate-p2-1"></script>
 <script src="smart/smart-reports-interactions-real.js?v=9.0.0-elc-phase8g"></script>
 <script src="smart/smart-reports-export-engine.js?v=9.2.3-source-migration-pack2"></script>
 <script src="smart/smart-reports-facade.js"></script>
@@ -4443,21 +4444,21 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <script src="sales/invoice-print-preview.js"></script>
 <script src="sales/invoice-manual-multi-items.js"></script>
 <script src="obligations/obligations-core.js"></script>
-<script src="i18n/localization-center/payroll-ui-a3-4.js?v=9.4.23-a3-4"></script>
-<script src="payroll/payroll-core.js?v=9.1.5"></script>
-<script defer="" src="payroll/payroll-read-facade.js"></script>
-<script defer="" src="payroll/payroll-computed-facade.js"></script>
-<script defer="" src="payroll/payroll-view-model-facade.js"></script>
-<script defer="" src="payroll/payroll-render-bridge.js"></script>
-<script defer="" src="payroll/payroll-event-bridge.js"></script>
-<script defer="" src="payroll/payroll-parallel-validation.js"></script>
-<script src="treasury/treasury-core.js?v=9.4.9-startup-permission-guard"></script>
-<script defer="" src="treasury/treasury-read-facade.js"></script>
-<script defer="" src="treasury/treasury-computed-facade.js"></script>
-<script defer="" src="treasury/treasury-view-model-facade.js"></script>
-<script defer="" src="treasury/treasury-render-bridge.js"></script>
-<script defer="" src="treasury/treasury-event-bridge.js"></script>
-<script defer="" src="treasury/treasury-parallel-validation.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','i18n/localization-center/payroll-ui-a3-4.js?v=9.4.23-a3-4',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','payroll/payroll-core.js?v=9.1.5',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','payroll/payroll-read-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','payroll/payroll-computed-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','payroll/payroll-view-model-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','payroll/payroll-render-bridge.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','payroll/payroll-event-bridge.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','payroll/payroll-parallel-validation.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('treasury','treasury/treasury-core.js?v=9.4.9-startup-permission-guard',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('treasury','treasury/treasury-read-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('treasury','treasury/treasury-computed-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('treasury','treasury/treasury-view-model-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('treasury','treasury/treasury-render-bridge.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('treasury','treasury/treasury-event-bridge.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('treasury','treasury/treasury-parallel-validation.js',true);</script>
 <script defer="" src="performance/finance-performance-optimizer.js"></script>
 <script defer="" src="inline-extracted/datalist-alert-guard.js"></script>
 <script src="router.js"></script>
@@ -4485,17 +4486,17 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <script src="components/tab-render-subscribers.js"></script>
 <!-- v3.11.22: removed legacy treasury owner safe shim; treasury-core is the only treasury source. -->
 <!-- v3.11.22: removed duplicate accordion hard-fix; sidebar.js is canonical. -->
-<script defer="" src="warehouses/warehouse-read-facade.js"></script>
-<script defer="" src="warehouses/warehouse-computed-facade.js"></script>
-<script defer="" src="warehouses/warehouse-view-model-facade.js"></script>
-<script defer="" src="warehouses/warehouse-render-snapshot-facade.js"></script>
-<script defer="" src="warehouses/warehouse-render-bridge.js"></script>
-<script defer="" src="warehouses/warehouse-event-bridge.js"></script>
-<script defer="" src="warehouses/warehouse-parallel-validation.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-read-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-computed-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-view-model-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-render-snapshot-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-render-bridge.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-event-bridge.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-parallel-validation.js',true);</script>
 
-<script src="warehouses/warehouse-core.js"></script>
-<script data-petatoe-defer="v6.5.0-phase1" defer="" src="warehouses/warehouse-shadow-audit.js"></script>
-<script data-petatoe-defer="v6.5.0-phase1" defer="" src="warehouses/warehouse-consolidated-facade-probe.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-core.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-shadow-audit.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('warehouses','warehouses/warehouse-consolidated-facade-probe.js',true);</script>
 <script data-petatoe-defer="v6.5.0-phase1" defer="" src="enterprise/enterprise-final-baseline-audit.js"></script>
 <!-- v3.11.22: duplicate legacy sidebar/menu builder removed. -->
 <!-- v3.11.22: second duplicate legacy sidebar/menu builder removed. -->
@@ -4509,19 +4510,19 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <script src="settings/users.js"></script>
 <script src="settings/permissions.js?v=9.4.8-settings-localization-phase61"></script>
 <script src="inline-extracted/children-expenses-nav-guard.js"></script>
-<script src="children-expenses/children-core.js"></script>
-<script src="children-expenses/children-storage.js"></script>
-<script src="children-expenses/children-budget.js"></script>
-<script src="children-expenses/children-entry.js"></script>
-<script src="children-expenses/children-records.js"></script>
-<script src="children-expenses/children-reports.js"></script>
-<script src="children-expenses/children-annual.js"></script>
-<script src="children-expenses/children-charts.js"></script>
-<script src="i18n/localization-center/children-expenses-a5-1.js?v=9.4.23-a5-1"></script>
-<script src="children-expenses/children-legacy-engine.js"></script>
-<script defer="" src="children-expenses/children-expenses-facade.js"></script>
-<script data-petatoe-defer="v6.5.0-phase1" defer="" src="children-expenses/children-expenses-controlled-migration.js"></script>
-<script data-petatoe-defer="v6.5.0-phase1" defer="" src="children-expenses/children-expenses-final-stability-audit.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-core.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-storage.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-budget.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-entry.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-records.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-reports.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-annual.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-charts.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','i18n/localization-center/children-expenses-a5-1.js?v=9.4.23-a5-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-legacy-engine.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-expenses-facade.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-expenses-controlled-migration.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-expenses-final-stability-audit.js',true);</script>
 <script src="inline-extracted/children-expenses-core.js"></script>
 <script src="settings/setup.js"></script>
 <script data-petatoe-defer="v6.5.0-phase1" defer="" src="settings/audit.js"></script>
@@ -4536,30 +4537,30 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <!-- === PETATOE v3.8.141 SETTINGS ACCORDION COLLAPSED DEFAULT CLEAN FIX === -->
 <script defer="" src="inline-extracted/settings-collapsed-default.js"></script>
 <!-- === PETATOE v3.8.142 FINAL SIDEBAR MENU RESTORE: settings permissions visible + collapsed default === -->
-<script src="operations/operations-storage.js"></script>
-<script src="operations/operations-context.js"></script>
-<script src="i18n/localization-center/operations-appointments-status.js?v=9.4.23-a3-2"></script>
-<script src="i18n/localization-center/operations-customer-management.js?v=9.4.23-a3-3"></script>
-<script src="operations/operations-workflow-real.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-storage.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-context.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','i18n/localization-center/operations-appointments-status.js?v=9.4.23-a3-2',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','i18n/localization-center/operations-customer-management.js?v=9.4.23-a3-3',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-workflow-real.js',false);</script>
 
-<script src="operations/operations-report-dataset.js"></script>
-<script src="operations/operations-legacy-engine.js?v=9.4.23-operations-localization-completion"></script>
-<script src="operations/operations-appointments.js"></script>
-<script src="operations/operations-vehicles.js"></script>
-<script src="operations/operations-status.js"></script>
-<script src="operations/operations-payments.js"></script>
-<script src="operations/operations-reports.js"></script>
-<script src="operations/operations-history.js"></script>
-<script src="operations/operations-core.js"></script>
-<script src="operations/operations-facade.js"></script>
-<script src="operations/operations-scheduler.js"></script>
-<script src="operations/operations-workflow.js"></script>
-<script data-petatoe-defer="v6.5.0-phase1" defer="" src="operations/operations-history-shadow.js"></script>
-<script data-petatoe-defer="v6.5.0-phase1" defer="" src="operations/operations-controlled-migration.js"></script>
-<script data-petatoe-defer="v6.5.0-phase1" defer="" src="operations/operations-final-stability-audit.js"></script>
-<script data-petatoe-defer="v6.5.0-phase1" defer="" src="operations/operations-shadow-harness.js"></script>
-<script data-petatoe-defer="v6.5.0-phase1" defer="" src="operations/operations-performance-optimizer.js"></script>
-<script src="inline-extracted/appointments-core.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-report-dataset.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-legacy-engine.js?v=9.4.23-operations-localization-completion',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-appointments.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-vehicles.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-status.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-payments.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-reports.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-history.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-core.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-facade.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-scheduler.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-workflow.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-history-shadow.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-controlled-migration.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-final-stability-audit.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-shadow-harness.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-performance-optimizer.js',true);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','inline-extracted/appointments-core.js',false);</script>
 <script src="components/inline-handler-adapter.js"></script>
 <script src="navigation/navigation-permissions.js?v=9.0.0-final6"></script>
 <script src="navigation/navigation.js?v=9.0.0-phase5.2"></script>
@@ -4626,7 +4627,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script defer="" src="components/liquid-glass-ui.js"></script>
 <script defer="" src="components/phase6f-safe-inline-cleanup.js"></script>
 <script defer="" src="inline-extracted/contract-candidates-full-export.js"></script>
-<script>window.PETATOE_RELEASE_VERSION='v10.0.7';window.PETATOE_RELEASE_NAME='PETATOE_V10_0_7_MOBILE_REDESIGN_M1';</script>
+<script>window.PETATOE_RELEASE_VERSION='v10.0.8';window.PETATOE_RELEASE_NAME='PETATOE_V10_0_8_MOBILE_STARTUP_GATE_P2_1';</script>
 <script>
 (function(){
   function showPdfEngineMessage(){
@@ -4665,7 +4666,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script src="i18n/localization-center/smart-reports-a3-5-4.js?v=9.4.23-a3-5-4"></script>
 <script src="i18n/localization-center/smart-reports-a3-5-5.js?v=9.4.23-a3-5-5"></script>
 <script src="i18n/localization-center/settings-phase61.js?v=9.4.8-settings-localization-phase61"></script>
-<script src="i18n/localization-center/runtime.js?v=10.0.7-mobile-redesign-m1"></script>
+<script src="i18n/localization-center/runtime.js?v=10.0.8-mobile-startup-gate-p2-1"></script>
 <script src="i18n/localization-center/business-data.js?v=9.4.20-translation-stability"></script>
 <script src="i18n/operations-source.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/warehouse-source.js?v=9.4.5-performance-adapter"></script>
@@ -4674,7 +4675,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script src="i18n/maintenance-source.js?v=9.4.5-performance-adapter"></script>
 <script src="i18n/localization-center/consolidation.js?v=9.4.5-performance"></script>
 <script src="i18n/global-screen-translator.js?v=9.4.20-translation-stability"></script>
-<script src="smart/smart-language-runtime.js?v=10.0.7-mobile-redesign-m1"></script>
+<script src="smart/smart-language-runtime.js?v=10.0.8-mobile-startup-gate-p2-1"></script>
 
 <script src="i18n/localization-center/dashboard-pilot.js?v=9.0.0-elc-phase6a"></script>
 <script src="i18n/localization-center/application-shell-pilot.js?v=9.0.0-elc-phase7a"></script>
@@ -4687,17 +4688,17 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script data-petatoe-defer="v6.5.0-phase1" defer="" src="performance/lazy-loading-enterprise.js"></script>
 
 <script data-petatoe-safe-micro-batch="v9.2.6-source-migration-pack5" defer="" src="maintenance/maintenance-center.js?v=9.2.7-source-migration-pack6"></script>
-<script src="security/auth-session.js?v=10.0.7-mobile-redesign-m1"></script>
+<script src="security/auth-session.js?v=10.0.8-mobile-startup-gate-p2-1"></script>
 <script src="security/topbar-notifications.js?v=7.1.0"></script>
 
 <script src="pwa/mobile-runtime-layout-m1-2.js?v=9.4.24-m1-2" defer></script>
-<script src="mobile/mobile-enterprise-v10-shell.js?v=10.0.7-mobile-redesign-m1" defer></script>
+<script src="mobile/mobile-enterprise-v10-shell.js?v=10.0.8-mobile-startup-gate-p2-1" defer></script>
 <script src="mobile/mobile-enterprise-v10-dashboard.js?v=10.0.0-m2" defer></script>
 <script src="mobile/mobile-enterprise-v10-reports.js?v=10.0.0-m3" defer></script>
 <script src="mobile/mobile-enterprise-v10-management.js?v=10.0.0-m4" defer></script>
 <script src="mobile/mobile-enterprise-v10-experience.js?v=10.0.0-m5" defer></script>
 <script src="pwa/pwa-manager.js?v=9.4.24-m1-2" defer></script>
-<script src="mobile/about-app.js?v=10.0.7-mobile-redesign-m1" defer></script>
+<script src="mobile/about-app.js?v=10.0.8-mobile-startup-gate-p2-1" defer></script>
 </body>
 </html>
 <style>.liquid-summary-row{display:flex;gap:12px;margin-top:12px}.liquid-mini-card{flex:1;padding:12px;border-radius:16px;text-align:center}.liquid-mini-card.cyan{border:1px solid #18E7F9;color:#18E7F9}.liquid-mini-card.gold{border:1px solid #FFD54A;color:#FFD54A}.liquid-mini-card.smart-new-returning-card,.liquid-mini-card.smart-new-returning-card b,.liquid-mini-card.smart-new-returning-card span{color:#fff!important;text-shadow:0 1px 8px rgba(0,0,0,.45)}

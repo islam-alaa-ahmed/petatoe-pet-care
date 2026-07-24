@@ -1,6 +1,6 @@
 {
   "name": "petatoe-enterprise-mobile",
-  "version": "10.0.7",
+  "version": "10.0.8",
   "private": true,
   "description": "PETATOE Enterprise Mobile native wrapper based on Capacitor.",
   "scripts": {
