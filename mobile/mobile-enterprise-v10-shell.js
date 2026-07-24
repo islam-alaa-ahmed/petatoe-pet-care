@@ -87,7 +87,14 @@
     var close=el('button','pet-v10-drawer-close','×'); close.type='button'; close.setAttribute('aria-label',t('close','Close')); close.addEventListener('click',closeDrawer); head.append(user,close);
     var searchWrap=el('div','pet-v10-drawer-search'); var input=el('input'); input.type='search'; input.placeholder=t('searchMenu','Search menu...'); input.addEventListener('input',function(){rebuildDrawerList(input.value);}); searchWrap.appendChild(input);
     var list=el('div','pet-v10-drawer-list'); drawer.append(head,searchWrap,list); document.body.append(backdrop,drawer); rebuildDrawerList('');
-    var source=document.getElementById('nav'); if(source && window.MutationObserver){ new MutationObserver(function(){rebuildDrawerList(input.value);}).observe(source,{subtree:true,childList:true,attributes:true,attributeFilter:['style','hidden','class','aria-hidden']}); }
+    var source=document.getElementById('nav'); if(source && window.MutationObserver){
+      var rebuildQueued=false;
+      new MutationObserver(function(){
+        if(rebuildQueued)return;
+        rebuildQueued=true;
+        (window.requestAnimationFrame||window.setTimeout)(function(){rebuildQueued=false;rebuildDrawerList(input.value);});
+      }).observe(source,{subtree:true,childList:true,attributes:true,attributeFilter:['style','hidden','class','aria-hidden']});
+    }
   }
 
   function syncIdentity(){
@@ -98,7 +105,14 @@
   function init(){ if(!mq.matches)return; buildHeader();buildBottomNav();buildDrawer();syncIdentity();
     document.addEventListener('petatoe:tabchange',function(e){syncActive(e.detail&&e.detail.tabId||currentTab());});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
-    var u=document.getElementById('topbarUserBlock'); if(u&&window.MutationObserver)new MutationObserver(syncIdentity).observe(u,{subtree:true,childList:true,characterData:true});
+    var u=document.getElementById('topbarUserBlock'); if(u&&window.MutationObserver){
+      var identityQueued=false;
+      new MutationObserver(function(){
+        if(identityQueued)return;
+        identityQueued=true;
+        (window.requestAnimationFrame||window.setTimeout)(function(){identityQueued=false;syncIdentity();});
+      }).observe(u,{subtree:true,childList:true,characterData:true});
+    }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
   mq.addEventListener&&mq.addEventListener('change',function(e){if(e.matches)init();else closeDrawer();});

@@ -1,7 +1,7 @@
 /* PETATOE v9.4.23 — Operations Localization Completion */
 (function(){
   'use strict';
-  var VERSION='10.0.4-observability-settings-screen';
+  var VERSION='10.0.5-mobile-startup-performance';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

@@ -1,0 +1,8 @@
+PETATOE v10.0.5 — Mobile Startup Performance
+
+- Optimized mobile-only session restore by parallelizing session and identity validation.
+- Prevented duplicate identity reload during mobile startup.
+- Added mobile-only branded boot veil to remove incomplete-screen flash.
+- Debounced mobile drawer/identity DOM observer rendering.
+- Desktop behavior and business logic unchanged.
+- Startup, permissions, localization first-paint, and iOS static certification passed.

@@ -159,12 +159,31 @@
     }
   }
 
+  function isMobileRuntime(){
+    try{ return !!(window.matchMedia && window.matchMedia('(max-width: 760px)').matches); }catch(_e){ return false; }
+  }
+  function finishMobileBoot(){
+    try{ document.documentElement.classList.remove('pet-mobile-booting'); }catch(_e){}
+  }
   async function validateSessionUser(reason){
     var su=sessionUser();
     if(!su||!su.id)return {ok:false,reason:'no-session'};
-    var remote = await validateRemoteEnterpriseSession(su, reason || 'session-validate');
+    var remote, list;
+    if(isMobileRuntime()){
+      var results=await Promise.all([
+        validateRemoteEnterpriseSession(su, reason || 'session-validate'),
+        ensureIdentityReady()
+      ]);
+      remote=results[0];
+      var ids=identityStore();
+      try{ list=(ids&&typeof ids.usersSync==='function')?(ids.usersSync()||[]):[]; }catch(_e){ list=[]; }
+      if(!list.length) list=getUsers();
+    }else{
+      remote = await validateRemoteEnterpriseSession(su, reason || 'session-validate');
+      if(remote && remote.ok === false) return remote;
+      list=await loadFreshUsers();
+    }
     if(remote && remote.ok === false) return remote;
-    var list=await loadFreshUsers();
     var fresh=(list||[]).find(function(u){return sameUserRef(u,su);});
     if(!fresh||!isActive(fresh)){
       rawRemove(AUTH_KEY);
@@ -1250,6 +1269,7 @@
     writeCurrentUser(safeUser);
     setLoggedInClass(true);
     var overlay = document.getElementById('pet-auth-overlay'); if(overlay) overlay.remove();
+    finishMobileBoot();
     updateHeader(safeUser);
     audit(source === 'auth-biometric' ? 'User Face ID Login' : 'User Login', safeUser.username || safeUser.id, 'info');
     toast(source === 'auth-biometric' ? 'تم تسجيل الدخول بالبصمة' : 'تم تسجيل الدخول: ' + (safeUser.fullName || safeUser.username || 'User'));
@@ -1312,11 +1332,13 @@
         try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged', {detail:{user:user, source:'auth-restore'}})); }catch(_e){}
         try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_e){}
         startIdleTimeout();
+        finishMobileBoot();
         return true;
       }
       return false;
     }
     clearCurrentUser();
+    finishMobileBoot();
     renderLogin('');
     return false;
   }
