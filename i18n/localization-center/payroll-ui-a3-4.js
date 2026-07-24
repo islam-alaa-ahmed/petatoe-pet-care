@@ -21,7 +21,14 @@
       employeeApprovedByEmployee:'تمت موافقة الموظف',
       employeeObjectAfterBoardDetailed:'لا يمكن الاعتراض إلا على كشف معتمد مبدئيًا من رئيس مجلس الإدارة',
       enterObjectionReason:'اكتب سبب الاعتراض',
-      objectionRecorded:'تم تسجيل الاعتراض'
+      objectionRecorded:'تم تسجيل الاعتراض',
+      employeeHasHistory:'لا يمكن حذف الموظف لوجود كشوف رواتب تاريخية. غيّر حالته إلى موقوف أو مستقيل.',
+      rejectionReasonPrompt:'اكتب سبب رفض كشف الراتب',
+      rejectionReasonRequired:'سبب الرفض مطلوب',
+      cancelReasonPrompt:'اكتب سبب إلغاء الاعتماد',
+      cancelReasonRequired:'سبب إلغاء الاعتماد مطلوب',
+      paymentReferencePrompt:'اكتب مرجع الصرف',
+      paymentReferenceRequired:'مرجع الصرف مطلوب'
     },
     confirm:{deleteSlipPermanent:'حذف كشف الراتب نهائيًا من الرواتب الشهرية؟'},
     config:{jobs:{
@@ -45,7 +52,14 @@
       employeeApprovedByEmployee:'Employee approval recorded',
       employeeObjectAfterBoardDetailed:'An objection can be submitted only after initial Chairman approval',
       enterObjectionReason:'Enter the objection reason',
-      objectionRecorded:'Objection recorded'
+      objectionRecorded:'Objection recorded',
+      employeeHasHistory:'This employee cannot be deleted because historical salary slips exist. Change the status to Stopped or Resigned.',
+      rejectionReasonPrompt:'Enter the salary slip rejection reason',
+      rejectionReasonRequired:'A rejection reason is required',
+      cancelReasonPrompt:'Enter the approval cancellation reason',
+      cancelReasonRequired:'An approval cancellation reason is required',
+      paymentReferencePrompt:'Enter the payment reference',
+      paymentReferenceRequired:'A payment reference is required'
     },
     confirm:{deleteSlipPermanent:'Permanently delete this salary slip from monthly payroll?'},
     config:{jobs:{
