@@ -1,9 +1,20 @@
-PETATOE v10.0.1 — Phase F1 Canonical Payroll Persistence
+Phase: PETATOE v10.0.1 — Localization Version Gate Hotfix
 
-- Made payroll_slips the only operational source of truth for salary slips.
-- Removed payroll slip reads/writes from payroll_master_data.
-- Removed non-transactional dual writes for slip save and delete.
-- Added a strict Supabase readiness gate so financial operations fail and roll back instead of showing false success.
-- Preserved draft/pending-board deletion behavior and all approval rules.
-- Synchronized release metadata to v10.0.1.
-- Updated the active production localization lockdown release assertion.
+Root Cause:
+Localization certification scripts and Smart Reports cache/runtime metadata still enforced the old v9.4.23 release after Phase F1 upgraded the project to v10.0.1.
+
+Modified files:
+- index.html
+- scripts/enterprise-localization-certification-check.js
+- scripts/runtime-translation-completion-check.js
+- scripts/smart-reports-public-api-check.js
+- scripts/smart-reports-translation-stability-check.js
+- smart/smart-language-runtime.js
+
+Verification:
+- Full Localization Lockdown workflow sequence: PASSED
+- All JavaScript syntax checks: PASSED
+- Localization parity: 3493 AR / 3493 EN / 0 missing
+
+Suggested commit message:
+fix: make localization version gates release-aware for v10.0.1

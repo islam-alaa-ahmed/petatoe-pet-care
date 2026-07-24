@@ -1,29 +1,24 @@
-# PETATOE v10.0.1 — Phase F1 Verification Report
+# Verification Report
 
-## Static Verification
+Baseline used for verification:
 
-- JavaScript/MJS syntax scan: **PASSED** for all project JavaScript modules.
-- Production Localization Lockdown: **PASSED**.
-- Localization parity: **3493 Arabic / 3493 English**, missing counterparts: **0**.
-- Canonical payroll-slip load assertion: **PASSED**.
-- Master payload excludes payroll slips: **PASSED**.
-- Slip save has no master dual write: **PASSED**.
-- Slip delete has no master dual write: **PASSED**.
-- Missing Supabase client rejects persistence: **PASSED**.
-- `draft` and `pending_board` deletion rule retained: **PASSED**.
-- Release metadata synchronization: **PASSED**.
+- `petatoe-pet-care-main (10).zip`
+- Phase F1 files overlaid to reproduce the exact GitHub failure state.
 
-## Regression Scope
+## Results
 
-Unchanged:
+- Enterprise Localization Certification: PASSED
+- Production Localization Lockdown: PASSED
+- Runtime Translation Completion: PASSED
+- Smart Reports Fast Runtime: PASSED
+- Smart Reports Fast Readiness Path: PASSED
+- Smart Reports Public API: PASSED
+- Smart Reports Translation Stability: PASSED (11/11)
+- Mobile Enterprise UI v10 Certification: PASSED (64 checks)
+- JavaScript syntax validation for all `.js` files: PASSED
+- Missing stored texts: 0
+- Missing language counterparts: 0
+- Arabic entries: 3493
+- English entries: 3493
 
-- Payroll calculations.
-- Commission snapshot certification and hash validation.
-- Approval status rules.
-- Permission rules.
-- UI layout and styles.
-- Supabase table schema and SQL.
-
-## Runtime Limitation
-
-A live Supabase staging transaction and RLS test cannot be performed from this offline workspace. The code paths and static gates passed, but final production certification still requires browser testing against the connected Supabase project.
+The commands were executed in the same order used by `.github/workflows/localization-lockdown.yml`.

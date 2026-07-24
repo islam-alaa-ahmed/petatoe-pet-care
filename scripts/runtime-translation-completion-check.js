@@ -11,12 +11,18 @@ const used=new Map();
 const rx=/\.translateRuntime\(\s*(['"`])((?:\\.|(?!\1)[\s\S])*?)\1/g;
 for(const file of walk(root)){const src=fs.readFileSync(file,'utf8');let m;rx.lastIndex=0;while((m=rx.exec(src))){const text=m[2].replace(/\\n/g,'\n').replace(/\\'/g,"'").replace(/\\"/g,'"');if(!/[\u0600-\u06FF]/.test(text))continue;if(!used.has(text))used.set(text,[]);used.get(text).push(path.relative(root,file));}}
 const missing=[];for(const [text,files] of used){if(typeof ar[text]!=='string'||typeof en[text]!=='string'||/[\u0600-\u06FF]/.test(en[text]))missing.push({text,files:[...new Set(files)]});}
+const packageJson=JSON.parse(fs.readFileSync(path.join(root,'package.json'),'utf8'));
+const expectedVersion=String(packageJson.version||'').trim();
 const release=fs.readFileSync(path.join(root,'RELEASE_VERSION.txt'),'utf8');
 const runtime=fs.readFileSync(path.join(root,'i18n/localization-center/runtime.js'),'utf8');
+const releaseDisplayMatch=release.match(/^PETATOE\s+v([^\r\n]+)$/m);
+const releaseIdMatch=release.match(/^PETATOE_V([0-9_]+)(?:_[A-Z0-9_]+)?$/m);
+const runtimeVersionMatch=runtime.match(/\bVERSION\s*=\s*['"]([^'"]+)['"]/);
 const failures=[];
 if(missing.length)failures.push('Missing runtime translations: '+missing.length);
-if(!release.includes('PETATOE v9.4.23')||!release.includes('PETATOE_V9_4_23_OPERATIONS_LOCALIZATION_COMPLETION'))failures.push('Release metadata mismatch.');
-if(!runtime.includes("VERSION='9.4.23-operations-localization-completion'"))failures.push('Runtime version mismatch.');
+if(!releaseDisplayMatch||releaseDisplayMatch[1].trim()!==expectedVersion)failures.push('Release display metadata mismatch.');
+if(!releaseIdMatch||releaseIdMatch[1].replace(/_/g,'.')!==expectedVersion)failures.push('Release identifier metadata mismatch.');
+if(!runtimeVersionMatch||!(runtimeVersionMatch[1]===expectedVersion||runtimeVersionMatch[1].startsWith(expectedVersion+'-')))failures.push('Runtime version mismatch.');
 const result={status:failures.length?'FAILED':'PASSED',usedRuntimePhrases:used.size,storedRuntimePhrases:Object.keys(en).length,missingRuntimePhrases:missing.length,missing};
 console.log('Runtime Translation Completion: '+result.status);console.log(JSON.stringify(result,null,2));
 if(failures.length){failures.forEach(x=>console.error('- '+x));process.exit(1);}
