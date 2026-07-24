@@ -1,34 +1,36 @@
-# PETATOE v10.0.2 — Verification Report
+# Phase P1.2 — Verification Report
 
-## Static and workflow verification
+## Static Verification
 
-- `security/auth-session.js` syntax: PASSED
-- All JavaScript files syntax validation: PASSED
+- New observability module JavaScript syntax: PASSED
+- All project JavaScript files syntax: PASSED (314 files)
 - Enterprise Localization Certification: PASSED
 - Production Localization Lockdown: PASSED
 - Runtime Translation Completion: PASSED
 - Smart Reports Fast Runtime: PASSED
 - Smart Reports Fast Readiness Path: PASSED
 - Smart Reports Public API: PASSED
-- Smart Reports Translation Stability: PASSED — 11/11
-- Mobile Enterprise UI v10 Certification: PASSED — 64/64
-- Arabic dictionary entries: 3493
-- English dictionary entries: 3493
-- Missing stored texts: 0
-- Missing counterparts: 0
+- Smart Reports Translation Stability: PASSED (11/11)
+- Mobile Enterprise UI v10 Certification: PASSED (64 checks)
+- Missing localization counterparts: 0
+- Missing runtime phrases: 0
 
-## Login-path verification
+## Functional Design Verification
 
-- Forced identity cache invalidation on normal login: REMOVED
-- Repeated login-time `app_users` query when cache is ready: REMOVED
-- Repeated login-time `app_user_permissions` query when cache is ready: REMOVED
-- Repeated login-time `roles` query when cache is ready: REMOVED
-- Duplicate direct permission application after `petatoe:userchanged`: REMOVED
-- Safe dashboard route for normal login: ENABLED
-- MFA and trusted-device flow: RETAINED
-- Remote session creation: RETAINED
-- Idle timeout: RETAINED
+- Fetch behavior remains promise-compatible and preserves success/error propagation.
+- Diagnostics arrays are bounded to 100 records.
+- Dashboard is not automatically displayed to ordinary users.
+- No remote telemetry endpoint was added.
+- No database or business-logic file was modified.
 
-## Runtime limitation
+## Runtime Validation Required After Deployment
 
-Actual network timings depend on the deployed GitHub Pages build, browser cache, and Supabase latency. The static verification proves removal of the duplicate blocking path; final before/after timing must be observed after deployment.
+Browser-connected validation is still required to record real values for:
+
+- Time to dashboard interactive.
+- Actual number and duration of Supabase requests.
+- Duplicate-request count during login.
+- Heap usage on supported Chromium browsers.
+- Screen transition timings under production data volume.
+
+Open the internal dashboard with `Ctrl+Shift+P` after signing in as an administrator.

@@ -1,25 +1,9 @@
-Phase P1.1 — Post-Login Startup Performance Hotfix
+Phase P1.2 — Enterprise Performance & Observability
 
-Root Cause:
-Every login invalidated the already loaded Identity Store and repeated three sequential Supabase reads (app_users, app_user_permissions, roles). Permission application was also invoked twice, and normal password login did not immediately stabilize the dashboard route.
+Added a bounded internal observability layer for startup timing, network and duplicate-request profiling, screen transitions, JS errors, and browser memory sampling.
 
-Files Modified:
-- security/auth-session.js
-- scripts/localization-production-lockdown-check.js
-- package.json
-- RELEASE_VERSION.txt
-- README.md
-- index.html
-- i18n/localization-center/runtime.js
-- smart/smart-language-runtime.js
+Added an administrator diagnostics dashboard with JSON export, opened through Ctrl+Shift+P.
 
-Fix:
-- Reuse the bootstrap Identity Store cache/request.
-- Remove forced identity reload during normal login.
-- Remove duplicate permission apply.
-- Open dashboard on the next animation frame after all successful login methods.
-- Synchronize release to PETATOE v10.0.2.
-- Make Production Localization Lockdown validate release metadata dynamically from package.json.
+No business logic, Supabase schema, payroll, commission, security, or permission rules were changed.
 
-Verification:
-All Localization Lockdown workflow steps passed, all JavaScript syntax checks passed, and Mobile Enterprise UI v10 certification passed 64/64.
+Version: PETATOE v10.0.3
