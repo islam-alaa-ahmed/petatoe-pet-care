@@ -81,8 +81,11 @@ for (const jsFile of jsAssets) {
   requireCheck(hasNamedGuard || hasDirectGuard, `Phone runtime guard: ${jsFile}`, 'Missing an explicit max-width:760px runtime guard.');
 }
 
-requireCheck(worker.includes("const APP_VERSION = '10.0.10-mobile-css-consolidation-p2-3';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
-requireCheck(worker.includes('NETWORK_FIRST_EXTENSIONS'), 'PWA network-first source policy', 'Service Worker must use a network-first policy for HTML, JavaScript, CSS and JSON resources.');
+requireCheck(worker.includes("const APP_VERSION = '10.0.11-pwa-cache-strategy-p2-4';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
+requireCheck(worker.includes("const NETWORK_FIRST_EXTENSIONS = /\\.(?:html?|json|webmanifest)$/i;"), 'PWA network-first document policy', 'HTML, JSON and webmanifest resources must remain network-first.');
+requireCheck(worker.includes("const STALE_WHILE_REVALIDATE_EXTENSIONS = /\\.(?:js|mjs|css)$/i;"), 'PWA static source cache policy', 'JavaScript and CSS must use stale-while-revalidate.');
+requireCheck(worker.includes('RUNTIME_CACHE_MAX_ENTRIES = 420'), 'PWA runtime cache bound', 'Runtime cache must have an explicit bounded entry limit.');
+requireCheck(worker.includes('trimRuntimeCache'), 'PWA runtime cache cleanup', 'Runtime cache trimming is required.');
 requireCheck(worker.includes('PETATOE_SW_ACTIVATED'), 'PWA activation broadcast', 'Service Worker must broadcast activation to controlled clients.');
 requireCheck(pwaManager.includes("updateViaCache: 'none'"), 'PWA update bypass', 'Service Worker registration must bypass the HTTP cache during update checks.');
 requireCheck(pwaManager.includes('registration.update()'), 'PWA active update checks', 'PWA Manager must actively request Service Worker update checks.');

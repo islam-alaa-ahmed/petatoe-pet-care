@@ -1,7 +1,7 @@
 /* PETATOE PWA Enterprise Service Worker — V10-P1 Update Engine */
 'use strict';
 
-const APP_VERSION = '10.0.10-mobile-css-consolidation-p2-3';
+const APP_VERSION = '10.0.11-pwa-cache-strategy-p2-4';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;
@@ -36,8 +36,10 @@ const APP_SHELL = [
   './components/inline-handler-adapter.js'
 ];
 
-const NETWORK_FIRST_EXTENSIONS = /\.(?:html?|js|mjs|css|json|webmanifest)$/i;
+const NETWORK_FIRST_EXTENSIONS = /\.(?:html?|json|webmanifest)$/i;
+const STALE_WHILE_REVALIDATE_EXTENSIONS = /\.(?:js|mjs|css)$/i;
 const CACHE_FIRST_EXTENSIONS = /\.(?:png|jpe?g|gif|webp|svg|ico|woff2?|ttf|otf)$/i;
+const RUNTIME_CACHE_MAX_ENTRIES = 420;
 
 function freshRequest(input) {
   const request = input instanceof Request ? input : new Request(input);
@@ -71,23 +73,45 @@ async function networkFirst(request, fallbackUrl) {
   const cache = await caches.open(RUNTIME_CACHE);
   try {
     const response = await fetch(freshRequest(request));
-    if (response && response.ok && response.type === 'basic') await cache.put(request, response.clone());
+    await putRuntimeResponse(cache, request, response);
     return response;
   } catch (error) {
     return (await cache.match(request)) || (fallbackUrl ? await caches.match(fallbackUrl) : undefined) || Response.error();
   }
 }
 
-async function cacheFirstWithRevalidate(request) {
+async function trimRuntimeCache(cache) {
+  const keys = await cache.keys();
+  const overflow = keys.length - RUNTIME_CACHE_MAX_ENTRIES;
+  if (overflow <= 0) return;
+  await Promise.all(keys.slice(0, overflow).map((key) => cache.delete(key)));
+}
+
+async function putRuntimeResponse(cache, request, response) {
+  if (!response || !response.ok || response.type !== 'basic') return;
+  await cache.put(request, response.clone());
+  await trimRuntimeCache(cache);
+}
+
+async function staleWhileRevalidate(request, event) {
   const cache = await caches.open(RUNTIME_CACHE);
   const cached = await caches.match(request);
   const update = fetch(request)
     .then(async (response) => {
-      if (response && response.ok && response.type === 'basic') await cache.put(request, response.clone());
+      await putRuntimeResponse(cache, request, response);
       return response;
     })
     .catch(() => null);
-  return cached || (await update) || Response.error();
+
+  if (cached) {
+    if (event) event.waitUntil(update);
+    return cached;
+  }
+  return (await update) || Response.error();
+}
+
+async function cacheFirstWithRevalidate(request, event) {
+  return staleWhileRevalidate(request, event);
 }
 
 self.addEventListener('install', (event) => {
@@ -129,7 +153,7 @@ self.addEventListener('fetch', (event) => {
         const preload = await event.preloadResponse;
         if (preload) {
           const cache = await caches.open(RUNTIME_CACHE);
-          await cache.put(request, preload.clone());
+          await putRuntimeResponse(cache, request, preload);
           return preload;
         }
       } catch (_) { /* continue with network-first */ }
@@ -138,13 +162,23 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  if (url.pathname.endsWith('/service-worker.js') || NETWORK_FIRST_EXTENSIONS.test(url.pathname)) {
+  if (url.pathname.endsWith('/service-worker.js')) {
+    event.respondWith(fetch(freshRequest(request)));
+    return;
+  }
+
+  if (NETWORK_FIRST_EXTENSIONS.test(url.pathname)) {
     event.respondWith(networkFirst(request));
     return;
   }
 
+  if (STALE_WHILE_REVALIDATE_EXTENSIONS.test(url.pathname)) {
+    event.respondWith(staleWhileRevalidate(request, event));
+    return;
+  }
+
   if (CACHE_FIRST_EXTENSIONS.test(url.pathname)) {
-    event.respondWith(cacheFirstWithRevalidate(request));
+    event.respondWith(cacheFirstWithRevalidate(request, event));
     return;
   }
 

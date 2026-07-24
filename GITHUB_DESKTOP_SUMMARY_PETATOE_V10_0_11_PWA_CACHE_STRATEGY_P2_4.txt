@@ -1,0 +1,12 @@
+PETATOE v10.0.11 — PWA Cache Strategy Optimization P2.4
+
+- Confirmed that legacy PETATOE version caches were already deleted correctly during Service Worker activation.
+- Separated document/data caching from static-source caching.
+- Kept navigation, HTML, JSON, and webmanifest resources network-first.
+- Changed JavaScript, MJS, and CSS to stale-while-revalidate for immediate repeat-load cache reuse.
+- Kept images and fonts cache-first with background revalidation.
+- Added an explicit no-store network route for service-worker.js.
+- Added a bounded runtime cache limit of 420 entries and automatic trimming.
+- Preserved PWA update checks, activation broadcasts, offline fallback, and versioned cache cleanup.
+- Synchronized release, Service Worker, localization runtime, smart runtime, About App, and certification tokens to v10.0.11.
+- Desktop, tablet, business logic, Supabase, SQL, permissions, and security remain unchanged.
