@@ -32,7 +32,7 @@
     viewModel:{
       unspecified:'غير محدد',
       status:{draft:'مسودة',pending_board:'بانتظار اعتماد رئيس مجلس الإدارة',board_approved:'اعتماد مجلس الإدارة',employee_objection:'اعتراض الموظف',employee_approved:'موافقة الموظف',accounts_approved:'اعتماد الحسابات',paid:'تم الصرف',rejected:'مرفوض',cancelled:'ملغي'},
-      payment:{mada:'مدى',bank:'تحويل بنكي',cash:'نقدًا',transfer:'تحويل بنكي'},
+      payment:{mada:'مدد',bank:'تحويل بنكي',cash:'نقدًا',transfer:'تحويل بنكي'},
       metrics:{count:'عدد الكشوف',gross:'إجمالي المستحق',deductions:'إجمالي الخصومات',net:'صافي الرواتب'}
     }
   }};

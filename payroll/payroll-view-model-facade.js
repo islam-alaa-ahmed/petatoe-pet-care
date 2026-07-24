@@ -63,7 +63,7 @@
   function paymentLabel(method){
     var m = str(method);
     var map = {
-      mada: vmT('payment.mada','مدى'),
+      mada: vmT('payment.mada','مدد'),
       bank: vmT('payment.bank','تحويل بنكي'),
       cash: vmT('payment.cash','نقدًا'),
       transfer: vmT('payment.transfer','تحويل بنكي')

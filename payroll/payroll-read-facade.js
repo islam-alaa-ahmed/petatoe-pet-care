@@ -41,6 +41,12 @@
     emp.code = emp.code || emp.employee_code || '';
     emp.job = emp.job || emp.job_title || '';
     emp.status = emp.status || 'active';
+    /* Linked-user display is valid only when an explicit userId exists.
+       Legacy userKey/email values must not create an apparent automatic link. */
+    if(!str(emp.userId || emp.user_id).trim()){
+      emp.userId = '';
+      emp.userKey = '';
+    }
     return emp;
   }
   function normalizeSlip(slip){
