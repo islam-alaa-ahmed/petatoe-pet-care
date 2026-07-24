@@ -1,9 +1,8 @@
-Phase P1.2 — Enterprise Performance & Observability
+Phase P1.2.1 — Observability Settings Screen
 
-Added a bounded internal observability layer for startup timing, network and duplicate-request profiling, screen transitions, JS errors, and browser memory sampling.
-
-Added an administrator diagnostics dashboard with JSON export, opened through Ctrl+Shift+P.
-
+Added an Admin-only Performance & Observability screen inside Settings & Permissions.
+The screen displays startup, network, slow-request, JavaScript error, active-screen, and memory metrics with refresh and JSON export actions.
+Changed the optional shortcut from Ctrl+Shift+P to Ctrl+Shift+O to avoid the browser Print conflict.
 No business logic, Supabase schema, payroll, commission, security, or permission rules were changed.
 
-Version: PETATOE v10.0.3
+Version: PETATOE v10.0.4

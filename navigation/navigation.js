@@ -35,6 +35,7 @@
       {settingsMain:'setup',title:'التهيئة',sub:'الخدمات، السيارات، العملاء، الخزن',titleKey:'navigation.settings.setup.title',subKey:'navigation.settings.setup.subtitle'},
       {settingsMain:'permissions',title:'الصلاحيات',sub:'صلاحيات المستخدمين',titleKey:'navigation.settings.permissions.title',subKey:'navigation.settings.permissions.subtitle'},
       {settingsMain:'users',title:'المستخدمين',sub:'إضافة وتعديل المستخدمين',titleKey:'navigation.settings.users.title',subKey:'navigation.settings.users.subtitle'},
+      {settingsMain:'observability',screen:'settings',title:'الأداء والمراقبة',sub:'مؤشرات الأداء والأخطاء',titleKey:'navigation.settings.observability.title',subKey:'navigation.settings.observability.subtitle'},
       {tab:'logs',title:'السجل النظامي',sub:'Audit Trail',titleKey:'navigation.settings.auditLog.title',subKey:'navigation.settings.auditLog.subtitle'},
       {settingsMain:'settings',settingsSub:'backup',title:'نسخ احتياطي',sub:'تصدير نسخة JSON',titleKey:'navigation.settings.backup.title',subKey:'navigation.settings.backup.subtitle'},
       {settingsMain:'settings',settingsSub:'backup',settingsAction:'restore',title:'استعادة بيانات',sub:'استيراد نسخة JSON',titleKey:'navigation.settings.restore.title',subKey:'navigation.settings.restore.subtitle'}

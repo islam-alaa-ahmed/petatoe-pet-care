@@ -84,6 +84,10 @@
   STORE.en.runtimeSource['اكتب مرجع الصرف']='Enter the payment reference';
   STORE.ar.runtimeSource['مرجع الصرف مطلوب']='مرجع الصرف مطلوب';
   STORE.en.runtimeSource['مرجع الصرف مطلوب']='A payment reference is required';
+  STORE.ar.navigation.settings.observability={title:'الأداء والمراقبة',subtitle:'مؤشرات الأداء والأخطاء'};
+  STORE.en.navigation.settings.observability={title:'Performance & Observability',subtitle:'Performance metrics and errors'};
+  STORE.ar.observability={title:'الأداء والمراقبة',subtitle:'مؤشرات بدء التشغيل، الشبكة، الأخطاء، واستهلاك الذاكرة.',refresh:'تحديث المؤشرات',export:'تصدير JSON',startup:'جاهزية التشغيل',dashboard:'جاهزية لوحة التحكم',requests:'طلبات الشبكة',average:'متوسط الطلب',slow:'طلبات بطيئة',errors:'أخطاء JavaScript',memory:'الذاكرة المستخدمة',activeScreen:'الشاشة الحالية',slowest:'أبطأ الطلبات',recentErrors:'أحدث الأخطاء',noRecords:'لا توجد سجلات'};
+  STORE.en.observability={title:'Performance & Observability',subtitle:'Startup, network, errors, and memory indicators.',refresh:'Refresh metrics',export:'Export JSON',startup:'Startup settled',dashboard:'Dashboard interactive',requests:'Network requests',average:'Average request',slow:'Slow requests',errors:'JavaScript errors',memory:'Memory used',activeScreen:'Active screen',slowest:'Slowest requests',recentErrors:'Recent errors',noRecords:'No records'};
   registerModule('certificationSource',CERTIFICATION_SOURCE);
   window.PETATOE_LOCALIZATION_CENTER_DICTIONARIES=STORE;
   window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,dictionaries:STORE,registerModule:registerModule,getPath:getPath,merge:merge};
