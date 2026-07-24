@@ -1,20 +1,25 @@
-Phase: PETATOE v10.0.1 — Localization Version Gate Hotfix
+Phase P1.1 — Post-Login Startup Performance Hotfix
 
 Root Cause:
-Localization certification scripts and Smart Reports cache/runtime metadata still enforced the old v9.4.23 release after Phase F1 upgraded the project to v10.0.1.
+Every login invalidated the already loaded Identity Store and repeated three sequential Supabase reads (app_users, app_user_permissions, roles). Permission application was also invoked twice, and normal password login did not immediately stabilize the dashboard route.
 
-Modified files:
+Files Modified:
+- security/auth-session.js
+- scripts/localization-production-lockdown-check.js
+- package.json
+- RELEASE_VERSION.txt
+- README.md
 - index.html
-- scripts/enterprise-localization-certification-check.js
-- scripts/runtime-translation-completion-check.js
-- scripts/smart-reports-public-api-check.js
-- scripts/smart-reports-translation-stability-check.js
+- i18n/localization-center/runtime.js
 - smart/smart-language-runtime.js
 
-Verification:
-- Full Localization Lockdown workflow sequence: PASSED
-- All JavaScript syntax checks: PASSED
-- Localization parity: 3493 AR / 3493 EN / 0 missing
+Fix:
+- Reuse the bootstrap Identity Store cache/request.
+- Remove forced identity reload during normal login.
+- Remove duplicate permission apply.
+- Open dashboard on the next animation frame after all successful login methods.
+- Synchronize release to PETATOE v10.0.2.
+- Make Production Localization Lockdown validate release metadata dynamically from package.json.
 
-Suggested commit message:
-fix: make localization version gates release-aware for v10.0.1
+Verification:
+All Localization Lockdown workflow steps passed, all JavaScript syntax checks passed, and Mobile Enterprise UI v10 certification passed 64/64.

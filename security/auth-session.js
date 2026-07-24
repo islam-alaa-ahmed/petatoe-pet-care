@@ -120,6 +120,18 @@
     var bb=[b.supabase_id,b.id,b.username,b.fullName].map(function(x){return String(x||'').trim().toLowerCase();}).filter(Boolean);
     return aa.some(function(x){return bb.indexOf(x)>-1;});
   }
+  async function ensureIdentityReady(){
+    var ids=identityStore();
+    if(!ids) return null;
+    try{
+      var cache=ids._cache||null;
+      if(cache&&cache.loaded===true) return cache;
+      if(ids&&typeof ids.load==='function') return await ids.load();
+    }catch(_e){
+      window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e);
+    }
+    return ids._cache||null;
+  }
   async function loadFreshUsers(){
     var ids=identityStore();
     try{ if(ids && ids._cache) ids._cache.loading=null; }catch(_e){}
@@ -1173,12 +1185,9 @@
     }catch(err){ try{ console.warn('[PETATOE Auth] updateHeader failed', err); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
   }
   function stabilizePostLoginRoute(user, source){
-    /* PETATOE v9.0 S4.4.1 Regression Fix:
-       Trusted Devices must not change the stable post-MFA route hydration behavior.
-       After MFA/trusted-device login, ensure identity cache and navigation permissions
-       are hydrated before opening a safe dashboard route, otherwise the router can show
-       the temporary no-permission panel until a browser refresh. */
-    if(source !== 'auth-login-mfa' && source !== 'auth-login-trusted-device') return;
+    /* Phase P1.1: open the safe dashboard immediately after every successful login.
+       The identity store is already hydrated by login(); do not invalidate and reload
+       users, permissions and roles again on the post-login route path. */
     function openSafeDashboard(){
       try{
         var noPerm = document.getElementById('petatoeNoPermissionPanel');
@@ -1201,23 +1210,12 @@
         }
       }catch(_e){}
     }
-    setTimeout(async function(){
-      try{
-        var ids = identityStore();
-        if(ids && ids._cache){ ids._cache.loading = null; ids._cache.loaded = false; }
-        if(ids && typeof ids.load === 'function') await ids.load();
-        var fresh = findUser(user && (user.username || user.login || user.email || user.id));
-        if(fresh){
-          var merged = Object.assign({}, user || {}, fresh, {loginAt:(user && user.loginAt) || now(), mfaVerified:true});
-          rawSet(AUTH_KEY, JSON.stringify({user:merged, createdAt:now(), version:VERSION, source:source + '-stabilized'}));
-          writeCurrentUser(merged);
-          updateHeader(merged);
-        }
-      }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e); }
+    var run=function(){
       openSafeDashboard();
-      setTimeout(openSafeDashboard, 450);
-      setTimeout(openSafeDashboard, 1100);
-    }, 80);
+      setTimeout(openSafeDashboard, 250);
+    };
+    if(typeof window.requestAnimationFrame==='function') window.requestAnimationFrame(run);
+    else setTimeout(run,0);
   }
 
   function openSession(user, source, options){
@@ -1256,7 +1254,6 @@
     audit(source === 'auth-biometric' ? 'User Face ID Login' : 'User Login', safeUser.username || safeUser.id, 'info');
     toast(source === 'auth-biometric' ? 'تم تسجيل الدخول بالبصمة' : 'تم تسجيل الدخول: ' + (safeUser.fullName || safeUser.username || 'User'));
     try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged', {detail:{user:safeUser, source:source || 'auth-login'}})); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
-    try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}
     stabilizePostLoginRoute(safeUser, source || 'auth-login');
     startRemoteSession(safeUser, source || 'auth-login');
     startIdleTimeout();
@@ -1265,11 +1262,9 @@
   }
 
   async function login(username, password, options){
-    try{
-      var ids = identityStore();
-      if(ids && ids._cache){ ids._cache.loading = null; ids._cache.loaded = false; }
-      if(ids && typeof ids.load === 'function') await ids.load();
-    }catch(_e){ window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_e); }
+    /* Phase P1.1: reuse the boot-time identity request/cache. The previous code
+       invalidated a valid cache and repeated three Supabase queries on every click. */
+    await ensureIdentityReady();
     var user = findUser(username);
     if(!user){ renderLogin('اسم المستخدم أو كلمة المرور غير صحيحة'); return false; }
     if(!isActive(user)){ renderLogin('هذا المستخدم غير نشط أو محظور'); return false; }

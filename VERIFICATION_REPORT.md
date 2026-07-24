@@ -1,24 +1,34 @@
-# Verification Report
+# PETATOE v10.0.2 — Verification Report
 
-Baseline used for verification:
+## Static and workflow verification
 
-- `petatoe-pet-care-main (10).zip`
-- Phase F1 files overlaid to reproduce the exact GitHub failure state.
-
-## Results
-
+- `security/auth-session.js` syntax: PASSED
+- All JavaScript files syntax validation: PASSED
 - Enterprise Localization Certification: PASSED
 - Production Localization Lockdown: PASSED
 - Runtime Translation Completion: PASSED
 - Smart Reports Fast Runtime: PASSED
 - Smart Reports Fast Readiness Path: PASSED
 - Smart Reports Public API: PASSED
-- Smart Reports Translation Stability: PASSED (11/11)
-- Mobile Enterprise UI v10 Certification: PASSED (64 checks)
-- JavaScript syntax validation for all `.js` files: PASSED
+- Smart Reports Translation Stability: PASSED — 11/11
+- Mobile Enterprise UI v10 Certification: PASSED — 64/64
+- Arabic dictionary entries: 3493
+- English dictionary entries: 3493
 - Missing stored texts: 0
-- Missing language counterparts: 0
-- Arabic entries: 3493
-- English entries: 3493
+- Missing counterparts: 0
 
-The commands were executed in the same order used by `.github/workflows/localization-lockdown.yml`.
+## Login-path verification
+
+- Forced identity cache invalidation on normal login: REMOVED
+- Repeated login-time `app_users` query when cache is ready: REMOVED
+- Repeated login-time `app_user_permissions` query when cache is ready: REMOVED
+- Repeated login-time `roles` query when cache is ready: REMOVED
+- Duplicate direct permission application after `petatoe:userchanged`: REMOVED
+- Safe dashboard route for normal login: ENABLED
+- MFA and trusted-device flow: RETAINED
+- Remote session creation: RETAINED
+- Idle timeout: RETAINED
+
+## Runtime limitation
+
+Actual network timings depend on the deployed GitHub Pages build, browser cache, and Supabase latency. The static verification proves removal of the duplicate blocking path; final before/after timing must be observed after deployment.
