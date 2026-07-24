@@ -1,4 +1,4 @@
-/* PETATOE v10.0.12 — Mobile About & Update Center */
+/* PETATOE v10.0.13 — Mobile About & Update Center */
 @media (max-width:900px){
   #settings .pet-about{direction:inherit;display:grid;gap:16px;padding:4px 0 24px;color:var(--text,#eef4ff)}
   #settings .pet-about__header{display:grid;gap:14px;padding:4px 2px}

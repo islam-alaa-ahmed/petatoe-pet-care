@@ -1,8 +1,8 @@
-Phase P1.2.1 — Observability Settings Screen
+PETATOE v10.0.13 — Startup Regression R1
 
-Added an Admin-only Performance & Observability screen inside Settings & Permissions.
-The screen displays startup, network, slow-request, JavaScript error, active-screen, and memory metrics with refresh and JSON export actions.
-Changed the optional shortcut from Ctrl+Shift+P to Ctrl+Shift+O to avoid the browser Print conflict.
-No business logic, Supabase schema, payroll, commission, security, or permission rules were changed.
-
-Version: PETATOE v10.0.4
+- Fixed the iOS automatic passkey prompt starting before PETATOE completed its first visual frame.
+- Added a two-frame authentication paint barrier and stabilization delay before automatic Face ID.
+- Prevented WebAuthn startup while the PWA document is hidden and retry when visible.
+- Preserved automatic Face ID, MFA, session security, and manual biometric login.
+- Synchronized release, Service Worker, localization, smart runtime, About App, and mobile certification versions.
+- Localization Lockdown, Smart Reports, Mobile UI, startup guards, and Native iOS static certification passed.

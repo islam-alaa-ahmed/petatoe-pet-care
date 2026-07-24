@@ -826,16 +826,42 @@
     var password = document.getElementById('petAuthPassword');
     setTimeout(function(){ try{ ((username && username.value && password) ? password : username).focus(); }catch(_e){} }, 80);
   }
+  function afterStableAuthPaint(callback){
+    var completed = false;
+    function run(){
+      if(completed) return;
+      completed = true;
+      setTimeout(callback, 420);
+    }
+    try{
+      requestAnimationFrame(function(){
+        requestAnimationFrame(run);
+      });
+      setTimeout(run, 900);
+    }catch(_e){
+      setTimeout(run, 650);
+    }
+  }
   function scheduleAutomaticBiometricLogin(){
     if(biometricAutoAttempted || !biometricUsable()) return;
     biometricAutoAttempted = true;
     var overlay = document.getElementById('pet-auth-overlay');
     if(overlay && (readBiometric() || readPendingBiometric())) overlay.classList.add('pet-auth-biometric-first');
-    setTimeout(async function(){
+    afterStableAuthPaint(async function(){
+      if(!document.getElementById('pet-auth-overlay')) return;
+      if(document.visibilityState === 'hidden'){
+        biometricAutoAttempted = false;
+        document.addEventListener('visibilitychange', function retryAutomaticBiometric(){
+          if(document.visibilityState !== 'visible') return;
+          document.removeEventListener('visibilitychange', retryAutomaticBiometric);
+          scheduleAutomaticBiometricLogin();
+        });
+        return;
+      }
       if(!readBiometric()) await reconcileBiometricEnrollment();
       if(readBiometric()) await loginWithBiometric({silent:true,automatic:true});
       else revealBiometricFallback('');
-    }, 90);
+    });
   }
 
   function securityEmailEndpoint(){

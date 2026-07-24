@@ -81,7 +81,7 @@ for (const jsFile of jsAssets) {
   requireCheck(hasNamedGuard || hasDirectGuard, `Phone runtime guard: ${jsFile}`, 'Missing an explicit max-width:760px runtime guard.');
 }
 
-requireCheck(worker.includes("const APP_VERSION = '10.0.12-runtime-ownership-p2-5';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
+requireCheck(worker.includes("const APP_VERSION = '10.0.13-startup-regression-r1';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
 requireCheck(worker.includes("const NETWORK_FIRST_EXTENSIONS = /\\.(?:html?|json|webmanifest)$/i;"), 'PWA network-first document policy', 'HTML, JSON and webmanifest resources must remain network-first.');
 requireCheck(worker.includes("const STALE_WHILE_REVALIDATE_EXTENSIONS = /\\.(?:js|mjs|css)$/i;"), 'PWA static source cache policy', 'JavaScript and CSS must use stale-while-revalidate.');
 requireCheck(worker.includes('RUNTIME_CACHE_MAX_ENTRIES = 420'), 'PWA runtime cache bound', 'Runtime cache must have an explicit bounded entry limit.');
