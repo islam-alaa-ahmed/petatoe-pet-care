@@ -92,13 +92,17 @@
     var close=el('button','pet-v10-drawer-close','×'); close.type='button'; close.setAttribute('aria-label',t('close','Close')); close.addEventListener('click',closeDrawer); head.append(user,close);
     var searchWrap=el('div','pet-v10-drawer-search'); var input=el('input'); input.type='search'; input.placeholder=t('searchMenu','Search menu...'); input.addEventListener('input',function(){rebuildDrawerList(input.value);}); searchWrap.appendChild(input);
     var list=el('div','pet-v10-drawer-list'); drawer.append(head,searchWrap,list); document.body.append(backdrop,drawer); rebuildDrawerList('');
-    var source=document.getElementById('nav'); if(source && window.MutationObserver){
+    var source=document.getElementById('nav');
+    var coordinator=window.PETATOEMobileRuntimeCoordinator;
+    if(source && coordinator){
+      coordinator.observeTarget(source,{subtree:true,childList:true,attributes:true,attributeFilter:['style','hidden','class','aria-hidden']});
       var rebuildQueued=false;
-      new MutationObserver(function(){
-        if(rebuildQueued)return;
+      coordinator.subscribe(function(records){
+        var relevant=records.some(function(record){return record.target===source||source.contains(record.target);});
+        if(!relevant||rebuildQueued)return;
         rebuildQueued=true;
         (window.requestAnimationFrame||window.setTimeout)(function(){rebuildQueued=false;rebuildDrawerList(input.value);});
-      }).observe(source,{subtree:true,childList:true,attributes:true,attributeFilter:['style','hidden','class','aria-hidden']});
+      });
     }
   }
 
@@ -113,13 +117,17 @@
   function init(){ if(!mq.matches)return; document.body.classList.add('pet-v10-mobile-redesign-m1'); buildHeader();buildBottomNav();buildDrawer();syncIdentity();
     document.addEventListener('petatoe:tabchange',function(e){syncActive(e.detail&&e.detail.tabId||currentTab());});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
-    var u=document.getElementById('topbarUserBlock'); if(u&&window.MutationObserver){
+    var u=document.getElementById('topbarUserBlock');
+    var coordinator=window.PETATOEMobileRuntimeCoordinator;
+    if(u&&coordinator){
+      coordinator.observeTarget(u,{subtree:true,childList:true,characterData:true});
       var identityQueued=false;
-      new MutationObserver(function(){
-        if(identityQueued)return;
+      coordinator.subscribe(function(records){
+        var relevant=records.some(function(record){return record.target===u||u.contains(record.target);});
+        if(!relevant||identityQueued)return;
         identityQueued=true;
         (window.requestAnimationFrame||window.setTimeout)(function(){identityQueued=false;syncIdentity();});
-      }).observe(u,{subtree:true,childList:true,characterData:true});
+      });
     }
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true}); else init();

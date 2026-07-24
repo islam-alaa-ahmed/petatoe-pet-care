@@ -1,0 +1,9 @@
+PETATOE v10.0.9 — Mobile Runtime Consolidation P2.2
+
+- Added a shared phone-only mobile runtime mutation coordinator.
+- Consolidated three independent mobile MutationObservers into one batched observer.
+- Preserved targeted navigation and identity observation without body-wide attribute scanning.
+- Reused the shared mutation stream for mobile reveal effects.
+- Reduced overlapping animation-frame work during navigation and DOM rendering.
+- Synchronized release, Service Worker, localization runtime, smart runtime, and certification tokens.
+- Desktop, tablet, business logic, Supabase, SQL, permissions, and security remain unchanged.

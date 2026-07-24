@@ -70,7 +70,7 @@ for (const jsFile of jsAssets) {
   requireCheck(hasNamedGuard || hasDirectGuard, `Phone runtime guard: ${jsFile}`, 'Missing an explicit max-width:760px runtime guard.');
 }
 
-requireCheck(worker.includes("const APP_VERSION = '10.0.8-mobile-startup-gate-p2-1';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
+requireCheck(worker.includes("const APP_VERSION = '10.0.9-mobile-runtime-consolidation-p2-2';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
 requireCheck(worker.includes('NETWORK_FIRST_EXTENSIONS'), 'PWA network-first source policy', 'Service Worker must use a network-first policy for HTML, JavaScript, CSS and JSON resources.');
 requireCheck(worker.includes('PETATOE_SW_ACTIVATED'), 'PWA activation broadcast', 'Service Worker must broadcast activation to controlled clients.');
 requireCheck(pwaManager.includes("updateViaCache: 'none'"), 'PWA update bypass', 'Service Worker registration must bypass the HTTP cache during update checks.');

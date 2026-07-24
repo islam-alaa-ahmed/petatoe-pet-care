@@ -166,15 +166,17 @@
       });
     });
 
-    mutationObserver = new MutationObserver(function (records) {
-      if (!isPhone()) return;
-      records.forEach(function (record) {
-        record.addedNodes.forEach(function (node) {
-          if (node.nodeType === 1) scanRevealTargets(node);
+    var coordinator = window.PETATOEMobileRuntimeCoordinator;
+    if (coordinator) {
+      coordinator.subscribe(function (records) {
+        if (!isPhone()) return;
+        records.forEach(function (record) {
+          Array.prototype.forEach.call(record.addedNodes || [], function (node) {
+            if (node.nodeType === 1) scanRevealTargets(node);
+          });
         });
       });
-    });
-    mutationObserver.observe(document.body, { childList: true, subtree: true });
+    }
   }
 
   function viewportChange(event) {

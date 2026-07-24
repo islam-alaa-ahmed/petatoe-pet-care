@@ -1,7 +1,7 @@
 /* PETATOE PWA Enterprise Service Worker — V10-P1 Update Engine */
 'use strict';
 
-const APP_VERSION = '10.0.8-mobile-startup-gate-p2-1';
+const APP_VERSION = '10.0.9-mobile-runtime-consolidation-p2-2';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;
@@ -37,6 +37,7 @@ const APP_SHELL = [
   './pwa/mobile-runtime-layout-m1-2.js',
   './pwa/pwa-manager.js',
   './performance/mobile-startup-loading-gate.js',
+  './performance/mobile-runtime-coordinator.js',
   './components/inline-handler-adapter.js'
 ];
 
