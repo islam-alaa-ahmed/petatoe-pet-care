@@ -1195,3 +1195,5 @@
 
 })();
 ;try{window.PETATOE_I18N_DICTIONARIES.ar.payrollRuntime=window.PETATOE_I18N_DICTIONARIES.ar.payrollRuntime||{};window.PETATOE_I18N_DICTIONARIES.ar.payrollRuntime.workflow=Object.assign({},window.PETATOE_I18N_DICTIONARIES.ar.payrollRuntime.workflow||{},{employeeHasHistory:'لا يمكن حذف الموظف لوجود كشوف رواتب تاريخية. غيّر حالته إلى موقوف أو مستقيل.', rejectionReasonPrompt:'اكتب سبب رفض كشف الراتب', rejectionReasonRequired:'سبب الرفض مطلوب', cancelReasonPrompt:'اكتب سبب إلغاء الاعتماد', cancelReasonRequired:'سبب إلغاء الاعتماد مطلوب', paymentReferencePrompt:'اكتب مرجع الصرف', paymentReferenceRequired:'مرجع الصرف مطلوب'});}catch(_e){}
+
+;try{window.PETATOE_I18N_DICTIONARIES.ar.payrollRuntime=window.PETATOE_I18N_DICTIONARIES.ar.payrollRuntime||{};window.PETATOE_I18N_DICTIONARIES.ar.payrollRuntime.commission=Object.assign({},window.PETATOE_I18N_DICTIONARIES.ar.payrollRuntime.commission||{},{invalidCertifiedSnapshot:'لا يمكن حفظ كشف الراتب لأن Snapshot العمولات للشهر غير معتمد أو فشل التحقق من الـ Hash.'});}catch(_e){}

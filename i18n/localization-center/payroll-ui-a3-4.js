@@ -76,4 +76,6 @@
   }};
   dictionaries.ar=merge(dictionaries.ar||{},ar);
   dictionaries.en=merge(dictionaries.en||{},en);
+  dictionaries.ar.payrollRuntime=dictionaries.ar.payrollRuntime||{};dictionaries.ar.payrollRuntime.commission=Object.assign({},dictionaries.ar.payrollRuntime.commission||{},{invalidCertifiedSnapshot:'لا يمكن حفظ كشف الراتب لأن Snapshot العمولات للشهر غير معتمد أو فشل التحقق من الـ Hash.'});
+  dictionaries.en.payrollRuntime=dictionaries.en.payrollRuntime||{};dictionaries.en.payrollRuntime.commission=Object.assign({},dictionaries.en.payrollRuntime.commission||{},{invalidCertifiedSnapshot:'The salary slip cannot be saved because the commission snapshot for this month is not certified or its hash verification failed.'});
 })();

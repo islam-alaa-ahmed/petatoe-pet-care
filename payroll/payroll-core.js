@@ -498,6 +498,38 @@
     }
     return {total:matches.reduce(function(sum,x){return sum+num(x.commission)},0),matches:matches,source:matches.length?'matched':'not_matched',mappedName:mappedName,mode:matches.some(function(x){return x.legacyNameMatch})?'legacy':'identity',employeeIds:ids,identitySnapshot:identitySnapshot};
   }
+  function frozenCommissionDetail(slip){
+    var link=slip&&slip.commissionSnapshotLink;
+    if(!link||link.frozen!==true)return null;
+    return {total:num(link.amount),matches:cloneVal(link.matches||[]),source:String(link.source||'frozen_snapshot'),mappedName:String(link.employeeName||''),mode:String(link.mode||'identity'),employeeIds:[String(link.employeeId||'')].filter(Boolean),identitySnapshot:true,frozen:true,snapshotId:String(link.snapshotId||''),snapshotHash:String(link.snapshotHash||''),revisionNumber:Number(link.revisionNumber||0),traceRefs:cloneVal(link.traceRefs||[]),certificationStatus:String(link.certificationStatus||'')};
+  }
+  function commissionDetailForSlip(slip,emp){return frozenCommissionDetail(slip)||commissionDetail(emp,slip&&slip.period)}
+  function snapshotTraceRefsForEmployee(snap,emp){
+    var ids=commissionIdentityKeys(emp),out=[];
+    var rows=snap&&snap.traceability&&Array.isArray(snap.traceability.results)?snap.traceability.results:[];
+    rows.forEach(function(row){var id=String(row&& (row.employeeId||row.personId)||'').trim();var traceId=String(row&&row.traceId||'').trim();if(id&&ids.indexOf(id)>-1&&traceId&&out.indexOf(traceId)===-1)out.push(traceId)});
+    return out;
+  }
+  async function certifiedCommissionLink(emp,period){
+    period=String(period||'');var snap=readCommissionSnapshots()[period];
+    if(!snap)return {ok:true,link:{frozen:true,source:'no_snapshot',period:period,employeeId:String(emp&&emp.id||''),employeeName:String(emp&&emp.name||''),amount:0,matches:[],traceRefs:[],createdAt:new Date().toISOString()}};
+    var structurallyValid=String(snap.period||period)===period&&String(snap.status||'')==='locked'&&/^commission-snapshot-v(?:4|[5-9]|[1-9][0-9]+)/.test(String(snap.schemaVersion||''))&&String(snap.snapshotHash||'').trim()&&String(snap.snapshotId||'').trim()&&String(snap.certification&&snap.certification.status||'')==='certified';
+    if(!structurallyValid)return {ok:false,error:'INVALID_CERTIFIED_SNAPSHOT'};
+    try{
+      var api=window.PETATOECommissionSnapshotCertification;
+      if(!api||typeof api.verifySnapshot!=='function')return {ok:false,error:'SNAPSHOT_VERIFIER_UNAVAILABLE'};
+      var verification=await api.verifySnapshot(snap);
+      if(!verification||verification.valid!==true)return {ok:false,error:'SNAPSHOT_HASH_INVALID'};
+    }catch(_e){return {ok:false,error:'SNAPSHOT_HASH_INVALID'}}
+    var detail=commissionDetail(emp,period);
+    return {ok:true,link:{frozen:true,source:'certified_snapshot',period:period,snapshotId:String(snap.snapshotId||''),snapshotHash:String(snap.snapshotHash||''),revisionNumber:Number(snap.revisionNumber||1),schemaVersion:String(snap.schemaVersion||''),certificationStatus:String(snap.certification&&snap.certification.status||''),certificationVersion:String(snap.certification&&snap.certification.version||''),employeeId:String(emp&&emp.id||''),commissionEmployeeId:String(emp&&emp.commissionEmployeeId||''),employeeName:String(emp&&emp.name||''),amount:num(detail.total),matches:cloneVal(detail.matches||[]),traceRefs:snapshotTraceRefsForEmployee(snap,emp),mode:String(detail.mode||'identity'),createdAt:new Date().toISOString()}};
+  }
+  async function attachCertifiedCommissionLink(slip,oldSlip){
+    var oldLink=oldSlip&&oldSlip.commissionSnapshotLink;
+    if(oldLink&&oldLink.frozen===true&&String(oldLink.period||'')===String(slip.period||'')&&String(oldLink.employeeId||'')===String(slip.employeeId||'')&&(String(oldLink.source||'')==='certified_snapshot'||String(oldSlip&&oldSlip.status||'draft')!=='draft')){slip.commissionSnapshotLink=cloneVal(oldLink);return {ok:true,slip:slip}}
+    var emp=getEmployee(slip.employeeId)||{};var result=await certifiedCommissionLink(emp,slip.period);
+    if(!result.ok)return result;slip.commissionSnapshotLink=result.link;return {ok:true,slip:slip};
+  }
   function commissionStatusNote(detail){
     detail=detail||{source:'no_snapshot',matches:[]};
     if(detail.source==='no_snapshot')return payrollT('commission.noSnapshot','لم يتم العثور على شهر مقفول في قسم العمولات لنفس فترة كشف الراتب.');
@@ -506,7 +538,7 @@
     return payrollT(detail.mode==='legacy'?'commission.legacyLinked':'commission.manualLinked',detail.mode==='legacy'?'مرتبطة بقسم العمولات بالمنطق القديم':'مرتبطة يدويًا بقسم العمولات')+' — '+(names.length?payrollT('commission.matchedName','الاسم المطابق: {names}',{names:names.join(' / ')}):payrollT('commission.matched','تمت المطابقة'));
   }
   function sumLines(lines){return (Array.isArray(lines)?lines:[]).reduce(function(s,x){return s+num(x.value)},0)}
-  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetail(emp,slip.period);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var incentives=num(slip.incentives);var allowances=num(slip.housing)+num(slip.transport);var extraTotal=allowances+commission+incentives+additions;var gross=num(slip.base)+extraTotal;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,incentives:incentives,allowances:allowances,extraTotal:extraTotal,gross:gross,net:net}}
+  function calcSlip(slip){var emp=getEmployee(slip.employeeId)||{};var cd=commissionDetailForSlip(slip,emp);var commission=cd.total;var additions=sumLines(slip.additions);var deductions=sumLines(slip.deductions);var incentives=num(slip.incentives);var allowances=num(slip.housing)+num(slip.transport);var extraTotal=allowances+commission+incentives+additions;var gross=num(slip.base)+extraTotal;var net=gross-deductions;return {commission:commission,commissionDetail:cd,additions:additions,deductions:deductions,incentives:incentives,allowances:allowances,extraTotal:extraTotal,gross:gross,net:net}}
   function identityKeys(obj){
     obj=obj||{};
     var keys=[];
@@ -760,7 +792,7 @@
     return true;
   }
 
-  async function upsertSlip(slip){var before=slips();var arr=cloneVal(before);var i=arr.findIndex(function(x){return String(x.id)===String(slip.id)});var duplicate=arr.find(function(x){return String(x.id)!==String(slip.id)&&sameSlipMonth(x,slip)});if(duplicate){toastMsg(payrollT('messages.duplicateSlip','يوجد كشف راتب لنفس الموظف في نفس الشهر بالفعل'));return null}var old=i>-1?arr[i]:{};slip=Object.assign({},old,slip);if(i>-1)arr[i]=slip;else arr.push(slip);setSlipsCache(arr);try{await persistOneSlip(slip);return slip}catch(e){setSlipsCache(before);refreshPayrollViews();throw e}}
+  async function upsertSlip(slip){var before=slips();var arr=cloneVal(before);var i=arr.findIndex(function(x){return String(x.id)===String(slip.id)});var duplicate=arr.find(function(x){return String(x.id)!==String(slip.id)&&sameSlipMonth(x,slip)});if(duplicate){toastMsg(payrollT('messages.duplicateSlip','يوجد كشف راتب لنفس الموظف في نفس الشهر بالفعل'));return null}var old=i>-1?arr[i]:{};var prepared=await attachCertifiedCommissionLink(slip,old);if(!prepared.ok){toastMsg(payrollT('commission.invalidCertifiedSnapshot','لا يمكن حفظ كشف الراتب لأن Snapshot العمولات للشهر غير معتمد أو فشل التحقق من الـ Hash.'));return null}slip=Object.assign({},old,prepared.slip);if(i>-1)arr[i]=slip;else arr.push(slip);setSlipsCache(arr);try{await persistOneSlip(slip);return slip}catch(e){setSlipsCache(before);refreshPayrollViews();throw e}}
   function payrollAuditActor(){var u=currentUser()||{};return {id:String(u.id||''),name:String(u.fullName||u.username||u.email||u.id||'')} }
   function appendPayrollAudit(slip,action,reason,reference,fromStatus,toStatus){if(!slip||!action)return;slip.auditTrail=Array.isArray(slip.auditTrail)?slip.auditTrail:[];var actor=payrollAuditActor();slip.auditTrail.push({at:new Date().toISOString(),action:String(action),reason:String(reason||''),reference:String(reference||''),fromStatus:String(fromStatus||''),toStatus:String(toStatus||''),byId:actor.id,by:actor.name})}
   async function setStatus(id,st,extra){var before=slips();var arr=cloneVal(before);var slip=arr.find(function(x){return x.id===id});if(!slip)return false;var oldStatus=String(slip.status||'');extra=Object.assign({},extra||{});var auditAction=extra.auditAction||('status:'+st);var auditReason=extra.auditReason||'';var auditReference=extra.auditReference||'';delete extra.auditAction;delete extra.auditReason;delete extra.auditReference;slip.status=st;Object.assign(slip,extra);appendPayrollAudit(slip,auditAction,auditReason,auditReference,oldStatus,st);slip.updatedAt=new Date().toISOString();setSlipsCache(arr);try{await persistOneSlip(slip);render();renderSalarySlip();return true}catch(e){setSlipsCache(before);render();renderSalarySlip();throw e}}

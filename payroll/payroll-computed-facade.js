@@ -112,7 +112,8 @@
   function slipTotals(slip){
     slip = slip || {};
     var emp = employeeForSlip(slip) || {};
-    var commission = commissionDetail(emp, slip.period);
+    var frozenLink = slip && slip.commissionSnapshotLink && slip.commissionSnapshotLink.frozen === true ? slip.commissionSnapshotLink : null;
+    var commission = frozenLink ? {total:num(frozenLink.amount),matches:asArray(frozenLink.matches),source:str(frozenLink.source||'frozen_snapshot'),mode:str(frozenLink.mode||'identity'),frozen:true,snapshotId:str(frozenLink.snapshotId),snapshotHash:str(frozenLink.snapshotHash),revisionNumber:num(frozenLink.revisionNumber),traceRefs:asArray(frozenLink.traceRefs),certificationStatus:str(frozenLink.certificationStatus)} : commissionDetail(emp, slip.period);
     var additions = sumLines(slip.additions);
     var deductions = sumLines(slip.deductions);
     var base = num(slip.base);
