@@ -1,0 +1,6 @@
+PETATOE v10.0.5 — Smart Router Cache Token Hotfix
+
+- Synchronized smart-router.js cache token with Localization Runtime v10.0.5.
+- Fixed Smart Reports Public API GitHub Actions failure.
+- No UI, business logic, SQL, Supabase, or desktop/mobile behavior changes.
+- Full Localization Lockdown workflow-equivalent checks passed locally.
