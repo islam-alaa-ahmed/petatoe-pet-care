@@ -1,4 +1,4 @@
-/* PETATOE v10.0.11 — Mobile About & Update Center */
+/* PETATOE v10.0.12 — Mobile About & Update Center */
 (function(){
   'use strict';
   if(window.__PETATOE_ABOUT_APP_BOOTED__) return;
@@ -14,8 +14,8 @@
   function center(){return window.PETATOE_LOCALIZATION_CENTER||null}
   function t(key,fallback){try{var c=center();return c&&typeof c.t==='function'?c.t('aboutApp.'+key,{}, {fallback:fallback,allowKeyFallback:true}):fallback}catch(_){return fallback}}
   function esc(value){return String(value==null?'':value).replace(/[&<>\"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]})}
-  function version(){return String(window.PETATOE_RELEASE_VERSION||'v10.0.11')}
-  function releaseName(){return String(window.PETATOE_RELEASE_NAME||'PETATOE_V10_0_11_PWA_CACHE_STRATEGY_P2_4')}
+  function version(){return String(window.PETATOE_RELEASE_VERSION||'v10.0.12')}
+  function releaseName(){return String(window.PETATOE_RELEASE_NAME||'PETATOE_V10_0_12_RUNTIME_OWNERSHIP_P2_5')}
   function formatDate(value){
     if(!value)return t('never','لم يتم الفحص بعد');
     try{return new Intl.DateTimeFormat(document.documentElement.lang&&document.documentElement.lang.indexOf('en')===0?'en-US':'ar-EG',{dateStyle:'medium',timeStyle:'short',calendar:'gregory'}).format(value)}catch(_){return value.toLocaleString()}

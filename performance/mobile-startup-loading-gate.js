@@ -13,7 +13,7 @@
     treasury: 'treasury',
     warehouse: 'warehouses', warehouses: 'warehouses', warehouseAlerts: 'warehouses',
     children: 'children', childrenExpenses: 'children',
-    xlsx: 'xlsx', excel: 'xlsx'
+    xlsx: 'xlsx', excel: 'xlsx', diagnostics: 'diagnostics', audit: 'diagnostics', observability: 'diagnostics'
   };
 
   function normalizeGroup(name){ return aliases[name] || name; }
@@ -77,6 +77,9 @@
       }else if(group === 'payroll' && window.PETATOEPayroll){
         if(tabId === 'salarySlip' && typeof window.PETATOEPayroll.renderSalarySlip === 'function') window.PETATOEPayroll.renderSalarySlip();
         else if(typeof window.PETATOEPayroll.render === 'function') window.PETATOEPayroll.render();
+      }else if(group === 'diagnostics'){
+        var mount = document.getElementById('petatoeObservabilitySettingsMount');
+        if(mount && window.PETATOEObservability && typeof window.PETATOEObservability.renderInto === 'function') window.PETATOEObservability.renderInto(mount);
       }
       if(tabId){
         document.dispatchEvent(new CustomEvent('petatoe:tabchange', { detail: { tabId: tabId, lazyHydration: true } }));
@@ -118,6 +121,7 @@
     if(/treasury|خزين/.test(text)) return 'treasury';
     if(/warehouse|مخزن|مخازن/.test(text)) return 'warehouses';
     if(/childrenexpenses|children|مصروفات الأبناء/.test(text)) return 'children';
+    if(/audit|diagnostic|observability|performance monitoring|تدقيق|مراقبة الأداء|الأداء والمراقبة/.test(text)) return 'diagnostics';
     if(/excel|xlsx|استيراد|تصدير/.test(text)) return 'xlsx';
     return '';
   }
@@ -129,6 +133,7 @@
     if(/payroll|salaryslip|commissionstatement/.test(marker)) return 'payroll';
     if(/treasury/.test(marker)) return 'treasury';
     if(/warehouse/.test(marker)) return 'warehouses';
+    if(/observability|diagnostic|audit/.test(marker)) return 'diagnostics';
     if(/children/.test(marker)) return 'children';
     return '';
   }
@@ -186,11 +191,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, version: '10.0.8-mobile-startup-gate-p2-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, version: '10.0.12-runtime-ownership-p2-5', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.8-mobile-startup-gate-p2-1',
+    version: '10.0.12-runtime-ownership-p2-5',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

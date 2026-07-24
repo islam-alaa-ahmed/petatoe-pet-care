@@ -1,0 +1,10 @@
+PETATOE v10.0.12 — Runtime Ownership P2.5
+
+- Audited active, legacy, shadow, validation, and diagnostic runtime ownership.
+- Kept core router, navigation, registry, authentication, localization, and business owners in startup.
+- Deferred 15 diagnostic-only audit, validation, pilot, and observability scripts on phones.
+- Removed 113,812 local JavaScript bytes from the initial mobile execution path.
+- Added on-demand diagnostics loading and observability screen hydration.
+- Preserved original desktop parser order and behavior.
+- No source files were deleted and no business logic, Supabase, SQL, permissions, or security behavior changed.
+- Localization, Smart Reports, Mobile UI, startup guards, and native iOS static certification passed.
