@@ -1,0 +1,10 @@
+PETATOE v10.0.14 — Sales Data Refresh Loop Elimination R2
+
+- Removed the duplicate window-load sales fetch.
+- Eliminated the records-changed → full Supabase read → records-changed loop.
+- Changed data-change handling to render from the already committed runtime cache.
+- Added one shared in-flight sales refresh lock and a short freshness guard.
+- Limited canonical sales reads to required columns instead of select('*').
+- Preserved forced refresh after manual, CRUD, import, replace, save, and delete operations.
+- Synchronized release, Service Worker, localization, smart runtime, About App, CSS headers, and certification tokens to v10.0.14.
+- No Supabase schema, SQL, calculations, permissions, security, or visual design changes.

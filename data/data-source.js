@@ -14,6 +14,10 @@
   var CURRENT_USER_KEY='petatoe_current_user';
   var USER_ALIASES=['PETATOE_CURRENT_USER','currentUser','petatoe_current_user_v108','petatoe_current_user_v139'];
   var recordsCache=null;
+  var salesRefreshInFlight=null;
+  var lastSalesRefreshAt=0;
+  var SALES_REFRESH_FRESH_MS=3000;
+  var SALES_RUNTIME_COLUMNS='id,legacy_id,invoice_no,invoice_date,client_name,item_name,vehicle_name,payment_method,qty,price,discount,tax,total_ex,total_inc,invoice_type';
 
   // PETATOE v6.1.80 Phase 5-D: central safe parse for records cache reads.
   function parse(raw,fb){
@@ -138,22 +142,39 @@
     }
     return getRecordsSync();
   }
-  async function refreshSalesRecordsFromSupabase(reason){
-    try{
-      if(!w.PETOTOEDataLayer && !w.PETATOEDataLayer) return {ok:false,error:{message:'PETATOEDataLayer is not ready'}};
-      var dl=w.PETATOEDataLayer;
-      if(!dl || typeof dl.readSalesRecords!=='function') return {ok:false,error:{message:'PETATOEDataLayer.readSalesRecords is not ready'}};
-      var res=await dl.readSalesRecords({limit:20000});
-      if(!res || !res.ok){
-        try{console.warn('[PETATOEDataSource] Supabase sales refresh failed',res)}catch(_e){}
-        return res || {ok:false,error:{message:'Empty DataLayer response'}};
-      }
-      setRuntimeRecords(res.data || [], reason || 'supabase-sales-refresh');
-      return {ok:true,rows:(res.data||[]).length,result:res};
-    }catch(e){
-      try{console.warn('[PETATOEDataSource] Supabase sales refresh crashed',e)}catch(_e){}
-      return {ok:false,error:{message:e&&e.message?e.message:String(e)}};
+  function shouldForceSalesRefresh(reason, options){
+    if(options && options.force === true) return true;
+    return /manual|delete|replace|import|upload|save|crud/i.test(String(reason||''));
+  }
+  async function refreshSalesRecordsFromSupabase(reason, options){
+    options=options||{};
+    var force=shouldForceSalesRefresh(reason,options);
+    var now=Date.now();
+    if(salesRefreshInFlight) return salesRefreshInFlight;
+    if(!force && lastSalesRefreshAt && (now-lastSalesRefreshAt)<SALES_REFRESH_FRESH_MS){
+      return {ok:true,rows:getRecordsSync().length,skipped:true,reason:'fresh-runtime-cache'};
     }
+    salesRefreshInFlight=(async function(){
+      try{
+        if(!w.PETOTOEDataLayer && !w.PETATOEDataLayer) return {ok:false,error:{message:'PETATOEDataLayer is not ready'}};
+        var dl=w.PETATOEDataLayer;
+        if(!dl || typeof dl.readSalesRecords!=='function') return {ok:false,error:{message:'PETATOEDataLayer.readSalesRecords is not ready'}};
+        var res=await dl.readSalesRecords({columns:SALES_RUNTIME_COLUMNS,maxRows:false,pageSize:1000});
+        if(!res || !res.ok){
+          try{console.warn('[PETATOEDataSource] Supabase sales refresh failed',res)}catch(_e){}
+          return res || {ok:false,error:{message:'Empty DataLayer response'}};
+        }
+        lastSalesRefreshAt=Date.now();
+        setRuntimeRecords(res.data || [], reason || 'supabase-sales-refresh');
+        return {ok:true,rows:(res.data||[]).length,result:res};
+      }catch(e){
+        try{console.warn('[PETATOEDataSource] Supabase sales refresh crashed',e)}catch(_e){}
+        return {ok:false,error:{message:e&&e.message?e.message:String(e)}};
+      }finally{
+        salesRefreshInFlight=null;
+      }
+    })();
+    return salesRefreshInFlight;
   }
   function bootSupabaseSalesRefresh(){
     var attempts=0;
@@ -216,7 +237,7 @@
   w.PETATOEDataSource.getCurrentUserName=getCurrentUserName;
   w.PETATOEDataSource.migrateCurrentUser=migrateCurrentUser;
   w.PETATOEDataSource.__ready=true;
-  w.PETATOEDataSource.version='3.11.24-sales-supabase-unified';
+  w.PETATOEDataSource.version='3.11.25-sales-refresh-loop-elimination';
 
   ensureCache();
   migrateCurrentUser();
