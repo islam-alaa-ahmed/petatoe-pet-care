@@ -193,7 +193,7 @@
     scheduleCharts(root,lang,token);startObserver();return true;
   }
 
-  window.PETATOE_SMART_LANGUAGE_RUNTIME={apply:apply,getLanguage:language,translate:translate,version:'10.0.9-mobile-runtime-consolidation-p2-2'};
+  window.PETATOE_SMART_LANGUAGE_RUNTIME={apply:apply,getLanguage:language,translate:translate,version:'10.0.10-mobile-css-consolidation-p2-3'};
   window.addEventListener('petatoe:language-changed',function(){apply('language-changed');});
   window.addEventListener('petatoe:smart-tab-rendered',function(){apply('tab-rendered');});
   document.addEventListener('DOMContentLoaded',function(){startObserver();apply('dom-ready');});

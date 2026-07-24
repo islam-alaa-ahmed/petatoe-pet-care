@@ -23,11 +23,15 @@ function count(text, token) {
 }
 
 const cssAssets = [
+  'css/mobile/mobile-enterprise-v10-consolidated.css'
+];
+const cssSourceAssets = [
   'css/mobile/mobile-enterprise-v10-shell.css',
   'css/mobile/mobile-enterprise-v10-dashboard.css',
   'css/mobile/mobile-enterprise-v10-reports.css',
   'css/mobile/mobile-enterprise-v10-management.css',
-  'css/mobile/mobile-enterprise-v10-experience.css'
+  'css/mobile/mobile-enterprise-v10-experience.css',
+  'css/mobile/mobile-enterprise-v10-redesign-m1.css'
 ];
 const jsAssets = [
   'mobile/mobile-enterprise-v10-shell.js',
@@ -46,6 +50,13 @@ for (const asset of allAssets) {
   requireCheck(exists(asset), `Asset exists: ${asset}`, 'Required V10 mobile asset is missing.');
   requireCheck(count(index, asset) === 1, `Single index reference: ${asset}`, `Expected exactly one index.html reference, found ${count(index, asset)}.`);
   requireCheck(worker.includes(`'./${asset}'`), `Service Worker pre-cache: ${asset}`, 'Asset is not listed in APP_SHELL.');
+}
+
+
+for (const sourceAsset of cssSourceAssets) {
+  requireCheck(exists(sourceAsset), `CSS source exists: ${sourceAsset}`, 'Consolidated CSS source file is missing.');
+  requireCheck(count(index, sourceAsset) === 0, `No direct runtime reference: ${sourceAsset}`, 'Source CSS must not be loaded separately after consolidation.');
+  requireCheck(read('css/mobile/mobile-enterprise-v10-consolidated.css').includes(`SOURCE: ${sourceAsset}`), `Consolidated source marker: ${sourceAsset}`, 'Consolidated CSS does not preserve the source ownership marker.');
 }
 
 for (const cssFile of cssAssets) {
@@ -70,7 +81,7 @@ for (const jsFile of jsAssets) {
   requireCheck(hasNamedGuard || hasDirectGuard, `Phone runtime guard: ${jsFile}`, 'Missing an explicit max-width:760px runtime guard.');
 }
 
-requireCheck(worker.includes("const APP_VERSION = '10.0.9-mobile-runtime-consolidation-p2-2';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
+requireCheck(worker.includes("const APP_VERSION = '10.0.10-mobile-css-consolidation-p2-3';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');
 requireCheck(worker.includes('NETWORK_FIRST_EXTENSIONS'), 'PWA network-first source policy', 'Service Worker must use a network-first policy for HTML, JavaScript, CSS and JSON resources.');
 requireCheck(worker.includes('PETATOE_SW_ACTIVATED'), 'PWA activation broadcast', 'Service Worker must broadcast activation to controlled clients.');
 requireCheck(pwaManager.includes("updateViaCache: 'none'"), 'PWA update bypass', 'Service Worker registration must bypass the HTTP cache during update checks.');

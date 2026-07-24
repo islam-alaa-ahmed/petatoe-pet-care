@@ -1,0 +1,10 @@
+PETATOE v10.0.10 — Mobile CSS Consolidation P2.3
+
+- Consolidated six V10 phone stylesheets into one production stylesheet.
+- Preserved the exact original CSS source order and cascade behavior.
+- Reduced V10 mobile startup stylesheet requests from 6 to 1.
+- Kept source stylesheets in the repository for audit and rollback, without direct runtime loading.
+- Updated the Service Worker APP_SHELL to pre-cache only the consolidated V10 stylesheet.
+- Added a mobile certification gate for consolidated source ownership and zero duplicate runtime references.
+- Synchronized release, PWA, localization, smart runtime, and certification tokens.
+- Desktop, tablet, business logic, Supabase, SQL, permissions, and security remain unchanged.
