@@ -1,0 +1,13 @@
+PETATOE Payroll — Phase P4 Local Certification & Staging Gate
+
+- Assemble the cumulative Payroll baseline through Phase P3
+- Run JavaScript/MJS syntax validation across 317 files with zero failures
+- Pass Enterprise Localization Certification with zero missing stored texts and counterparts
+- Pass Production Localization Lockdown
+- Pass Runtime Translation Completion with zero missing phrases
+- Pass Payroll localization source validation
+- Pass Mobile Enterprise UI v10 certification 64/64
+- Pass Native iOS static certification 27/27
+- Add the mandatory Supabase staging, RLS, rollback, audit-trail, and financial-reconciliation test matrix
+- Make no runtime or database changes in this certification phase
+- Keep Production status conditional until live staging tests pass
