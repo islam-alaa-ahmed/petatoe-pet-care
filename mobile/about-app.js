@@ -1,4 +1,4 @@
-/* PETATOE v10.0.14 — Mobile About & Update Center */
+/* PETATOE v10.0.15 — Mobile About & Update Center */
 (function(){
   'use strict';
   if(window.__PETATOE_ABOUT_APP_BOOTED__) return;
@@ -14,8 +14,8 @@
   function center(){return window.PETATOE_LOCALIZATION_CENTER||null}
   function t(key,fallback){try{var c=center();return c&&typeof c.t==='function'?c.t('aboutApp.'+key,{}, {fallback:fallback,allowKeyFallback:true}):fallback}catch(_){return fallback}}
   function esc(value){return String(value==null?'':value).replace(/[&<>\"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]})}
-  function version(){return String(window.PETATOE_RELEASE_VERSION||'v10.0.14')}
-  function releaseName(){return String(window.PETATOE_RELEASE_NAME||'PETATOE_V10_0_14_SALES_DATA_LOOP_R2')}
+  function version(){return String(window.PETATOE_RELEASE_VERSION||'v10.0.15')}
+  function releaseName(){return String(window.PETATOE_RELEASE_NAME||'PETATOE_V10_0_15_RUNTIME_TRACE_R3')}
   function formatDate(value){
     if(!value)return t('never','لم يتم الفحص بعد');
     try{return new Intl.DateTimeFormat(document.documentElement.lang&&document.documentElement.lang.indexOf('en')===0?'en-US':'ar-EG',{dateStyle:'medium',timeStyle:'short',calendar:'gregory'}).format(value)}catch(_){return value.toLocaleString()}
@@ -42,6 +42,7 @@
       '<article class="pet-about__status pet-about__status--'+esc(copy.tone)+'"><div class="pet-about__status-head"><span>'+esc(copy.badge)+'</span><strong>'+esc(copy.title)+'</strong></div><p>'+esc(copy.message)+'</p>'+
         (currentStatus==='available'?'<button type="button" class="pet-about__update" data-pet-about-action="update">'+esc(t('updateNow','تحديث الآن'))+'</button>':'')+
       '</article>'+
+      '<button type="button" class="pet-about__check" data-pet-about-action="copy-trace">'+esc(t('copyPerformanceTrace','نسخ تقرير الأداء'))+'</button>'+
       '<small class="pet-about__release">'+esc(releaseName())+'</small>'+
     '</section>';
   }
@@ -58,12 +59,24 @@
     }catch(error){lastCheckAt=new Date();currentStatus='error';statusDetail=(error&&error.message)||t('checkFailedMessage','تحقق من اتصال الإنترنت ثم أعد المحاولة.');}
     rerender();
   }
+
+  async function copyTrace(){
+    try{
+      var trace=window.PETATOEDataTrace;
+      if(!trace||typeof trace.text!=='function')throw new Error(t('performanceTraceUnavailable','تقرير الأداء غير متاح بعد.'));
+      var value=trace.text();
+      if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(value);
+      else{var area=document.createElement('textarea');area.value=value;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();document.execCommand('copy');area.remove();}
+      if(window.showToast)window.showToast(t('performanceTraceCopied','تم نسخ تقرير الأداء'));
+    }catch(error){if(window.showToast)window.showToast((error&&error.message)||t('performanceTraceUnavailable','تقرير الأداء غير متاح بعد.'),'error');}
+  }
+
   function update(){
     var api=window.PETATOEPWAUpdate;
     if(!api||typeof api.apply!=='function'){currentStatus='error';statusDetail=t('updateUnavailable','خدمة التحديث غير متاحة في هذا المتصفح.');rerender();return;}
     currentStatus='updating';rerender();api.apply();
   }
-  document.addEventListener('click',function(event){var button=event.target&&event.target.closest&&event.target.closest('[data-pet-about-action]');if(!button)return;var action=button.getAttribute('data-pet-about-action');if(action==='check')check();if(action==='update')update();});
+  document.addEventListener('click',function(event){var button=event.target&&event.target.closest&&event.target.closest('[data-pet-about-action]');if(!button)return;var action=button.getAttribute('data-pet-about-action');if(action==='check')check();if(action==='update')update();if(action==='copy-trace')copyTrace();});
   window.addEventListener('petatoe:pwa-update-status',function(event){var detail=event.detail||{};if(detail.status==='available')currentStatus='available';else if(detail.status==='updating')currentStatus='updating';else if(detail.status==='updated')currentStatus='updated';else if(detail.status==='error'){currentStatus='error';statusDetail=detail.message||'';}if(detail.checkedAt)lastCheckAt=new Date(detail.checkedAt);rerender();});
   window.addEventListener('petatoe:language-changed',rerender);
   window.PETATOEAboutApp={renderInto:renderInto,checkForUpdates:check,version:version,buildNumber:BUILD_NUMBER,releaseDate:RELEASE_DATE};
