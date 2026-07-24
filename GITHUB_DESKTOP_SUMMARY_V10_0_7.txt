@@ -1,0 +1,10 @@
+PETATOE v10.0.7 — Mobile Redesign M1
+
+- Redesigned the phone-only app shell with a compact premium header.
+- Added active-screen context and synchronized notification badge.
+- Redesigned the mobile drawer and floating bottom navigation.
+- Reworked dashboard visual hierarchy, cards, spacing and surfaces.
+- Added a dedicated phone light-mode palette.
+- Synchronized release, PWA, localization and smart-runtime cache tokens.
+- Desktop, tablet and business logic remain unchanged.
+- Localization Lockdown and Mobile Certification passed.

@@ -1,7 +1,7 @@
 /* PETATOE PWA Enterprise Service Worker — V10-P1 Update Engine */
 'use strict';
 
-const APP_VERSION = '10.0.6-mobile-about-update-center';
+const APP_VERSION = '10.0.7-mobile-redesign-m1';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;
@@ -27,6 +27,7 @@ const APP_SHELL = [
   './css/mobile/mobile-enterprise-v10-reports.css',
   './css/mobile/mobile-enterprise-v10-management.css',
   './css/mobile/mobile-enterprise-v10-experience.css',
+  './css/mobile/mobile-enterprise-v10-redesign-m1.css',
   './mobile/mobile-enterprise-v10-shell.js',
   './mobile/about-app.js',
   './mobile/mobile-enterprise-v10-dashboard.js',
