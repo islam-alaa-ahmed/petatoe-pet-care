@@ -1,4 +1,4 @@
-/* PETATOE v8.0.2 — Payroll Read-Only Facade (Supabase)
+/* PETATOE v10.0.1 — Payroll Read-Only Facade (Supabase)
    Scope: read-only facade for payroll data.
    Storage rule: no LocalStorage / PETATOEStorage dependency.
    Source: PETATOESupabaseRepository + in-memory runtime cache only. */
@@ -155,7 +155,7 @@
   }
 
   var api = {
-    version: 'v8.0.2-supabase-only',
+    version: 'v10.0.1-supabase-only',
     mode: 'read-only-supabase',
     __supabaseOnly: true,
     employees: employees,

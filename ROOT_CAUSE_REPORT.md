@@ -1,24 +1,31 @@
-# PETATOE Phase 3B — Salesperson Assignment Model
+# PETATOE v10.0.1 — Phase F1 Root Cause Report
 
-## Root Cause
+## Baseline
+`petatoe-pet-care-main (10).zip`
 
-The commission engine selected the first active salesperson from `employees.sales` and applied that employee to every vehicle and every month. When no record existed, the engine created a hard-coded fallback employee named `قاسم`.
+## Confirmed Root Causes
 
-This produced a financial attribution risk because the selected employee was not required to be linked to the invoice, vehicle, or commission period.
+### 1. False success when Supabase is unavailable — High
+Several payroll persistence functions returned `{ok:false, skipped:true}` when the Supabase repository/client was unavailable. Callers awaited a resolved promise and continued to display success or keep the optimistic cache state.
 
-## Responsible File
+**Affected boundary:** `payroll/payroll-core.js`
 
-- `inline-extracted/commission-inline.js`
+**Fix:** A single `requirePayrollRepo()` persistence gate now rejects immediately with `PAYROLL_PERSISTENCE_UNAVAILABLE`. Financial mutations therefore enter the existing catch/rollback paths instead of reporting success.
 
-## Responsible Logic
+### 2. Two operational sources for payroll slips — High
+Payroll slips were read from both `payroll_slips` and `payroll_master_data.payrollSlips`, then merged. The legacy master copy could overwrite a newer canonical row or revive stale/deleted data.
 
-- Legacy `salesPerson()` global selector.
-- Sales commission branch inside `buildCalcForPeriod()`.
-- Sales employee form stored only a name and active flag, without vehicle or period boundaries.
+**Fix:** `payroll_slips` is now the only operational source of truth. `master.payrollSlips` is ignored during load, and payroll slips are removed from the master payload.
 
-## Impact
+### 3. Non-transactional dual writes — High
+A single slip save/delete updated `payroll_master_data` and `payroll_slips` sequentially. A partial failure could leave the two sources inconsistent.
 
-- One salesperson could receive commissions for all vehicles.
-- Missing salesperson assignments still produced commission through a hard-coded fallback.
-- Two overlapping assignments could not be detected.
-- The snapshot could certify a financially incorrect salesperson attribution.
+**Fix:** Slip create/update/delete now writes only to `payroll_slips`. `payroll_master_data` remains limited to payroll configuration (`jobTypes`, `employeeConfig`).
+
+### 4. Release metadata drift — Medium
+The baseline used different version identities across `package.json`, `RELEASE_VERSION.txt`, runtime metadata, README, and payroll module metadata.
+
+**Fix:** The current release identity is synchronized to:
+
+- Version: `10.0.1`
+- Release name: `PETATOE_V10_0_1_CANONICAL_PAYROLL_PERSISTENCE`

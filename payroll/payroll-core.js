@@ -1,4 +1,4 @@
-/* PETATOE v8.0.2 — Payroll Supabase Storage Cleanup
+/* PETATOE v10.0.1 — Canonical Payroll Persistence
    Payroll operational data reads/writes through Supabase runtime cache only. */
 (function(){
   'use strict';
@@ -37,6 +37,8 @@
   var payrollLoaded=false;
 
   function payrollRepo(){return window.PETATOESupabaseRepository||null}
+  function payrollPersistenceUnavailableError(){var e=new Error('Payroll persistence unavailable: Supabase repository/client is not ready');e.code='PAYROLL_PERSISTENCE_UNAVAILABLE';return e}
+  function requirePayrollRepo(){var R=payrollRepo();if(!R||!R.hasClient||!R.hasClient())throw payrollPersistenceUnavailableError();return R}
   function isPayrollKey(key){return key===EMP_KEY||key===SLIP_KEY||key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY||key===COMM_SNAPSHOT_KEY}
   function cloneVal(v){try{return JSON.parse(JSON.stringify(v));}catch(_e){return v}}
   function read(key,def){
@@ -61,10 +63,10 @@
     if(v&&typeof v==='object')delete v._persistPromise;
     return v;
   }
-  function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4},payrollSlips:(Array.isArray(payrollCache[SLIP_KEY])?payrollCache[SLIP_KEY]:[]).map(sanitizePayrollSlip)}}
+  function payrollMasterPayload(){return {jobTypes:payrollCache[JOB_TYPES_KEY]||[],employeeConfig:payrollCache[EMP_CONFIG_KEY]||{prefix:'EMP',next:1,digits:4}}}
   function persistMaster(){
-    var R=payrollRepo();
-    if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
+    var R;
+    try{R=requirePayrollRepo()}catch(e){return Promise.reject(e)}
     return R.saveSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,payrollMasterPayload()).then(function(res){
       if(res&&!res.ok)throw new Error(res.error||'Payroll master save failed');
       return res||{ok:true};
@@ -72,8 +74,8 @@
   }
 
   function persistCommissionSnapshots(next){
-    var R=payrollRepo();
-    if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
+    var R;
+    try{R=requirePayrollRepo()}catch(e){return Promise.reject(e)}
     return R.saveSingleton('payroll_master_data',COMMISSION_SNAPSHOT_ROW_ID,next&&typeof next==='object'?next:{}).then(function(res){
       if(res&&!res.ok)throw new Error(res.error||'Commission snapshots save failed');
       return res||{ok:true};
@@ -87,8 +89,8 @@
     try{return JSON.stringify(v,Object.keys(v||{}).sort())}catch(_e){try{return JSON.stringify(v)}catch(_e2){return String(v)}}
   }
   function persistArrayTable(table,nextRows,prevRows,extraForRow){
-    var R=payrollRepo();
-    if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
+    var R;
+    try{R=requirePayrollRepo()}catch(e){return Promise.reject(e)}
     nextRows=Array.isArray(nextRows)?nextRows:[];
     prevRows=Array.isArray(prevRows)?prevRows:[];
     var nextIds={};
@@ -117,8 +119,8 @@
     });
   }
   function persistPayrollEmployees(nextRows,prevRows){
-    var R=payrollRepo();
-    if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
+    var R;
+    try{R=requirePayrollRepo()}catch(e){return Promise.reject(e)}
     nextRows=Array.isArray(nextRows)?nextRows:[];
     prevRows=Array.isArray(prevRows)?prevRows:[];
     var nextIds={};
@@ -142,7 +144,7 @@
       return persistPayrollEmployees(val,prev);
     }
     if(key===SLIP_KEY){
-      return persistArrayTable('payroll_slips',val,prev,slipPersistenceExtra).then(function(res){return persistMaster().then(function(){return res})});
+      return persistArrayTable('payroll_slips',val,prev,slipPersistenceExtra);
     }
     if(key===JOB_TYPES_KEY||key===EMP_CONFIG_KEY){return persistMaster();}
     if(key===COMM_SNAPSHOT_KEY){return persistCommissionSnapshots(val);}
@@ -173,7 +175,8 @@
         await R.saveSingleton('payroll_master_data',COMMISSION_SNAPSHOT_ROW_ID,canonicalSnapshots);
       }
       payrollCache[EMP_KEY]=Array.isArray(emps)?emps:[];
-      payrollCache[SLIP_KEY]=mergePayrollSlipSources(Array.isArray(master.payrollSlips)?master.payrollSlips:[],Array.isArray(slipsRows)?slipsRows:[]);
+      /* payroll_slips is the only operational source of truth. Legacy master.payrollSlips is intentionally ignored. */
+      payrollCache[SLIP_KEY]=(Array.isArray(slipsRows)?slipsRows:[]).map(normalizeSlipRecord).sort(sortPayrollSlipsForDisplay);
       payrollCache[JOB_TYPES_KEY]=Array.isArray(master.jobTypes)?master.jobTypes:[];
       payrollCache[EMP_CONFIG_KEY]=employeeConfigNormalize(master.employeeConfig||payrollCache[EMP_CONFIG_KEY]);
       payrollCache[COMM_SNAPSHOT_KEY]=canonicalSnapshots&&typeof canonicalSnapshots==='object'&&!Array.isArray(canonicalSnapshots)?canonicalSnapshots:{};
@@ -320,7 +323,7 @@
   function saveSlips(arr){return write(SLIP_KEY,arr)}
   function setSlipsCache(arr){payrollCache[SLIP_KEY]=cloneVal(Array.isArray(arr)?arr:[]);return Promise.resolve({ok:true,cached:true})}
   function slipPersistenceExtra(slip){var c={net:0};try{if(typeof calcSlip==='function')c=calcSlip(slip)||c}catch(_e){}return {employee_id:String(slip&&slip.employeeId||slip&&slip.employee_id||''),period:String(slip&&slip.period||''),status:String(slip&&slip.status||''),payment_method:String(slip&&slip.paymentMethod||slip&&slip.payment_method||''),net_amount:num(c.net||0)}}
-  function persistOneSlip(slip){var R=payrollRepo();if(!slip||!slip.id)return Promise.resolve({ok:false,skipped:true});if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});var safe=sanitizePayrollSlip(slip);return persistMaster().then(function(){return R.upsertJsonRow('payroll_slips',slip.id,safe,slipPersistenceExtra(safe))}).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Save failed: payroll_slips');return res||{ok:true}}).catch(function(e){console.warn('PETATOEPayroll single slip persist failed',e);throw e})}
+  function persistOneSlip(slip){var R;if(!slip||!slip.id)return Promise.reject(new Error('Payroll slip id is required'));try{R=requirePayrollRepo()}catch(e){return Promise.reject(e)}var safe=sanitizePayrollSlip(slip);return R.upsertJsonRow('payroll_slips',slip.id,safe,slipPersistenceExtra(safe)).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Save failed: payroll_slips');return res||{ok:true}}).catch(function(e){console.warn('PETATOEPayroll single slip persist failed',e);throw e})}
   function employeeRefTokens(obj){
     var out=[];
     function add(v){v=String(v==null?'':v).trim();if(v&&out.indexOf(v)===-1)out.push(v)}
@@ -377,17 +380,17 @@
     return out;
   }
   function removeOneSlip(target){
-    var R=payrollRepo();
+    var R;
     var targetSlip=(target&&typeof target==='object')?target:(slips().find(function(x){return String(x.id)===String(target)})||{id:target});
-    if(!targetSlip||!targetSlip.id)return Promise.resolve({ok:false,skipped:true});
-    if(!R||!R.hasClient||!R.hasClient())return Promise.resolve({ok:false,skipped:true});
+    if(!targetSlip||!targetSlip.id)return Promise.reject(new Error('Payroll slip id is required'));
+    try{R=requirePayrollRepo()}catch(e){return Promise.reject(e)}
     function del(row){return R.deleteById('payroll_slips',row.id).then(function(res){if(res&&!res.ok)throw new Error(res.error||'Delete failed: payroll_slips');return res||{ok:true}})}
     return Promise.resolve(typeof R.listJsonRows==='function'?R.listJsonRows('payroll_slips',{}):[]).then(function(rows){
       rows=Array.isArray(rows)?rows:[];
       var targets=rows.filter(function(row){return row&&(String(row.id)===String(targetSlip.id)||sameSlipMonth(row,targetSlip))});
       if(!targets.some(function(row){return String(row.id)===String(targetSlip.id)}))targets.push(targetSlip);
       var seen={};targets=targets.filter(function(row){var id=String(row&&row.id||'');if(!id||seen[id])return false;seen[id]=true;return true});
-      return Promise.all(targets.map(del)).then(function(){return persistMaster().then(function(){return {ok:true,count:targets.length}})});
+      return Promise.all(targets.map(del)).then(function(){return {ok:true,count:targets.length}});
     }).catch(function(e){console.warn('PETATOEPayroll single slip delete failed',e);throw e})
   }
   function getEmployee(id){return employees().find(function(e){return sameEmployeeRef(e,id)})||null}
