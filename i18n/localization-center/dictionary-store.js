@@ -48,6 +48,18 @@
   STORE.en.runtimeSource['يوجد بند مكرر داخل الفاتورة الحالية']='A duplicate item exists within the current invoice';
   STORE.ar.runtimeSource['هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة']='هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة';
   STORE.en.runtimeSource['هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة']='This item already exists with the same invoice number, customer, service, vehicle, and value';
+  STORE.ar.runtimeSource['ليس لديك صلاحية لتنفيذ هذا الإجراء']='ليس لديك صلاحية لتنفيذ هذا الإجراء';
+  STORE.en.runtimeSource['ليس لديك صلاحية لتنفيذ هذا الإجراء']='You do not have permission to perform this action';
+  STORE.ar.runtimeSource['تعذر حفظ إعدادات العمولات في Supabase']='تعذر حفظ إعدادات العمولات في Supabase';
+  STORE.en.runtimeSource['تعذر حفظ إعدادات العمولات في Supabase']='Unable to save commission settings to Supabase';
+  STORE.ar.runtimeSource['حفظ التعديل']='حفظ التعديل';
+  STORE.en.runtimeSource['حفظ التعديل']='Save changes';
+  STORE.ar.runtimeSource['تم تغيير الحالة']='تم تغيير الحالة';
+  STORE.en.runtimeSource['تم تغيير الحالة']='Status updated';
+  STORE.ar.runtimeSource['اكتب سبب استبدال Snapshot المحفوظ']='اكتب سبب استبدال Snapshot المحفوظ';
+  STORE.en.runtimeSource['اكتب سبب استبدال Snapshot المحفوظ']='Enter the reason for replacing the saved snapshot';
+  STORE.ar.runtimeSource['سبب الاستبدال مطلوب']='سبب الاستبدال مطلوب';
+  STORE.en.runtimeSource['سبب الاستبدال مطلوب']='A replacement reason is required';
   STORE.ar.salesDuplicatePolicy=Object.assign({},STORE.ar.salesDuplicatePolicy||{},{unavailable:'تعذر تشغيل فحص تكرار الفاتورة',withinInvoice:'يوجد بند مكرر داخل الفاتورة الحالية',existing:'هذا البند موجود بالفعل بنفس رقم الفاتورة والعميل والخدمة والسيارة والقيمة'});
   STORE.en.salesDuplicatePolicy=Object.assign({},STORE.en.salesDuplicatePolicy||{},{unavailable:'Unable to run invoice duplicate validation',withinInvoice:'A duplicate item exists within the current invoice',existing:'This item already exists with the same invoice number, customer, service, vehicle, and value'});
   registerModule('certificationSource',CERTIFICATION_SOURCE);
