@@ -1,0 +1,11 @@
+PETATOE v10.0.19 — Native Biometric Entry Parity N1
+
+- Fixed the confirmed race between native iOS Face ID and browser WebAuthn startup.
+- Native biometric runtime now initializes before the web authentication session.
+- Suppressed automatic “Use Passkey” WebAuthn prompt only inside the native iOS wrapper.
+- Preserved browser/PWA Passkey behavior and manual login fallback.
+- Replaced the black native startup screen with a lightweight neutral loading surface.
+- Updated Capacitor and native WebView startup background.
+- No changes to Supabase, MFA, permissions, dashboard, calculations, navigation, or menu design.
+- Synchronized release to PETATOE v10.0.19 / PETATOE_V10_0_19_NATIVE_BIOMETRIC_ENTRY_PARITY_N1.
+- Passed mobile, native iOS, startup, Smart Reports, and localization certifications.

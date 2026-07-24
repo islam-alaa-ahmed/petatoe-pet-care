@@ -30,7 +30,23 @@
   }
 
   function setPending(active) {
-    try { document.documentElement.classList.toggle('pet-native-auth-pending', !!active); } catch (_) {}
+    try {
+      document.documentElement.classList.toggle('pet-native-auth-pending', !!active);
+      if (window.__PETATOE_NATIVE_BIOMETRIC__) window.__PETATOE_NATIVE_BIOMETRIC__.pending = !!active;
+    } catch (_) {}
+  }
+
+  function finishNativeAttempt(succeeded, reason) {
+    if (window.__PETATOE_NATIVE_BIOMETRIC__) {
+      window.__PETATOE_NATIVE_BIOMETRIC__.completed = true;
+      window.__PETATOE_NATIVE_BIOMETRIC__.succeeded = !!succeeded;
+      window.__PETATOE_NATIVE_BIOMETRIC__.reason = String(reason || '');
+    }
+    try {
+      document.dispatchEvent(new CustomEvent('petatoe:native-biometric-complete', {
+        detail: { succeeded: !!succeeded, reason: String(reason || '') }
+      }));
+    } catch (_) {}
   }
 
   function safeParse(value) {
@@ -78,13 +94,13 @@
     if (restoreStarted || !isNativeIOS()) return false;
     restoreStarted = true;
     var native = plugin();
-    if (!native) return false;
 
     try {
+      if (!native) throw new Error('PLUGIN_MISSING');
       var availability = await native.isAvailable();
-      if (!availability || !availability.available) return false;
+      if (!availability || !availability.available) throw new Error('BIOMETRIC_UNAVAILABLE');
       var state = await native.hasSession();
-      if (!state || !state.hasSession) return false;
+      if (!state || !state.hasSession) throw new Error('NO_NATIVE_SESSION');
 
       setPending(true);
       var result = await native.loadSession({
@@ -108,6 +124,7 @@
           detail: { user: payload.user, biometryType: availability.biometryType || 'faceID' }
         }));
       } catch (_) {}
+      finishNativeAttempt(true, 'restored');
       return true;
     } catch (error) {
       var code = String(error && (error.code || error.message) || '');
@@ -115,6 +132,7 @@
         await clearNativeSession();
       }
       console.info('[PETATOE Native Auth] Face ID unlock was not completed.', error);
+      finishNativeAttempt(false, code || 'not-completed');
       return false;
     } finally {
       setPending(false);
@@ -133,6 +151,7 @@
   }
 
   if (!isNativeIOS()) return;
+  window.__PETATOE_NATIVE_BIOMETRIC__ = { present: true, pending: true, completed: false, succeeded: false };
   document.documentElement.classList.add('petatoe-native-ios');
   setPending(true);
   bindSessionLifecycle();

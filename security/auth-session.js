@@ -843,6 +843,8 @@
     }
   }
   function scheduleAutomaticBiometricLogin(){
+    var nativeBiometric = window.__PETATOE_NATIVE_BIOMETRIC__;
+    if(nativeBiometric && nativeBiometric.present) return;
     if(biometricAutoAttempted || !biometricUsable()) return;
     biometricAutoAttempted = true;
     var overlay = document.getElementById('pet-auth-overlay');
