@@ -1,69 +1,21 @@
 {
   "certification": "PASSED",
   "suite": "PETATOE Mobile Enterprise UI v10",
-  "checks": 64,
+  "checks": 61,
   "failures": 0,
-  "assets": 10,
-  "generatedAt": "2026-07-21T23:02:09.639Z",
+  "assets": 6,
+  "generatedAt": "2026-07-24T23:45:25.691Z",
   "details": [
     {
-      "name": "Asset exists: css/mobile/mobile-enterprise-v10-shell.css",
+      "name": "Asset exists: css/mobile/mobile-enterprise-v10-consolidated.css",
       "status": "PASS"
     },
     {
-      "name": "Single index reference: css/mobile/mobile-enterprise-v10-shell.css",
+      "name": "Single index reference: css/mobile/mobile-enterprise-v10-consolidated.css",
       "status": "PASS"
     },
     {
-      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-shell.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Asset exists: css/mobile/mobile-enterprise-v10-dashboard.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Single index reference: css/mobile/mobile-enterprise-v10-dashboard.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-dashboard.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Asset exists: css/mobile/mobile-enterprise-v10-reports.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Single index reference: css/mobile/mobile-enterprise-v10-reports.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-reports.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Asset exists: css/mobile/mobile-enterprise-v10-management.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Single index reference: css/mobile/mobile-enterprise-v10-management.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-management.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Asset exists: css/mobile/mobile-enterprise-v10-experience.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Single index reference: css/mobile/mobile-enterprise-v10-experience.css",
-      "status": "PASS"
-    },
-    {
-      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-experience.css",
+      "name": "Service Worker pre-cache: css/mobile/mobile-enterprise-v10-consolidated.css",
       "status": "PASS"
     },
     {
@@ -127,63 +79,87 @@
       "status": "PASS"
     },
     {
-      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-shell.css",
+      "name": "CSS source exists: css/mobile/mobile-enterprise-v10-shell.css",
       "status": "PASS"
     },
     {
-      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-shell.css",
+      "name": "No direct runtime reference: css/mobile/mobile-enterprise-v10-shell.css",
       "status": "PASS"
     },
     {
-      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-shell.css",
+      "name": "Consolidated source marker: css/mobile/mobile-enterprise-v10-shell.css",
       "status": "PASS"
     },
     {
-      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-dashboard.css",
+      "name": "CSS source exists: css/mobile/mobile-enterprise-v10-dashboard.css",
       "status": "PASS"
     },
     {
-      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-dashboard.css",
+      "name": "No direct runtime reference: css/mobile/mobile-enterprise-v10-dashboard.css",
       "status": "PASS"
     },
     {
-      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-dashboard.css",
+      "name": "Consolidated source marker: css/mobile/mobile-enterprise-v10-dashboard.css",
       "status": "PASS"
     },
     {
-      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-reports.css",
+      "name": "CSS source exists: css/mobile/mobile-enterprise-v10-reports.css",
       "status": "PASS"
     },
     {
-      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-reports.css",
+      "name": "No direct runtime reference: css/mobile/mobile-enterprise-v10-reports.css",
       "status": "PASS"
     },
     {
-      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-reports.css",
+      "name": "Consolidated source marker: css/mobile/mobile-enterprise-v10-reports.css",
       "status": "PASS"
     },
     {
-      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-management.css",
+      "name": "CSS source exists: css/mobile/mobile-enterprise-v10-management.css",
       "status": "PASS"
     },
     {
-      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-management.css",
+      "name": "No direct runtime reference: css/mobile/mobile-enterprise-v10-management.css",
       "status": "PASS"
     },
     {
-      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-management.css",
+      "name": "Consolidated source marker: css/mobile/mobile-enterprise-v10-management.css",
       "status": "PASS"
     },
     {
-      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-experience.css",
+      "name": "CSS source exists: css/mobile/mobile-enterprise-v10-experience.css",
       "status": "PASS"
     },
     {
-      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-experience.css",
+      "name": "No direct runtime reference: css/mobile/mobile-enterprise-v10-experience.css",
       "status": "PASS"
     },
     {
-      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-experience.css",
+      "name": "Consolidated source marker: css/mobile/mobile-enterprise-v10-experience.css",
+      "status": "PASS"
+    },
+    {
+      "name": "CSS source exists: css/mobile/mobile-enterprise-v10-redesign-m1.css",
+      "status": "PASS"
+    },
+    {
+      "name": "No direct runtime reference: css/mobile/mobile-enterprise-v10-redesign-m1.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Consolidated source marker: css/mobile/mobile-enterprise-v10-redesign-m1.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Phone boundary: css/mobile/mobile-enterprise-v10-consolidated.css",
+      "status": "PASS"
+    },
+    {
+      "name": "Desktop cleanup isolation: css/mobile/mobile-enterprise-v10-consolidated.css",
+      "status": "PASS"
+    },
+    {
+      "name": "CSS brace balance: css/mobile/mobile-enterprise-v10-consolidated.css",
       "status": "PASS"
     },
     {
@@ -231,7 +207,19 @@
       "status": "PASS"
     },
     {
-      "name": "PWA network-first source policy",
+      "name": "PWA network-first document policy",
+      "status": "PASS"
+    },
+    {
+      "name": "PWA static source cache policy",
+      "status": "PASS"
+    },
+    {
+      "name": "PWA runtime cache bound",
+      "status": "PASS"
+    },
+    {
+      "name": "PWA runtime cache cleanup",
       "status": "PASS"
     },
     {

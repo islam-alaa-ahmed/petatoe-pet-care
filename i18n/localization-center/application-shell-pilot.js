@@ -1,7 +1,7 @@
 /* PETATOE v9 Enterprise - Application Shell runtime migration pilot */
 (function(){
   'use strict';
-  var VERSION='10.0.20-mobile-navigation-performance-n2';
+  var VERSION='10.0.21-mobile-main-menu-redesign-n3';
   var ROOT_SELECTORS=[
     '#sideLauncher',
     '#topbarSearch',

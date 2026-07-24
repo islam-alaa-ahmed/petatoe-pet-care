@@ -1,0 +1,10 @@
+PETATOE v10.0.21 — Mobile Main Menu Redesign N3
+
+- Redesigned the phone-only main drawer into a lighter, structured menu.
+- Preserved the existing source navigation hierarchy instead of flattening all screens into one long list.
+- Added a compact two-column priority area for direct destinations and lightweight grouped sections for the remaining screens.
+- Reduced row height, gradients, borders, shadows, and visual density.
+- Preserved permissions, hidden-screen filtering, search, route handlers, active state, RTL/LTR, light/dark mode, desktop, tablet, Supabase, and business logic.
+- Reused existing localized navigation labels; no new visible hardcoded text was added.
+- Synchronized release to PETATOE v10.0.21 / PETATOE_V10_0_21_MOBILE_MAIN_MENU_REDESIGN_N3.
+- Mobile Enterprise UI certification passed: 61/61.
