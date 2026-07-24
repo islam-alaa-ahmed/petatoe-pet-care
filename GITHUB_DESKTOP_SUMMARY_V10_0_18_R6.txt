@@ -1,0 +1,10 @@
+PETATOE v10.0.18 — Dashboard Render Stabilization R6
+
+- Fixed the confirmed event ownership mismatch that delayed dashboard data after the R5 bootstrap split.
+- PETATOEDataSource dispatches petatoe:records-changed on window; the dashboard sales bridge now listens on the same target.
+- Prevented premature dashboard rendering with an empty local records array while the initial Supabase sales refresh is still pending.
+- Preserved completed zero-data dashboards, filters, manual refresh, theme changes, CRUD, reports, and desktop behavior.
+- Preserved all R5 bootstrap and mobile lazy-loading performance improvements.
+- No business calculations, SQL, Supabase schema, permissions, security rules, localization content, or UI design changes.
+- Synchronized release to PETATOE v10.0.18 / PETATOE_V10_0_18_DASHBOARD_RENDER_STABILIZATION_R6.
+- Passed mobile, startup, localization, Smart Reports, and native iOS static certification checks.

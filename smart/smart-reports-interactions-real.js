@@ -416,7 +416,7 @@ window.printCurrentPage=printCurrentPage;
 /* v3.11.19: lazy tab wrapper removed; navigation is owned by PETATOERouter. */
 
 /* --- Updated init with loader hide --- */
-(async function dashboardBoot(){initPetImage();buildForm();records=await loadRecords();records.forEach(r=>{r.date=parseDate(r.date);r.month=normalizeMonth(r.month,r.date)});populateFilters();if($('fYear')) $('fYear').value=getDashboardDefaultYear();renderDashboardAll();renderDeep()})();
+(async function dashboardBoot(){initPetImage();buildForm();records=await loadRecords();records.forEach(r=>{r.date=parseDate(r.date);r.month=normalizeMonth(r.month,r.date)});populateFilters();if($('fYear')) $('fYear').value=getDashboardDefaultYear();if(records.length||window.__PETATOE_SALES_SOURCE_STATUS__){renderDashboardAll();renderDeep()}})();
 /* Hide loader after init */
 (function(){
   const loader=document.getElementById('petatoeLoader');
