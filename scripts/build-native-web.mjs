@@ -40,7 +40,7 @@ await cp(path.join(rootDir, 'native', 'runtime', 'native-update-coordinator.js')
 
 const indexPath = path.join(outDir, 'index.html');
 let html = await readFile(indexPath, 'utf8');
-const biometricTag = '<script src="native/native-biometric-auth.js?v=10.0.19-native-biometric-entry-n1"></script>';
+const biometricTag = '<script src="native/native-biometric-auth.js?v=10.0.20-mobile-navigation-performance-n2"></script>';
 const updateTag = '<script src="native/native-update-coordinator.js?v=10.0.0-n3" defer></script>';
 if (!html.includes(biometricTag)) {
   const authScriptPattern = /<script\b[^>]*src=["'][^"']*security\/auth-session\.js[^"']*["'][^>]*><\/script>/i;

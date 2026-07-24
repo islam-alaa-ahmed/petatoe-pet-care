@@ -1,7 +1,7 @@
 /* PETATOE v9 Enterprise - Application Shell runtime migration pilot */
 (function(){
   'use strict';
-  var VERSION='9.0.0-elc-phase7a';
+  var VERSION='10.0.20-mobile-navigation-performance-n2';
   var ROOT_SELECTORS=[
     '#sideLauncher',
     '#topbarSearch',
@@ -62,7 +62,7 @@
   window.addEventListener('petatoe:localization-ready',function(){schedule('localization-ready');});
   window.addEventListener('petatoe:language-changed',function(){schedule('language-changed');});
   document.addEventListener('petatoe:navbuilt',function(){schedule('navbuilt');});
-  document.addEventListener('petatoe:tabchange',function(){schedule('tabchange');});
+  // N2: Route changes do not mutate shell chrome; avoid re-translating every shell root on each tab.
 
   window.PETATOE_APPLICATION_SHELL_LOCALIZATION_PILOT={
     version:VERSION,

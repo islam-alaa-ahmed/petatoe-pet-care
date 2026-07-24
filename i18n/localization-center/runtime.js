@@ -1,7 +1,7 @@
 /* PETATOE v9.4.23 — Operations Localization Completion */
 (function(){
   'use strict';
-  var VERSION='10.0.19-native-biometric-entry-n1';
+  var VERSION='10.0.20-mobile-navigation-performance-n2';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

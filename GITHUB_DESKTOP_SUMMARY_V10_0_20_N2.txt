@@ -1,0 +1,10 @@
+PETATOE v10.0.20 — Mobile Navigation Performance N2
+
+- Reduced main-thread work during mobile tab switching.
+- Replaced full global localization scans on every route with active-surface-only localization.
+- Removed redundant application-shell translation on ordinary tab changes.
+- Restricted mobile reveal-target scanning to the destination active panel.
+- Added bounded tap-to-paint route metrics through PETATOEMobileNavigationPerformance.
+- Preserved all route events, lazy module loading, permissions, calculations, Supabase logic, localization dictionaries, desktop behavior, and current UI design.
+- Synchronized release to PETATOE v10.0.20 / PETATOE_V10_0_20_MOBILE_NAVIGATION_PERFORMANCE_N2.
+- Passed Mobile Enterprise UI, Native iOS, Production Localization Lockdown, and Enterprise Localization Certification checks.

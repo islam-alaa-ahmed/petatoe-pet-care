@@ -10,6 +10,8 @@
   var revealObserver = null;
   var mutationObserver = null;
   var routeTimer = 0;
+  var routeMetric = null;
+  var routeHistory = [];
   var booted = false;
   var pull = { active: false, startY: 0, distance: 0, eligible: false };
 
@@ -34,20 +36,33 @@
     }
   }
 
-  function routeStart() {
+  function now() { return window.performance && performance.now ? performance.now() : Date.now(); }
+
+  function routeStart(target) {
     if (!isPhone()) return;
     window.clearTimeout(routeTimer);
+    routeMetric = { startedAt: now(), target: target || '', from: (window.PETATOERouter && window.PETATOERouter.current) || '' };
     document.body.classList.add('pet-v10-route-changing');
     var active = document.querySelector('.panel.active');
     if (active) active.setAttribute('aria-busy', 'true');
-    routeTimer = window.setTimeout(routeEnd, 420);
+    routeTimer = window.setTimeout(function(){ routeEnd('timeout'); }, 420);
   }
 
-  function routeEnd() {
+  function routeEnd(reason) {
+    window.clearTimeout(routeTimer);
     document.body.classList.remove('pet-v10-route-changing');
     document.querySelectorAll('.panel[aria-busy="true"]').forEach(function (panel) {
       panel.removeAttribute('aria-busy');
     });
+    if (routeMetric) {
+      routeMetric.finishedAt = now();
+      routeMetric.durationMs = Math.max(0, Math.round(routeMetric.finishedAt - routeMetric.startedAt));
+      routeMetric.reason = reason || 'paint';
+      routeMetric.to = (window.PETATOERouter && window.PETATOERouter.current) || routeMetric.target || '';
+      routeHistory.push(routeMetric);
+      if (routeHistory.length > 30) routeHistory.shift();
+      routeMetric = null;
+    }
   }
 
   function isPullExcluded(target) {
@@ -106,11 +121,12 @@
 
   function scanRevealTargets(root) {
     if (!isPhone()) return;
-    var scope = root && root.querySelectorAll ? root : document;
-    scope.querySelectorAll(
-      '.panel.active .card, .panel.active .pet-v10-report-card, .panel.active .pet-v10-management-card, ' +
-      '.panel.active .stat-card, .panel.active .kpi-card'
-    ).forEach(reveal);
+    var active = document.querySelector('.panel.active');
+    if (!active) return;
+    var scope = root && root.nodeType === 1 && active.contains(root) ? root : active;
+    if (scope.matches && scope.matches('.card, .pet-v10-report-card, .pet-v10-management-card, .stat-card, .kpi-card')) reveal(scope);
+    if (!scope.querySelectorAll) return;
+    scope.querySelectorAll('.card, .pet-v10-report-card, .pet-v10-management-card, .stat-card, .kpi-card').forEach(reveal);
   }
 
   function setupRevealObserver() {
@@ -156,13 +172,14 @@
 
     document.addEventListener('click', function (event) {
       if (!isPhone()) return;
-      if (event.target.closest('[data-tab], .pet-v10-nav-btn, .pet-v10-drawer-item, .nav-item, .subnav-item')) routeStart();
+      var navTarget = event.target.closest('[data-tab], .pet-v10-nav-btn, .pet-v10-drawer-item, .nav-item, .subnav-item');
+      if (navTarget) routeStart(navTarget.getAttribute('data-tab') || navTarget.getAttribute('data-target') || '');
     }, true);
 
     document.addEventListener('petatoe:tabchange', function () {
       window.requestAnimationFrame(function () {
-        routeEnd();
-        scanRevealTargets(document);
+        scanRevealTargets(document.querySelector('.panel.active'));
+        window.requestAnimationFrame(function(){ routeEnd('paint'); });
       });
     });
 
@@ -195,4 +212,5 @@
 
   if (mq.addEventListener) mq.addEventListener('change', viewportChange);
   if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', syncMotionPreference);
+  window.PETATOEMobileNavigationPerformance = { version: '10.0.20-mobile-navigation-performance-n2', history: function(){ return routeHistory.slice(); }, latest: function(){ return routeHistory.length ? Object.assign({}, routeHistory[routeHistory.length - 1]) : null; } };
 })();
