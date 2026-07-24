@@ -1,0 +1,6 @@
+PETATOE Payroll — Pending Board Delete Hotfix
+
+- Fix salary-slip deletion eligibility before the first approval
+- Allow permanent deletion for draft and pending_board salary slips
+- Keep deletion blocked after Board approval, employee approval, accounts approval, payment, rejection, or later workflow states
+- Preserve payroll authorization checks, awaited Supabase persistence, rollback behavior, audit trail, formulas, and UI layout
