@@ -14,6 +14,8 @@
     treasury: 'treasury',
     warehouse: 'warehouses', warehouses: 'warehouses', warehouseAlerts: 'warehouses',
     children: 'children', childrenExpenses: 'children',
+    fleet: 'fleet', obligations: 'obligations', movement: 'movement', movementCenter: 'movement',
+    settingsSetup: 'settingsSetup', localizationRemote: 'localizationRemote',
     xlsx: 'xlsx', excel: 'xlsx', diagnostics: 'diagnostics', audit: 'diagnostics', observability: 'diagnostics'
   };
 
@@ -118,6 +120,10 @@
     if(!el) return '';
     var text = [el.id, el.getAttribute && el.getAttribute('data-tab'), el.getAttribute && el.getAttribute('data-target'), el.getAttribute && el.getAttribute('href'), el.textContent].join(' ').toLowerCase();
     if(/appointment|operation|موعد|تشغيل/.test(text)) return 'operations';
+    if(/fleet|أسطول/.test(text)) return 'fleet';
+    if(/obligation|التزام|التزامات/.test(text)) return 'obligations';
+    if(/movementcenter|movement center|مركز الحركات|الحركات اليدوية/.test(text)) return 'movement';
+    if(/settings|setup|إعدادات|التهيئة/.test(text)) return 'settingsSetup';
     if(/payroll|salary|commissionstatement|راتب|رواتب|كشف الراتب/.test(text)) return 'payroll';
     if(/treasury|خزين/.test(text)) return 'treasury';
     if(/warehouse|مخزن|مخازن/.test(text)) return 'warehouses';
@@ -131,6 +137,10 @@
     if(!panel) return '';
     var marker = ((panel.id || '') + ' ' + (panel.getAttribute('data-pet-module') || '')).toLowerCase();
     if(/appointment|operation|vehicleoperations/.test(marker)) return 'operations';
+    if(/fleet/.test(marker)) return 'fleet';
+    if(/obligation/.test(marker)) return 'obligations';
+    if(/movement/.test(marker)) return 'movement';
+    if(/settings|setup/.test(marker)) return 'settingsSetup';
     if(/payroll|salaryslip|commissionstatement/.test(marker)) return 'payroll';
     if(/treasury/.test(marker)) return 'treasury';
     if(/warehouse/.test(marker)) return 'warehouses';
@@ -180,18 +190,24 @@
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', markStartupInteractive, { once: true });
     else markStartupInteractive();
 
-    /* R4: Mobile feature groups are strictly demand-loaded.
-       Do not preload Operations, Payroll, Treasury, Warehouses or Children after window.load. */
+    /* R5: Keep business modules demand-loaded. Only the remote localization parity
+       loader is deferred until after the first interactive frame because the local
+       canonical dictionary already owns first paint. */
+    window.addEventListener('load', function(){
+      var run = function(){ ensureGroup('localizationRemote').catch(function(){}); };
+      if(typeof window.requestIdleCallback === 'function') window.requestIdleCallback(run, { timeout: 4000 });
+      else setTimeout(run, 1800);
+    }, { once: true });
   }
 
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, version: '10.0.16-startup-dependency-r4', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, version: '10.0.17-core-bootstrap-split-r5', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.16-startup-dependency-r4',
+    version: '10.0.17-core-bootstrap-split-r5',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

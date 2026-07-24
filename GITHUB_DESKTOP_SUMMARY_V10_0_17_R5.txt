@@ -1,0 +1,10 @@
+PETATOE v10.0.17 — Core Bootstrap Split R5
+
+- Confirmed from the v10.0.16 iPhone trace that sales finishes once in about 3.4 seconds while document startup remains blocked until about 25.8 seconds.
+- Split non-dashboard mobile modules out of the critical parser bootstrap.
+- Fleet, Movement Center, Obligations, and Settings Setup now load only when their screens are opened on mobile.
+- Deferred the Supabase localization parity loader until after window load and an idle slot; the local canonical dictionary still owns first paint.
+- Preserved desktop script order and one in-flight promise per mobile lazy group.
+- No business logic, calculations, SQL, Supabase schema, permissions, security, reports, or UI design changes.
+- Synchronized PETATOE v10.0.17 release tokens, Service Worker, runtime, About App, CSS headers, package version, and certification rule.
+- Localization, Lockdown, Runtime Translation, Smart Reports, Mobile UI, Startup, and Native iOS static checks passed.
