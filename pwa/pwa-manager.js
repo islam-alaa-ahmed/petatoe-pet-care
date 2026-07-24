@@ -9,12 +9,22 @@
     refreshing: false,
     registration: null,
     lastCheckAt: 0,
-    updateTimer: null
+    updateTimer: null,
+    status: 'idle',
+    lastError: '',
+    checkedAt: 0
   };
   const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   const lang = () => (document.documentElement.lang || localStorage.getItem('petatoe_language') || 'ar').toLowerCase().startsWith('en') ? 'en' : 'ar';
   const text = (ar, en) => lang() === 'en' ? en : ar;
+
+  function publishStatus(status, extra) {
+    state.status = status;
+    state.lastError = extra && extra.message ? String(extra.message) : '';
+    if (extra && extra.checkedAt) state.checkedAt = extra.checkedAt;
+    window.dispatchEvent(new CustomEvent('petatoe:pwa-update-status', { detail: Object.assign({ status: status, checkedAt: state.checkedAt || 0 }, extra || {}) }));
+  }
 
   function createUi() {
     if (document.getElementById('petatoePwaInstallButton')) return;
@@ -69,6 +79,7 @@
 
   function showUpdate(registration) {
     state.registration = registration || state.registration;
+    publishStatus('available', { updateAvailable: true, checkedAt: Date.now() });
     if (document.getElementById('petatoePwaUpdate')) return;
     const bar = document.createElement('div');
     bar.id = 'petatoePwaUpdate';
@@ -96,20 +107,29 @@
       button.disabled = true;
       button.textContent = text('جارٍ التحديث…', 'Updating…');
     }
+    publishStatus('updating', { updateAvailable: true, checkedAt: Date.now() });
     registration.waiting.postMessage({ type: 'SKIP_WAITING' });
   }
 
   async function requestUpdateCheck(force) {
     const registration = state.registration;
-    if (!registration) return;
+    if (!registration) throw new Error(text('خدمة التحديث غير جاهزة بعد.', 'The update service is not ready yet.'));
     const now = Date.now();
-    if (!force && now - state.lastCheckAt < MIN_CHECK_GAP_MS) return;
+    if (!force && now - state.lastCheckAt < MIN_CHECK_GAP_MS) return { updateAvailable: !!registration.waiting, status: state.status, checkedAt: state.checkedAt };
     state.lastCheckAt = now;
+    publishStatus('checking', { checkedAt: now });
     try {
       await registration.update();
-      if (registration.waiting) showUpdate(registration);
+      const updateAvailable = !!registration.waiting;
+      state.checkedAt = Date.now();
+      if (updateAvailable) showUpdate(registration);
+      else publishStatus('updated', { updateAvailable: false, checkedAt: state.checkedAt });
+      return { updateAvailable: updateAvailable, status: updateAvailable ? 'available' : 'updated', checkedAt: state.checkedAt };
     } catch (error) {
+      state.checkedAt = Date.now();
+      publishStatus('error', { message: error && error.message ? error.message : String(error), checkedAt: state.checkedAt });
       if (navigator.onLine) console.warn('[PETATOE PWA] Update check failed:', error);
+      throw error;
     }
   }
 
@@ -129,6 +149,7 @@
       if (state.refreshing) return;
       state.refreshing = true;
       removeUpdateBar();
+      publishStatus('updated', { updateAvailable: false, checkedAt: Date.now() });
       reloadWithCacheBust(Date.now());
     });
 
@@ -162,6 +183,12 @@
       console.warn('[PETATOE PWA] Service Worker registration failed:', error);
     }
   }
+
+  window.PETATOEPWAUpdate = {
+    check: (force) => requestUpdateCheck(force !== false),
+    apply: applyWaitingUpdate,
+    getStatus: () => ({ status: state.status, updateAvailable: !!(state.registration && state.registration.waiting), checkedAt: state.checkedAt, message: state.lastError })
+  };
 
   window.addEventListener('beforeinstallprompt', (event) => {
     event.preventDefault();

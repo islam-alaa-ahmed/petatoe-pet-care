@@ -1,0 +1,8 @@
+PETATOE v10.0.6 — Mobile About & Update Center
+
+- Added a mobile-only About App section inside Settings & Permissions.
+- Displays current version, build number, release date, last update check, and production status.
+- Connected Check for Updates and Update Now to the existing PWA Service Worker engine.
+- Added canonical Arabic/English Localization Center entries.
+- Synchronized release metadata and Service Worker cache version.
+- Desktop UI and business logic unchanged.
