@@ -1,13 +1,1 @@
-Mobile UI corrective hotfix on the current baseline without changing the release number.
-
-Fixed:
-- Removed leaked legacy search/paw controls below the mobile header.
-- Forced the v10 drawer to clear the old sidebar state before opening.
-- Isolated and hid the old sidebar/overlay on phones.
-- Positioned global search below the safe-area-aware fixed header.
-- Stabilized login/MFA layout using visualViewport-aware height and mobile-safe scrolling.
-
-Modified files only:
-css/mobile/mobile-enterprise-v10-consolidated.css
-mobile/mobile-enterprise-v10-shell.js
-security/auth-session.js
+PETATOE Mobile Phase P4: functionally isolated the legacy sidebar, overlay, and desktop navigation presentation on phone viewports while preserving the canonical nav as the schema and permissions source. Removed legacy mobile click/active-state handlers, applied inert/aria-hidden cleanup, restored legacy navigation when leaving mobile, and prevented duplicate shell lifecycle listeners. PETATOE v10.0.25 unchanged; no business logic, Supabase, API, service worker, authentication, desktop/tablet, localization, or version changes. All syntax, localization, Smart Reports, and Mobile v10 certification checks passed.

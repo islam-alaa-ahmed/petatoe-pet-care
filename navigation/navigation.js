@@ -2,12 +2,11 @@
   'use strict';
   if(window.__PETATOE_NAVIGATION_MODULE_PHASE1__) return;
   window.__PETATOE_NAVIGATION_MODULE_PHASE1__=true;
+  var petatoeNavigationMobileMq=window.matchMedia&&window.matchMedia('(max-width: 760px)');
+  function mobileV10OwnsPresentation(){return !!(petatoeNavigationMobileMq&&petatoeNavigationMobileMq.matches);}
   // PETATOE v6.1.206 Phase 3: canonical navigation module with isolated permission gate.
   // This file owns building #nav and menu click routing only. Screen rendering remains inside each screen module.
   function petBlock7937_q(sel,root){return (root||document).querySelector(sel)}
-  function mobileV10OwnsNavigation(){
-    return window.__PETATOE_MOBILE_NAVIGATION_OWNER__==='v10' && window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
-  }
   function qa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel))}
   function petatoe_v38142_sidebar_final_js_esc(s){return String(s==null?'':s).replace(/[&<>\'\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
   var groups=[
@@ -195,6 +194,10 @@
     });
   }
   function bind(nav){
+    // On phones the v10 shell owns all interaction and active-state rendering.
+    // Keep #nav built for schema and permission extraction, but do not attach
+    // the legacy capture-phase click handler.
+    if(mobileV10OwnsPresentation()){nav.__petV142MobileIsolated=true;return;}
     if(nav.__petV142Bound) return; nav.__petV142Bound=true;
     nav.addEventListener('click',function(e){
       var t=e.target.closest&&e.target.closest('[data-v142-toggle]');
@@ -228,7 +231,7 @@
     },true);
   }
   function markActive(){
-    if(mobileV10OwnsNavigation()) return;
+    if(mobileV10OwnsPresentation()) return;
     var nav=petBlock7937_q('#nav'); if(!nav||!nav.classList.contains('pet-v142-nav')) return;
     var active=(petBlock7937_q('.panel.active')||{}).id||'dashboard';
     var sm=''; try{sm=window.__PETATOE_SETTINGS_MAIN__||'system'}catch(e){sm='system';}

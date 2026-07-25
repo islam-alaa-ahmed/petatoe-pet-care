@@ -4,10 +4,16 @@
   if(window.__PETATOE_ACCORDION_NAV_FINAL_FIX__) return;
   window.__PETATOE_ACCORDION_NAV_FINAL_FIX__ = true;
 
-  function byId(id){ return document.getElementById(id); }
-  function mobileV10OwnsNavigation(){
-    return window.__PETATOE_MOBILE_NAVIGATION_OWNER__==='v10' && window.matchMedia && window.matchMedia('(max-width: 760px)').matches;
+  // Mobile Enterprise v10 owns phone navigation. Do not bind the legacy
+  // accordion runtime on phone viewports; the DOM remains available as the
+  // canonical schema/permission source for the v10 drawer.
+  var petatoeLegacySidebarMobileMq = window.matchMedia && window.matchMedia('(max-width: 760px)');
+  if(petatoeLegacySidebarMobileMq && petatoeLegacySidebarMobileMq.matches){
+    window.__PETATOE_LEGACY_SIDEBAR_MOBILE_ISOLATED__ = true;
+    return;
   }
+
+  function byId(id){ return document.getElementById(id); }
   function list(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
   function groupFor(tab){
     return ({
@@ -30,7 +36,6 @@
     });
   }
   function markActive(tabName){
-    if(mobileV10OwnsNavigation()) return;
     var nav = byId('nav'); if(!nav) return;
     list('button[data-tab], .pet-nav-direct[data-tab]',nav).forEach(function(btn){
       btn.classList.toggle('active', btn.getAttribute('data-tab') === tabName);
@@ -48,7 +53,6 @@
     try{ document.body.classList.remove('sidebar-open'); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sidebar.js",e);}
   }
   function bindMenu(){
-    if(mobileV10OwnsNavigation()) return;
     var nav = byId('nav'); if(!nav) return;
     if(!nav.classList.contains('petatoe-accordion-nav')) nav.classList.add('petatoe-accordion-nav');
     if(nav.__petatoeFinalNavBound) return;
@@ -78,7 +82,7 @@
     var active = nav.querySelector('button.active[data-tab], .pet-nav-direct.active[data-tab]');
     if(active) markActive(active.getAttribute('data-tab')); else closeAllGroups('');
   }
-  document.addEventListener('petatoe:tabchange', function(e){if(mobileV10OwnsNavigation()) return;var name=e.detail&&e.detail.tabId;try{ markActive(name); }catch(err){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sidebar.js",err);}});
+  document.addEventListener('petatoe:tabchange', function(e){var name=e.detail&&e.detail.tabId;try{ markActive(name); }catch(err){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sidebar.js",err);}});
   function bindMenuWhenReady(){ bindMenu(); }
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bindMenuWhenReady, {once:true}); else bindMenuWhenReady();
   // PETATOE v8.0.2 Phase 8: remove blind retry timers.

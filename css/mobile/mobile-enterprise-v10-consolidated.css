@@ -1670,3 +1670,23 @@
   .pet-v10-drawer-section-extra .pet-v10-section-icon svg{width:18px!important;height:18px!important;stroke:currentColor!important;fill:none!important;stroke-width:2!important}
   .pet-v10-header-copy small{max-width:min(46vw,190px)!important}
 }
+
+
+/* Phase P4 — Legacy Mobile UI functional isolation. */
+@media (max-width:760px){
+  html body [data-pet-v10-mobile-isolated="true"],
+  html body #sidebar[inert],
+  html body #overlay[inert],
+  html body #nav[inert]{
+    display:none!important;
+    visibility:hidden!important;
+    opacity:0!important;
+    pointer-events:none!important;
+    user-select:none!important;
+    contain:strict!important;
+  }
+  html.sidebar-open body,
+  html body.sidebar-open{
+    overflow-x:hidden!important;
+  }
+}
