@@ -33,3 +33,10 @@ Localization Certification: PASS
 Localization Lockdown: PASS
 Runtime Translation Completion: PASS
 Mobile Enterprise UI: 61/61 PASS
+
+Localization Lockdown hotfix:
+- Added smart/smart-language-runtime.js to the modified-files package.
+- Synchronized its runtime token to 10.0.23-pwa-fast-startup-c2-1.
+- Release number remains PETATOE v10.0.23; no version increment was made.
+- Verified locally: Smart Reports Translation Stability PASSED (11/11).
+- Verified locally: Mobile Enterprise UI v10 certification PASSED (61 checks, 0 failures).
