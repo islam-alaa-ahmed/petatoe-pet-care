@@ -1,13 +1,13 @@
 {
   "status": "PASSED",
   "stats": {
-    "filesScanned": 285,
+    "filesScanned": 321,
     "legacyReferences": 0,
     "adapterDictionaries": 0,
     "publicAliasReferences": 0,
     "missingCounterparts": 0,
-    "arabicEntries": 3427,
-    "englishEntries": 3427
+    "arabicEntries": 3542,
+    "englishEntries": 3542
   },
   "failures": []
 }

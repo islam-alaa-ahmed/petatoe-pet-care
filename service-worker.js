@@ -1,7 +1,7 @@
 /* PETATOE PWA Enterprise Service Worker — V10-P1 Update Engine */
 'use strict';
 
-const APP_VERSION = '10.0.23-mobile-corrective-parity-c1';
+const APP_VERSION = '10.0.23-pwa-fast-startup-c2-1';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;
@@ -169,6 +169,12 @@ self.addEventListener('fetch', (event) => {
   }
 
   if (NETWORK_FIRST_EXTENSIONS.test(url.pathname)) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  const criticalRuntimeAsset = /(?:\/security\/auth-session\.js|\/performance\/mobile-startup-loading-gate\.js|\/css\/main\.css)$/i.test(url.pathname);
+  if (criticalRuntimeAsset) {
     event.respondWith(networkFirst(request));
     return;
   }

@@ -7,6 +7,8 @@
 
   var VERSION = '9.0';
   var AUTH_KEY = 'petatoe_auth_session_v668';
+  var PWA_SESSION_KEY = 'petatoe_pwa_session_v1';
+  var PWA_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
   // Bootstrap credential only — first login must force password change via mustChangePassword.
   var DEFAULT_ADMIN_PASSWORD = 'admin';
   var DEFAULT_ADMIN_USERNAME = 'Admin';
@@ -36,6 +38,43 @@
   function rawSet(key, value){ try{ sessionStorage.setItem(key, String(value == null ? '' : value)); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
   function rawGet(key){ try{ return sessionStorage.getItem(key) || ''; }catch(_){ return ''; } }
   function rawRemove(key){ try{ sessionStorage.removeItem(key); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);} }
+
+  function persistentGet(){
+    try{ return localStorage.getItem(PWA_SESSION_KEY) || ''; }catch(_){ return ''; }
+  }
+  function persistentSet(value){
+    try{ localStorage.setItem(PWA_SESSION_KEY, String(value == null ? '' : value)); }catch(_){ }
+  }
+  function persistentRemove(){
+    try{ localStorage.removeItem(PWA_SESSION_KEY); }catch(_){ }
+  }
+  function writeAuthSession(payload){
+    var serialized = JSON.stringify(payload || {});
+    rawSet(AUTH_KEY, serialized);
+    persistentSet(serialized);
+  }
+  function clearAuthSession(){
+    rawRemove(AUTH_KEY);
+    persistentRemove();
+  }
+  function readAuthSession(){
+    var raw = rawGet(AUTH_KEY);
+    if(!raw) raw = persistentGet();
+    if(!raw) return null;
+    try{
+      var parsed = JSON.parse(raw);
+      var createdAt = Date.parse(parsed && parsed.createdAt || '');
+      if(!parsed || !parsed.user || !createdAt || (Date.now() - createdAt) > PWA_SESSION_TTL_MS){
+        clearAuthSession();
+        return null;
+      }
+      rawSet(AUTH_KEY, raw);
+      return parsed;
+    }catch(_){
+      clearAuthSession();
+      return null;
+    }
+  }
 
   function normalizeUsername(v){ return String(v || '').trim().toLowerCase(); }
   function isActive(u){ var s = String((u && u.status) || 'active').trim().toLowerCase(); return s === 'active' || s === 'نشط'; }
@@ -111,7 +150,7 @@
     return false;
   }
   function sessionUser(){
-    try{ var raw = rawGet(AUTH_KEY); if(!raw) return null; var s = JSON.parse(raw); return s && s.user ? s.user : null; }catch(_){ return null; }
+    try{ var s = readAuthSession(); return s && s.user ? s.user : null; }catch(_){ return null; }
   }
 
   function sameUserRef(a,b){
@@ -148,7 +187,7 @@
     }catch(err){
       var msg = String(err && err.message || err);
       if(msg === 'SESSION_TOUCH_FAILED' || msg === 'SESSION_TOKEN_REQUIRED' || msg === 'HTTP_401'){
-        rawRemove(AUTH_KEY);
+        clearAuthSession();
         clearCurrentUser();
         setLoggedInClass(false);
         try{document.dispatchEvent(new CustomEvent('petatoe:userchanged',{detail:{user:null,source:reason||'session-revoked'}}));}catch(_e){}
@@ -186,7 +225,7 @@
     if(remote && remote.ok === false) return remote;
     var fresh=(list||[]).find(function(u){return sameUserRef(u,su);});
     if(!fresh||!isActive(fresh)){
-      rawRemove(AUTH_KEY);
+      clearAuthSession();
       clearCurrentUser();
       setLoggedInClass(false);
       try{document.dispatchEvent(new CustomEvent('petatoe:userchanged',{detail:{user:null,source:reason||'session-invalid'}}));}catch(_e){}
@@ -194,7 +233,7 @@
       return {ok:false,reason:'invalid'};
     }
     var merged=Object.assign({},su,fresh,{loginAt:su.loginAt||now()});
-    rawSet(AUTH_KEY, JSON.stringify({user:merged, createdAt:now(), version:VERSION, source:reason||'session-validated'}));
+    writeAuthSession({user:merged, createdAt:now(), version:VERSION, source:reason||'session-validated'});
     writeCurrentUser(merged);
     updateHeader(merged);
     try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_e){}
@@ -842,33 +881,12 @@
       setTimeout(run, 650);
     }
   }
-  function isNativeCapacitorIOS(){
-    try{
-      return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform==='function' && window.Capacitor.isNativePlatform() && String(window.Capacitor.getPlatform&&window.Capacitor.getPlatform())==='ios');
-    }catch(_e){ return false; }
-  }
   function scheduleAutomaticBiometricLogin(){
-    var nativeBiometric = window.__PETATOE_NATIVE_BIOMETRIC__;
-    if(isNativeCapacitorIOS() || (nativeBiometric && nativeBiometric.present)) return;
-    if(biometricAutoAttempted || !biometricUsable()) return;
-    biometricAutoAttempted = true;
-    var overlay = document.getElementById('pet-auth-overlay');
-    if(overlay && (readBiometric() || readPendingBiometric())) overlay.classList.add('pet-auth-biometric-first');
-    afterStableAuthPaint(async function(){
-      if(!document.getElementById('pet-auth-overlay')) return;
-      if(document.visibilityState === 'hidden'){
-        biometricAutoAttempted = false;
-        document.addEventListener('visibilitychange', function retryAutomaticBiometric(){
-          if(document.visibilityState !== 'visible') return;
-          document.removeEventListener('visibilitychange', retryAutomaticBiometric);
-          scheduleAutomaticBiometricLogin();
-        });
-        return;
-      }
-      if(!readBiometric()) await reconcileBiometricEnrollment();
-      if(readBiometric()) await loginWithBiometric({silent:true,automatic:true});
-      else revealBiometricFallback('');
-    });
+    /* Phase C2.1-PWA: never invoke WebAuthn automatically during normal PWA startup.
+       A saved application session is restored first; passkey remains available only
+       after an explicit user action on the biometric login button. */
+    biometricAutoAttempted = false;
+    revealBiometricFallback('');
   }
 
   function securityEmailEndpoint(){
@@ -1298,7 +1316,7 @@
     };
     if(options.remember) saveBrowserPasswordCredential(options.form, user.username || user.id || user.fullName, true);
     else if(options.remember === false) writeRemember('', false);
-    rawSet(AUTH_KEY, JSON.stringify({user:safeUser, createdAt:now(), version:VERSION, source:source || 'auth-login'}));
+    writeAuthSession({user:safeUser, createdAt:now(), version:VERSION, source:source || 'auth-login'});
     writeCurrentUser(safeUser);
     setLoggedInClass(true);
     var overlay = document.getElementById('pet-auth-overlay'); if(overlay) overlay.remove();
@@ -1347,7 +1365,7 @@
     var user = sessionUser();
     stopIdleTimeout();
     endRemoteSession(user, reason || 'manual');
-    rawRemove(AUTH_KEY);
+    clearAuthSession();
     clearCurrentUser();
     audit('User Logout', (user && (user.username || user.id)) || reason || 'manual', 'info');
     try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged', {detail:{user:null, source:'auth-logout'}})); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('security/auth-session.js',_);}

@@ -1781,9 +1781,9 @@ html[data-theme="light"] #globalSearchShortcut{border-top-color:rgba(15,23,42,.1
 /* --- Loading Indicator --- */
 #petatoeLoader{
   position:fixed;inset:0;z-index:99000;
-  background:var(--bg);
+  background:radial-gradient(circle at 50% 34%,rgba(236,72,153,.18),transparent 28%),linear-gradient(160deg,#102b4f 0%,#0b1f3a 48%,#071426 100%);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
-  transition:opacity .4s ease,visibility .4s ease;
+  transition:opacity .22s ease,visibility .22s ease;
 }
 #petatoeLoader.hidden{display:none!important;opacity:0!important;visibility:hidden!important;pointer-events:none!important}
 #petatoeLoader .ld-logo{font-size:52px;animation:ldPulse 1.4s ease-in-out infinite}

@@ -1,6 +1,35 @@
-PETATOE v10.0.23 — Localization Lockdown Certification Hotfix
+PETATOE v10.0.23 — Phase C2.1-PWA Fast Startup & Session Restore
 
-- Fixed the Mobile Enterprise UI v10 certification failure caused by an outdated Service Worker version lock.
-- Updated the expected lock from 10.0.22-mobile-main-menu-redesign-n3 to 10.0.23-mobile-corrective-parity-c1.
-- No runtime, UI, Service Worker, localization dictionary, business logic, Supabase, SQL, permissions, desktop, mobile, or native behavior changes.
-- Full Localization Lockdown workflow verified successfully, including Mobile Enterprise UI certification 61/61 and JavaScript syntax validation.
+Root causes fixed:
+- App session was sessionStorage-only and disappeared after iOS terminated the PWA.
+- WebAuthn/Passkey was launched automatically during normal startup.
+- Mobile boot overlay appeared as a dark/black startup screen.
+- Critical auth assets could run from stale cache before updating.
+
+Main changes:
+- Persistent 30-day safe application session (no password stored).
+- Normal startup restores and validates the saved session first.
+- Passkey now requires an explicit user click.
+- Branded non-black PWA startup shell.
+- Network-first caching for critical auth/startup assets.
+- Release synchronized to v10.0.23.
+
+Modified paths:
+RELEASE_VERSION.txt
+package.json
+index.html
+service-worker.js
+security/auth-session.js
+css/main.css
+i18n/localization-center/runtime.js
+mobile/about-app.js
+scripts/mobile-enterprise-v10-certification-check.js
+ENTERPRISE_LOCALIZATION_CERTIFICATION_RESULTS.json
+PRODUCTION_LOCALIZATION_LOCKDOWN_RESULTS.json
+MOBILE_ENTERPRISE_V10_CERTIFICATION_RESULTS.json
+
+Checks:
+Localization Certification: PASS
+Localization Lockdown: PASS
+Runtime Translation Completion: PASS
+Mobile Enterprise UI: 61/61 PASS
