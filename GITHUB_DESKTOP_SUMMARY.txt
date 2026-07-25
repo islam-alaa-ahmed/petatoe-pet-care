@@ -1,8 +1,6 @@
-PETATOE v10.0.13 — Startup Regression R1
+PETATOE v10.0.23 — Localization Lockdown Certification Hotfix
 
-- Fixed the iOS automatic passkey prompt starting before PETATOE completed its first visual frame.
-- Added a two-frame authentication paint barrier and stabilization delay before automatic Face ID.
-- Prevented WebAuthn startup while the PWA document is hidden and retry when visible.
-- Preserved automatic Face ID, MFA, session security, and manual biometric login.
-- Synchronized release, Service Worker, localization, smart runtime, About App, and mobile certification versions.
-- Localization Lockdown, Smart Reports, Mobile UI, startup guards, and Native iOS static certification passed.
+- Fixed the Mobile Enterprise UI v10 certification failure caused by an outdated Service Worker version lock.
+- Updated the expected lock from 10.0.22-mobile-main-menu-redesign-n3 to 10.0.23-mobile-corrective-parity-c1.
+- No runtime, UI, Service Worker, localization dictionary, business logic, Supabase, SQL, permissions, desktop, mobile, or native behavior changes.
+- Full Localization Lockdown workflow verified successfully, including Mobile Enterprise UI certification 61/61 and JavaScript syntax validation.
