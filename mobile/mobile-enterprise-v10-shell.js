@@ -3,6 +3,9 @@
   'use strict';
   if (window.__PETATOE_MOBILE_V10_SHELL__) return;
   window.__PETATOE_MOBILE_V10_SHELL__ = true;
+  // Phase P3: v10 is the only mobile navigation presentation owner.
+  // Legacy desktop navigation remains the canonical schema source, but must not mutate mobile UI state.
+  window.__PETATOE_MOBILE_NAVIGATION_OWNER__ = 'v10';
 
   var mq = window.matchMedia('(max-width: 760px)');
   var ICONS = {
@@ -190,7 +193,10 @@
     if(badge){badge.textContent=String(count>99?'99+':count);badge.classList.toggle('visible',count>0);}
   }
   function init(){ if(!mq.matches)return; clearLegacyNavigation(); document.body.classList.add('pet-v10-mobile-redesign-m1'); buildHeader();suppressLegacyMobileChrome();buildBottomNav();buildDrawer();syncIdentity();
-    document.addEventListener('petatoe:tabchange',function(e){syncActive(e.detail&&e.detail.tabId||currentTab());});
+    document.addEventListener('petatoe:tabchange',function(e){
+      clearLegacyNavigation();
+      syncActive(e.detail&&e.detail.tabId||currentTab());
+    });
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
     var u=document.getElementById('topbarUserBlock');
     var coordinator=window.PETATOEMobileRuntimeCoordinator;
