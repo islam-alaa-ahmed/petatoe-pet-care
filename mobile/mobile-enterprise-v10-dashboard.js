@@ -1,20 +1,41 @@
-/* PETATOE Mobile Enterprise UI v10 — M2 Native Dashboard */
+/* PETATOE Mobile Enterprise UI v10 — P7.3 Independent Mobile Dashboard */
 (function () {
   'use strict';
 
   var PHONE_QUERY = '(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)';
   var dashboard = null;
-  var filters = null;
-  var trigger = null;
-  var countBadge = null;
+  var originalParent = null;
+  var originalNextSibling = null;
+  var mobileHost = null;
+  var originalRenderDashboardCharts = null;
+  var chartOverrideInstalled = false;
 
-  function isPhone() { return window.PETATOEDeviceProfile ? window.PETATOEDeviceProfile.isMobileDevice() : window.matchMedia(PHONE_QUERY).matches; }
+  function isPhone() {
+    return window.PETATOEDeviceProfile
+      ? window.PETATOEDeviceProfile.isMobileDevice()
+      : window.matchMedia(PHONE_QUERY).matches;
+  }
+
   function t(key, fallback) {
     try {
       if (typeof window.petT === 'function') return window.petT(key, fallback);
       if (window.PETATOEI18N && typeof window.PETATOEI18N.t === 'function') return window.PETATOEI18N.t(key, fallback);
     } catch (_) {}
     return fallback;
+  }
+
+  function ensureMobileDashboardHost() {
+    var root = document.getElementById('petV10MobileRoot');
+    if (!root) return null;
+    mobileHost = document.getElementById('petV10MobileDashboardHost');
+    if (!mobileHost) {
+      mobileHost = document.createElement('main');
+      mobileHost.id = 'petV10MobileDashboardHost';
+      mobileHost.className = 'pet-v10-mobile-dashboard-host';
+      mobileHost.setAttribute('data-pet-mobile-presentation', 'dashboard');
+      root.appendChild(mobileHost);
+    }
+    return mobileHost;
   }
 
   function removeLegacyMobileDashboardControls() {
@@ -27,16 +48,13 @@
   function configureMobileDashboardFilters() {
     dashboard = document.getElementById('dashboard');
     if (!dashboard) return;
-    filters = dashboard.querySelector(':scope > .filters');
-    if (!filters) return;
-
+    var filters = dashboard.querySelector(':scope > .filters');
     var yearSelect = document.getElementById('fYear');
     var payrollAccess = dashboard.querySelector(':scope > .payroll-home-access');
     var ytdBanner = document.getElementById('ytdBanner');
-    if (!yearSelect || !payrollAccess) return;
+    if (!filters || !yearSelect || !payrollAccess) return;
 
     removeLegacyMobileDashboardControls();
-
     var yearControl = dashboard.querySelector(':scope > .pet-v10-dashboard-year-control');
     if (!yearControl) {
       yearControl = document.createElement('div');
@@ -56,7 +74,7 @@
   function restoreDesktopDashboardFilters() {
     dashboard = document.getElementById('dashboard');
     if (!dashboard) return;
-    filters = dashboard.querySelector(':scope > .filters');
+    var filters = dashboard.querySelector(':scope > .filters');
     var yearSelect = document.getElementById('fYear');
     var yearControl = dashboard.querySelector(':scope > .pet-v10-dashboard-year-control');
     if (filters && yearSelect && yearSelect.parentElement !== filters) filters.insertBefore(yearSelect, filters.firstChild);
@@ -65,77 +83,86 @@
     removeLegacyMobileDashboardControls();
   }
 
-  function tuneChartInstance(id, instance) {
-    if (!instance || !instance.options) return;
-    var options = instance.options;
-    options.maintainAspectRatio = false;
-    options.responsive = true;
-    options.animation = options.animation || {};
-    options.animation.duration = 280;
-    options.layout = options.layout || {};
-    options.layout.padding = id === 'servicesChart' || id === 'clientsChart'
-      ? { top: 4, right: 8, bottom: 2, left: 0 }
-      : { top: 6, right: 4, bottom: 2, left: 2 };
-
-    options.plugins = options.plugins || {};
-    options.plugins.legend = options.plugins.legend || {};
-    options.plugins.legend.labels = Object.assign({}, options.plugins.legend.labels || {}, {
-      boxWidth: 10,
-      boxHeight: 10,
-      padding: 9,
-      font: { size: 9 }
-    });
-
-    options.scales = options.scales || {};
-    Object.keys(options.scales).forEach(function (axisKey) {
-      var axis = options.scales[axisKey] || {};
-      axis.ticks = Object.assign({}, axis.ticks || {}, {
-        autoSkip: true,
-        maxTicksLimit: axisKey === 'x' ? 6 : 7,
-        maxRotation: 0,
-        minRotation: 0,
-        font: { size: 9 }
-      });
-      axis.grid = Object.assign({}, axis.grid || {}, { drawBorder: false });
-      options.scales[axisKey] = axis;
-    });
-
-    try { instance.resize(); instance.update('none'); } catch (_) {}
-  }
-
-  function tuneDashboardCharts() {
-    if (!isPhone()) return;
-    var ids = ['monthlyChart', 'servicesChart', 'clientsChart', 'payChart'];
-    ids.forEach(function (id) {
+  function destroyDashboardCharts() {
+    ['monthlyChart', 'servicesChart', 'clientsChart', 'payChart'].forEach(function (id) {
       try {
-        if (typeof charts !== 'undefined' && charts && charts[id]) tuneChartInstance(id, charts[id]);
-        else if (window.Chart && typeof window.Chart.getChart === 'function') tuneChartInstance(id, window.Chart.getChart(id));
+        if (window.Chart && typeof window.Chart.getChart === 'function') {
+          var instance = window.Chart.getChart(id);
+          if (instance) instance.destroy();
+        }
       } catch (_) {}
     });
   }
 
-  function boot() {
-    if (!isPhone()) return;
-    document.body.classList.add('pet-v10-mobile');
-    configureMobileDashboardFilters();
-    window.setTimeout(tuneDashboardCharts, 100);
-    window.setTimeout(tuneDashboardCharts, 700);
-    window.setTimeout(tuneDashboardCharts, 1800);
+  function installLightweightChartGuard() {
+    if (chartOverrideInstalled || typeof window.renderDashboardCharts !== 'function') return;
+    originalRenderDashboardCharts = window.renderDashboardCharts;
+    window.renderDashboardCharts = function (data) {
+      if (isPhone()) {
+        destroyDashboardCharts();
+        return;
+      }
+      return originalRenderDashboardCharts.call(this, data);
+    };
+    chartOverrideInstalled = true;
+  }
 
-    document.addEventListener('petatoe:records-changed', function () {
-      if (isPhone()) window.requestAnimationFrame(tuneDashboardCharts);
-    });
+  function mountIndependentMobileDashboard() {
+    dashboard = document.getElementById('dashboard');
+    var host = ensureMobileDashboardHost();
+    if (!dashboard || !host) return;
+
+    if (!originalParent) {
+      originalParent = dashboard.parentNode;
+      originalNextSibling = dashboard.nextSibling;
+    }
+    if (dashboard.parentNode !== host) host.appendChild(dashboard);
+    dashboard.classList.add('pet-v10-independent-dashboard');
+    dashboard.setAttribute('data-pet-mobile-dashboard', 'independent');
+    configureMobileDashboardFilters();
+    installLightweightChartGuard();
+    destroyDashboardCharts();
+  }
+
+  function restoreDesktopDashboard() {
+    dashboard = document.getElementById('dashboard');
+    if (!dashboard || !originalParent) return;
+    if (dashboard.parentNode !== originalParent) {
+      if (originalNextSibling && originalNextSibling.parentNode === originalParent) originalParent.insertBefore(dashboard, originalNextSibling);
+      else originalParent.appendChild(dashboard);
+    }
+    dashboard.classList.remove('pet-v10-independent-dashboard');
+    dashboard.removeAttribute('data-pet-mobile-dashboard');
+    restoreDesktopDashboardFilters();
+  }
+
+  function syncOwnership() {
+    if (isPhone()) {
+      document.body.classList.add('pet-v10-mobile', 'pet-v10-independent-dashboard-active');
+      mountIndependentMobileDashboard();
+    } else {
+      document.body.classList.remove('pet-v10-mobile', 'pet-v10-independent-dashboard-active', 'pet-v10-dashboard-filter-open');
+      restoreDesktopDashboard();
+    }
+  }
+
+  function boot() {
+    syncOwnership();
     document.addEventListener('petatoe:tabchange', function (event) {
       var tab = event && event.detail && event.detail.tabId;
-      if (isPhone() && tab === 'dashboard') window.setTimeout(tuneDashboardCharts, 60);
+      if (isPhone() && tab === 'dashboard') window.requestAnimationFrame(mountIndependentMobileDashboard);
+    });
+    document.addEventListener('petatoe:records-changed', function () {
+      if (isPhone()) window.requestAnimationFrame(function () {
+        installLightweightChartGuard();
+        destroyDashboardCharts();
+      });
     });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
   else boot();
 
-  window.addEventListener('resize', function () {
-    if (isPhone()) { document.body.classList.add('pet-v10-mobile'); configureMobileDashboardFilters(); tuneDashboardCharts(); }
-    else { document.body.classList.remove('pet-v10-mobile', 'pet-v10-dashboard-filter-open'); restoreDesktopDashboardFilters(); }
-  }, { passive: true });
+  window.addEventListener('resize', syncOwnership, { passive: true });
+  window.addEventListener('orientationchange', function () { window.setTimeout(syncOwnership, 80); }, { passive: true });
 })();

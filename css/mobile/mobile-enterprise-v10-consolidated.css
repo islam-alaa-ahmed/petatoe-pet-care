@@ -2119,3 +2119,65 @@ html[data-theme="light"].petatoe-mobile-device .pet-v10-mobile-header {
 @media (min-width:761px) and (hover:hover) and (pointer:fine) {
   .pet-v10-mobile-root { display:none !important; }
 }
+
+/* PETATOE v10 — Phase P7.3 Independent Mobile Dashboard */
+body.pet-v10-independent-dashboard-active #petV10MobileRoot {
+  pointer-events: none;
+}
+body.pet-v10-independent-dashboard-active #petV10MobileRoot > * {
+  pointer-events: auto;
+}
+body.pet-v10-independent-dashboard-active #petV10MobileDashboardHost {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  min-height: 100dvh;
+  padding: calc(var(--pet-v10-mobile-header-height, 64px) + env(safe-area-inset-top, 0px) + 10px)
+           12px
+           calc(var(--pet-v10-mobile-bottom-nav-height, 74px) + env(safe-area-inset-bottom, 0px) + 18px);
+  box-sizing: border-box;
+}
+body.pet-v10-independent-dashboard-active #petV10MobileDashboardHost > #dashboard {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0 !important;
+}
+body.pet-v10-independent-dashboard-active #dashboard > .section-head,
+body.pet-v10-independent-dashboard-active #dashboard > .filters,
+body.pet-v10-independent-dashboard-active #dashboard > .dashboard-main-grid,
+body.pet-v10-independent-dashboard-active #dashboard > .dashboard-rankings-stack,
+body.pet-v10-independent-dashboard-active #dashboard > .grid:not(.kpis),
+body.pet-v10-independent-dashboard-active #dashboard .payment-below-card,
+body.pet-v10-independent-dashboard-active #dashboard #vanCards,
+body.pet-v10-independent-dashboard-active #dashboard #insights {
+  display: none !important;
+}
+body.pet-v10-independent-dashboard-active #dashboard > .payroll-home-access,
+body.pet-v10-independent-dashboard-active #dashboard > .pet-v10-dashboard-year-control,
+body.pet-v10-independent-dashboard-active #dashboard > #ytdBanner,
+body.pet-v10-independent-dashboard-active #dashboard > #kpis {
+  display: grid;
+}
+body.pet-v10-independent-dashboard-active #dashboard > #kpis {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+body.pet-v10-independent-dashboard-active #dashboard > #kpis .kpi {
+  min-width: 0;
+  contain: layout paint style;
+}
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) {
+  body.pet-v10-independent-dashboard-active #petV10MobileDashboardHost {
+    padding-left: max(14px, env(safe-area-inset-left, 0px));
+    padding-right: max(14px, env(safe-area-inset-right, 0px));
+  }
+  body.pet-v10-independent-dashboard-active #dashboard > #kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  #petV10MobileDashboardHost { display: none !important; }
+}
