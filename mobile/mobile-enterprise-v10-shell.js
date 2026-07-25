@@ -32,7 +32,15 @@
     else { var source=document.querySelector('#nav [data-tab="'+CSS.escape(tab)+'"]'); if(source) source.click(); }
     closeDrawer(); syncActive(tab);
   }
-  function openDrawer(){ if(!mq.matches)return; document.body.classList.add('pet-v10-drawer-open'); var d=document.querySelector('.pet-v10-drawer'); if(d)d.setAttribute('aria-hidden','false'); }
+  function suppressLegacyMobileControls(){
+    if(!mq.matches)return;
+    ['topbarSearch','topPawBackToTopBtn'].forEach(function(id){
+      var node=document.getElementById(id);
+      if(!node)return;
+      node.hidden=true; node.setAttribute('aria-hidden','true'); node.style.setProperty('display','none','important');
+    });
+  }
+  function openDrawer(){ if(!mq.matches)return; suppressLegacyMobileControls(); document.body.classList.add('pet-v10-drawer-open'); var d=document.querySelector('.pet-v10-drawer'); if(d)d.setAttribute('aria-hidden','false'); }
   function closeDrawer(){ document.body.classList.remove('pet-v10-drawer-open'); var d=document.querySelector('.pet-v10-drawer'); if(d)d.setAttribute('aria-hidden','true'); }
   function screenLabel(tab){
     var source=document.querySelector('#nav [data-tab="'+CSS.escape(tab||'dashboard')+'"]');
@@ -91,15 +99,21 @@
     source.querySelectorAll(':scope > button[data-tab]').forEach(function(btn){appendButton(btn,direct);});
     if(direct.children.length) list.appendChild(direct);
 
-    source.querySelectorAll(':scope > .pet-nav-group').forEach(function(group){
+    source.querySelectorAll(':scope > .pet-nav-group').forEach(function(group,index){
       var body=el('div','pet-v10-drawer-section-body'); var matched=0;
       group.querySelectorAll('.pet-nav-group-items button[data-tab]').forEach(function(btn){if(appendButton(btn,body))matched+=1;});
       if(!matched)return;
       var titleSource=group.querySelector('.pet-nav-group-toggle span');
       var title=cleanLabel(titleSource&&titleSource.textContent);
-      var section=el('section','pet-v10-drawer-section');
-      if(title) section.appendChild(el('div','pet-v10-drawer-section-title','<span>'+iconFromLabel(titleSource&&titleSource.textContent)+'</span><b>'+title+'</b>'));
-      section.appendChild(body); list.appendChild(section);
+      var section=el('details','pet-v10-drawer-section');
+      var containsActive=!!body.querySelector('.pet-v10-drawer-item[data-tab="'+CSS.escape(currentTab())+'"]');
+      section.open=containsActive || (!!q && matched>0) || index===0;
+      var summary=el('summary','pet-v10-drawer-section-title','<span class="pet-v10-section-icon">'+iconFromLabel(titleSource&&titleSource.textContent)+'</span><b>'+title+'</b><i aria-hidden="true">⌄</i>');
+      section.append(summary,body); list.appendChild(section);
+      section.addEventListener('toggle',function(){
+        if(!section.open)return;
+        list.querySelectorAll('details.pet-v10-drawer-section[open]').forEach(function(other){if(other!==section)other.open=false;});
+      });
     });
 
     if(!visibleCount) list.appendChild(el('div','pet-v10-drawer-empty',t('noResults','No results found')));
@@ -115,18 +129,11 @@
     var close=el('button','pet-v10-drawer-close','×'); close.type='button'; close.setAttribute('aria-label',t('close','Close')); close.addEventListener('click',closeDrawer); head.append(user,close);
     var searchWrap=el('div','pet-v10-drawer-search'); var input=el('input'); input.type='search'; input.placeholder=t('searchMenu','Search menu...'); input.addEventListener('input',function(){rebuildDrawerList(input.value);}); searchWrap.appendChild(input);
     var list=el('div','pet-v10-drawer-list'); drawer.append(head,searchWrap,list); document.body.append(backdrop,drawer); rebuildDrawerList('');
-    var source=document.getElementById('nav');
-    var coordinator=window.PETATOEMobileRuntimeCoordinator;
-    if(source && coordinator){
-      coordinator.observeTarget(source,{subtree:true,childList:true,attributes:true,attributeFilter:['style','hidden','class','aria-hidden']});
-      var rebuildQueued=false;
-      coordinator.subscribe(function(records){
-        var relevant=records.some(function(record){return record.target===source||source.contains(record.target);});
-        if(!relevant||rebuildQueued)return;
-        rebuildQueued=true;
-        (window.requestAnimationFrame||window.setTimeout)(function(){rebuildQueued=false;rebuildDrawerList(input.value);});
+    ['petatoe:permissions-applied','petatoe:language-changed','petatoe:userchanged','petatoe:navigation-rebuilt'].forEach(function(eventName){
+      document.addEventListener(eventName,function(){
+        window.requestAnimationFrame(function(){rebuildDrawerList(input.value);});
       });
-    }
+    });
   }
 
   function syncIdentity(){
@@ -137,8 +144,8 @@
     var badge=document.getElementById('petV10NotificationBadge');
     if(badge){badge.textContent=String(count>99?'99+':count);badge.classList.toggle('visible',count>0);}
   }
-  function init(){ if(!mq.matches)return; document.body.classList.add('pet-v10-mobile-redesign-m1'); buildHeader();buildBottomNav();buildDrawer();syncIdentity();
-    document.addEventListener('petatoe:tabchange',function(e){syncActive(e.detail&&e.detail.tabId||currentTab());});
+  function init(){ if(!mq.matches)return; document.body.classList.add('pet-v10-mobile-redesign-m1','pet-v10-mobile'); suppressLegacyMobileControls(); buildHeader();buildBottomNav();buildDrawer();syncIdentity();
+    document.addEventListener('petatoe:tabchange',function(e){suppressLegacyMobileControls();syncActive(e.detail&&e.detail.tabId||currentTab());});
     document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDrawer();});
     var u=document.getElementById('topbarUserBlock');
     var coordinator=window.PETATOEMobileRuntimeCoordinator;
@@ -155,5 +162,5 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
   mq.addEventListener&&mq.addEventListener('change',function(e){if(e.matches)init();else {closeDrawer();document.body.classList.remove('pet-v10-mobile-redesign-m1');}});
-  window.PETATOEMobileV10={version:'10.0.22-mobile-main-menu-redesign-n3',openDrawer:openDrawer,closeDrawer:closeDrawer,openTab:openTab};
+  window.PETATOEMobileV10={version:'10.0.23-mobile-corrective-parity-c1',openDrawer:openDrawer,closeDrawer:closeDrawer,openTab:openTab};
 })();

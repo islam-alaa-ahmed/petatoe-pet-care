@@ -1,0 +1,11 @@
+PETATOE v10.0.23 — Mobile Corrective Parity C1
+
+- Corrected native iOS biometric ownership so native builds do not fall back to automatic WebAuthn/passkey login.
+- Started native session restoration immediately before the normal authentication flow.
+- Removed body opacity startup blanking and enforced a light native/WebView launch surface.
+- Suppressed legacy search and paw controls on phones through direct DOM state plus unconditional phone CSS.
+- Removed navigation-time full drawer rebuilds caused by broad desktop-nav MutationObserver subscriptions.
+- Removed dashboard subtree chart-retuning MutationObserver and replaced it with bounded event-based updates.
+- Rebuilt the phone drawer as an accordion that preserves the desktop Operations, Analytics, Management, and System hierarchy.
+- Preserved permissions, routes, data logic, Supabase, SQL, calculations, desktop, and tablet behavior.
+- Release synchronized to PETATOE v10.0.23 / PETATOE_V10_0_23_MOBILE_CORRECTIVE_PARITY_C1.

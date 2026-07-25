@@ -162,9 +162,5 @@
     clearSession: clearNativeSession
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', restoreWithFaceID, { once: true });
-  } else {
-    restoreWithFaceID();
-  }
+  restoreWithFaceID();
 })(window, document);

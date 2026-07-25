@@ -842,9 +842,14 @@
       setTimeout(run, 650);
     }
   }
+  function isNativeCapacitorIOS(){
+    try{
+      return !!(window.Capacitor && typeof window.Capacitor.isNativePlatform==='function' && window.Capacitor.isNativePlatform() && String(window.Capacitor.getPlatform&&window.Capacitor.getPlatform())==='ios');
+    }catch(_e){ return false; }
+  }
   function scheduleAutomaticBiometricLogin(){
     var nativeBiometric = window.__PETATOE_NATIVE_BIOMETRIC__;
-    if(nativeBiometric && nativeBiometric.present) return;
+    if(isNativeCapacitorIOS() || (nativeBiometric && nativeBiometric.present)) return;
     if(biometricAutoAttempted || !biometricUsable()) return;
     biometricAutoAttempted = true;
     var overlay = document.getElementById('pet-auth-overlay');

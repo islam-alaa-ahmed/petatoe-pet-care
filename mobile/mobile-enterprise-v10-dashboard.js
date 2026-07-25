@@ -122,10 +122,13 @@
     window.setTimeout(tuneDashboardCharts, 700);
     window.setTimeout(tuneDashboardCharts, 1800);
 
-    if (dashboard) {
-      var observer = new MutationObserver(function () { window.requestAnimationFrame(tuneDashboardCharts); });
-      observer.observe(dashboard, { childList: true, subtree: true });
-    }
+    document.addEventListener('petatoe:records-changed', function () {
+      if (isPhone()) window.requestAnimationFrame(tuneDashboardCharts);
+    });
+    document.addEventListener('petatoe:tabchange', function (event) {
+      var tab = event && event.detail && event.detail.tabId;
+      if (isPhone() && tab === 'dashboard') window.setTimeout(tuneDashboardCharts, 60);
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
