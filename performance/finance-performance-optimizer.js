@@ -132,11 +132,20 @@
     status: status
   };
 
+  var fallbackTimer = null;
   function scheduleApply(){
-    [0, 120, 350, 800, 1500].forEach(function(ms){ setTimeout(apply, ms); });
+    apply();
+    /* One bounded fallback replaces the former five-timer startup fan-out.
+       Lazy finance groups now trigger apply through their completion event. */
+    clearTimeout(fallbackTimer);
+    fallbackTimer = setTimeout(function(){ fallbackTimer = null; apply(); }, 500);
   }
-  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scheduleApply);
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', scheduleApply, { once: true });
   else scheduleApply();
+  window.addEventListener('petatoe:mobile-lazy-group', function(e){
+    var detail = e && e.detail || {};
+    if(detail.ok && ['payroll','treasury','commission'].indexOf(detail.group) > -1) apply();
+  });
   document.addEventListener('petatoe:tabchange', function(e){
     var tab = e && e.detail && e.detail.tabId;
     if(['payroll','salarySlip','commissionStatement','commissions','treasury'].indexOf(tab) > -1){

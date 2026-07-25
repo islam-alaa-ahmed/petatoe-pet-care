@@ -8,51 +8,6 @@
   var groups = Object.create(null);
   var states = Object.create(null);
   var startupInteractive = document.readyState !== 'loading';
-  var mobileBootStartedAt = Date.now();
-  var mobileBootFinished = false;
-  var mobileBootDeadlineId = 0;
-
-  function finishMobileBoot(reason){
-    if(!isMobile || mobileBootFinished) return false;
-    mobileBootFinished = true;
-    if(mobileBootDeadlineId){
-      clearTimeout(mobileBootDeadlineId);
-      mobileBootDeadlineId = 0;
-    }
-    try{ document.documentElement.classList.remove('pet-mobile-booting'); }catch(_e){}
-    try{
-      window.__PETATOE_MOBILE_BOOT_METRICS__ = {
-        startedAt: mobileBootStartedAt,
-        finishedAt: Date.now(),
-        durationMs: Math.max(0, Date.now() - mobileBootStartedAt),
-        reason: String(reason || 'critical-shell-ready')
-      };
-    }catch(_e){}
-    try{ window.dispatchEvent(new CustomEvent('petatoe:mobile-boot-finished', { detail: window.__PETATOE_MOBILE_BOOT_METRICS__ || {} })); }catch(_e){}
-    return true;
-  }
-
-  function armMobileBootDeadline(timeoutMs){
-    if(!isMobile || mobileBootFinished) return;
-    var delay = Math.max(700, Number(timeoutMs) || 1400);
-    if(mobileBootDeadlineId) clearTimeout(mobileBootDeadlineId);
-    mobileBootDeadlineId = setTimeout(function(){ finishMobileBoot('safety-deadline'); }, delay);
-  }
-
-  function scheduleCriticalShellRelease(){
-    if(!isMobile || mobileBootFinished) return;
-    var release = function(){
-      if(typeof window.requestAnimationFrame === 'function'){
-        window.requestAnimationFrame(function(){
-          window.requestAnimationFrame(function(){ finishMobileBoot('critical-shell-first-paint'); });
-        });
-      }else{
-        setTimeout(function(){ finishMobileBoot('critical-shell-first-paint'); }, 0);
-      }
-    };
-    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', release, { once: true });
-    else release();
-  }
   var aliases = {
     operation: 'operations', operations: 'operations', appointments: 'operations',
     payroll: 'payroll', salarySlip: 'payroll', commissionStatement: 'payroll',
@@ -61,16 +16,7 @@
     children: 'children', childrenExpenses: 'children',
     fleet: 'fleet', obligations: 'obligations', movement: 'movement', movementCenter: 'movement',
     settingsSetup: 'settingsSetup', localizationRemote: 'localizationRemote',
-    xlsx: 'xlsx', excel: 'xlsx', diagnostics: 'diagnostics', audit: 'diagnostics', observability: 'diagnostics',
-    smartReports: 'smartReports', smart: 'smartReports', analytics: 'smartReports',
-    reportsUI: 'reportsUI', reports: 'reportsUI', printing: 'printing', print: 'printing', pdf: 'printing',
-    sales: 'sales', invoices: 'sales', commission: 'commission', commissions: 'commission'
-  };
-
-  var dependencies = {
-    smartReports: ['reportsUI'],
-    sales: ['reportsUI'],
-    printing: ['reportsUI']
+    xlsx: 'xlsx', excel: 'xlsx', diagnostics: 'diagnostics', audit: 'diagnostics', observability: 'diagnostics'
   };
 
   function normalizeGroup(name){ return aliases[name] || name; }
@@ -153,14 +99,9 @@
     var queue = (groups[name] || []).slice();
     if(!queue.length) return Promise.resolve(false);
     var state = states[name] = { status: 'loading', startedAt: Date.now(), promise: null };
-    var dependencyQueue = (dependencies[name] || []).slice();
-    state.promise = dependencyQueue.reduce(function(chain, dependency){
-      return chain.then(function(){ return ensureGroup(dependency); });
+    state.promise = queue.reduce(function(chain, item){
+      return chain.then(function(){ return loadOne(item); });
     }, Promise.resolve()).then(function(){
-      return queue.reduce(function(chain, item){
-        return chain.then(function(){ return loadOne(item); });
-      }, Promise.resolve());
-    }).then(function(){
       state.status = 'loaded';
       state.finishedAt = Date.now();
       notify(name, true);
@@ -178,11 +119,6 @@
   function groupForElement(el){
     if(!el) return '';
     var text = [el.id, el.getAttribute && el.getAttribute('data-tab'), el.getAttribute && el.getAttribute('data-target'), el.getAttribute && el.getAttribute('href'), el.textContent].join(' ').toLowerCase();
-    if(/smartreport|smart-report|تحليل ذكي|التقارير الذكية|customer360|عميل 360/.test(text)) return 'smartReports';
-    if(/commission|عمولة|عمولات/.test(text)) return 'commission';
-    if(/salesinvoice|sales-invoice|invoice|فاتورة|فواتير|مبيعات/.test(text)) return 'sales';
-    if(/print|pdf|طباعة|تصدير الصفحة/.test(text)) return 'printing';
-    if(/report|analytics|dashboard report|تقرير|تقارير|تحليلات/.test(text)) return 'reportsUI';
     if(/appointment|operation|موعد|تشغيل/.test(text)) return 'operations';
     if(/fleet|أسطول/.test(text)) return 'fleet';
     if(/obligation|التزام|التزامات/.test(text)) return 'obligations';
@@ -200,10 +136,6 @@
   function groupForPanel(panel){
     if(!panel) return '';
     var marker = ((panel.id || '') + ' ' + (panel.getAttribute('data-pet-module') || '')).toLowerCase();
-    if(/smartreport|smart-report|customer360/.test(marker)) return 'smartReports';
-    if(/commission/.test(marker)) return 'commission';
-    if(/salesinvoice|sales-invoice|invoice|sales/.test(marker)) return 'sales';
-    if(/report|analytics/.test(marker)) return 'reportsUI';
     if(/appointment|operation|vehicleoperations/.test(marker)) return 'operations';
     if(/fleet/.test(marker)) return 'fleet';
     if(/obligation/.test(marker)) return 'obligations';
@@ -227,23 +159,6 @@
       if(group) ensureGroup(group).catch(function(){});
     }, true);
 
-    document.addEventListener('click', function(event){
-      var el = event.target && event.target.closest ? event.target.closest('button,a,[data-tab],[data-target],[onclick]') : null;
-      var group = groupForElement(el);
-      if(!group || (states[group] && states[group].status === 'loaded')) return;
-      if(el && el.dataset && el.dataset.petatoeLazyReplay === '1'){
-        delete el.dataset.petatoeLazyReplay;
-        return;
-      }
-      event.preventDefault();
-      event.stopImmediatePropagation();
-      ensureGroup(group).then(function(){
-        if(!el || !el.isConnected) return;
-        if(el.dataset) el.dataset.petatoeLazyReplay = '1';
-        el.click();
-      }).catch(function(){});
-    }, true);
-
     document.addEventListener('change', function(event){
       var el = event.target;
       if(el && el.matches && el.matches('input[type="file"]')) ensureGroup('xlsx').catch(function(){});
@@ -258,18 +173,9 @@
       if(group) ensureGroup(group).catch(function(){});
     }, true);
 
-    var observer = new MutationObserver(function(mutations){
-      if(!startupInteractive) return;
-      for(var i=0;i<mutations.length;i++){
-        var target = mutations[i].target;
-        if(target && target.nodeType === 1 && target.classList && (target.classList.contains('active') || target.classList.contains('is-active'))){
-          var panel = target.matches('.panel,[data-pet-module]') ? target : target.closest('.panel,[data-pet-module]');
-          var group = groupForPanel(panel);
-          if(group){ ensureGroup(group).catch(function(){}); return; }
-        }
-      }
-    });
-    observer.observe(document.documentElement, { subtree: true, attributes: true, attributeFilter: ['class'] });
+    /* Phase P6: canonical pointerdown and petatoe:tabchange signals own lazy hydration.
+       The previous document-wide class MutationObserver watched every active-state
+       mutation and duplicated the same group resolution on each route. */
 
     function markStartupInteractive(){ startupInteractive = true; }
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', markStartupInteractive, { once: true });
@@ -297,12 +203,8 @@
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
     normalizeGroup: normalizeGroup,
-    snapshot: snapshot,
-    finishBoot: finishMobileBoot,
-    armBootDeadline: armMobileBootDeadline
+    snapshot: snapshot
   };
 
-  armMobileBootDeadline(1400);
-  scheduleCriticalShellRelease();
   installTriggers();
 })();

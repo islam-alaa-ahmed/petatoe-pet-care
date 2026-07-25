@@ -30,7 +30,7 @@
   }
 
   function connect() {
-    if (observer || !window.MutationObserver || !document.body) return;
+    if (observer || !subscribers.length || !window.MutationObserver || !document.body || !isPhone()) return;
     observer = new MutationObserver(queue);
     observer.observe(document.body, { subtree: true, childList: true });
   }
@@ -49,11 +49,12 @@
     return function () {
       var index = subscribers.indexOf(callback);
       if (index !== -1) subscribers.splice(index, 1);
+      if (!subscribers.length) stop();
     };
   }
 
   function start() {
-    if (!isPhone()) return;
+    if (!isPhone() || !subscribers.length) return;
     connect();
   }
 
@@ -72,6 +73,6 @@
     subscribe: subscribe,
     observeTarget: observeTarget,
     isPhone: isPhone,
-    version: '10.0.9-mobile-runtime-consolidation-p2-2'
+    version: '10.0.25-observer-timer-reduction-p6'
   };
 })();
