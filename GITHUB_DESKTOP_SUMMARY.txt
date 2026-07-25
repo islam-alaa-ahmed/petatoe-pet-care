@@ -1,42 +1,9 @@
-PETATOE v10.0.23 — Phase C2.1-PWA Fast Startup & Session Restore
+PETATOE v10.0.24 — Phase C2.2 Unified Desktop & Mobile Menu
 
-Root causes fixed:
-- App session was sessionStorage-only and disappeared after iOS terminated the PWA.
-- WebAuthn/Passkey was launched automatically during normal startup.
-- Mobile boot overlay appeared as a dark/black startup screen.
-- Critical auth assets could run from stale cache before updating.
-
-Main changes:
-- Persistent 30-day safe application session (no password stored).
-- Normal startup restores and validates the saved session first.
-- Passkey now requires an explicit user click.
-- Branded non-black PWA startup shell.
-- Network-first caching for critical auth/startup assets.
-- Release synchronized to v10.0.23.
-
-Modified paths:
-RELEASE_VERSION.txt
-package.json
-index.html
-service-worker.js
-security/auth-session.js
-css/main.css
-i18n/localization-center/runtime.js
-mobile/about-app.js
-scripts/mobile-enterprise-v10-certification-check.js
-ENTERPRISE_LOCALIZATION_CERTIFICATION_RESULTS.json
-PRODUCTION_LOCALIZATION_LOCKDOWN_RESULTS.json
-MOBILE_ENTERPRISE_V10_CERTIFICATION_RESULTS.json
-
-Checks:
-Localization Certification: PASS
-Localization Lockdown: PASS
-Runtime Translation Completion: PASS
-Mobile Enterprise UI: 61/61 PASS
-
-Localization Lockdown hotfix:
-- Added smart/smart-language-runtime.js to the modified-files package.
-- Synchronized its runtime token to 10.0.23-pwa-fast-startup-c2-1.
-- Release number remains PETATOE v10.0.23; no version increment was made.
-- Verified locally: Smart Reports Translation Stability PASSED (11/11).
-- Verified locally: Mobile Enterprise UI v10 certification PASSED (61 checks, 0 failures).
+- Unified mobile drawer with the canonical desktop navigation source.
+- Preserved exact desktop group order, routes, permissions, labels and subtitles.
+- Added mobile accordion groups matching desktop sections.
+- Included settings and special navigation entries previously omitted by data-tab-only parsing.
+- Removed broad mobile navigation MutationObserver rebuilds.
+- No business logic, Supabase, SQL or desktop visual changes.
+- Localization and Mobile Enterprise certifications passed.

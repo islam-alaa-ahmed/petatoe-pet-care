@@ -1,8 +1,8 @@
 {
   "status": "PASSED",
   "stats": {
-    "files": 321,
-    "js": 318,
+    "files": 322,
+    "js": 319,
     "html": 3,
     "legacyCalls": 0,
     "staticUiCandidates": 497,
