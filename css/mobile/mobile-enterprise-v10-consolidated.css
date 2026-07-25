@@ -1588,3 +1588,59 @@
   html[data-theme="light"] .pet-v10-drawer-section-toggle{background:#f8fafc!important;color:#111827!important}
   html[data-theme="light"] .pet-v10-drawer-section-body{background:#fff!important}
 }
+
+/* Mobile corrective hotfix — preserve current release/version token. */
+@media (max-width: 760px) {
+  /* Canonical mobile header owns all header actions. Never allow legacy controls to leak back. */
+  html body .topbar #topbarSearch,
+  html body .topbar .pet-topbar-search-icon,
+  html body .topbar #topPawBackToTopBtn,
+  html body .topbar .top-paw-up-btn,
+  html body #dashboard > .section-head > div:last-child,
+  html body #dashboard > .pet-v10-dashboard-toolbar,
+  html body .pet-v10-dashboard-filter-backdrop {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  /* The v10 drawer is the only phone navigation surface. */
+  html body #sidebar,
+  html body .sidebar,
+  html body #overlay,
+  html body .overlay#overlay {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: none !important;
+  }
+  html body.sidebar-open .main {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-inline: 0 !important;
+  }
+
+  /* Search stays completely below the fixed mobile header and above page content. */
+  html body #globalSearchOverlay {
+    z-index: 2147482700 !important;
+    box-sizing: border-box !important;
+    align-items: flex-start !important;
+    padding:
+      calc(var(--pet-v10-safe-top, env(safe-area-inset-top, 0px)) + var(--pet-v10-header-h, 64px) + 12px)
+      calc(var(--pet-v10-safe-right, env(safe-area-inset-right, 0px)) + 12px)
+      calc(var(--pet-v10-safe-bottom, env(safe-area-inset-bottom, 0px)) + 12px)
+      calc(var(--pet-v10-safe-left, env(safe-area-inset-left, 0px)) + 12px) !important;
+    overflow: hidden !important;
+  }
+  html body #globalSearchBox {
+    width: 100% !important;
+    max-height: calc(100dvh - var(--pet-v10-safe-top, env(safe-area-inset-top, 0px)) - var(--pet-v10-header-h, 64px) - var(--pet-v10-safe-bottom, env(safe-area-inset-bottom, 0px)) - 24px) !important;
+    margin: 0 !important;
+  }
+  html body #globalSearchResults {
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 1 1 auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+}

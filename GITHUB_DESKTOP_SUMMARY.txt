@@ -1,11 +1,13 @@
-PETATOE v10.0.25 — Phase C2.3 Navigation Runtime Isolation
+Mobile UI corrective hotfix on the current baseline without changing the release number.
 
-- Deferred heavy route subscribers until after the active panel can paint.
-- Cancelled stale queued routes and deduplicated identical route events within 120 ms.
-- Preserved hidden chart instances instead of destroying them on every tab change.
-- Scoped Liquid Glass and localization work to the active screen.
-- Added route timing data through PETATOENavigationPerformance and petatoe:routepainted.
-- Synchronized Service Worker and release tokens to v10.0.25.
-- Localization Lockdown and Mobile Enterprise certification passed.
+Fixed:
+- Removed leaked legacy search/paw controls below the mobile header.
+- Forced the v10 drawer to clear the old sidebar state before opening.
+- Isolated and hid the old sidebar/overlay on phones.
+- Positioned global search below the safe-area-aware fixed header.
+- Stabilized login/MFA layout using visualViewport-aware height and mobile-safe scrolling.
 
-Modified functional files only; original repository paths preserved.
+Modified files only:
+css/mobile/mobile-enterprise-v10-consolidated.css
+mobile/mobile-enterprise-v10-shell.js
+security/auth-session.js

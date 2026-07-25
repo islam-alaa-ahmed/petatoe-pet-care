@@ -321,11 +321,24 @@
       '.pet-auth-dropdown-item{width:100%;border:0;background:transparent;color:#fecaca;border-radius:13px;padding:10px 11px;font-family:Cairo,system-ui,sans-serif;font-weight:900;cursor:pointer;text-align:right;display:flex;align-items:center;justify-content:space-between;gap:10px}',
       '.pet-auth-dropdown-item:hover{background:rgba(239,68,68,.14)}',
       '@media(max-width:1100px){.pet-auth-card{transform:translate(-220px,38px)}.pet-auth-overlay{background-size:cover;background-position:center center}}',
-      '@media(max-width:760px){.pet-auth-overlay{padding:110px 14px 104px;background-size:cover;background-position:center center}.pet-auth-card{transform:none}.pet-auth-brand{top:18px;left:18px;padding:8px 10px;border-radius:18px}.pet-auth-brand img{width:48px;height:48px}.pet-auth-brand span,.pet-auth-brand small{font-size:14px}}',
+      '@media(max-width:760px){body.pet-auth-locked{height:100%!important;overflow:hidden!important}.pet-auth-overlay{box-sizing:border-box;width:100%;height:var(--pet-auth-viewport-height,100dvh);min-height:var(--pet-auth-viewport-height,100dvh);padding:calc(env(safe-area-inset-top,0px) + 82px) 14px calc(env(safe-area-inset-bottom,0px) + 14px);background-size:cover;background-position:center center;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;align-items:flex-start;justify-content:flex-start}.pet-auth-card{transform:none;flex:0 0 auto;margin:auto 0;width:100%;max-width:430px}.pet-auth-brand{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);left:calc(env(safe-area-inset-left,0px) + 14px);padding:8px 10px;border-radius:18px}.pet-auth-brand img{width:48px;height:48px}.pet-auth-brand span,.pet-auth-brand small{font-size:14px}.pet-auth-footer{position:relative;left:auto;right:auto;bottom:auto;width:100%;flex:0 0 auto;margin-top:14px;padding:10px 8px calc(env(safe-area-inset-bottom,0px) + 4px);background:rgba(15,23,42,.62);border:1px solid rgba(255,255,255,.12);border-radius:16px}.pet-auth-biometric-gate{margin:auto}}',
       '@media(max-width:560px){.pet-auth-card{padding:20px;border-radius:24px}.pet-auth-card:before{height:122px}.pet-auth-logo{margin-bottom:48px}.pet-auth-card h2{font-size:21px}.pet-auth-footer{gap:7px;font-size:10px}.pet-auth-footer .pet-auth-sep{display:none}}'
     ].join('\n');
     document.head.appendChild(style);
   }
+  function syncAuthViewportHeight(){
+    try{
+      var viewport=window.visualViewport;
+      var height=Math.round(viewport&&viewport.height?viewport.height:window.innerHeight);
+      if(height>0)document.documentElement.style.setProperty('--pet-auth-viewport-height',height+'px');
+    }catch(_e){}
+  }
+  if(window.visualViewport){
+    window.visualViewport.addEventListener('resize',syncAuthViewportHeight,{passive:true});
+    window.visualViewport.addEventListener('scroll',syncAuthViewportHeight,{passive:true});
+  }
+  window.addEventListener('orientationchange',syncAuthViewportHeight,{passive:true});
+  syncAuthViewportHeight();
   function readRemember(){ return {}; }
   function writeRemember(username, enabled){ return false; }
   function trustedDeviceClientToken(){
