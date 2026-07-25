@@ -1,9 +1,18 @@
-PETATOE v10.0.24 — Phase C2.2 Unified Desktop & Mobile Menu
+PETATOE v10.0.24 — C2.2 Translation Stability Hotfix
 
-- Unified mobile drawer with the canonical desktop navigation source.
-- Preserved exact desktop group order, routes, permissions, labels and subtitles.
-- Added mobile accordion groups matching desktop sections.
-- Included settings and special navigation entries previously omitted by data-tab-only parsing.
-- Removed broad mobile navigation MutationObserver rebuilds.
-- No business logic, Supabase, SQL or desktop visual changes.
-- Localization and Mobile Enterprise certifications passed.
+Root Cause:
+The C2.2 modified-files package updated i18n/localization-center/runtime.js and index.html to token 10.0.24-unified-navigation-c2-2, but did not include smart/smart-language-runtime.js. GitHub therefore retained its older runtime token, causing Smart Reports Translation Stability to fail.
+
+Modified File:
+smart/smart-language-runtime.js
+
+Fix:
+Synchronized PETATOE_SMART_LANGUAGE_RUNTIME.version to:
+10.0.24-unified-navigation-c2-2
+
+Version:
+No release/version number change. PETATOE remains v10.0.24.
+
+Verification:
+node scripts/smart-reports-translation-stability-check.js
+PASSED
