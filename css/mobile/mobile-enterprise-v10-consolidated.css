@@ -1645,238 +1645,166 @@
   }
 }
 
-
-/* PETATOE mobile header/menu cleanup — current release preserved. */
-@media (max-width:760px){
-  .topbar > .pet-v10-legacy-hidden,
-  .topbar > .top-left,
-  .topbar > .top-right,
-  .topbar .side-launcher,
-  .topbar #sideLauncher{
-    display:none!important;
-    visibility:hidden!important;
-    pointer-events:none!important;
-  }
-  body.pet-v10-drawer-open #sidebar,
-  body.pet-v10-drawer-open #overlay,
-  body.pet-v10-drawer-open .sidebar,
-  body.pet-v10-drawer-open .overlay{
-    display:none!important;
-    opacity:0!important;
-    visibility:hidden!important;
-    pointer-events:none!important;
-  }
-  .pet-v10-drawer-section-primary{display:none!important}
-  .pet-v10-drawer-section-extra .pet-v10-section-icon svg{width:18px!important;height:18px!important;stroke:currentColor!important;fill:none!important;stroke-width:2!important}
-  .pet-v10-header-copy small{max-width:min(46vw,190px)!important}
-}
-
-
-/* Phase P4 — Legacy Mobile UI functional isolation. */
-@media (max-width:760px){
-  html body [data-pet-v10-mobile-isolated="true"],
-  html body #sidebar[inert],
-  html body #overlay[inert],
-  html body #nav[inert]{
-    display:none!important;
-    visibility:hidden!important;
-    opacity:0!important;
-    pointer-events:none!important;
-    user-select:none!important;
-    contain:strict!important;
-  }
-  html.sidebar-open body,
-  html body.sidebar-open{
-    overflow-x:hidden!important;
-  }
-}
-
-/* PETATOE Mobile Phase P5 — CSS ownership consolidation.
-   The v10 stylesheet is the sole phone-layout owner. These rules preserve the
-   non-conflicting M1/M2 behavior after their legacy stylesheets were removed
-   from index.html. Desktop and tablet remain outside this media query. */
+/* PETATOE Mobile — Enterprise Header & Glass Bottom Navigation (KYUM parity)
+   Mobile-only presentation. No routing, data, auth or desktop/tablet changes. */
 @media (max-width: 760px) {
-  :root {
-    --pet-safe-top: var(--pet-v10-safe-top, env(safe-area-inset-top, 0px));
-    --pet-safe-right: var(--pet-v10-safe-right, env(safe-area-inset-right, 0px));
-    --pet-safe-bottom: var(--pet-v10-safe-bottom, env(safe-area-inset-bottom, 0px));
-    --pet-safe-left: var(--pet-v10-safe-left, env(safe-area-inset-left, 0px));
-    --pet-mobile-header-height: calc(var(--pet-v10-safe-top, 0px) + var(--pet-v10-header-h, 64px));
-    --pet-mobile-content-offset: calc(var(--pet-mobile-header-height) + 12px);
-  }
-
-  html,
-  body {
-    min-height: 100%;
-    min-height: 100dvh;
-    scroll-padding-top: var(--pet-mobile-content-offset) !important;
-  }
-
-  body {
-    padding-inline: 0 !important;
-  }
-
-  body .main,
-  .main {
-    padding-top: var(--pet-mobile-content-offset) !important;
-    padding-right: max(10px, var(--pet-v10-safe-right, 0px)) !important;
-    padding-bottom: calc(var(--pet-v10-bottom-h, 74px) + var(--pet-v10-safe-bottom, 0px) + 18px) !important;
-    padding-left: max(10px, var(--pet-v10-safe-left, 0px)) !important;
-  }
-
-  .page {
-    padding-top: 8px !important;
-    padding-right: max(10px, var(--pet-v10-safe-right, 0px)) !important;
-    padding-bottom: calc(24px + var(--pet-v10-safe-bottom, 0px)) !important;
-    padding-left: max(10px, var(--pet-v10-safe-left, 0px)) !important;
-  }
-
-  /* Authentication layout retained from M1 without allowing it to own the app header. */
-  .pet-auth-overlay {
-    box-sizing: border-box !important;
-    min-height: 100dvh !important;
-    padding-top: calc(92px + var(--pet-v10-safe-top, 0px)) !important;
-    padding-right: max(12px, var(--pet-v10-safe-right, 0px)) !important;
-    padding-bottom: calc(86px + var(--pet-v10-safe-bottom, 0px)) !important;
-    padding-left: max(12px, var(--pet-v10-safe-left, 0px)) !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  .pet-auth-brand {
-    top: calc(10px + var(--pet-v10-safe-top, 0px)) !important;
-    left: max(12px, var(--pet-v10-safe-left, 0px)) !important;
-    max-width: calc(100vw - 24px - var(--pet-v10-safe-left, 0px) - var(--pet-v10-safe-right, 0px)) !important;
-  }
-
-  .pet-auth-card {
-    width: min(100%, 430px) !important;
-    max-height: none !important;
-    margin: auto !important;
-    transform: none !important;
-    padding: 18px !important;
-    border-radius: 24px !important;
-  }
-
-  .pet-auth-card::before { height: 112px !important; }
-  .pet-auth-logo { width: 48px !important; height: 48px !important; margin-bottom: 42px !important; }
-  .pet-auth-field input { min-height: 50px !important; font-size: 16px !important; }
-  .pet-auth-login,
-  .pet-auth-secondary,
-  .pet-auth-biometric { min-height: 48px !important; }
-
-  .pet-auth-footer {
-    box-sizing: border-box !important;
-    padding-right: max(10px, var(--pet-v10-safe-right, 0px)) !important;
-    padding-bottom: calc(10px + var(--pet-v10-safe-bottom, 0px)) !important;
-    padding-left: max(10px, var(--pet-v10-safe-left, 0px)) !important;
-  }
-
-  /* Dashboard content retained; header and legacy topbar rules intentionally omitted. */
-  #dashboard .section-head {
+  body.pet-v10-mobile-redesign-m1 .topbar {
+    position: fixed !important;
+    inset: 0 0 auto 0 !important;
     display: grid !important;
-    grid-template-columns: minmax(0, 1fr) auto !important;
+    grid-template-columns: 46px 46px minmax(0,1fr) 46px !important;
     align-items: center !important;
-    gap: 10px !important;
-    margin-bottom: 12px !important;
-    padding: 16px !important;
+    gap: 8px !important;
+    padding: calc(var(--pet-v10-safe-top) + 9px) 12px 9px !important;
+    height: calc(var(--pet-v10-safe-top) + var(--pet-v10-header-h)) !important;
+    border-radius: 0 0 25px 25px !important;
+    border-bottom: 1px solid rgba(148,163,184,.17) !important;
+    background: rgba(8,18,34,.78) !important;
+    box-shadow: 0 16px 38px rgba(2,6,23,.30), inset 0 -1px rgba(255,255,255,.04) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    transform: translateZ(0);
+    contain: layout paint style;
   }
-
-  #dashboard .section-head > div:first-child { min-width: 0 !important; }
-  #dashboard .section-head h2 { margin: 0 !important; font-size: clamp(22px, 7vw, 28px) !important; line-height: 1.15 !important; }
-  #dashboard .section-head p { margin-top: 5px !important; font-size: 12px !important; line-height: 1.55 !important; }
-  #dashboard .section-head > div:last-child { display: grid !important; grid-template-columns: 1fr !important; gap: 7px !important; }
-  #dashboard .section-head .btn,
-  #dashboard .section-head .pet-page-pdf-btn {
-    min-height: 42px !important;
-    padding: 9px 12px !important;
-    border-radius: 14px !important;
-    justify-content: center !important;
-    white-space: nowrap !important;
-    font-size: 12px !important;
-  }
-
-  #dashboard .filters {
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-menu { grid-column: 1 !important; }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-brand {
+    grid-column: 2 !important;
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    padding: 0 !important;
+    border: 1px solid rgba(255,255,255,.16) !important;
+    border-radius: 16px !important;
+    background: linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.035)) !important;
+    box-shadow: 0 12px 28px rgba(76,29,149,.30), inset 0 1px rgba(255,255,255,.12) !important;
     display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 9px !important;
-    padding: 12px !important;
-    margin-bottom: 12px !important;
+    place-items: center !important;
   }
-
-  #dashboard .filters select,
-  #dashboard .filters input,
-  #dashboard .filters button,
-  #dashboard .filters .btn {
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-logo {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 13px !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-copy {
+    grid-column: 3 !important;
     width: 100% !important;
     min-width: 0 !important;
-    min-height: 48px !important;
-    height: 48px !important;
-    margin: 0 !important;
-    padding-block: 8px !important;
-    border-radius: 16px !important;
-    font-size: 14px !important;
-  }
-
-  #dashboard .kpis,
-  #dashboard .grid,
-  #dashboard .grid-2,
-  #dashboard .grid-3 { gap: 10px !important; }
-  #dashboard .card,
-  #dashboard .kpi { margin-bottom: 10px !important; }
-
-  #dashboard #insights,
-  #dashboard .insights {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px !important;
-  }
-
-  #dashboard .insight {
-    min-width: 0 !important;
-    min-height: 150px !important;
-    padding: 14px 12px !important;
-    border-radius: 18px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: center !important;
     text-align: center !important;
+    pointer-events: none !important;
+    line-height: 1.1 !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-copy b {
+    display: block !important;
+    font-size: 15px !important;
+    letter-spacing: .09em !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-copy small {
+    display: block !important;
+    max-width: 100% !important;
+    margin-top: 4px !important;
     overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 9.5px !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-theme-toggle { grid-column: 4 !important; }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-actions { display: contents !important; }
+
+  body.pet-v10-mobile-redesign-m1 .pet-v10-bottom-nav {
+    --pet-v10-nav-scale: 1;
+    right: 10px !important;
+    left: 10px !important;
+    bottom: calc(var(--pet-v10-safe-bottom) + 8px) !important;
+    height: 70px !important;
+    padding: 7px !important;
+    display: grid !important;
+    grid-template-columns: repeat(5,minmax(0,1fr)) !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(148,163,184,.18) !important;
+    background: rgba(8,19,34,.72) !important;
+    box-shadow: 0 18px 48px rgba(2,6,23,.48), inset 0 1px rgba(255,255,255,.08) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    transform: translate3d(0,0,0) scale(var(--pet-v10-nav-scale)) !important;
+    transform-origin: center bottom !important;
+    transition: height .2s ease, padding .2s ease, border-radius .2s ease, transform .2s ease !important;
+    contain: layout paint style;
+    touch-action: none;
+  }
+  body.pet-v10-mobile-redesign-m1.pet-v10-nav-compact .pet-v10-bottom-nav {
+    --pet-v10-nav-scale: .94;
+    height: 60px !important;
+    padding: 5px !important;
+    border-radius: 21px !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-bubble {
+    position: absolute !important;
+    z-index: 0 !important;
+    top: 7px !important;
+    bottom: 7px !important;
+    left: 0 !important;
+    border-radius: 17px !important;
+    background: linear-gradient(145deg,rgba(124,58,237,.54),rgba(37,99,235,.30)) !important;
+    box-shadow: inset 0 0 0 1px rgba(196,181,253,.24), 0 9px 22px rgba(76,29,149,.30) !important;
+    transform: translate3d(0,0,0);
+    transition: transform .22s cubic-bezier(.22,.75,.24,1), width .22s ease !important;
+    pointer-events: none !important;
+    will-change: transform;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-bottom-nav.pet-v10-nav-tracking .pet-v10-nav-bubble {
+    transition: none !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn {
+    position: relative !important;
+    z-index: 1 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    padding: 4px 2px !important;
+    border-radius: 16px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #8fa0b6 !important;
+    transform: translate3d(0,0,0) !important;
+    transition: color .16s ease, transform .16s ease !important;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn.active,
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn.pet-v10-nav-preview {
+    color: #fff !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn svg {
+    width: 21px !important;
+    height: 21px !important;
+    transition: width .2s ease,height .2s ease !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn span {
+    transition: font-size .2s ease, opacity .2s ease !important;
+  }
+  body.pet-v10-mobile-redesign-m1.pet-v10-nav-compact .pet-v10-nav-btn svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  body.pet-v10-mobile-redesign-m1.pet-v10-nav-compact .pet-v10-nav-btn span {
+    font-size: 8px !important;
   }
 
-  #dashboard .insight small,
-  #dashboard .insight span { font-size: 12px !important; line-height: 1.6 !important; overflow-wrap: anywhere !important; }
-  #dashboard .insight .big,
-  #dashboard .insight b {
-    font-size: clamp(17px, 5vw, 21px) !important;
-    line-height: 1.45 !important;
-    margin: 7px 0 !important;
-    overflow-wrap: anywhere !important;
-    word-break: normal !important;
+  html[data-theme="light"] body.pet-v10-mobile-redesign-m1 .topbar {
+    background: rgba(244,247,252,.80) !important;
+    border-bottom-color: rgba(100,116,139,.17) !important;
+    box-shadow: 0 14px 34px rgba(71,85,105,.20), inset 0 -1px rgba(255,255,255,.75) !important;
   }
-
-  /* System messages share one measured header offset. */
-  #toast.toast,
-  .toast#toast,
-  .petatoe-pwa-update {
-    top: calc(var(--pet-mobile-header-height) + 8px) !important;
+  html[data-theme="light"] body.pet-v10-mobile-redesign-m1 .pet-v10-bottom-nav {
+    background: rgba(241,245,249,.78) !important;
+    border-color: rgba(100,116,139,.18) !important;
+    box-shadow: 0 16px 40px rgba(71,85,105,.24), inset 0 1px rgba(255,255,255,.85) !important;
   }
-
-  .petatoe-pwa-update {
-    right: max(10px, var(--pet-v10-safe-right, 0px)) !important;
-    left: max(10px, var(--pet-v10-safe-left, 0px)) !important;
-    bottom: auto !important;
-  }
-
-  [role="dialog"] .session-warning-actions,
-  .session-timeout-actions,
-  .session-warning-actions { gap: 10px !important; }
 }
-
-@media (max-width: 390px) {
-  #dashboard .section-head { grid-template-columns: 1fr !important; }
-  #dashboard .section-head > div:last-child { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
-  #dashboard .insight { min-height: 138px !important; }
-  .pet-auth-brand img { width: 42px !important; height: 42px !important; }
-  .pet-auth-brand span,
-  .pet-auth-brand small { font-size: 13px !important; }
-}
+@media (max-width:760px){body.pet-v10-mobile-redesign-m1 .topbar{direction:ltr !important;}body.pet-v10-mobile-redesign-m1 .pet-v10-header-copy{direction:ltr !important;}}
