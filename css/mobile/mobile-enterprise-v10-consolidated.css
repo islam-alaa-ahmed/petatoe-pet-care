@@ -1644,3 +1644,167 @@
     -webkit-overflow-scrolling: touch !important;
   }
 }
+
+/* PETATOE Mobile — Enterprise Header & Glass Bottom Navigation (KYUM parity)
+   Mobile-only presentation. No routing, data, auth or desktop/tablet changes. */
+@media (max-width: 760px) {
+  body.pet-v10-mobile-redesign-m1 .topbar {
+    position: fixed !important;
+    inset: 0 0 auto 0 !important;
+    display: grid !important;
+    grid-template-columns: 46px 46px minmax(0,1fr) 46px !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: calc(var(--pet-v10-safe-top) + 9px) 12px 9px !important;
+    height: calc(var(--pet-v10-safe-top) + var(--pet-v10-header-h)) !important;
+    border-radius: 0 0 25px 25px !important;
+    border-bottom: 1px solid rgba(148,163,184,.17) !important;
+    background: rgba(8,18,34,.78) !important;
+    box-shadow: 0 16px 38px rgba(2,6,23,.30), inset 0 -1px rgba(255,255,255,.04) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    transform: translateZ(0);
+    contain: layout paint style;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-menu { grid-column: 1 !important; }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-brand {
+    grid-column: 2 !important;
+    width: 46px !important;
+    height: 46px !important;
+    min-width: 46px !important;
+    padding: 0 !important;
+    border: 1px solid rgba(255,255,255,.16) !important;
+    border-radius: 16px !important;
+    background: linear-gradient(145deg,rgba(255,255,255,.12),rgba(255,255,255,.035)) !important;
+    box-shadow: 0 12px 28px rgba(76,29,149,.30), inset 0 1px rgba(255,255,255,.12) !important;
+    display: grid !important;
+    place-items: center !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-logo {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 13px !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-copy {
+    grid-column: 3 !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    text-align: center !important;
+    pointer-events: none !important;
+    line-height: 1.1 !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-copy b {
+    display: block !important;
+    font-size: 15px !important;
+    letter-spacing: .09em !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-copy small {
+    display: block !important;
+    max-width: 100% !important;
+    margin-top: 4px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+    font-size: 9.5px !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-theme-toggle { grid-column: 4 !important; }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-header-actions { display: contents !important; }
+
+  body.pet-v10-mobile-redesign-m1 .pet-v10-bottom-nav {
+    --pet-v10-nav-scale: 1;
+    right: 10px !important;
+    left: 10px !important;
+    bottom: calc(var(--pet-v10-safe-bottom) + 8px) !important;
+    height: 70px !important;
+    padding: 7px !important;
+    display: grid !important;
+    grid-template-columns: repeat(5,minmax(0,1fr)) !important;
+    align-items: stretch !important;
+    overflow: hidden !important;
+    isolation: isolate !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(148,163,184,.18) !important;
+    background: rgba(8,19,34,.72) !important;
+    box-shadow: 0 18px 48px rgba(2,6,23,.48), inset 0 1px rgba(255,255,255,.08) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    transform: translate3d(0,0,0) scale(var(--pet-v10-nav-scale)) !important;
+    transform-origin: center bottom !important;
+    transition: height .2s ease, padding .2s ease, border-radius .2s ease, transform .2s ease !important;
+    contain: layout paint style;
+    touch-action: none;
+  }
+  body.pet-v10-mobile-redesign-m1.pet-v10-nav-compact .pet-v10-bottom-nav {
+    --pet-v10-nav-scale: .94;
+    height: 60px !important;
+    padding: 5px !important;
+    border-radius: 21px !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-bubble {
+    position: absolute !important;
+    z-index: 0 !important;
+    top: 7px !important;
+    bottom: 7px !important;
+    left: 0 !important;
+    border-radius: 17px !important;
+    background: linear-gradient(145deg,rgba(124,58,237,.54),rgba(37,99,235,.30)) !important;
+    box-shadow: inset 0 0 0 1px rgba(196,181,253,.24), 0 9px 22px rgba(76,29,149,.30) !important;
+    transform: translate3d(0,0,0);
+    transition: transform .22s cubic-bezier(.22,.75,.24,1), width .22s ease !important;
+    pointer-events: none !important;
+    will-change: transform;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-bottom-nav.pet-v10-nav-tracking .pet-v10-nav-bubble {
+    transition: none !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn {
+    position: relative !important;
+    z-index: 1 !important;
+    min-height: 0 !important;
+    height: 100% !important;
+    padding: 4px 2px !important;
+    border-radius: 16px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #8fa0b6 !important;
+    transform: translate3d(0,0,0) !important;
+    transition: color .16s ease, transform .16s ease !important;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn.active,
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn.pet-v10-nav-preview {
+    color: #fff !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn svg {
+    width: 21px !important;
+    height: 21px !important;
+    transition: width .2s ease,height .2s ease !important;
+  }
+  body.pet-v10-mobile-redesign-m1 .pet-v10-nav-btn span {
+    transition: font-size .2s ease, opacity .2s ease !important;
+  }
+  body.pet-v10-mobile-redesign-m1.pet-v10-nav-compact .pet-v10-nav-btn svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+  body.pet-v10-mobile-redesign-m1.pet-v10-nav-compact .pet-v10-nav-btn span {
+    font-size: 8px !important;
+  }
+
+  html[data-theme="light"] body.pet-v10-mobile-redesign-m1 .topbar {
+    background: rgba(244,247,252,.80) !important;
+    border-bottom-color: rgba(100,116,139,.17) !important;
+    box-shadow: 0 14px 34px rgba(71,85,105,.20), inset 0 -1px rgba(255,255,255,.75) !important;
+  }
+  html[data-theme="light"] body.pet-v10-mobile-redesign-m1 .pet-v10-bottom-nav {
+    background: rgba(241,245,249,.78) !important;
+    border-color: rgba(100,116,139,.18) !important;
+    box-shadow: 0 16px 40px rgba(71,85,105,.24), inset 0 1px rgba(255,255,255,.85) !important;
+  }
+}
+@media (max-width:760px){body.pet-v10-mobile-redesign-m1 .topbar{direction:ltr !important;}body.pet-v10-mobile-redesign-m1 .pet-v10-header-copy{direction:ltr !important;}}
