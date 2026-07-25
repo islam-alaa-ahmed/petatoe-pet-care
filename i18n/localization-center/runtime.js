@@ -1,7 +1,7 @@
 /* PETATOE v9.4.23 — Operations Localization Completion */
 (function(){
   'use strict';
-  var VERSION='10.0.24-unified-navigation-c2-2';
+  var VERSION='10.0.25-navigation-runtime-isolation-c2-3';
   var ready=false;
   var listeners=[];
   function api(){return window.PETATOE_I18N||null;}

@@ -169,11 +169,12 @@
     });
   }
 
-  function enhanceControls(){
-    qa('button:not(.lg-glass-button),.btn:not(.lg-glass-button),.exp-btn:not(.lg-glass-button),.report-btn:not(.lg-glass-button),.reports-btn:not(.lg-glass-button),.pdf-btn:not(.lg-glass-button),.excel-btn:not(.lg-glass-button),.action-btn:not(.lg-glass-button)').forEach(function(el){
+  function enhanceControls(root){
+    root=root||d;
+    qa('button:not(.lg-glass-button),.btn:not(.lg-glass-button),.exp-btn:not(.lg-glass-button),.report-btn:not(.lg-glass-button),.reports-btn:not(.lg-glass-button),.pdf-btn:not(.lg-glass-button),.excel-btn:not(.lg-glass-button),.action-btn:not(.lg-glass-button)',root).forEach(function(el){
       el.classList.add('lg-glass-button');
     });
-    qa('input:not(.lg-glass-control),select:not(.lg-glass-control),textarea:not(.lg-glass-control)').forEach(function(el){
+    qa('input:not(.lg-glass-control),select:not(.lg-glass-control),textarea:not(.lg-glass-control)',root).forEach(function(el){
       el.classList.add('lg-glass-control');
     });
   }
@@ -192,6 +193,7 @@
 
   function applyAll(options){
     options=options||{};
+    var root=options.root||d;
     if(d.documentElement) d.documentElement.classList.add('petatoe-apple-liquid-glass-v44');
     if(d.body) d.body.classList.add('petatoe-enterprise-glass-body');
     enhanceHeader();
@@ -201,9 +203,8 @@
       enhanceCharts();
       return;
     }
-    enhanceKpis();
-    enhanceCharts();
-    enhanceControls();
+    if(options.includeDashboard){enhanceKpis();enhanceCharts();}
+    enhanceControls(root);
   }
 
   function registerChartTheme(){
@@ -308,7 +309,9 @@
   if(d.readyState==='loading') d.addEventListener('DOMContentLoaded',init); else init();
   d.addEventListener('petatoe:tabchange',function(e){
     var tabId=e.detail && e.detail.tabId;
-    scheduleApply({dashboardOnly:tabId!=='settings',skipCharts:!!(e.detail && tabId!=='dashboard')},140);
+    var root=tabId&&d.getElementById(tabId)||d.querySelector('.panel.active');
+    if(tabId==='dashboard') scheduleApply({dashboardOnly:true,skipCharts:false},80);
+    else scheduleApply({root:root||d,includeDashboard:false,skipCharts:true},50);
   });
   d.addEventListener('change',function(e){
     if(e && e.target && e.target.matches && e.target.matches('select,input,textarea')){

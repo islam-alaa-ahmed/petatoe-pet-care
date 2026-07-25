@@ -22,8 +22,10 @@
   function wrapRouter(){
     if(window.__PETATOE_RUNTIME_UI_TABCHANGE_BOUND__) return;
     window.__PETATOE_RUNTIME_UI_TABCHANGE_BOUND__ = true;
-    document.addEventListener('petatoe:tabchange',function(){closeDropdowns();setTimeout(function(){closeDropdowns();cleanupHiddenCharts();},80);});
+    document.addEventListener('petatoe:tabchange',function(){closeDropdowns();setTimeout(closeDropdowns,80);});
+    window.addEventListener('pagehide',cleanupHiddenCharts,{once:false});
   }
+  window.PETATOERuntimeUICleanupHiddenCharts=cleanupHiddenCharts;
   function init(){
     if(window.__PETATOE_RUNTIME_UI_INIT_DONE__) return;
     window.__PETATOE_RUNTIME_UI_INIT_DONE__ = true;
@@ -33,7 +35,6 @@
       if(!inside) closeDropdowns();
     },true);
     window.addEventListener('keydown',function(e){if(e.key==='Escape')closeDropdowns();});
-    setTimeout(cleanupHiddenCharts,1200);
   }
   window.PETATOERuntimeUI={__ready:true,closeDropdowns:closeDropdowns,cleanupHiddenCharts:cleanupHiddenCharts,wrapRouter:wrapRouter};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();

@@ -1,0 +1,20 @@
+{
+  "phase": "C2.3",
+  "version": "10.0.25",
+  "status": "PASSED_STATIC_CERTIFICATION",
+  "checks": {
+    "javascript_syntax": true,
+    "route_dispatch_deferred": true,
+    "stale_route_cancellation": true,
+    "duplicate_route_deduplication": true,
+    "hidden_chart_reuse": true,
+    "active_panel_liquid_glass_scope": true,
+    "active_panel_i18n_scope": true,
+    "enterprise_localization_certification": true,
+    "production_localization_lockdown": true,
+    "runtime_translation_completion": true,
+    "smart_reports_checks": true,
+    "mobile_enterprise_ui_61_of_61": true
+  },
+  "device_test_required": true
+}

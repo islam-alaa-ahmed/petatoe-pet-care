@@ -491,13 +491,19 @@
       mutationQueue.length=0;queuedNodes.clear();processing=false;
     }
   });
-  document.addEventListener('petatoe:tabchange',function(){ensureIndexFresh(false);});
+  var activeRouteScanFrame=0,lastActiveRouteToken=0;
+  document.addEventListener('petatoe:tabchange',function(e){
+    var token=e&&e.detail&&e.detail.routeToken||Date.now();
+    lastActiveRouteToken=token;
+    if(activeRouteScanFrame){try{cancelAnimationFrame(activeRouteScanFrame);}catch(_e){clearTimeout(activeRouteScanFrame);}}
+    var run=function(){activeRouteScanFrame=0;if(token!==lastActiveRouteToken)return;ensureIndexFresh(false);if(runtimeEnabled())requestActiveScan(0);};
+    activeRouteScanFrame=typeof requestAnimationFrame==='function'?requestAnimationFrame(run):setTimeout(run,0);
+  });
   document.addEventListener('click',function(){},true);
   window.addEventListener('petatoe:records-changed',function(){ensureIndexFresh(false);});
   document.addEventListener('petatoe:navbuilt',function(){ensureIndexFresh(false);});
   window.addEventListener('petatoe:localization-ready',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(50);scheduleInitialEnglishHydration('localization-ready',140);}});
   ['petatoe:dashboard-rendered','petatoe:reports-rendered','petatoe:smart-rendered','petatoe:operations-rendered','petatoe:payroll-rendered','petatoe:warehouse-rendered','petatoe:treasury-rendered','petatoe:modal-opened'].forEach(function(evt){window.addEventListener(evt,function(){scheduleResidualCleanup(evt,30);});});
-  document.addEventListener('petatoe:tabchange',function(){if(runtimeEnabled())requestActiveScan(0);});
   window.addEventListener('load',function(){if(runtimeEnabled()){ensureIndexFresh(true);requestFullScan(180);scheduleInitialEnglishHydration('window-load',420);}});
 
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();

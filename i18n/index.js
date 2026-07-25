@@ -426,7 +426,14 @@
       setNavigationReady(true);
     }
   });
-  document.addEventListener('petatoe:tabchange',function(){setTimeout(function(){applyActiveSubtrees(currentLang());},0);});
+  var tabTranslateFrame=0,lastTabTranslateToken=0;
+  document.addEventListener('petatoe:tabchange',function(e){
+    var token=e&&e.detail&&e.detail.routeToken||Date.now();
+    lastTabTranslateToken=token;
+    if(tabTranslateFrame){try{cancelAnimationFrame(tabTranslateFrame);}catch(_e){clearTimeout(tabTranslateFrame);}}
+    var run=function(){tabTranslateFrame=0;if(token!==lastTabTranslateToken)return;applyActiveSubtrees(currentLang());};
+    tabTranslateFrame=typeof requestAnimationFrame==='function'?requestAnimationFrame(run):setTimeout(run,0);
+  });
   window.addEventListener('petatoe:localization-ready',function(){bindLanguageOptions();scheduleReapply(currentLang(),0);});
   window.addEventListener('petatoe:localization-loading',function(e){if(!(e&&e.detail&&e.detail.loading))scheduleReapply(currentLang(),0);});
   window.PETATOE_I18N={
