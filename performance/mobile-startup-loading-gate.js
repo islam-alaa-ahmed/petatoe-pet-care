@@ -1,9 +1,9 @@
 (function(){
   'use strict';
 
-  var MOBILE_QUERY = '(max-width: 760px)';
+  var MOBILE_QUERY = '(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)';
   var isMobile = false;
-  try { isMobile = !!(window.matchMedia && window.matchMedia(MOBILE_QUERY).matches); } catch (_) {}
+  try { isMobile = window.PETATOEDeviceProfile ? window.PETATOEDeviceProfile.isMobileDevice() : !!(window.matchMedia && window.matchMedia(MOBILE_QUERY).matches); } catch (_) {}
 
   var groups = Object.create(null);
   var states = Object.create(null);

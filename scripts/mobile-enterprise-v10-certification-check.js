@@ -76,9 +76,9 @@ for (const cssFile of cssAssets) {
 for (const jsFile of jsAssets) {
   const js = read(jsFile);
   requireCheck(!/[\u0600-\u06FF]/.test(js), `No hard-coded Arabic UI: ${jsFile}`, 'Arabic source text must be resolved through the canonical localization center.');
-  const hasNamedGuard = /PHONE_QUERY\s*=\s*['"]\(max-width:\s*760px\)['"]/.test(js) && /matchMedia\(PHONE_QUERY\)/.test(js);
-  const hasDirectGuard = /matchMedia\(['"]\(max-width:\s*760px\)['"]\)/.test(js);
-  requireCheck(hasNamedGuard || hasDirectGuard, `Phone runtime guard: ${jsFile}`, 'Missing an explicit max-width:760px runtime guard.');
+  const hasStableDeviceGuard = /PETATOEDeviceProfile/.test(js) && /isMobileDevice\(\)/.test(js);
+  const hasLandscapePhoneGuard = /max-height:\s*600px/.test(js) && /pointer:\s*coarse/.test(js);
+  requireCheck(hasStableDeviceGuard || hasLandscapePhoneGuard, `Phone runtime guard: ${jsFile}`, 'Missing the stable phone ownership guard required for portrait/landscape isolation.');
 }
 
 requireCheck(worker.includes("const APP_VERSION = '10.0.25-navigation-runtime-isolation-c2-3';"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release change.');

@@ -5,7 +5,7 @@
 /* ===== SOURCE: css/mobile/mobile-enterprise-v10-shell.css ===== */
 /* PETATOE Mobile Enterprise UI v10 — M1 App Shell
    Scope: mobile phones only. Desktop and tablet layouts remain untouched. */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   :root {
     --pet-v10-safe-top: env(safe-area-inset-top, 0px);
     --pet-v10-safe-right: env(safe-area-inset-right, 0px);
@@ -143,7 +143,7 @@
   .pet-modal-overlay,[role="dialog"] { scroll-margin-top:calc(var(--pet-v10-safe-top) + var(--pet-v10-header-h)); }
 }
 
-@media (min-width: 761px) {
+@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
   .pet-v10-header-menu,.pet-v10-header-brand,.pet-v10-header-actions,
   .pet-v10-bottom-nav,.pet-v10-drawer,.pet-v10-drawer-backdrop { display:none !important; }
 }
@@ -151,7 +151,7 @@
 /* ===== SOURCE: css/mobile/mobile-enterprise-v10-dashboard.css ===== */
 /* PETATOE Mobile Enterprise UI v10 — M2 Native Dashboard
    Phone-only presentation layer. Business logic and desktop/tablet layouts are unchanged. */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   body.pet-v10-mobile #dashboard {
     padding: 0 12px 22px !important;
     overflow: visible !important;
@@ -283,14 +283,14 @@
   body.pet-v10-mobile #dashboard .insight small { font-size:9px !important; }
 }
 
-@media (min-width:761px) {
+@media (min-width:761px) and (hover:hover) and (pointer:fine) {
   .pet-v10-dashboard-toolbar,.pet-v10-dashboard-filter-backdrop { display:none !important; }
 }
 
 /* ===== SOURCE: css/mobile/mobile-enterprise-v10-reports.css ===== */
 /* PETATOE Mobile Enterprise UI v10 — M3 Reports & Data Tables
    Phone-only presentation layer. Business logic and desktop/tablet remain untouched. */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   body.petatoe-v10-reports-ready {
     --v10-report-gap: 12px;
     --v10-report-radius: 18px;
@@ -634,7 +634,7 @@
 /* ===== SOURCE: css/mobile/mobile-enterprise-v10-management.css ===== */
 /* PETATOE Mobile Enterprise UI v10 — M4 Operations & Management Screens
    Phone-only presentation layer. Business logic and desktop/tablet remain untouched. */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   body.petatoe-v10-management-ready {
     --v10-management-gap: 12px;
     --v10-management-radius: 18px;
@@ -891,7 +891,7 @@
 
 /* ===== SOURCE: css/mobile/mobile-enterprise-v10-experience.css ===== */
 /* PETATOE Mobile Enterprise UI v10 — M5 Experience, Accessibility & Performance */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   :root {
     --pet-v10-touch-target: 44px;
     --pet-v10-motion-fast: 140ms;
@@ -1086,7 +1086,7 @@
 /* ===== SOURCE: css/mobile/mobile-enterprise-v10-redesign-m1.css ===== */
 /* PETATOE Mobile Enterprise UI — Phase M1 Redesign
    Mobile phones only: shell, navigation, drawer and dashboard presentation. */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   :root {
     --pet-m1-bg: #07111f;
     --pet-m1-bg-soft: #0b1728;
@@ -1520,7 +1520,7 @@
 }
 
 /* PETATOE v10.0.22 — Mobile dashboard controls hotfix (phone only) */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   /* Remove leaked legacy controls below the canonical mobile header. */
   body.pet-v10-mobile #topbarSearch,
   body.pet-v10-mobile #topPawBackToTopBtn,
@@ -1590,7 +1590,7 @@
 }
 
 /* Mobile corrective hotfix — preserve current release/version token. */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   /* Canonical mobile header owns all header actions. Never allow legacy controls to leak back. */
   html body .topbar #topbarSearch,
   html body .topbar .pet-topbar-search-icon,
@@ -1695,7 +1695,7 @@
    The v10 stylesheet is the sole phone-layout owner. These rules preserve the
    non-conflicting M1/M2 behavior after their legacy stylesheets were removed
    from index.html. Desktop and tablet remain outside this media query. */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   :root {
     --pet-safe-top: var(--pet-v10-safe-top, env(safe-area-inset-top, 0px));
     --pet-safe-right: var(--pet-v10-safe-right, env(safe-area-inset-right, 0px));
@@ -1890,7 +1890,7 @@
 
 /* PETATOE Mobile — Enterprise Header & Glass Bottom Navigation (KYUM parity)
    Mobile-only presentation. No routing, data, auth or desktop/tablet changes. */
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
   body.pet-v10-mobile-redesign-m1 .topbar {
     position: fixed !important;
     inset: 0 0 auto 0 !important;

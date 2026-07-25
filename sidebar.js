@@ -7,8 +7,8 @@
   // Mobile Enterprise v10 owns phone navigation. Do not bind the legacy
   // accordion runtime on phone viewports; the DOM remains available as the
   // canonical schema/permission source for the v10 drawer.
-  var petatoeLegacySidebarMobileMq = window.matchMedia && window.matchMedia('(max-width: 760px)');
-  if(petatoeLegacySidebarMobileMq && petatoeLegacySidebarMobileMq.matches){
+  var petatoeLegacySidebarMobileMq = window.matchMedia && window.matchMedia('(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)');
+  if(window.PETATOEDeviceProfile?window.PETATOEDeviceProfile.isMobileDevice():(petatoeLegacySidebarMobileMq && petatoeLegacySidebarMobileMq.matches)){
     window.__PETATOE_LEGACY_SIDEBAR_MOBILE_ISOLATED__ = true;
     return;
   }

@@ -2,8 +2,8 @@
   'use strict';
   if(window.__PETATOE_NAVIGATION_MODULE_PHASE1__) return;
   window.__PETATOE_NAVIGATION_MODULE_PHASE1__=true;
-  var petatoeNavigationMobileMq=window.matchMedia&&window.matchMedia('(max-width: 760px)');
-  function mobileV10OwnsPresentation(){return !!(petatoeNavigationMobileMq&&petatoeNavigationMobileMq.matches);}
+  var petatoeNavigationMobileMq=window.matchMedia&&window.matchMedia('(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)');
+  function mobileV10OwnsPresentation(){return window.PETATOEDeviceProfile?window.PETATOEDeviceProfile.isMobileDevice():!!(petatoeNavigationMobileMq&&petatoeNavigationMobileMq.matches);}
   // PETATOE v6.1.206 Phase 3: canonical navigation module with isolated permission gate.
   // This file owns building #nav and menu click routing only. Screen rendering remains inside each screen module.
   function petBlock7937_q(sel,root){return (root||document).querySelector(sel)}

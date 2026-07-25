@@ -5,7 +5,7 @@
   if (window.__PETATOE_MOBILE_V10_EXPERIENCE__) return;
   window.__PETATOE_MOBILE_V10_EXPERIENCE__ = true;
 
-  var mq = window.matchMedia('(max-width: 760px)');
+  var mq = window.matchMedia('(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)');
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   var revealObserver = null;
   var mutationObserver = null;
@@ -15,7 +15,7 @@
   var booted = false;
   var pull = { active: false, startY: 0, distance: 0, eligible: false };
 
-  function isPhone() { return mq.matches; }
+  function isPhone() { return window.PETATOEDeviceProfile ? window.PETATOEDeviceProfile.isMobileDevice() : mq.matches; }
   function isStandalone() {
     return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
   }

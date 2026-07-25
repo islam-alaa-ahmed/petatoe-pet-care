@@ -2,13 +2,13 @@
 (function () {
   'use strict';
 
-  var PHONE_QUERY = '(max-width: 760px)';
+  var PHONE_QUERY = '(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)';
   var dashboard = null;
   var filters = null;
   var trigger = null;
   var countBadge = null;
 
-  function isPhone() { return window.matchMedia(PHONE_QUERY).matches; }
+  function isPhone() { return window.PETATOEDeviceProfile ? window.PETATOEDeviceProfile.isMobileDevice() : window.matchMedia(PHONE_QUERY).matches; }
   function t(key, fallback) {
     try {
       if (typeof window.petT === 'function') return window.petT(key, fallback);
