@@ -202,6 +202,12 @@
     try{ return !!(window.matchMedia && window.matchMedia('(max-width: 760px)').matches); }catch(_e){ return false; }
   }
   function finishMobileBoot(){
+    try{
+      if(window.PETATOEMobileStartupGate && typeof window.PETATOEMobileStartupGate.finishBoot === 'function'){
+        window.PETATOEMobileStartupGate.finishBoot('authentication-ready');
+        return;
+      }
+    }catch(_e){}
     try{ document.documentElement.classList.remove('pet-mobile-booting'); }catch(_e){}
   }
   async function validateSessionUser(reason){

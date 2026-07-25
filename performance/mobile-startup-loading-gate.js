@@ -8,6 +8,51 @@
   var groups = Object.create(null);
   var states = Object.create(null);
   var startupInteractive = document.readyState !== 'loading';
+  var mobileBootStartedAt = Date.now();
+  var mobileBootFinished = false;
+  var mobileBootDeadlineId = 0;
+
+  function finishMobileBoot(reason){
+    if(!isMobile || mobileBootFinished) return false;
+    mobileBootFinished = true;
+    if(mobileBootDeadlineId){
+      clearTimeout(mobileBootDeadlineId);
+      mobileBootDeadlineId = 0;
+    }
+    try{ document.documentElement.classList.remove('pet-mobile-booting'); }catch(_e){}
+    try{
+      window.__PETATOE_MOBILE_BOOT_METRICS__ = {
+        startedAt: mobileBootStartedAt,
+        finishedAt: Date.now(),
+        durationMs: Math.max(0, Date.now() - mobileBootStartedAt),
+        reason: String(reason || 'critical-shell-ready')
+      };
+    }catch(_e){}
+    try{ window.dispatchEvent(new CustomEvent('petatoe:mobile-boot-finished', { detail: window.__PETATOE_MOBILE_BOOT_METRICS__ || {} })); }catch(_e){}
+    return true;
+  }
+
+  function armMobileBootDeadline(timeoutMs){
+    if(!isMobile || mobileBootFinished) return;
+    var delay = Math.max(700, Number(timeoutMs) || 1400);
+    if(mobileBootDeadlineId) clearTimeout(mobileBootDeadlineId);
+    mobileBootDeadlineId = setTimeout(function(){ finishMobileBoot('safety-deadline'); }, delay);
+  }
+
+  function scheduleCriticalShellRelease(){
+    if(!isMobile || mobileBootFinished) return;
+    var release = function(){
+      if(typeof window.requestAnimationFrame === 'function'){
+        window.requestAnimationFrame(function(){
+          window.requestAnimationFrame(function(){ finishMobileBoot('critical-shell-first-paint'); });
+        });
+      }else{
+        setTimeout(function(){ finishMobileBoot('critical-shell-first-paint'); }, 0);
+      }
+    };
+    if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', release, { once: true });
+    else release();
+  }
   var aliases = {
     operation: 'operations', operations: 'operations', appointments: 'operations',
     payroll: 'payroll', salarySlip: 'payroll', commissionStatement: 'payroll',
@@ -212,8 +257,12 @@
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
     normalizeGroup: normalizeGroup,
-    snapshot: snapshot
+    snapshot: snapshot,
+    finishBoot: finishMobileBoot,
+    armBootDeadline: armMobileBootDeadline
   };
 
+  armMobileBootDeadline(1400);
+  scheduleCriticalShellRelease();
   installTriggers();
 })();
