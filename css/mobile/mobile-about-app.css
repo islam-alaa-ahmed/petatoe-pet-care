@@ -33,3 +33,21 @@
   html[data-theme="light"] #settings .pet-about__header p,html[data-theme="light"] #settings .pet-about__details span,html[data-theme="light"] #settings .pet-about__status p,body.light-mode #settings .pet-about__header p,body.light-mode #settings .pet-about__details span,body.light-mode #settings .pet-about__status p{color:#4b5563}
 }
 @media (min-width:901px){#settings #petatoeAboutAppMount{display:none!important}}
+
+@media (max-width:900px){
+  #settings .pet-about__maintenance{display:grid;gap:14px;padding:20px 22px;border:1px solid rgba(148,172,211,.22);border-radius:24px;background:rgba(18,31,52,.78);box-shadow:0 16px 34px rgba(3,10,22,.18)}
+  #settings .pet-about__maintenance-head{display:grid;gap:5px}
+  #settings .pet-about__maintenance-head strong{font-size:1.08rem}
+  #settings .pet-about__maintenance-head span{color:var(--muted,#c0cad9);font-size:.9rem;line-height:1.6}
+  #settings .pet-about__maintenance-actions{display:grid;gap:10px}
+  #settings .pet-about__maintenance-btn{display:grid;gap:4px;width:100%;min-height:64px;padding:13px 16px;border:1px solid rgba(120,137,255,.30);border-radius:17px;background:rgba(64,81,160,.22);color:inherit;text-align:start;font:inherit}
+  #settings .pet-about__maintenance-btn b{font-size:1rem}
+  #settings .pet-about__maintenance-btn small{color:var(--muted,#c0cad9);font-size:.78rem;line-height:1.5}
+  #settings .pet-about__maintenance-btn--danger{border-color:rgba(239,68,68,.28);background:rgba(127,29,29,.20)}
+  #settings .pet-about__maintenance-btn--danger b{color:#ff8d8d}
+  #settings .pet-about__maintenance-btn:disabled{opacity:.6}
+  html[data-theme="light"] #settings .pet-about__maintenance,body.light-mode #settings .pet-about__maintenance{background:#fff;border-color:#dce4ef;box-shadow:0 12px 28px rgba(27,45,75,.08)}
+  html[data-theme="light"] #settings .pet-about__maintenance-head span,html[data-theme="light"] #settings .pet-about__maintenance-btn small,body.light-mode #settings .pet-about__maintenance-head span,body.light-mode #settings .pet-about__maintenance-btn small{color:#4b5563}
+  html[data-theme="light"] #settings .pet-about__maintenance-btn,body.light-mode #settings .pet-about__maintenance-btn{background:#f8faff;border-color:#dbe3ff;color:#111827}
+  html[data-theme="light"] #settings .pet-about__maintenance-btn--danger,body.light-mode #settings .pet-about__maintenance-btn--danger{background:#fff7f7;border-color:#fecaca}
+}

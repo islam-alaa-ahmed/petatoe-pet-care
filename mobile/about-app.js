@@ -9,6 +9,7 @@
   var lastCheckAt=null;
   var currentStatus='idle';
   var statusDetail='';
+  var maintenanceBusy=false;
 
   function isMobile(){return !!(window.matchMedia&&window.matchMedia('(max-width: 900px)').matches)}
   function center(){return window.PETATOE_LOCALIZATION_CENTER||null}
@@ -42,6 +43,13 @@
       '<article class="pet-about__status pet-about__status--'+esc(copy.tone)+'"><div class="pet-about__status-head"><span>'+esc(copy.badge)+'</span><strong>'+esc(copy.title)+'</strong></div><p>'+esc(copy.message)+'</p>'+
         (currentStatus==='available'?'<button type="button" class="pet-about__update" data-pet-about-action="update">'+esc(t('updateNow','تحديث الآن'))+'</button>':'')+
       '</article>'+
+      '<article class="pet-about__maintenance" aria-labelledby="petAboutMaintenanceTitle">'+
+        '<div class="pet-about__maintenance-head"><strong id="petAboutMaintenanceTitle">'+esc(t('maintenanceTitle','إدارة التطبيق'))+'</strong><span>'+esc(t('maintenanceHint','أدوات آمنة لتحديث ملفات الواجهة دون حذف بياناتك.'))+'</span></div>'+
+        '<div class="pet-about__maintenance-actions">'+
+          '<button type="button" class="pet-about__maintenance-btn pet-about__maintenance-btn--danger" data-pet-about-action="clear-cache" '+(maintenanceBusy?'disabled':'')+'><b>'+esc(t('clearCache','مسح الكاش'))+'</b><small>'+esc(t('clearCacheHint','حذف ملفات التطبيق المؤقتة ثم إعادة تحميلها.'))+'</small></button>'+
+          '<button type="button" class="pet-about__maintenance-btn" data-pet-about-action="reload" '+(maintenanceBusy?'disabled':'')+'><b>'+esc(t('reloadApp','إعادة تحميل التطبيق'))+'</b><small>'+esc(t('reloadAppHint','إعادة فتح التطبيق من الصفحة الحالية.'))+'</small></button>'+
+        '</div>'+
+      '</article>'+
       '<button type="button" class="pet-about__check" data-pet-about-action="copy-trace">'+esc(t('copyPerformanceTrace','نسخ تقرير الأداء'))+'</button>'+
       '<small class="pet-about__release">'+esc(releaseName())+'</small>'+
     '</section>';
@@ -71,12 +79,40 @@
     }catch(error){if(window.showToast)window.showToast((error&&error.message)||t('performanceTraceUnavailable','تقرير الأداء غير متاح بعد.'),'error');}
   }
 
+
+  function reloadApp(){
+    var url=new URL(window.location.href);
+    url.searchParams.set('_reload',String(Date.now()));
+    window.location.replace(url.toString());
+  }
+
+  async function clearCacheAndReload(){
+    if(maintenanceBusy)return;
+    if(!window.confirm(t('clearCacheConfirm','سيتم حذف ملفات التطبيق المؤقتة وإعادة تحميل الصفحة. لن يتم حذف بيانات الدخول أو البيانات المحفوظة. هل تريد المتابعة؟')))return;
+    maintenanceBusy=true;rerender();
+    try{
+      if('caches' in window){
+        var keys=await caches.keys();
+        await Promise.all(keys.filter(function(key){return String(key).indexOf('petatoe-pwa-')===0;}).map(function(key){return caches.delete(key);}));
+      }
+      if(navigator.serviceWorker){
+        var registration=await navigator.serviceWorker.getRegistration('./');
+        if(registration)await registration.update();
+      }
+      if(window.showToast)window.showToast(t('cacheCleared','تم مسح الكاش وسيتم إعادة تحميل التطبيق.'));
+      window.setTimeout(reloadApp,250);
+    }catch(error){
+      maintenanceBusy=false;rerender();
+      if(window.showToast)window.showToast((error&&error.message)||t('cacheClearFailed','تعذر مسح الكاش. أعد المحاولة.'),'error');
+    }
+  }
+
   function update(){
     var api=window.PETATOEPWAUpdate;
     if(!api||typeof api.apply!=='function'){currentStatus='error';statusDetail=t('updateUnavailable','خدمة التحديث غير متاحة في هذا المتصفح.');rerender();return;}
     currentStatus='updating';rerender();api.apply();
   }
-  document.addEventListener('click',function(event){var button=event.target&&event.target.closest&&event.target.closest('[data-pet-about-action]');if(!button)return;var action=button.getAttribute('data-pet-about-action');if(action==='check')check();if(action==='update')update();if(action==='copy-trace')copyTrace();});
+  document.addEventListener('click',function(event){var button=event.target&&event.target.closest&&event.target.closest('[data-pet-about-action]');if(!button)return;var action=button.getAttribute('data-pet-about-action');if(action==='check')check();if(action==='update')update();if(action==='copy-trace')copyTrace();if(action==='clear-cache')clearCacheAndReload();if(action==='reload')reloadApp();});
   window.addEventListener('petatoe:pwa-update-status',function(event){var detail=event.detail||{};if(detail.status==='available')currentStatus='available';else if(detail.status==='updating')currentStatus='updating';else if(detail.status==='updated')currentStatus='updated';else if(detail.status==='error'){currentStatus='error';statusDetail=detail.message||'';}if(detail.checkedAt)lastCheckAt=new Date(detail.checkedAt);rerender();});
   window.addEventListener('petatoe:language-changed',rerender);
   window.PETATOEAboutApp={renderInto:renderInto,checkForUpdates:check,version:version,buildNumber:BUILD_NUMBER,releaseDate:RELEASE_DATE};
