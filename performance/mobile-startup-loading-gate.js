@@ -8,6 +8,31 @@
   var groups = Object.create(null);
   var states = Object.create(null);
   var startupInteractive = document.readyState !== 'loading';
+
+  var mobileBootFinished = false;
+  var mobileBootStartedAt = Date.now();
+  var mobileBootDeadlineId = 0;
+
+  function finishBoot(reason){
+    if(mobileBootFinished) return;
+    mobileBootFinished = true;
+    if(mobileBootDeadlineId) window.clearTimeout(mobileBootDeadlineId);
+    document.documentElement.classList.remove('pet-mobile-booting');
+    try{ window.dispatchEvent(new CustomEvent('petatoe:mobile-boot-ready',{detail:{reason:reason||'shell-ready',duration:Date.now()-mobileBootStartedAt}})); }catch(_){}
+  }
+
+  function armBootDeadline(){
+    if(!isMobile || mobileBootFinished) return;
+    mobileBootDeadlineId = window.setTimeout(function(){ finishBoot('safety-deadline'); }, 1100);
+  }
+
+  function scheduleCriticalShellRelease(){
+    if(!isMobile) return;
+    var release=function(){ window.requestAnimationFrame(function(){ window.requestAnimationFrame(function(){ finishBoot('critical-shell-painted'); }); }); };
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',release,{once:true}); else release();
+    armBootDeadline();
+  }
+
   var aliases = {
     operation: 'operations', operations: 'operations', appointments: 'operations',
     payroll: 'payroll', salarySlip: 'payroll', commissionStatement: 'payroll',
@@ -203,8 +228,11 @@
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
     normalizeGroup: normalizeGroup,
-    snapshot: snapshot
+    snapshot: snapshot,
+    finishBoot: finishBoot,
+    armBootDeadline: armBootDeadline
   };
 
   installTriggers();
+  scheduleCriticalShellRelease();
 })();
