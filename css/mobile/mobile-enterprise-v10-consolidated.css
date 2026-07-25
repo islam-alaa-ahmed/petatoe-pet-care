@@ -2052,3 +2052,70 @@
 }
 @media (max-width:760px){body.pet-v10-mobile-redesign-m1 .topbar{direction:ltr !important;}body.pet-v10-mobile-redesign-m1 .pet-v10-header-copy{direction:ltr !important;}}
 
+
+
+/* ===== Phase P7.2 — Independent Mobile Presentation Shell =====
+   Mobile chrome owns a dedicated root. Desktop header/sidebar remain in the
+   desktop DOM for desktop only and are never used as mobile presentation. */
+html.petatoe-mobile-device {
+  --pet-mobile-content-offset: calc(var(--pet-v10-safe-top, env(safe-area-inset-top, 0px)) + var(--pet-v10-header-h, 70px) + 12px);
+}
+html.petatoe-mobile-device body > .topbar,
+html.petatoe-mobile-device body > #sidebar,
+html.petatoe-mobile-device body > #overlay {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+html.petatoe-mobile-device .pet-v10-mobile-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147481900;
+  pointer-events: none;
+  contain: layout style;
+}
+html.petatoe-mobile-device .pet-v10-mobile-root[aria-hidden="true"] { display:none !important; }
+html.petatoe-mobile-device .pet-v10-mobile-header {
+  pointer-events: auto;
+  position: fixed;
+  z-index: 2147482100;
+  top: 0;
+  right: 0;
+  left: 0;
+  min-height: calc(var(--pet-v10-header-h, 70px) + var(--pet-v10-safe-top, env(safe-area-inset-top, 0px)));
+  height: calc(var(--pet-v10-header-h, 70px) + var(--pet-v10-safe-top, env(safe-area-inset-top, 0px)));
+  padding: calc(var(--pet-v10-safe-top, env(safe-area-inset-top, 0px)) + 8px) calc(var(--pet-v10-safe-right, env(safe-area-inset-right, 0px)) + 12px) 8px calc(var(--pet-v10-safe-left, env(safe-area-inset-left, 0px)) + 12px);
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto auto;
+  align-items: center;
+  gap: 9px;
+  overflow: visible;
+  border-bottom: 1px solid var(--pet-v10-border, rgba(255,255,255,.13));
+  background: rgba(8,15,29,.92);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  backdrop-filter: blur(24px) saturate(150%);
+  box-shadow: 0 10px 30px rgba(2,6,23,.24);
+  direction: ltr;
+}
+html.petatoe-mobile-device .pet-v10-mobile-header .pet-v10-header-menu { grid-column:1; }
+html.petatoe-mobile-device .pet-v10-mobile-header .pet-v10-header-brand { grid-column:2; }
+html.petatoe-mobile-device .pet-v10-mobile-header .pet-v10-header-copy { grid-column:3; }
+html.petatoe-mobile-device .pet-v10-mobile-header .pet-v10-theme-toggle { grid-column:4; }
+html.petatoe-mobile-device .pet-v10-mobile-root .pet-v10-bottom-nav,
+html.petatoe-mobile-device .pet-v10-mobile-root .pet-v10-drawer,
+html.petatoe-mobile-device .pet-v10-mobile-root .pet-v10-drawer-backdrop { pointer-events:auto; }
+html.petatoe-mobile-device body .main {
+  padding-top: var(--pet-mobile-content-offset) !important;
+}
+html.petatoe-mobile-device[data-petatoe-orientation="landscape"] .pet-v10-mobile-header {
+  padding-right: calc(var(--pet-v10-safe-right, env(safe-area-inset-right, 0px)) + 16px);
+  padding-left: calc(var(--pet-v10-safe-left, env(safe-area-inset-left, 0px)) + 16px);
+}
+html[data-theme="light"].petatoe-mobile-device .pet-v10-mobile-header {
+  background: rgba(248,250,252,.92);
+  border-bottom-color: rgba(15,23,42,.12);
+  box-shadow: 0 10px 30px rgba(15,23,42,.12);
+}
+@media (min-width:761px) and (hover:hover) and (pointer:fine) {
+  .pet-v10-mobile-root { display:none !important; }
+}
