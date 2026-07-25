@@ -155,5 +155,5 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
   mq.addEventListener&&mq.addEventListener('change',function(e){if(e.matches)init();else {closeDrawer();document.body.classList.remove('pet-v10-mobile-redesign-m1');}});
-  window.PETATOEMobileV10={version:'10.0.21-mobile-main-menu-redesign-n3',openDrawer:openDrawer,closeDrawer:closeDrawer,openTab:openTab};
+  window.PETATOEMobileV10={version:'10.0.22-mobile-main-menu-redesign-n3',openDrawer:openDrawer,closeDrawer:closeDrawer,openTab:openTab};
 })();

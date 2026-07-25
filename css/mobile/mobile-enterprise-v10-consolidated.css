@@ -1448,7 +1448,7 @@
   }
 }
 
-/* PETATOE v10.0.21 — Mobile Main Menu Redesign N3 */
+/* PETATOE v10.0.22 — Mobile Main Menu Redesign N3 */
 @media (max-width:760px){
   .pet-v10-drawer{
     width:min(88vw,350px)!important;
@@ -1517,4 +1517,55 @@
   html[data-theme="light"] .pet-v10-drawer-section-title{color:#64748b!important}
   html[data-theme="light"] .pet-v10-menu-chevron{color:#94a3b8!important}
   html[data-theme="light"] .pet-v10-drawer-item.active{background:#f3efff!important;border-color:#ddd6fe!important;color:#111827!important}
+}
+
+/* PETATOE v10.0.22 — Mobile dashboard controls hotfix (phone only) */
+@media (max-width: 760px) {
+  /* Remove leaked legacy controls below the canonical mobile header. */
+  body.pet-v10-mobile #topbarSearch,
+  body.pet-v10-mobile #topPawBackToTopBtn,
+  body.pet-v10-mobile .topbar .pet-topbar-search-icon,
+  body.pet-v10-mobile .topbar .top-paw-up-btn,
+  body.pet-v10-mobile #dashboard > .section-head > div:last-child,
+  body.pet-v10-mobile #dashboard > .pet-v10-dashboard-toolbar,
+  body.pet-v10-mobile .pet-v10-dashboard-filter-backdrop {
+    display: none !important;
+  }
+
+  /* The old multi-filter panel is intentionally disabled on the mobile home screen. */
+  body.pet-v10-mobile #dashboard > .filters {
+    display: none !important;
+  }
+
+  /* Keep only the working year selector directly below payroll shortcuts. */
+  body.pet-v10-mobile #dashboard > .pet-v10-dashboard-year-control {
+    display: grid !important;
+    gap: 8px !important;
+    margin: 0 0 12px !important;
+    padding: 12px !important;
+    border: 1px solid rgba(148,163,184,.18) !important;
+    border-radius: 17px !important;
+    background: rgba(15,23,42,.58) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.05) !important;
+  }
+  body.pet-v10-mobile #dashboard > .pet-v10-dashboard-year-control label {
+    margin: 0 !important;
+    color: var(--pet-v10-muted, #94a3b8) !important;
+    font: 800 11px/1.3 Cairo, system-ui !important;
+  }
+  body.pet-v10-mobile #dashboard > .pet-v10-dashboard-year-control #fYear {
+    width: 100% !important;
+    min-height: 48px !important;
+    margin: 0 !important;
+    border-radius: 15px !important;
+    font: 800 12px/1.2 Cairo, system-ui !important;
+  }
+
+  html[data-theme="light"] body.pet-v10-mobile #dashboard > .pet-v10-dashboard-year-control {
+    background: rgba(255,255,255,.82) !important;
+    border-color: rgba(15,23,42,.12) !important;
+  }
+  html[data-theme="light"] body.pet-v10-mobile #dashboard > .pet-v10-dashboard-year-control label {
+    color: #475569 !important;
+  }
 }

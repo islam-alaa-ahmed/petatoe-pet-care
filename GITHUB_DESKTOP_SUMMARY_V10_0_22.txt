@@ -1,0 +1,8 @@
+PETATOE v10.0.22 — Mobile Dashboard Controls Hotfix
+
+- Removed the leaked legacy search and paw/back-to-top controls below the mobile header.
+- Removed the non-working mobile dashboard filter trigger and filter sheet.
+- Preserved the working year selector and moved it directly below Payroll Management and Salary Slip shortcuts.
+- Limited all layout changes to phone screens only.
+- Preserved desktop/tablet behavior, dashboard calculations, permissions, Supabase, SQL, and navigation.
+- Synchronized release metadata to PETATOE v10.0.22 / PETATOE_V10_0_22_MOBILE_DASHBOARD_CONTROLS_HOTFIX.

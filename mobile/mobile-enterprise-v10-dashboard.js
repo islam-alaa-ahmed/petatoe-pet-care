@@ -17,76 +17,52 @@
     return fallback;
   }
 
-  function icon() {
-    return '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/><circle cx="7" cy="6" r="1.5"/><circle cx="15" cy="12" r="1.5"/><circle cx="12" cy="18" r="1.5"/></svg>';
-  }
-
-  function activeFilterCount() {
-    if (!filters) return 0;
-    var count = 0;
-    filters.querySelectorAll('select').forEach(function (select) {
-      var value = String(select.value || '');
-      if (value && value !== 'all') count += 1;
+  function removeLegacyMobileDashboardControls() {
+    document.querySelectorAll('.pet-v10-dashboard-toolbar, .pet-v10-dashboard-filter-backdrop').forEach(function (node) {
+      node.remove();
     });
-    return count;
-  }
-
-  function updateTrigger() {
-    if (!trigger || !countBadge) return;
-    var count = activeFilterCount();
-    countBadge.textContent = String(count);
-    countBadge.hidden = count === 0;
-    var label = trigger.querySelector('.pet-v10-dashboard-filter-label');
-    if (label) label.textContent = t('dashboard.period', 'Period');
-    trigger.setAttribute('aria-label', t('dashboard.period', 'Period'));
-  }
-
-  function closeFilters() {
     document.body.classList.remove('pet-v10-dashboard-filter-open');
-    if (trigger) trigger.setAttribute('aria-expanded', 'false');
   }
 
-  function openFilters() {
-    document.body.classList.add('pet-v10-dashboard-filter-open');
-    if (trigger) trigger.setAttribute('aria-expanded', 'true');
-  }
-
-  function buildFilterSheet() {
+  function configureMobileDashboardFilters() {
     dashboard = document.getElementById('dashboard');
-    if (!dashboard || dashboard.dataset.petV10DashboardReady === '1') return;
+    if (!dashboard) return;
     filters = dashboard.querySelector(':scope > .filters');
     if (!filters) return;
 
-    var toolbar = document.createElement('div');
-    toolbar.className = 'pet-v10-dashboard-toolbar';
+    var yearSelect = document.getElementById('fYear');
+    var payrollAccess = dashboard.querySelector(':scope > .payroll-home-access');
+    var ytdBanner = document.getElementById('ytdBanner');
+    if (!yearSelect || !payrollAccess) return;
 
-    trigger = document.createElement('button');
-    trigger.type = 'button';
-    trigger.className = 'pet-v10-dashboard-filter-trigger';
-    trigger.setAttribute('aria-expanded', 'false');
-    trigger.innerHTML = icon() + '<span class="pet-v10-dashboard-filter-label"></span><span class="pet-v10-dashboard-filter-count" hidden>0</span>';
-    toolbar.appendChild(trigger);
-    filters.parentNode.insertBefore(toolbar, filters);
+    removeLegacyMobileDashboardControls();
 
-    var backdrop = document.createElement('div');
-    backdrop.className = 'pet-v10-dashboard-filter-backdrop';
-    backdrop.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(backdrop);
-
-    trigger.addEventListener('click', function () {
-      if (document.body.classList.contains('pet-v10-dashboard-filter-open')) closeFilters();
-      else openFilters();
-    });
-    backdrop.addEventListener('click', closeFilters);
-    filters.addEventListener('change', updateTrigger);
-    filters.addEventListener('click', function (event) {
-      if (event.target.closest('[data-pet-action="dashboard-reset"]')) {
-        window.setTimeout(function () { updateTrigger(); closeFilters(); }, 0);
-      }
-    });
-    document.addEventListener('keydown', function (event) { if (event.key === 'Escape') closeFilters(); });
+    var yearControl = dashboard.querySelector(':scope > .pet-v10-dashboard-year-control');
+    if (!yearControl) {
+      yearControl = document.createElement('div');
+      yearControl.className = 'pet-v10-dashboard-year-control';
+      var label = document.createElement('label');
+      label.setAttribute('for', 'fYear');
+      label.setAttribute('data-i18n', 'smart.year');
+      label.textContent = t('smart.year', 'Year');
+      yearControl.appendChild(label);
+      if (ytdBanner) dashboard.insertBefore(yearControl, ytdBanner);
+      else payrollAccess.insertAdjacentElement('afterend', yearControl);
+    }
+    yearControl.appendChild(yearSelect);
     dashboard.dataset.petV10DashboardReady = '1';
-    updateTrigger();
+  }
+
+  function restoreDesktopDashboardFilters() {
+    dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+    filters = dashboard.querySelector(':scope > .filters');
+    var yearSelect = document.getElementById('fYear');
+    var yearControl = dashboard.querySelector(':scope > .pet-v10-dashboard-year-control');
+    if (filters && yearSelect && yearSelect.parentElement !== filters) filters.insertBefore(yearSelect, filters.firstChild);
+    if (yearControl) yearControl.remove();
+    dashboard.removeAttribute('data-pet-v10-dashboard-ready');
+    removeLegacyMobileDashboardControls();
   }
 
   function tuneChartInstance(id, instance) {
@@ -141,7 +117,7 @@
   function boot() {
     if (!isPhone()) return;
     document.body.classList.add('pet-v10-mobile');
-    buildFilterSheet();
+    configureMobileDashboardFilters();
     window.setTimeout(tuneDashboardCharts, 100);
     window.setTimeout(tuneDashboardCharts, 700);
     window.setTimeout(tuneDashboardCharts, 1800);
@@ -156,7 +132,7 @@
   else boot();
 
   window.addEventListener('resize', function () {
-    if (isPhone()) { document.body.classList.add('pet-v10-mobile'); tuneDashboardCharts(); }
-    else { document.body.classList.remove('pet-v10-mobile', 'pet-v10-dashboard-filter-open'); }
+    if (isPhone()) { document.body.classList.add('pet-v10-mobile'); configureMobileDashboardFilters(); tuneDashboardCharts(); }
+    else { document.body.classList.remove('pet-v10-mobile', 'pet-v10-dashboard-filter-open'); restoreDesktopDashboardFilters(); }
   }, { passive: true });
 })();

@@ -212,5 +212,5 @@
 
   if (mq.addEventListener) mq.addEventListener('change', viewportChange);
   if (reduceMotion.addEventListener) reduceMotion.addEventListener('change', syncMotionPreference);
-  window.PETATOEMobileNavigationPerformance = { version: '10.0.21-mobile-main-menu-redesign-n3', history: function(){ return routeHistory.slice(); }, latest: function(){ return routeHistory.length ? Object.assign({}, routeHistory[routeHistory.length - 1]) : null; } };
+  window.PETATOEMobileNavigationPerformance = { version: '10.0.22-mobile-main-menu-redesign-n3', history: function(){ return routeHistory.slice(); }, latest: function(){ return routeHistory.length ? Object.assign({}, routeHistory[routeHistory.length - 1]) : null; } };
 })();
