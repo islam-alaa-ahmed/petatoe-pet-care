@@ -1,4 +1,4 @@
-/* PETATOE Mobile Enterprise UI v10 — P7.3 Independent Mobile Dashboard */
+/* PETATOE Mobile Enterprise UI v10 — P7.3.1 Single Mobile Scroll Ownership */
 (function () {
   'use strict';
 
@@ -6,7 +6,6 @@
   var dashboard = null;
   var originalParent = null;
   var originalNextSibling = null;
-  var mobileHost = null;
   var originalRenderDashboardCharts = null;
   var chartOverrideInstalled = false;
 
@@ -24,18 +23,34 @@
     return fallback;
   }
 
-  function ensureMobileDashboardHost() {
-    var root = document.getElementById('petV10MobileRoot');
-    if (!root) return null;
-    mobileHost = document.getElementById('petV10MobileDashboardHost');
-    if (!mobileHost) {
-      mobileHost = document.createElement('main');
-      mobileHost.id = 'petV10MobileDashboardHost';
-      mobileHost.className = 'pet-v10-mobile-dashboard-host';
-      mobileHost.setAttribute('data-pet-mobile-presentation', 'dashboard');
-      root.appendChild(mobileHost);
+  function rememberDashboardPosition() {
+    dashboard = document.getElementById('dashboard');
+    if (!dashboard || originalParent) return;
+    originalParent = dashboard.parentNode;
+    originalNextSibling = dashboard.nextSibling;
+  }
+
+  function restoreDashboardToApplicationFlow() {
+    dashboard = document.getElementById('dashboard');
+    if (!dashboard) return;
+
+    if (!originalParent) {
+      var main = document.querySelector('body > .main, .main');
+      if (main && !main.contains(dashboard)) originalParent = main;
+      else originalParent = dashboard.parentNode;
+      originalNextSibling = dashboard.nextSibling;
     }
-    return mobileHost;
+
+    if (originalParent && dashboard.parentNode !== originalParent) {
+      if (originalNextSibling && originalNextSibling.parentNode === originalParent) {
+        originalParent.insertBefore(dashboard, originalNextSibling);
+      } else {
+        originalParent.appendChild(dashboard);
+      }
+    }
+
+    var legacyHost = document.getElementById('petV10MobileDashboardHost');
+    if (legacyHost && !legacyHost.children.length) legacyHost.remove();
   }
 
   function removeLegacyMobileDashboardControls() {
@@ -107,30 +122,23 @@
     chartOverrideInstalled = true;
   }
 
-  function mountIndependentMobileDashboard() {
+  function mountMobileDashboardInApplicationFlow() {
+    rememberDashboardPosition();
+    restoreDashboardToApplicationFlow();
     dashboard = document.getElementById('dashboard');
-    var host = ensureMobileDashboardHost();
-    if (!dashboard || !host) return;
+    if (!dashboard) return;
 
-    if (!originalParent) {
-      originalParent = dashboard.parentNode;
-      originalNextSibling = dashboard.nextSibling;
-    }
-    if (dashboard.parentNode !== host) host.appendChild(dashboard);
     dashboard.classList.add('pet-v10-independent-dashboard');
-    dashboard.setAttribute('data-pet-mobile-dashboard', 'independent');
+    dashboard.setAttribute('data-pet-mobile-dashboard', 'in-flow');
     configureMobileDashboardFilters();
     installLightweightChartGuard();
     destroyDashboardCharts();
   }
 
   function restoreDesktopDashboard() {
+    restoreDashboardToApplicationFlow();
     dashboard = document.getElementById('dashboard');
-    if (!dashboard || !originalParent) return;
-    if (dashboard.parentNode !== originalParent) {
-      if (originalNextSibling && originalNextSibling.parentNode === originalParent) originalParent.insertBefore(dashboard, originalNextSibling);
-      else originalParent.appendChild(dashboard);
-    }
+    if (!dashboard) return;
     dashboard.classList.remove('pet-v10-independent-dashboard');
     dashboard.removeAttribute('data-pet-mobile-dashboard');
     restoreDesktopDashboardFilters();
@@ -139,7 +147,7 @@
   function syncOwnership() {
     if (isPhone()) {
       document.body.classList.add('pet-v10-mobile', 'pet-v10-independent-dashboard-active');
-      mountIndependentMobileDashboard();
+      mountMobileDashboardInApplicationFlow();
     } else {
       document.body.classList.remove('pet-v10-mobile', 'pet-v10-independent-dashboard-active', 'pet-v10-dashboard-filter-open');
       restoreDesktopDashboard();
@@ -147,10 +155,11 @@
   }
 
   function boot() {
+    rememberDashboardPosition();
     syncOwnership();
     document.addEventListener('petatoe:tabchange', function (event) {
       var tab = event && event.detail && event.detail.tabId;
-      if (isPhone() && tab === 'dashboard') window.requestAnimationFrame(mountIndependentMobileDashboard);
+      if (isPhone() && tab === 'dashboard') window.requestAnimationFrame(mountMobileDashboardInApplicationFlow);
     });
     document.addEventListener('petatoe:records-changed', function () {
       if (isPhone()) window.requestAnimationFrame(function () {
