@@ -1,0 +1,115 @@
+/* PETATOE v10.0.25 — Phase B1 first-paint mobile shell.
+   This file is intentionally small and independent from desktop presentation CSS. */
+@media (max-width:760px), (max-height:600px) and (hover:none) and (pointer:coarse) {
+  :root {
+    --pet-b1-safe-top: env(safe-area-inset-top, 0px);
+    --pet-b1-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --pet-b1-header-height: 64px;
+    --pet-b1-nav-height: 76px;
+  }
+  html,
+  body {
+    min-height:100%;
+    margin:0;
+    background:linear-gradient(160deg,#0c2544 0%,#091b33 52%,#061224 100%);
+    color:#f8fafc;
+  }
+  html.petatoe-mobile-device body,
+  html.pet-mobile-booting body { overflow-x:hidden; }
+  html.petatoe-mobile-device #petatoeLoader,
+  html.pet-mobile-booting #petatoeLoader { display:none!important;visibility:hidden!important; }
+  html.petatoe-mobile-device .topbar,
+  html.petatoe-mobile-device #sidebar,
+  html.petatoe-mobile-device #overlay,
+  html.petatoe-mobile-device #nav,
+  html.pet-mobile-booting .topbar,
+  html.pet-mobile-booting #sidebar,
+  html.pet-mobile-booting #overlay,
+  html.pet-mobile-booting #nav { display:none!important;visibility:hidden!important;pointer-events:none!important; }
+  #petV10MobileRoot.pet-v10-first-paint-root {
+    position:fixed;
+    inset:0;
+    z-index:2147483000;
+    display:block;
+    pointer-events:none;
+    background:linear-gradient(160deg,#0c2544 0%,#091b33 52%,#061224 100%);
+  }
+  .pet-v10-first-paint-shell { position:absolute;inset:0;overflow:hidden; }
+  .pet-v10-first-paint-header {
+    position:absolute;
+    inset:0 0 auto 0;
+    height:calc(var(--pet-b1-header-height) + var(--pet-b1-safe-top));
+    padding:calc(var(--pet-b1-safe-top) + 8px) 14px 8px;
+    box-sizing:border-box;
+    display:grid;
+    grid-template-columns:48px 48px minmax(0,1fr) 48px;
+    align-items:center;
+    gap:8px;
+    background:linear-gradient(135deg,rgba(17,40,70,.96),rgba(11,29,54,.92));
+    border-bottom:1px solid rgba(148,163,184,.22);
+    box-shadow:0 12px 38px rgba(0,0,0,.24);
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+  }
+  .pet-v10-first-paint-button,
+  .pet-v10-first-paint-brand {
+    width:44px;height:44px;border-radius:15px;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.14);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .pet-v10-first-paint-brand img { width:38px;height:38px;border-radius:12px;display:block; }
+  .pet-v10-first-paint-menu { flex-direction:column;gap:4px; }
+  .pet-v10-first-paint-menu i { width:18px;height:2px;border-radius:999px;background:#e2e8f0;display:block; }
+  .pet-v10-first-paint-theme::before {
+    content:"";width:18px;height:18px;border-radius:50%;
+    border:2px solid #e2e8f0;box-sizing:border-box;
+    box-shadow:7px -5px 0 -4px #e2e8f0;
+  }
+  .pet-v10-first-paint-title { min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:6px;padding-inline:4px; }
+  .pet-v10-first-paint-title b { font:900 15px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.04em; }
+  .pet-v10-first-paint-title small,
+  .pet-v10-first-paint-line,
+  .pet-v10-first-paint-cards span,
+  .pet-v10-first-paint-nav span { position:relative;overflow:hidden;background:rgba(148,163,184,.15); }
+  .pet-v10-first-paint-title small { width:72px;height:7px;border-radius:999px; }
+  .pet-v10-first-paint-content {
+    position:absolute;
+    inset:calc(var(--pet-b1-header-height) + var(--pet-b1-safe-top) + 16px) 16px calc(var(--pet-b1-nav-height) + var(--pet-b1-safe-bottom) + 16px);
+  }
+  .pet-v10-first-paint-line { display:block;width:56%;height:14px;border-radius:999px;margin-bottom:12px; }
+  .pet-v10-first-paint-line-wide { width:82%;height:20px; }
+  .pet-v10-first-paint-cards { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:24px; }
+  .pet-v10-first-paint-cards span { height:136px;border-radius:24px;border:1px solid rgba(148,163,184,.14); }
+  .pet-v10-first-paint-title small::after,
+  .pet-v10-first-paint-line::after,
+  .pet-v10-first-paint-cards span::after,
+  .pet-v10-first-paint-nav span::after {
+    content:"";position:absolute;inset:0;transform:translateX(-110%);
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.16),transparent);
+    animation:petB1Shimmer 1.25s ease-in-out infinite;
+  }
+  .pet-v10-first-paint-nav {
+    position:absolute;
+    left:12px;right:12px;bottom:calc(8px + var(--pet-b1-safe-bottom));
+    height:var(--pet-b1-nav-height);
+    padding:8px;
+    box-sizing:border-box;
+    display:grid;grid-template-columns:repeat(5,1fr);gap:6px;
+    border-radius:26px;
+    background:rgba(7,24,45,.92);
+    border:1px solid rgba(148,163,184,.22);
+    box-shadow:0 18px 44px rgba(0,0,0,.34);
+    backdrop-filter:blur(18px) saturate(140%);
+    -webkit-backdrop-filter:blur(18px) saturate(140%);
+  }
+  .pet-v10-first-paint-nav span { border-radius:18px; }
+  body.pet-v10-mobile .pet-v10-first-paint-shell { opacity:0;visibility:hidden;transition:opacity .16s ease,visibility 0s linear .16s; }
+  body.pet-v10-mobile #petV10MobileRoot.pet-v10-first-paint-root { position:relative;inset:auto;background:transparent;pointer-events:none; }
+  body.pet-v10-mobile #petV10MobileRoot.pet-v10-first-paint-root > :not(.pet-v10-first-paint-shell) { pointer-events:auto; }
+  @keyframes petB1Shimmer { 100% { transform:translateX(110%); } }
+}
+@media (min-width:761px) and (hover:hover) and (pointer:fine) {
+  #petV10MobileRoot.pet-v10-first-paint-root { display:none!important; }
+}

@@ -114,6 +114,14 @@
   function iconFromLabel(label){ var m=(label||'').match(/[\p{Extended_Pictographic}\u2600-\u27BF]/u); return m?m[0]:'•'; }
   function cleanLabel(label){ return String(label||'').replace(/[\p{Extended_Pictographic}\u2600-\u27BF]/gu,'').replace(/\s+/g,' ').trim(); }
 
+  function clearFirstPaintShell(){
+    var root=document.getElementById('petV10MobileRoot');
+    if(!root)return;
+    var shell=root.querySelector('.pet-v10-first-paint-shell');
+    if(shell&&shell.parentNode)shell.parentNode.removeChild(shell);
+    root.classList.remove('pet-v10-first-paint-root');
+  }
+
   function buildHeader(){
     var root=mobileRoot();
     var header=root.querySelector('.pet-v10-mobile-header');
@@ -270,7 +278,15 @@
     if(badge){badge.textContent=String(count>99?'99+':count);badge.classList.toggle('visible',count>0);}
   }
   var lifecycleBound=false;
-  function init(){ if(!isMobileDevice())return; clearLegacyNavigation(); document.body.classList.add('pet-v10-mobile','pet-v10-mobile-redesign-m1'); mobileRoot().removeAttribute('aria-hidden'); buildHeader();suppressLegacyMobileChrome();buildBottomNav();buildDrawer();setupDynamicChrome();syncIdentity();
+  function initFirstPaint(){
+    if(!isMobileDevice()||!document.body)return;
+    document.body.classList.add('pet-v10-mobile','pet-v10-mobile-redesign-m1');
+    mobileRoot().removeAttribute('aria-hidden');
+    buildHeader();
+    buildBottomNav();
+    clearFirstPaintShell();
+  }
+  function init(){ if(!isMobileDevice())return; initFirstPaint(); clearLegacyNavigation(); suppressLegacyMobileChrome();buildDrawer();setupDynamicChrome();syncIdentity();
     if(!lifecycleBound){
       lifecycleBound=true;
       document.addEventListener('petatoe:tabchange',function(e){clearLegacyNavigation();syncActive(e.detail&&e.detail.tabId||currentTab());});
@@ -290,6 +306,7 @@
       });
     }
   }
+  initFirstPaint();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true}); else init();
   window.addEventListener('petatoe:device-profile-change',function(e){
     if(e.detail&&e.detail.mobile)init();
