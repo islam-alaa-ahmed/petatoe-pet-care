@@ -16,9 +16,25 @@
     try { document.dispatchEvent(new CustomEvent(name, { detail: detail || {} })); } catch (_) {}
   }
 
+  function isPhysicalPhoneLayout() {
+    try {
+      if (window.PETATOEDeviceProfile && typeof window.PETATOEDeviceProfile.isMobileDevice === 'function') {
+        return !!window.PETATOEDeviceProfile.isMobileDevice();
+      }
+      return !!(window.matchMedia && window.matchMedia('(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)').matches);
+    } catch (_) {
+      return false;
+    }
+  }
+
   function hideLegacyLoader() {
     var loader = document.getElementById('petatoeLoader');
-    if (loader) window.setTimeout(function () { loader.classList.add('hidden'); }, 650);
+    if (!loader) return;
+    if (isPhysicalPhoneLayout()) {
+      loader.classList.add('hidden');
+      return;
+    }
+    window.setTimeout(function () { loader.classList.add('hidden'); }, 650);
   }
 
   async function bootDashboard() {
