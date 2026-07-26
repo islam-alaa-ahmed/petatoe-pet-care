@@ -7,6 +7,7 @@
 <script src="i18n/bootstrap.js?v=9.0.0-elc-phase6a"></script>
 <script src="core/mobile-device-profile.js?v=10.0.25-p7-1"></script>
 <script src="performance/mobile-startup-loading-gate.js?v=10.0.25-b2-device-gated-boot-manifest"></script>
+<script src="performance/mobile-critical-css-gate.js?v=10.0.25-b3-critical-css-split"></script>
 <script>
 (function(){
   try{
@@ -68,19 +69,19 @@ html.pet-mobile-booting::after{content:none!important;display:none!important;}
 <link href="css/main.css" rel="stylesheet"/>
 <link href="css/components/theme.css" rel="stylesheet"/>
 <!-- extracted style: petatoe-recovery-notes-style -> css/extracted/recovery-notes-style.css -->
-<link href="css/components/filters.css" rel="stylesheet"/>
-<link href="css/components/reports.css" rel="stylesheet"/>
+<script>window.PETATOEMobileCriticalCssGate.writeOrDefer('css/components/filters.css');</script>
+<script>window.PETATOEMobileCriticalCssGate.writeOrDefer('css/components/reports.css');</script>
 <link href="css/themes/liquid-glass.css" rel="stylesheet"/>
-<link href="css/components/smart-reports-isolation.css" rel="stylesheet"/>
+<script>window.PETATOEMobileCriticalCssGate.writeOrDefer('css/components/smart-reports-isolation.css');</script>
 <link href="css/components/home-apple-glass-buttons.css" rel="stylesheet"/>
-<link href="css/components/obligations-tabs.css" rel="stylesheet"/>
-<link href="css/components/payroll.css" rel="stylesheet"/>
-<link href="css/children-expenses/children-expenses.css" rel="stylesheet"/>
-<link href="css/operations/operations.css?v=6.4.84" rel="stylesheet"/>
+<script>window.PETATOEMobileCriticalCssGate.writeOrDefer('css/components/obligations-tabs.css');</script>
+<script>window.PETATOEMobileCriticalCssGate.writeOrDefer('css/components/payroll.css');</script>
+<script>window.PETATOEMobileCriticalCssGate.writeOrDefer('css/children-expenses/children-expenses.css');</script>
+<script>window.PETATOEMobileCriticalCssGate.writeOrDefer('css/operations/operations.css?v=6.4.84');</script>
 <link href="css/navigation/navigation.css" rel="stylesheet"/>
 <link href="css/i18n/direction.css?v=9.0.0-elc-phase6a" rel="stylesheet"/>
 <link href="css/i18n/ltr.css?v=9.0.0-elc-phase6a" rel="stylesheet"/>
-<link href="css/i18n/localization-center.css?v=9.0.0-elc-phase6a" rel="stylesheet"/>
+<script>window.PETATOEMobileCriticalCssGate.writeOrDefer('css/i18n/localization-center.css?v=9.0.0-elc-phase6a');</script>
 <link href="css/core/module-boundary-guards.css" rel="stylesheet"/>
 <!-- Mobile M1/M2 rules were consolidated into the v10 mobile stylesheet in Phase P5. -->
 <link href="css/mobile/mobile-about-app.css?v=10.0.25-navigation-runtime-isolation-c2-3" rel="stylesheet"/>
@@ -551,7 +552,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
   .print-dark,.petatoe-print-dark,#petatoe-print-root{ -webkit-print-color-adjust:exact!important; print-color-adjust:exact!important; }
 }
 </style>
-<link href="css/settings/settings-layout-fix.css" rel="stylesheet"/>
+<script>window.PETATOEMobileCriticalCssGate.writeOrDefer('css/settings/settings-layout-fix.css');</script>
 
 <style>
 .vehicle-ops-direction{margin-top:12px;display:flex;align-items:center;justify-content:flex-start;gap:8px;flex-wrap:wrap;direction:ltr;text-align:left}
