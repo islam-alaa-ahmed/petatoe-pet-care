@@ -6,7 +6,7 @@
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
 <script src="i18n/bootstrap.js?v=9.0.0-elc-phase6a"></script>
 <script src="core/mobile-device-profile.js?v=10.0.25-p7-1"></script>
-<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-navigation-runtime-isolation-c2-3"></script>
+<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-b2-device-gated-boot-manifest"></script>
 <script>
 (function(){
   try{
@@ -3983,42 +3983,42 @@ function petatoeUpdateWhatIf(){
   });
 })();
 </script>
-<script src="smart/smart-reports-filters-real.js?v=9.1.8-legacy-cleanup-pack2"></script>
-<script src="smart/smart-reports-new-customers-real.js?v=9.1.8-legacy-cleanup-pack1"></script>
-<script src="smart/smart-reports-performance-optimizer.js"></script>
-<script src="smart/smart-data-engine.js?v=9.4.20-translation-stability"></script>
-<script src="components/safe-render-helpers.js"></script>
-<script src="smart/smart-services.js"></script>
-<script src="smart/smart-vehicles.js?v=9.1.8-legacy-cleanup-pack1"></script>
-<script src="smart/smart-customers.js"></script>
-<script src="smart/smart-reports-core.js?v=9.4.20-translation-stability"></script>
-<script src="smart/smart-router.js?v=10.0.25-navigation-runtime-isolation-c2-3"></script>
-<script src="smart/smart-reports-interactions-real.js?v=9.0.0-elc-phase8g"></script>
-<script src="smart/smart-reports-export-engine.js?v=9.2.3-source-migration-pack2"></script>
-<script src="smart/smart-reports-facade.js"></script>
-<script src="smart/smart-integration.js"></script>
-<script src="inline-extracted/exec-alerts-block.js"></script>
-<script src="inline-extracted/bi-kpi-chart.js"></script>
-<script src="inline-extracted/customer360-return.js"></script>
-<script src="inline-extracted/customer360-runtime-data-binding-fix.js?v=9.1.7-business-pack2"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-filters-real.js?v=9.1.8-legacy-cleanup-pack2',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-new-customers-real.js?v=9.1.8-legacy-cleanup-pack1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-performance-optimizer.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-data-engine.js?v=9.4.20-translation-stability',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','components/safe-render-helpers.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-services.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-vehicles.js?v=9.1.8-legacy-cleanup-pack1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-customers.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-core.js?v=9.4.20-translation-stability',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-router.js?v=10.0.25-navigation-runtime-isolation-c2-3',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-interactions-real.js?v=9.0.0-elc-phase8g',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-export-engine.js?v=9.2.3-source-migration-pack2',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-facade.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-integration.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/exec-alerts-block.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/bi-kpi-chart.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/customer360-return.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/customer360-runtime-data-binding-fix.js?v=9.1.7-business-pack2',false);</script>
 <script src="security/password-security.js"></script>
-<script src="inline-extracted/smart-reports-inline.js"></script>
-<script src="inline-extracted/print-engine.js"></script>
-<script src="inline-extracted/at-risk-clients-export.js"></script>
-<script src="inline-extracted/one-time-recurring-modal.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/smart-reports-inline.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('printing','inline-extracted/print-engine.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/at-risk-clients-export.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/one-time-recurring-modal.js',false);</script>
 <!-- === PETATOE v3.5 FLEET MANAGEMENT - SAFE ADDITION === -->
 <script>window.PETATOEMobileStartupGate.registerOrWrite('fleet','inline-extracted/fleet-inline.js',false);</script>
 <!-- === /PETATOE v3.5 FLEET MANAGEMENT - SAFE ADDITION === -->
 <!-- === PETATOE v3.5 COMMISSION SYSTEM - APPEND ONLY === -->
-<script src="inline-extracted/commission-inline.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('commission','inline-extracted/commission-inline.js',false);</script>
 <!-- === /PETATOE v3.5 COMMISSION SYSTEM - APPEND ONLY === -->
-<script src="inline-extracted/commission-tab-visibility-fix.js"></script>
-<script src="smart/smart-tabs.js?v=9.4.20-translation-stability"></script>
-<script src="sales/duplicate-policy.js"></script>
-<script src="sales/import-engine.js"></script>
-<script src="sales/entry-references.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('commission','inline-extracted/commission-tab-visibility-fix.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-tabs.js?v=9.4.20-translation-stability',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/duplicate-policy.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/import-engine.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/entry-references.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('movement','inline-extracted/movement-center-inline.js',false);</script>
-<script src="sales/sales-crud-supabase-binding.js?v=8.0.2-sales-crud2-orderfix"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/sales-crud-supabase-binding.js?v=8.0.2-sales-crud2-orderfix',false);</script>
 <!-- === PETATOE v3.8.5 UNIVERSAL FULL PAGE PDF EXPORT - SAFE ADDITION === -->
 <script>
 (function(){
@@ -4462,9 +4462,9 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 })();
 </script>
 <!-- PETATOE v3.11.38: Sales Invoice, Obligations and Warehouse runtime moved to external modules. -->
-<script src="sales/sales-invoice-report.js?v=9.1.8-legacy-cleanup-pack1"></script>
-<script src="sales/invoice-print-preview.js"></script>
-<script src="sales/invoice-manual-multi-items.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/sales-invoice-report.js?v=9.1.8-legacy-cleanup-pack1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/invoice-print-preview.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/invoice-manual-multi-items.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('obligations','obligations/obligations-core.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','i18n/localization-center/payroll-ui-a3-4.js?v=9.4.23-a3-4',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','payroll/payroll-core.js?v=9.1.5',false);</script>
@@ -4594,11 +4594,11 @@ if(document.readyState==='loading') document.addEventListener('DOMContentLoaded'
 <!-- PETATOE v3.11.10: external component scripts formatted one-per-line for readable load order. -->
 <!-- === PETATOE v3.9.4E SALES INVOICE FILTERS RUNTIME SAFE FIX === -->
 <script src="components/petatoe-core-utils.js"></script>
-<script src="components/reports-engine.js"></script>
-<script src="components/cards-renderer.js"></script>
-<script src="components/tables-renderer.js"></script>
-<script src="components/kpi-renderer.js"></script>
-<script src="components/charts-renderer.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/reports-engine.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/cards-renderer.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/tables-renderer.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/kpi-renderer.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/charts-renderer.js',false);</script>
 <script>
 // PETATOE v5.1.58 Phase 2 - report logic QA helper; does not change data or UI
 window.PETATOEPhase2ReportLogicAudit=function(){
@@ -4619,16 +4619,16 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 };
 
 </script>
-<script src="components/heatmap-renderer.js"></script>
-<script src="components/reports-adapters.js"></script>
-<script src="components/filters-state.js"></script>
-<script src="components/filters-render.js"></script>
-<script src="components/filters-events.js"></script>
-<script src="components/filters-core.js"></script>
-<script src="components/filters-adapters.js"></script>
-<script src="components/buttons-core.js"></script>
-<script src="components/tables-core.js"></script>
-<script src="components/export-core.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/heatmap-renderer.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/reports-adapters.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/filters-state.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/filters-render.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/filters-events.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/filters-core.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/filters-adapters.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/buttons-core.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/tables-core.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/export-core.js',false);</script>
 <script data-petatoe-safe-micro-batch="v8.0.0-GA" defer="" src="components/export/export-core.js"></script>
 <script data-petatoe-safe-micro-batch="v8.0.0-GA" defer="" src="components/export/export-filters.js"></script>
 <script data-petatoe-safe-micro-batch="v8.0.0-GA" defer="" src="components/export/export-print.js"></script>

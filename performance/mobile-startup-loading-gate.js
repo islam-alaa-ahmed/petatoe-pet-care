@@ -41,7 +41,16 @@
     children: 'children', childrenExpenses: 'children',
     fleet: 'fleet', obligations: 'obligations', movement: 'movement', movementCenter: 'movement',
     settingsSetup: 'settingsSetup', localizationRemote: 'localizationRemote',
-    xlsx: 'xlsx', excel: 'xlsx', diagnostics: 'diagnostics', audit: 'diagnostics', observability: 'diagnostics'
+    xlsx: 'xlsx', excel: 'xlsx', diagnostics: 'diagnostics', audit: 'diagnostics', observability: 'diagnostics',
+    smartReports: 'smartReports', smart: 'smartReports', analytics: 'smartReports',
+    reportsUI: 'reportsUI', reports: 'reportsUI', printing: 'printing', print: 'printing', pdf: 'printing',
+    sales: 'sales', invoices: 'sales', commission: 'commission', commissions: 'commission'
+  };
+
+  var dependencies = {
+    smartReports: ['reportsUI'],
+    sales: ['reportsUI'],
+    printing: ['reportsUI']
   };
 
   function normalizeGroup(name){ return aliases[name] || name; }
@@ -124,9 +133,14 @@
     var queue = (groups[name] || []).slice();
     if(!queue.length) return Promise.resolve(false);
     var state = states[name] = { status: 'loading', startedAt: Date.now(), promise: null };
-    state.promise = queue.reduce(function(chain, item){
-      return chain.then(function(){ return loadOne(item); });
+    var dependencyQueue = (dependencies[name] || []).slice();
+    state.promise = dependencyQueue.reduce(function(chain, dependency){
+      return chain.then(function(){ return ensureGroup(dependency); });
     }, Promise.resolve()).then(function(){
+      return queue.reduce(function(chain, item){
+        return chain.then(function(){ return loadOne(item); });
+      }, Promise.resolve());
+    }).then(function(){
       state.status = 'loaded';
       state.finishedAt = Date.now();
       notify(name, true);
@@ -144,6 +158,11 @@
   function groupForElement(el){
     if(!el) return '';
     var text = [el.id, el.getAttribute && el.getAttribute('data-tab'), el.getAttribute && el.getAttribute('data-target'), el.getAttribute && el.getAttribute('href'), el.textContent].join(' ').toLowerCase();
+    if(/smartreport|smart-report|تحليل ذكي|التقارير الذكية|customer360|عميل 360/.test(text)) return 'smartReports';
+    if(/commission|عمولة|عمولات/.test(text)) return 'commission';
+    if(/salesinvoice|sales-invoice|invoice|فاتورة|فواتير|مبيعات/.test(text)) return 'sales';
+    if(/print|pdf|طباعة|تصدير الصفحة/.test(text)) return 'printing';
+    if(/report|analytics|dashboard report|تقرير|تقارير|تحليلات/.test(text)) return 'reportsUI';
     if(/appointment|operation|موعد|تشغيل/.test(text)) return 'operations';
     if(/fleet|أسطول/.test(text)) return 'fleet';
     if(/obligation|التزام|التزامات/.test(text)) return 'obligations';
@@ -161,6 +180,10 @@
   function groupForPanel(panel){
     if(!panel) return '';
     var marker = ((panel.id || '') + ' ' + (panel.getAttribute('data-pet-module') || '')).toLowerCase();
+    if(/smartreport|smart-report|customer360/.test(marker)) return 'smartReports';
+    if(/commission/.test(marker)) return 'commission';
+    if(/salesinvoice|sales-invoice|invoice|sales/.test(marker)) return 'sales';
+    if(/report|analytics/.test(marker)) return 'reportsUI';
     if(/appointment|operation|vehicleoperations/.test(marker)) return 'operations';
     if(/fleet/.test(marker)) return 'fleet';
     if(/obligation/.test(marker)) return 'obligations';
@@ -182,6 +205,25 @@
       var el = event.target && event.target.closest ? event.target.closest('button,a,[data-tab],[data-target],[onclick]') : null;
       var group = groupForElement(el);
       if(group) ensureGroup(group).catch(function(){});
+    }, true);
+
+    document.addEventListener('click', function(event){
+      var el = event.target && event.target.closest ? event.target.closest('button,a,[data-tab],[data-target],[onclick]') : null;
+      var group = groupForElement(el);
+      if(!group || (states[group] && states[group].status === 'loaded')) return;
+      if(el && el.dataset && el.dataset.petatoeLazyReplay === '1'){
+        delete el.dataset.petatoeLazyReplay;
+        return;
+      }
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      ensureGroup(group).then(function(){
+        if(!el || !el.isConnected) return;
+        if(el.dataset) el.dataset.petatoeLazyReplay = '1';
+        el.click();
+      }).catch(function(error){
+        if(window.console && console.warn) console.warn('[PETATOE Mobile Gate] route hydration failed', group, error);
+      });
     }, true);
 
     document.addEventListener('change', function(event){
