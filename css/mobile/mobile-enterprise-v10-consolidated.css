@@ -2102,8 +2102,11 @@ html.petatoe-mobile-device .pet-v10-mobile-header .pet-v10-header-brand { grid-c
 html.petatoe-mobile-device .pet-v10-mobile-header .pet-v10-header-copy { grid-column:3; }
 html.petatoe-mobile-device .pet-v10-mobile-header .pet-v10-theme-toggle { grid-column:4; }
 html.petatoe-mobile-device .pet-v10-mobile-root .pet-v10-bottom-nav,
-html.petatoe-mobile-device .pet-v10-mobile-root .pet-v10-drawer,
-html.petatoe-mobile-device .pet-v10-mobile-root .pet-v10-drawer-backdrop { pointer-events:auto; }
+html.petatoe-mobile-device .pet-v10-mobile-root .pet-v10-drawer { pointer-events:auto; }
+/* Keep the full-screen drawer backdrop non-interactive while closed.
+   It becomes interactive only when the drawer-open state is active. */
+html.petatoe-mobile-device .pet-v10-mobile-root .pet-v10-drawer-backdrop { pointer-events:none; }
+html.petatoe-mobile-device body.pet-v10-drawer-open .pet-v10-mobile-root .pet-v10-drawer-backdrop { pointer-events:auto; }
 html.petatoe-mobile-device body .main {
   padding-top: var(--pet-mobile-content-offset) !important;
 }
