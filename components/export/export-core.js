@@ -3,7 +3,7 @@
    This file does not change existing report calculations. */
 (function(){
   'use strict';
-  var ns = window.PETATOEExport;
+  var ns = window.PETATOEExport = window.PETATOEExport || {};
   ns.version = '3.10.3';
   ns.safeName = function(name){
     return String(name || 'PETATOE_Report')
