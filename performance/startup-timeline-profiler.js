@@ -3,7 +3,7 @@
 
   if (!global || global.PETATOEStartupTimeline) return;
 
-  var VERSION = '10.0.25-c1-5-startup-timeline';
+  var VERSION = '10.0.25-c1-8-script-by-script';
   var startedAt = (global.performance && typeof global.performance.now === 'function')
     ? global.performance.now()
     : Date.now();
@@ -11,7 +11,7 @@
   var events = [];
   var wrapped = Object.create(null);
   var STORAGE_KEY = 'petatoe_startup_timeline_latest';
-  var MAX_EVENTS = 300;
+  var MAX_EVENTS = 700;
 
   function now() {
     return (global.performance && typeof global.performance.now === 'function')
@@ -61,6 +61,40 @@
     persist();
     try { global.dispatchEvent(new CustomEvent('petatoe:startup-timeline-event', { detail: entry })); } catch (_error) {}
     return entry;
+  }
+
+  function getHeadScriptDurations() {
+    var starts = Object.create(null);
+    var rows = [];
+    events.forEach(function (entry) {
+      if (entry.name !== 'head-script:start' && entry.name !== 'head-script:end') return;
+      var detail = entry.detail || {};
+      var key = String(detail.index || '') + '|' + String(detail.label || '');
+      if (entry.name === 'head-script:start') {
+        starts[key] = entry;
+        return;
+      }
+      var start = starts[key];
+      if (!start) return;
+      rows.push({
+        index: detail.index,
+        label: detail.label,
+        kind: detail.kind,
+        defer: !!detail.defer,
+        async: !!detail.async,
+        startMs: start.ms,
+        endMs: entry.ms,
+        durationMs: round(entry.ms - start.ms)
+      });
+    });
+    return rows;
+  }
+
+  function getHeadScriptTextReport() {
+    return getHeadScriptDurations().map(function (row) {
+      return String(row.durationMs).padStart(8, ' ') + ' ms  #' + row.index + ' ' + row.label +
+        (row.defer ? ' [defer]' : '') + (row.async ? ' [async]' : '');
+    }).join('\n');
   }
 
   function buildReport() {
@@ -236,6 +270,8 @@
     mark: mark,
     getReport: getReport,
     getTextReport: getTextReport,
+    getHeadScriptDurations: getHeadScriptDurations,
+    getHeadScriptTextReport: getHeadScriptTextReport,
     clear: clear,
     storageKey: STORAGE_KEY
   };
