@@ -2181,3 +2181,58 @@ body.pet-v10-independent-dashboard-active #dashboard > #kpis .kpi {
 @media (hover: hover) and (pointer: fine) {
   #petV10MobileDashboardHost { display: none !important; }
 }
+
+
+/* PETATOE v10.0.25 — Mobile bottom-navigation content-clearance hotfix.
+   Root cause: the fixed 70px navigation plus its safe-area offset occupied a
+   larger visual exclusion zone than the independent dashboard/page containers
+   reserved. Keep the final content fully scrollable above the navigation. */
+@media (max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse) {
+  html.petatoe-mobile-device {
+    --pet-v10-bottom-nav-visual-height: 70px;
+    --pet-v10-bottom-nav-edge-gap: 8px;
+    --pet-v10-bottom-nav-content-gap: 24px;
+    --pet-v10-bottom-nav-clearance: calc(
+      var(--pet-v10-bottom-nav-visual-height) +
+      var(--pet-v10-bottom-nav-edge-gap) +
+      var(--pet-v10-safe-bottom, env(safe-area-inset-bottom, 0px)) +
+      var(--pet-v10-bottom-nav-content-gap)
+    );
+    scroll-padding-bottom: var(--pet-v10-bottom-nav-clearance) !important;
+  }
+
+  html.petatoe-mobile-device body,
+  html.petatoe-mobile-device body .main,
+  html.petatoe-mobile-device body .page {
+    scroll-padding-bottom: var(--pet-v10-bottom-nav-clearance) !important;
+  }
+
+  html.petatoe-mobile-device body .main {
+    padding-bottom: var(--pet-v10-bottom-nav-clearance) !important;
+  }
+
+  html.petatoe-mobile-device body .page {
+    padding-bottom: max(24px, var(--pet-v10-bottom-nav-clearance)) !important;
+  }
+
+  body.pet-v10-independent-dashboard-active #petV10MobileDashboardHost {
+    padding-bottom: var(--pet-v10-bottom-nav-clearance) !important;
+    scroll-padding-bottom: var(--pet-v10-bottom-nav-clearance) !important;
+  }
+
+  body.pet-v10-independent-dashboard-active #petV10MobileDashboardHost > #dashboard::after {
+    content: "";
+    display: block;
+    width: 100%;
+    height: calc(var(--pet-v10-bottom-nav-content-gap) + 12px);
+    grid-column: 1 / -1;
+    pointer-events: none;
+  }
+
+  html.petatoe-mobile-device [id],
+  html.petatoe-mobile-device [data-tab],
+  html.petatoe-mobile-device .card,
+  html.petatoe-mobile-device .panel {
+    scroll-margin-bottom: var(--pet-v10-bottom-nav-clearance);
+  }
+}
