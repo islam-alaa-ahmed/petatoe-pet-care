@@ -415,12 +415,7 @@ window.printCurrentPage=printCurrentPage;
 
 /* v3.11.19: lazy tab wrapper removed; navigation is owned by PETATOERouter. */
 
-/* --- Updated init with loader hide --- */
-(async function dashboardBoot(){initPetImage();buildForm();records=await loadRecords();records.forEach(r=>{r.date=parseDate(r.date);r.month=normalizeMonth(r.month,r.date)});populateFilters();if($('fYear')) $('fYear').value=getDashboardDefaultYear();if(records.length||window.__PETATOE_SALES_SOURCE_STATUS__){renderDashboardAll();renderDeep()}})();
-/* Hide loader after init */
-(function(){
-  const loader=document.getElementById('petatoeLoader');
-  if(loader){setTimeout(()=>loader.classList.add('hidden'),650);}
-})();
+/* Dashboard startup ownership moved to core/dashboard-critical-boot.js.
+   Smart Reports remains demand-loaded on physical phones. */
 
 
