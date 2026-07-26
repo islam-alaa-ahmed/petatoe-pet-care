@@ -19,8 +19,6 @@ const APP_SHELL = [
   './assets/icons/icon-maskable-512.png',
   './assets/icons/petatoe-app-icon.svg',
   './css/pwa/pwa-enterprise.css',
-  './css/mobile/mobile-enterprise-m1.css',
-  './css/mobile/mobile-enterprise-m2.css',
   './css/mobile/mobile-enterprise-v10-consolidated.css',
   './css/mobile/mobile-about-app.css',
   './mobile/mobile-enterprise-v10-shell.js',
@@ -31,7 +29,6 @@ const APP_SHELL = [
   './mobile/mobile-enterprise-v10-experience.js',
   './pwa/mobile-runtime-layout-m1-2.js',
   './pwa/pwa-manager.js',
-  './performance/runtime-data-trace.js',
   './performance/mobile-startup-loading-gate.js',
   './performance/mobile-runtime-coordinator.js',
   './components/inline-handler-adapter.js'
@@ -62,6 +59,17 @@ async function deleteLegacyCaches() {
     keys
       .filter((key) => key.startsWith(CACHE_PREFIX) && ![STATIC_CACHE, RUNTIME_CACHE].includes(key))
       .map((key) => caches.delete(key))
+  );
+}
+
+async function pruneStaticCache() {
+  const cache = await caches.open(STATIC_CACHE);
+  const allowedUrls = new Set(APP_SHELL.map((url) => new URL(url, self.registration.scope).href));
+  const keys = await cache.keys();
+  await Promise.all(
+    keys
+      .filter((request) => !allowedUrls.has(new URL(request.url).href))
+      .map((request) => cache.delete(request))
   );
 }
 
@@ -125,6 +133,7 @@ self.addEventListener('activate', (event) => {
       try { await self.registration.navigationPreload.enable(); } catch (_) { /* optional */ }
     }
     await deleteLegacyCaches();
+    await pruneStaticCache();
     await self.clients.claim();
     await broadcast({ type: 'PETATOE_SW_ACTIVATED', version: APP_VERSION });
   })());
