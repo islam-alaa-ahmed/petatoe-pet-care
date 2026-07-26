@@ -15,24 +15,27 @@
     return href;
   }
 
-  function escapeAttribute(value){
-    return String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;');
-  }
-
   function writeLink(href, media, deferred){
     var requestedMedia = String(media || 'all');
-    var html = '<link rel="stylesheet" href="' + escapeAttribute(href) + '"';
+    var head = document.head || document.getElementsByTagName('head')[0];
+    if(!head) throw new Error('Document head is unavailable');
+
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+
     if(deferred){
-      html += ' media="print" data-petatoe-mobile-deferred-css="1" data-petatoe-final-media="' + escapeAttribute(requestedMedia) + '"';
-      html += ' onload="this.media=this.dataset.petatoeFinalMedia||\'all\';this.removeAttribute(\'onload\')"';
+      link.media = 'print';
+      link.setAttribute('data-petatoe-mobile-deferred-css', '1');
+      link.setAttribute('data-petatoe-final-media', requestedMedia);
+      link.addEventListener('load', function(){
+        link.media = link.getAttribute('data-petatoe-final-media') || 'all';
+      }, { once: true });
     }else if(requestedMedia !== 'all'){
-      html += ' media="' + escapeAttribute(requestedMedia) + '"';
+      link.media = requestedMedia;
     }
-    html += '>';
-    document.write(html);
+
+    head.appendChild(link);
   }
 
   function writeOrDefer(href, media){
