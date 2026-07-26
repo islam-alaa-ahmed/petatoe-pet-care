@@ -4,6 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<script src="performance/startup-timeline-profiler.js?v=10.0.25-c1-5-startup-timeline"></script>
 <script src="i18n/bootstrap.js?v=9.0.0-elc-phase6a"></script>
 <script src="core/mobile-device-profile.js?v=10.0.25-p7-1"></script>
 <script src="performance/mobile-startup-loading-gate.js?v=10.0.25-b2-device-gated-boot-manifest"></script>
@@ -42,23 +43,23 @@ html.pet-mobile-booting::after{content:none!important;display:none!important;}
 <meta name="msapplication-config" content="./browserconfig.xml?v=9.4.23-icon1"/>
 <!-- HEATMAP_REAL_INVOICE_CUTOFF_FIX: uses highest invoice number date per year and blanks future months -->
 <script>window.PETATOEMobileStartupGate.registerOrWrite('xlsx','https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',false);</script>
-<script defer src="inline-extracted/global-small-utils.js"></script>
-<script defer src="inline-extracted/critical-date-number-ui-utils.js"></script>
-<script defer src="data/storage.js"></script>
-<script defer src="data/data-source.js"></script>
-<script defer src="security/session-timeout.js"></script>
-<script defer src="data/apiClient.js"></script>
-<script defer src="components/security-hardening.js"></script>
-<script defer src="security/enterprise-security-hardening.js"></script>
-<script defer src="inline-extracted/shared-safe-utils.js"></script>
-<script defer src="inline-extracted/main-kpi-tooltip-viewport-fix.js"></script>
-<script defer crossorigin="anonymous" referrerpolicy="no-referrer" data-petatoe-cdn="chartjs" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script defer src="components/runtime-libraries-guard.js"></script>
+<script src="inline-extracted/global-small-utils.js"></script>
+<script src="inline-extracted/critical-date-number-ui-utils.js"></script>
+<script src="data/storage.js"></script>
+<script src="data/data-source.js"></script>
+<script src="security/session-timeout.js"></script>
+<script src="data/apiClient.js"></script>
+<script src="components/security-hardening.js"></script>
+<script src="security/enterprise-security-hardening.js"></script>
+<script src="inline-extracted/shared-safe-utils.js"></script>
+<script src="inline-extracted/main-kpi-tooltip-viewport-fix.js"></script>
+<script crossorigin="anonymous" referrerpolicy="no-referrer" data-petatoe-cdn="chartjs" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="components/runtime-libraries-guard.js"></script>
 <!-- PETATOE v8.0.2 — Supabase Health Check ONLY: connection test, no migration, no data writes -->
-<script defer src="supabase-config.js?v=8.0.2-client1"></script>
-<script defer src="supabase-client.js?v=8.0.2-client1"></script>
-<script defer src="core/supabase-repository.js?v=8.0.2-payroll1"></script>
-<script defer src="data-layer.js?v=8.0.2-dl1"></script>
+<script src="supabase-config.js?v=8.0.2-client1"></script>
+<script src="supabase-client.js?v=8.0.2-client1"></script>
+<script src="core/supabase-repository.js?v=8.0.2-payroll1"></script>
+<script src="data-layer.js?v=8.0.2-dl1"></script>
 <script src="supabase-health-check.js?v=8.0.2-client1" defer></script>
 
 <link href="css/core/tokens.css" rel="stylesheet"/>
