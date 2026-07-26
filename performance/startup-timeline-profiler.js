@@ -3,7 +3,7 @@
 
   if (!global || global.PETATOEStartupTimeline) return;
 
-  var VERSION = '10.0.25-c1-8-script-by-script';
+  var VERSION = '10.0.25-c2-0-head-resource-waterfall';
   var startedAt = (global.performance && typeof global.performance.now === 'function')
     ? global.performance.now()
     : Date.now();
@@ -95,6 +95,69 @@
       return String(row.durationMs).padStart(8, ' ') + ' ms  #' + row.index + ' ' + row.label +
         (row.defer ? ' [defer]' : '') + (row.async ? ' [async]' : '');
     }).join('\n');
+  }
+
+
+  function getHeadResourceDurations() {
+    var starts = Object.create(null);
+    var loads = Object.create(null);
+    var rows = [];
+    events.forEach(function (entry) {
+      if (entry.name !== 'head-resource:start' && entry.name !== 'head-resource:after' && entry.name !== 'head-resource:load' && entry.name !== 'head-resource:error') return;
+      var detail = entry.detail || {};
+      var key = String(detail.index || '') + '|' + String(detail.label || '');
+      if (entry.name === 'head-resource:start') {
+        starts[key] = entry;
+        return;
+      }
+      if (entry.name === 'head-resource:load' || entry.name === 'head-resource:error') {
+        loads[key] = entry;
+        return;
+      }
+      var start = starts[key];
+      if (!start) return;
+      var load = loads[key];
+      rows.push({
+        index: detail.index,
+        label: detail.label,
+        rel: detail.rel,
+        startMs: start.ms,
+        afterMs: entry.ms,
+        parserBlockMs: round(entry.ms - start.ms),
+        loadMs: load ? round(load.ms - start.ms) : null,
+        status: load ? (load.name === 'head-resource:error' ? 'error' : 'loaded') : 'pending-or-cached'
+      });
+    });
+    return rows;
+  }
+
+  function getHeadResourceTextReport() {
+    return getHeadResourceDurations().map(function (row) {
+      var load = row.loadMs == null ? 'n/a' : String(row.loadMs);
+      return String(row.parserBlockMs).padStart(8, ' ') + ' ms block | ' +
+        String(load).padStart(8, ' ') + ' ms load | #' + row.index + ' [' + row.rel + '] ' + row.label + ' [' + row.status + ']';
+    }).join('\n');
+  }
+
+  function captureResourceTiming(stage) {
+    if (!global.performance || typeof global.performance.getEntriesByType !== 'function') return;
+    try {
+      global.performance.getEntriesByType('resource').forEach(function (entry) {
+        var name = String(entry.name || '');
+        if (!name) return;
+        mark('resource-timing', {
+          stage: stage,
+          name: name,
+          initiatorType: entry.initiatorType || '',
+          startTime: round(entry.startTime),
+          duration: round(entry.duration),
+          responseEnd: round(entry.responseEnd),
+          transferSize: Number(entry.transferSize || 0),
+          encodedBodySize: Number(entry.encodedBodySize || 0),
+          decodedBodySize: Number(entry.decodedBodySize || 0)
+        });
+      });
+    } catch (_error) {}
   }
 
   function buildReport() {
@@ -272,6 +335,9 @@
     getTextReport: getTextReport,
     getHeadScriptDurations: getHeadScriptDurations,
     getHeadScriptTextReport: getHeadScriptTextReport,
+    getHeadResourceDurations: getHeadResourceDurations,
+    getHeadResourceTextReport: getHeadResourceTextReport,
+    captureResourceTiming: captureResourceTiming,
     clear: clear,
     storageKey: STORAGE_KEY
   };
@@ -290,10 +356,12 @@
     });
     global.document.addEventListener('DOMContentLoaded', function () {
       mark('dom-content-loaded');
+      captureResourceTiming('dom-content-loaded');
     }, { once: true });
   }
   global.addEventListener('load', function () {
     mark('window-load');
+    captureResourceTiming('window-load');
     global.setTimeout(function () { mark('startup-snapshot-5s'); }, 5000);
     global.setTimeout(function () { mark('startup-snapshot-15s'); }, 15000);
   }, { once: true });
