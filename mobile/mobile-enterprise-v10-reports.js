@@ -2,13 +2,14 @@
 (function () {
   'use strict';
 
-  var PHONE_QUERY = '(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)';
+  var PHONE_QUERY = '(max-width: 760px)';
   var mq = window.matchMedia(PHONE_QUERY);
   var observer = null;
   var scheduled = false;
+  var activated = false;
 
   function isPhone() {
-    return window.PETATOEDeviceProfile ? window.PETATOEDeviceProfile.isMobileDevice() : mq.matches;
+    return mq.matches;
   }
 
   function markAll(selector, className, root) {
@@ -57,7 +58,7 @@
   }
 
   function scheduleEnhance(root) {
-    if (!isPhone() || scheduled) return;
+    if (!activated || !isPhone() || scheduled) return;
     scheduled = true;
     window.requestAnimationFrame(function () {
       scheduled = false;
@@ -78,19 +79,40 @@
   }
 
   function handleViewportChange() {
-    if (isPhone()) {
+    if (activated && isPhone()) {
       scheduleEnhance(document);
       startObserver();
-    } else {
+    } else if (document.body) {
       document.body.classList.remove('petatoe-v10-reports-ready');
     }
   }
 
+  function activate() {
+    if (activated || !isPhone()) return;
+    activated = true;
+    scheduleEnhance(document);
+    startObserver();
+  }
+
+  function isReportTrigger(target) {
+    if (!target || !target.closest) return false;
+
+    var direct = target.closest('[data-tab], [data-smart-open], .smart-tab, .customer-analysis-tab');
+    if (direct) {
+      var tab = String(direct.getAttribute('data-tab') || direct.getAttribute('data-smart-open') || '').toLowerCase();
+      if (tab === 'sales' || tab === 'vans' || tab === 'services' || tab === 'smart' || direct.classList.contains('smart-tab') || direct.classList.contains('customer-analysis-tab')) {
+        return true;
+      }
+    }
+
+    return !!target.closest('#sales, #vans, #services, #smartReportsScreen, #smartReportsArea');
+  }
+
   function boot() {
-    handleViewportChange();
     document.addEventListener('click', function (event) {
       if (!isPhone()) return;
-      if (event.target.closest('[data-tab], .nav-item, .subnav-item, .smart-tab, .customer-analysis-tab')) {
+      if (!activated && isReportTrigger(event.target)) activate();
+      if (activated && event.target.closest('[data-tab], .nav-item, .subnav-item, .smart-tab, .customer-analysis-tab')) {
         window.setTimeout(function () { scheduleEnhance(document); }, 40);
       }
     }, true);
@@ -101,6 +123,11 @@
   } else {
     boot();
   }
+
+  window.PETATOEMobileReports = Object.assign(window.PETATOEMobileReports || {}, {
+    activate: activate,
+    isActivated: function () { return activated; }
+  });
 
   if (typeof mq.addEventListener === 'function') mq.addEventListener('change', handleViewportChange);
   else if (typeof mq.addListener === 'function') mq.addListener(handleViewportChange);
