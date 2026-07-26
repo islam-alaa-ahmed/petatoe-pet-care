@@ -17,10 +17,9 @@
 
   function writeLink(href, media, deferred){
     var requestedMedia = String(media || 'all');
-    var head = document.head || document.getElementsByTagName('head')[0];
-    if(!head) throw new Error('Document head is unavailable');
-
     var link = document.createElement('link');
+    var head = document.head || document.getElementsByTagName('head')[0] || document.documentElement;
+
     link.rel = 'stylesheet';
     link.href = href;
 
@@ -28,9 +27,10 @@
       link.media = 'print';
       link.setAttribute('data-petatoe-mobile-deferred-css', '1');
       link.setAttribute('data-petatoe-final-media', requestedMedia);
-      link.addEventListener('load', function(){
+      link.addEventListener('load', function onDeferredStylesheetLoad(){
         link.media = link.getAttribute('data-petatoe-final-media') || 'all';
-      }, { once: true });
+        link.removeEventListener('load', onDeferredStylesheetLoad);
+      });
     }else if(requestedMedia !== 'all'){
       link.media = requestedMedia;
     }
