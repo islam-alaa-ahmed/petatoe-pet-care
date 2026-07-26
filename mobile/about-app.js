@@ -68,15 +68,66 @@
     rerender();
   }
 
-  async function copyTrace(){
+  function performanceTraceText(){
+    var timeline=window.PETATOEStartupTimeline;
+    if(timeline&&typeof timeline.getTextReport==='function'){
+      var timelineText=timeline.getTextReport();
+      if(String(timelineText||'').trim())return String(timelineText);
+    }
     try{
-      var trace=window.PETATOEDataTrace;
-      if(!trace||typeof trace.text!=='function')throw new Error(t('performanceTraceUnavailable','تقرير الأداء غير متاح بعد.'));
-      var value=trace.text();
-      if(navigator.clipboard&&navigator.clipboard.writeText)await navigator.clipboard.writeText(value);
-      else{var area=document.createElement('textarea');area.value=value;area.setAttribute('readonly','');area.style.position='fixed';area.style.opacity='0';document.body.appendChild(area);area.select();document.execCommand('copy');area.remove();}
+      var storedTimeline=window.localStorage&&window.localStorage.getItem('petatoe_startup_timeline_latest');
+      if(String(storedTimeline||'').trim())return String(storedTimeline);
+    }catch(_){}
+    var trace=window.PETATOEDataTrace;
+    if(trace&&typeof trace.text==='function'){
+      var traceText=trace.text();
+      if(String(traceText||'').trim())return String(traceText);
+    }
+    return '';
+  }
+
+  function legacyCopy(value){
+    var area=document.createElement('textarea');
+    area.value=value;
+    area.setAttribute('readonly','');
+    area.style.position='fixed';
+    area.style.left='0';
+    area.style.bottom='0';
+    area.style.width='1px';
+    area.style.height='1px';
+    area.style.opacity='0.01';
+    area.style.pointerEvents='none';
+    document.body.appendChild(area);
+    area.focus({preventScroll:true});
+    area.select();
+    area.setSelectionRange(0,area.value.length);
+    var copied=false;
+    try{copied=document.execCommand('copy')===true;}catch(_){}
+    area.remove();
+    return copied;
+  }
+
+  async function copyTrace(){
+    var unavailable=t('performanceTraceUnavailable','تقرير الأداء غير متاح بعد.');
+    try{
+      var value=performanceTraceText();
+      if(!value)throw new Error(unavailable);
+      var copied=false;
+      if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){
+        try{await navigator.clipboard.writeText(value);copied=true;}catch(_){}
+      }
+      if(!copied)copied=legacyCopy(value);
+      if(!copied){
+        window.prompt(t('copyPerformanceTrace','نسخ تقرير الأداء'),value);
+        return;
+      }
       if(window.showToast)window.showToast(t('performanceTraceCopied','تم نسخ تقرير الأداء'));
-    }catch(error){if(window.showToast)window.showToast((error&&error.message)||t('performanceTraceUnavailable','تقرير الأداء غير متاح بعد.'),'error');}
+      else window.alert(t('performanceTraceCopied','تم نسخ تقرير الأداء'));
+    }catch(error){
+      var message=(error&&error.message)||unavailable;
+      if(window.showToast)window.showToast(message,'error');
+      else window.alert(message);
+    }
   }
 
 
