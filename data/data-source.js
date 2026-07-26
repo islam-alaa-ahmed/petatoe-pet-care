@@ -176,17 +176,43 @@
     })();
     return salesRefreshInFlight;
   }
+  function isMobileRuntime(){
+    try{
+      if(w.PETATOEDeviceProfile && typeof w.PETATOEDeviceProfile.isMobileDevice==='function') return !!w.PETATOEDeviceProfile.isMobileDevice();
+      return !!(w.matchMedia && w.matchMedia('(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)').matches);
+    }catch(_e){ return false; }
+  }
   function bootSupabaseSalesRefresh(){
     var attempts=0;
+    var started=false;
+    var beginScheduled=false;
     function tick(){
+      if(started) return;
       attempts++;
       if(w.PETATOEDataLayer && typeof w.PETATOEDataLayer.readSalesRecords==='function'){
+        started=true;
         refreshSalesRecordsFromSupabase('boot-supabase-sales-refresh');
         return;
       }
       if(attempts < 40) setTimeout(tick, 250);
     }
-    setTimeout(tick, 250);
+    function beginAfterShell(){
+      if(beginScheduled) return;
+      beginScheduled=true;
+      var run=function(){ setTimeout(tick, 0); };
+      if(typeof w.requestIdleCallback==='function') w.requestIdleCallback(run,{timeout:2500});
+      else setTimeout(run, 900);
+    }
+    if(!isMobileRuntime()){
+      setTimeout(tick, 250);
+      return;
+    }
+    if(document.documentElement && !document.documentElement.classList.contains('pet-mobile-booting')){
+      beginAfterShell();
+      return;
+    }
+    w.addEventListener('petatoe:mobile-boot-ready', beginAfterShell, {once:true});
+    setTimeout(beginAfterShell, 1800);
   }
   function getCurrentUserRaw(){
     try{if(w.currentUser){return typeof w.currentUser==='string'?w.currentUser:JSON.stringify(w.currentUser)}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("data/data-source.js",e);}
