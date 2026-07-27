@@ -3,16 +3,20 @@
   'use strict';
   if (!global || global.PETATOEStartupDiagnostics) return;
 
-  var VERSION = '10.0.25-d3-3-clean-startup-probe';
+  var VERSION = '10.0.25-d3-4-mobile-root-dependency-trace';
   var perf = global.performance;
   var startEpoch = Date.now();
   var events = [];
   var longTasks = [];
   var errors = [];
+  var parserCheckpoints = [];
+  var mobileRootTrace = [];
+  var dependencySnapshots = [];
   var finalized = false;
   var finalizedAtMs = null;
   var MAX_EVENTS = 120;
   var MAX_LONG_TASKS = 40;
+  var MAX_TRACE_ROWS = 80;
 
   function now() {
     return perf && typeof perf.now === 'function' ? perf.now() : Date.now() - startEpoch;
@@ -32,6 +36,47 @@
     if (!name || events.length >= MAX_EVENTS) return;
     events.push({ name: String(name), ms: round(now()), detail: safe(detail) });
   }
+
+  function dependencyState(label) {
+    var gate = global.PETATOEMobileStartupGate;
+    var profile = global.PETATOEDeviceProfile;
+    var root = global.document && global.document.getElementById('petV10MobileRoot');
+    var snapshot = {
+      label: String(label || ''),
+      ms: round(now()),
+      documentReadyState: global.document ? String(global.document.readyState || '') : '',
+      bodyAvailable: !!(global.document && global.document.body),
+      rootAvailable: !!root,
+      mobileProfileAvailable: !!profile,
+      mobileProfileResult: null,
+      startupGateAvailable: !!gate,
+      startupGate: null,
+      authSessionAvailable: !!global.PETATOEAuthSession,
+      localizationCenterAvailable: !!global.PETATOE_LOCALIZATION_CENTER,
+      navigationSchemaAvailable: !!global.PETATOENavigationSchema,
+      runtimeCoordinatorAvailable: !!global.PETATOEMobileRuntimeCoordinator
+    };
+    try { snapshot.mobileProfileResult = profile && typeof profile.isMobileDevice === 'function' ? !!profile.isMobileDevice() : null; } catch (_error) {}
+    try { snapshot.startupGate = gate && typeof gate.snapshot === 'function' ? safe(gate.snapshot()) : null; } catch (_error) {}
+    return snapshot;
+  }
+  function checkpoint(name, detail) {
+    if (parserCheckpoints.length >= MAX_TRACE_ROWS) return;
+    var row = { name: String(name || ''), ms: round(now()), readyState: global.document ? String(global.document.readyState || '') : '', detail: safe(detail) };
+    parserCheckpoints.push(row);
+    dependencySnapshots.push(dependencyState(name));
+    mark('checkpoint:' + row.name, detail);
+  }
+  function traceMobileRoot(stage, detail) {
+    if (mobileRootTrace.length >= MAX_TRACE_ROWS) return;
+    var row = dependencyState(stage);
+    row.stage = String(stage || '');
+    row.detail = safe(detail);
+    try { row.stack = String((new Error()).stack || '').split('\n').slice(1, 7).join('\n'); } catch (_error) { row.stack = ''; }
+    mobileRootTrace.push(row);
+    mark('mobile-root-trace:' + row.stage, detail);
+  }
+
   function firstEntry(type) {
     try {
       var list = perf && perf.getEntriesByType ? perf.getEntriesByType(type) : [];
@@ -135,7 +180,10 @@
       longTasks: longTasks.slice(),
       resources: resources(),
       errors: errors.slice(),
-      events: events.slice()
+      events: events.slice(),
+      parserCheckpoints: parserCheckpoints.slice(),
+      mobileRootTrace: mobileRootTrace.slice(),
+      dependencySnapshots: dependencySnapshots.slice()
     };
   }
   function textReport() { return JSON.stringify(buildReport(), null, 2); }
@@ -163,6 +211,7 @@
   }
 
   mark('probe-start');
+  checkpoint('profiler-loaded');
 
   try {
     if (global.PerformanceObserver) {
@@ -213,6 +262,9 @@
   global.PETATOEStartupDiagnostics = {
     version: VERSION,
     mark: mark,
+    checkpoint: checkpoint,
+    traceMobileRoot: traceMobileRoot,
+    getDependencySnapshot: dependencyState,
     getSummary: buildSummary,
     getReport: buildReport,
     getTextReport: textReport,

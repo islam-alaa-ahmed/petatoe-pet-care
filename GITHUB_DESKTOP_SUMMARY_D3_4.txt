@@ -1,0 +1,12 @@
+Phase D3.4 — Mobile Root Dependency Trace
+
+Diagnostic-only startup instrumentation to determine whether the static mobile root is delayed by HTML parser/head processing or by mobile shell runtime dependencies.
+
+Modified files:
+- index.html
+- performance/startup-clean-profiler.js
+- mobile/mobile-enterprise-v10-shell.js
+- PHASE_D3_4_VERIFICATION_REPORT.md
+- GITHUB_DESKTOP_SUMMARY_D3_4.txt
+
+No business logic, Supabase, authentication, permissions, design, or release version changes.

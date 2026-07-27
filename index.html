@@ -292,7 +292,8 @@
 
 </script>
 
-<script src="performance/startup-clean-profiler.js?v=10.0.25-d3-3-clean-startup-probe"></script>
+<script src="performance/startup-clean-profiler.js?v=10.0.25-d3-4-mobile-root-dependency-trace"></script>
+<script>window.PETATOEStartupDiagnostics&&window.PETATOEStartupDiagnostics.checkpoint('after-profiler-script');</script>
 
 <script src="performance/mobile-critical-css-gate.js?v=10.0.25-b3-critical-css-split"></script>
 
@@ -887,8 +888,10 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 .vehicle-ops-direction-link:before{content:'🧭'}
 .vehicle-ops-direction-link.compact{padding:7px 11px;font-size:12px}
 </style>
+<script>window.PETATOEStartupDiagnostics&&window.PETATOEStartupDiagnostics.checkpoint('head-end-before-body');</script>
 </head>
 <body>
+<script>window.PETATOEStartupDiagnostics&&window.PETATOEStartupDiagnostics.checkpoint('body-start-before-mobile-root');</script>
 <!-- Phase B1 — first-paint mobile shell. Hydrated and replaced by mobile-enterprise-v10-shell.js. -->
 <div id="petV10MobileRoot" class="pet-v10-mobile-root pet-v10-first-paint-root" data-pet-mobile-presentation="v10" aria-live="polite">
   <div class="pet-v10-first-paint-shell" aria-hidden="true">
@@ -906,7 +909,9 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
     <nav class="pet-v10-first-paint-nav"><span></span><span></span><span></span><span></span><span></span></nav>
   </div>
 </div>
-<script src="mobile/mobile-enterprise-v10-shell.js?v=10.0.25-b1-first-paint-shell"></script>
+<script>window.PETATOEStartupDiagnostics&&window.PETATOEStartupDiagnostics.checkpoint('mobile-root-static-markup-parsed',{rootAvailable:!!document.getElementById('petV10MobileRoot')});</script>
+<script src="mobile/mobile-enterprise-v10-shell.js?v=10.0.25-d3-4-mobile-root-dependency-trace"></script>
+<script>window.PETATOEStartupDiagnostics&&window.PETATOEStartupDiagnostics.checkpoint('mobile-shell-script-complete');</script>
 <!-- ===== PETATOE PDF REPORT MODAL ===== -->
 <!-- ===== PRINT FRAME: يُملأ بـ JS قبل الطباعة ===== -->
 <div id="petatoe-print-frame" style="display:none"></div>
