@@ -3,6 +3,9 @@
 (function(window, document){
   'use strict';
 
+  function d35Mark(name, detail){ try{ if(window.PETATOEStartupDiagnostics&&window.PETATOEStartupDiagnostics.mark) window.PETATOEStartupDiagnostics.mark(name, detail); }catch(_e){} }
+  d35Mark('auth-module-eval-start');
+
   if(window.PETATOEAuth && window.PETATOEAuth.__ready){ return; }
 
   var VERSION = '9.0';
@@ -1391,6 +1394,7 @@
     renderLogin('تم تسجيل الخروج بنجاح');
   }
   async function restore(){
+    d35Mark('auth-restore-start');
     ensureStyles();
     getUsers();
     var user = sessionUser();
@@ -1403,16 +1407,20 @@
         try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_e){}
         startIdleTimeout();
         finishMobileBoot();
+        d35Mark('auth-restore-end',{result:'session-restored'});
         return true;
       }
+      d35Mark('auth-restore-end',{result:'session-invalid'});
       return false;
     }
     clearCurrentUser();
     finishMobileBoot();
     renderLogin('');
+    d35Mark('auth-restore-end',{result:'login-required'});
     return false;
   }
 
+  d35Mark('auth-module-eval-end');
   window.PETATOEAuth = {__ready:true, version:VERSION, login:login, logout:logout, restore:restore, validateSession:validateSessionUser, ensureEnterpriseSession:ensureEnterpriseSession, currentUser:sessionUser, updateHeader:updateHeader, enforcePasswordChange:renderPasswordChange, registerBiometric:registerBiometric, loginWithBiometric:loginWithBiometric, listTrustedDevices:listTrustedDevices, revokeTrustedDevice:revokeTrustedDevice, listActiveSessions:listActiveSessions, revokeActiveSession:revokeActiveSession, revokeAllActiveSessions:revokeAllActiveSessions, recordActivity:recordUserActivity, listSecurityActivity:listSecurityActivity, forceRevokeUserSessions:forceRevokeUserSessions, startIdleTimeout:startIdleTimeout, stopIdleTimeout:stopIdleTimeout};
   window.petLogout = function(){ logout('manual'); };
 

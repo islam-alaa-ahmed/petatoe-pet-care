@@ -1,0 +1,3 @@
+Phase D3.5 — Runtime Bootstrap Trace
+
+Diagnostics-only instrumentation to identify the exact startup critical path across the mobile shell, auth session restore, localization runtime, navigation schema, and runtime coordinator. No business logic or release version changes.

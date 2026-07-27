@@ -1,6 +1,8 @@
 /** PETATOE v10.0.24 — Canonical desktop/mobile navigation schema */
 (function(){
   'use strict';
+  function d35Mark(name,detail){try{if(window.PETATOEStartupDiagnostics&&window.PETATOEStartupDiagnostics.mark)window.PETATOEStartupDiagnostics.mark(name,detail);}catch(_e){}}
+  d35Mark('navigation-module-eval-start');
   if(window.__PETATOE_NAVIGATION_SCHEMA__) return;
   window.__PETATOE_NAVIGATION_SCHEMA__=true;
 
@@ -30,8 +32,9 @@
     return {key:keyFor(data,index),title:title,subtitle:subtitle,attributes:data,visible:visible(button),source:button};
   }
   function capture(nav){
+    d35Mark('navigation-capture-start');
     nav=nav||document.getElementById('nav');
-    if(!nav) return current;
+    if(!nav){d35Mark('navigation-capture-end',{result:'nav-missing'});return current;}
     var direct=[],groups=[];
     Array.prototype.forEach.call(nav.children,function(child,childIndex){
       if(child.matches&&child.matches('button[data-tab],button[data-settings-main]')){
@@ -51,6 +54,7 @@
     current={version:(current.version||0)+1,direct:direct,groups:groups};
     window.PETATOENavigationSchema.current=current;
     document.dispatchEvent(new CustomEvent('petatoe:navigationschema',{detail:{schema:current}}));
+    d35Mark('navigation-capture-end',{result:'captured',direct:direct.length,groups:groups.length});
     return current;
   }
   function refreshVisibility(){
@@ -67,6 +71,7 @@
     return true;
   }
 
+  d35Mark('navigation-module-eval-end');
   window.PETATOENavigationSchema={current:current,capture:capture,refreshVisibility:refreshVisibility,activate:activate};
   document.addEventListener('petatoe:navbuilt',function(e){capture(e.detail&&e.detail.nav);});
   document.addEventListener('petatoe:permissionsready',refreshVisibility);

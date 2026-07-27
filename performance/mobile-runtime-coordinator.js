@@ -1,6 +1,8 @@
 /** PETATOE v10.0.9 — Mobile Runtime Coordinator P2.2 */
 (function () {
   'use strict';
+  function d35Mark(name,detail){try{if(window.PETATOEStartupDiagnostics&&window.PETATOEStartupDiagnostics.mark)window.PETATOEStartupDiagnostics.mark(name,detail);}catch(_e){}}
+  d35Mark('runtime-coordinator-eval-start');
   if (window.PETATOEMobileRuntimeCoordinator) return;
 
   var mq = window.matchMedia('(max-width: 760px)');
@@ -69,6 +71,7 @@
 
   if (mq.addEventListener) mq.addEventListener('change', function (event) { if (event.matches) start(); else stop(); });
 
+  d35Mark('runtime-coordinator-eval-end',{phone:isPhone()});
   window.PETATOEMobileRuntimeCoordinator = {
     subscribe: subscribe,
     observeTarget: observeTarget,
