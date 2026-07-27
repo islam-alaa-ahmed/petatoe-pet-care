@@ -193,7 +193,17 @@ function setCustomerAnalysisTab(tab){
   setTimeout(()=>{Object.values(charts||{}).forEach(c=>{try{c.resize();c.update('none')}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}})},80);
 }
 
-window.setCustomerAnalysisTab=setCustomerAnalysisTab;window.setSmartVanYear=setSmartVanYear;window.setSmartVanDetailsYear=setSmartVanDetailsYear;window.toggleSmartServicesMore=toggleSmartServicesMore;window.setSmartSalesYear=setSmartSalesYear;window.setSmartSalesTaxMode=setSmartSalesTaxMode;window.setSmartServicesYear=setSmartServicesYear;window.setSmartServicesSort=setSmartServicesSort;
+function petatoeExposeSmartInteraction(name, candidate){
+  if(typeof candidate==='function')window[name]=candidate;
+}
+petatoeExposeSmartInteraction('setCustomerAnalysisTab',typeof setCustomerAnalysisTab==='function'?setCustomerAnalysisTab:null);
+petatoeExposeSmartInteraction('setSmartVanYear',typeof setSmartVanYear==='function'?setSmartVanYear:null);
+petatoeExposeSmartInteraction('setSmartVanDetailsYear',typeof setSmartVanDetailsYear==='function'?setSmartVanDetailsYear:null);
+petatoeExposeSmartInteraction('toggleSmartServicesMore',typeof toggleSmartServicesMore==='function'?toggleSmartServicesMore:null);
+petatoeExposeSmartInteraction('setSmartSalesYear',typeof setSmartSalesYear==='function'?setSmartSalesYear:null);
+petatoeExposeSmartInteraction('setSmartSalesTaxMode',typeof setSmartSalesTaxMode==='function'?setSmartSalesTaxMode:null);
+petatoeExposeSmartInteraction('setSmartServicesYear',typeof setSmartServicesYear==='function'?setSmartServicesYear:null);
+petatoeExposeSmartInteraction('setSmartServicesSort',typeof setSmartServicesSort==='function'?setSmartServicesSort:null);
 
 window.setReportMode=setReportMode;window.setReportYear=setReportYear;window.setReportMetric=setReportMetric;window.setReportView=setReportView;window.setSalesYear=setSalesYear;window.setVanYear=setVanYear;
 

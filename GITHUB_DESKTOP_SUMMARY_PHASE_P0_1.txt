@@ -1,0 +1,15 @@
+Phase P0.1 — Bootstrap Integrity Hotfix
+
+Fixed three desktop bootstrap regressions without changing business logic:
+- Loaded PETATOEInlineHandlers during early critical bootstrap instead of near the document end.
+- Made localization consolidation dependency-aware instead of throwing permanently on timing/order mismatch.
+- Guarded Smart Reports cross-file API exports so one missing dependency cannot abort the interaction module.
+
+Validation passed:
+- Localization certification and lockdown
+- Runtime translation completion
+- Smart Reports checks
+- Mobile Enterprise UI v10 certification (61/61)
+- Full JavaScript syntax validation
+
+Release remains v10.0.25 / PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3.
