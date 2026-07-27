@@ -3,7 +3,7 @@
 
   if (!global || global.PETATOEStartupTimeline) return;
 
-  var VERSION = '10.0.25-c2-0-head-resource-waterfall';
+  var VERSION = '10.0.25-d3-2-css-isolation';
   var startedAt = (global.performance && typeof global.performance.now === 'function')
     ? global.performance.now()
     : Date.now();
@@ -12,6 +12,19 @@
   var wrapped = Object.create(null);
   var STORAGE_KEY = 'petatoe_startup_timeline_latest';
   var MAX_EVENTS = 700;
+
+  var HEAD_RESOURCE_MAP = {
+    1: 'css/mobile/mobile-first-paint.css',
+    2: 'css/i18n/bootstrap.css',
+    3: 'css/pwa/pwa-enterprise.css',
+    10: 'css/core/tokens.css',
+    11: 'css/core/layout-boundary.css',
+    12: 'css/core/app-shell-boundary.css',
+    13: 'css/core/components-boundary.css',
+    14: 'css/core/utilities-boundary.css',
+    15: 'css/main.css',
+    16: 'css/components/theme.css'
+  };
 
   function now() {
     return (global.performance && typeof global.performance.now === 'function')
@@ -119,7 +132,8 @@
       var load = loads[key];
       rows.push({
         index: detail.index,
-        label: detail.label,
+        label: HEAD_RESOURCE_MAP[Number(detail.index)] || detail.label,
+        rawLabel: detail.label,
         rel: detail.rel,
         startMs: start.ms,
         afterMs: entry.ms,
@@ -158,6 +172,50 @@
         });
       });
     } catch (_error) {}
+  }
+
+
+  function getCssIsolationSummary() {
+    var report = buildReport();
+    var modeEvent = null;
+    var fcp = null;
+    var mobileRoot = null;
+    report.events.forEach(function (entry) {
+      if (entry.name === 'css-isolation-mode') modeEvent = entry;
+      if (entry.name === 'paint:first-contentful-paint') fcp = entry;
+      if (entry.name === 'mobile-root:created' && !mobileRoot) mobileRoot = entry;
+    });
+    var mainRow = getHeadResourceDurations().filter(function (row) { return Number(row.index) === 15; })[0] || null;
+    var mainTiming = null;
+    try {
+      var resources = global.performance && global.performance.getEntriesByType ? global.performance.getEntriesByType('resource') : [];
+      for (var i = 0; i < resources.length; i += 1) {
+        var resourceName = String(resources[i].name || '');
+        if (/\/css\/main(?:-fontless-test)?\.css(?:\?|$)/.test(resourceName)) {
+          mainTiming = {
+            name: resourceName,
+            startTime: round(resources[i].startTime),
+            duration: round(resources[i].duration),
+            responseEnd: round(resources[i].responseEnd),
+            transferSize: Number(resources[i].transferSize || 0),
+            decodedBodySize: Number(resources[i].decodedBodySize || 0)
+          };
+          break;
+        }
+      }
+    } catch (_error) {}
+    return {
+      profilerVersion: VERSION,
+      mode: modeEvent && modeEvent.detail ? modeEvent.detail.mode : 'unknown',
+      mainCss: mainRow,
+      mainCssResourceTiming: mainTiming,
+      mobileRootCreatedMs: mobileRoot ? mobileRoot.ms : null,
+      firstContentfulPaintMs: fcp && fcp.detail ? fcp.detail.startTime : null,
+      domContentLoadedMs: (report.events.filter(function (entry) { return entry.name === 'dom-content-loaded'; })[0] || {}).ms || null,
+      syntaxErrors: report.events.filter(function (entry) {
+        return entry.name === 'window-error' && entry.detail && /Unexpected end of script/i.test(String(entry.detail.message || ''));
+      }).length
+    };
   }
 
   function buildReport() {
@@ -337,6 +395,7 @@
     getHeadScriptTextReport: getHeadScriptTextReport,
     getHeadResourceDurations: getHeadResourceDurations,
     getHeadResourceTextReport: getHeadResourceTextReport,
+    getCssIsolationSummary: getCssIsolationSummary,
     captureResourceTiming: captureResourceTiming,
     clear: clear,
     storageKey: STORAGE_KEY
