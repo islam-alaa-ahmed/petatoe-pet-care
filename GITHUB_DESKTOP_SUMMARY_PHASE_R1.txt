@@ -1,0 +1,24 @@
+Phase R1 — Desktop Bootstrap Contract Restoration
+
+Root Cause:
+Desktop callers could execute Payroll and Smart Reports before deferred/global dependencies were ready because the startup gate only enforced readiness for mobile.
+
+Modified Files:
+- performance/mobile-startup-loading-gate.js
+- components/inline-handler-adapter.js
+- components/tab-render-subscribers.js
+- components/filters-finalization.js
+
+Fix:
+- Added desktop readiness checks to the shared startup gate.
+- Unified module readiness for desktop and mobile inline handlers.
+- Gated Smart Reports tab rendering and filter refresh until dependencies are ready.
+
+Validation:
+- JS syntax passed.
+- Enterprise Localization Certification passed.
+- Production Localization Lockdown passed.
+- Runtime Translation Completion passed.
+- Mobile Enterprise UI v10 Certification passed: 61/61.
+
+No changes to business logic, Supabase, SQL, auth, permissions, UI design, or release version.

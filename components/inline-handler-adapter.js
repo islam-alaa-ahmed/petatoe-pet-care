@@ -60,11 +60,15 @@
     if(typeof fn === 'function') return call.apply(null, [path].concat(args));
 
     var gate = window.PETATOEMobileStartupGate;
-    if(gate && gate.isMobile && typeof gate.ensureGroup === 'function'){
-      return gate.ensureGroup(moduleName).then(function(){
+    if(gate && typeof gate.ensureGroup === 'function'){
+      return gate.ensureGroup(moduleName).then(function(ready){
+        if(!ready){
+          warn('module not ready: ' + moduleName);
+          return undefined;
+        }
         return call.apply(null, [path].concat(args));
       }).catch(function(error){
-        warn('lazy module load failed: ' + moduleName, error);
+        warn('module load failed: ' + moduleName, error);
         return undefined;
       });
     }

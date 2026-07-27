@@ -11,6 +11,12 @@
   function safe(fn){ try{ if(typeof fn==='function') return fn(); }catch(e){ console.error('[PETATOE Filters]', e); } }
   function byId(id){ return document.getElementById(id); }
   function call(name){ var args=Array.prototype.slice.call(arguments,1); return safe(function(){ var fn=window[name]; if(typeof fn==='function') return fn.apply(window,args); }); }
+  function ensure(group, callback){
+    var gate=window.PETATOEMobileStartupGate;
+    if(!gate||typeof gate.ensureGroup!=='function') return callback();
+    return gate.ensureGroup(group).then(function(ready){if(ready!==false)return callback();}).catch(function(e){console.error('[PETATOE Filters] group readiness failed',group,e);});
+  }
+  function renderSmartWhenReady(){ return ensure('smartReports', function(){ return call('renderSmartReports'); }); }
   function treasury(){ return window.PETATOETreasury || {}; }
   function warehouse(){ return window.PETATOEWarehouses || {}; }
   function warehouseUI(){ return window.PETATOEWarehouseUI || {}; }
@@ -33,7 +39,7 @@
 
   var handlers={
     'dashboard': function(){ call('renderDashboardAll'); },
-    'smart': function(){ call('renderSmartReports'); },
+    'smart': function(){ renderSmartWhenReady(); },
     'executive': function(){ call('renderExecutiveDashboard'); },
     'customer360-search': function(el){ call('renderCustomer360Panel', el.value || ''); },
     'obligations': function(){ call('renderObligationsPanel'); },
@@ -68,7 +74,7 @@
   var actions={
     'dashboard-refresh': function(){ call('renderDashboardAll'); },
     'dashboard-reset': function(){ call('resetFilters'); },
-    'smart-refresh': function(){ call('renderSmartReports'); },
+    'smart-refresh': function(){ renderSmartWhenReady(); },
     'executive-refresh': function(){ call('renderExecutiveDashboard'); },
     'customer360-clear': function(){ var el=byId('customer360Search'); if(el) el.value=''; call('renderCustomer360Panel',''); },
     'treasury-reset': function(){ var t=treasury(); safe(function(){ if(typeof t.resetFilters==='function') t.resetFilters(); }); },

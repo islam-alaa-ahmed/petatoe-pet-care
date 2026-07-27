@@ -69,12 +69,12 @@
   function registerOrWrite(group, src, defer){
     group = normalizeGroup(String(group || 'misc'));
     src = safeSrc(src);
+    if(!groups[group]) groups[group] = [];
+    groups[group].push({ src: src, defer: !!defer, desktopWritten: !isMobile });
     if(!isMobile){
       writeDesktopScript(src, !!defer);
       return;
     }
-    if(!groups[group]) groups[group] = [];
-    groups[group].push({ src: src, defer: !!defer });
   }
 
   function loadOne(item){
@@ -126,9 +126,47 @@
     }
   }
 
+  function desktopGroupReady(name){
+    try{
+      if(name === 'payroll') return !!(window.PETATOEPayroll && typeof window.PETATOEPayroll.openTab === 'function');
+      if(name === 'smartReports') return typeof window.renderSmartReports === 'function' && typeof window.smartServicesScopedData === 'function';
+      if(name === 'reportsUI') return !!(window.PETATOEReports || typeof window.renderReports === 'function' || typeof window.renderDashboardAll === 'function');
+      if(name === 'sales') return !!(window.PETATOESales || window.PETATOESalesInvoiceReport || typeof window.renderDeep === 'function');
+      if(name === 'printing') return !!(window.PETATOEPDF || typeof window.petatoeRefreshPdfReport === 'function' || typeof window.exportPagePDF === 'function');
+      return true;
+    }catch(_){ return false; }
+  }
+
+  function waitForDesktopGroup(name){
+    if(desktopGroupReady(name)) return Promise.resolve(true);
+    if(states[name] && states[name].promise) return states[name].promise;
+    var state = states[name] = { status: 'waiting-desktop', startedAt: Date.now(), promise: null };
+    state.promise = new Promise(function(resolve){
+      var deadline = Date.now() + 6000;
+      (function check(){
+        if(desktopGroupReady(name)){
+          state.status = 'loaded';
+          state.finishedAt = Date.now();
+          notify(name, true);
+          resolve(true);
+          return;
+        }
+        if(Date.now() >= deadline){
+          state.status = 'not-ready';
+          state.finishedAt = Date.now();
+          notify(name, false, new Error('Desktop group not ready: ' + name));
+          resolve(false);
+          return;
+        }
+        window.setTimeout(check, 25);
+      })();
+    });
+    return state.promise;
+  }
+
   function ensureGroup(name){
     name = normalizeGroup(String(name || ''));
-    if(!isMobile) return Promise.resolve(true);
+    if(!isMobile) return waitForDesktopGroup(name);
     if(states[name] && states[name].promise) return states[name].promise;
     var queue = (groups[name] || []).slice();
     if(!queue.length) return Promise.resolve(false);
