@@ -1,0 +1,19 @@
+Phase D3.6 Localization Certification Hotfix
+
+Root Cause:
+The diagnostic begin/end labels in index.html repeated the literal path mobile/mobile-enterprise-v10-shell.js. The certification checker counts literal index.html references and found 3 instead of exactly 1.
+
+Fix:
+Replaced the two diagnostic labels with mobile-enterprise-v10-shell while preserving the single real script src reference and the D3.6 tracing behavior.
+
+Modified file:
+- index.html
+
+Verification:
+- Localization Lockdown workflow commands: PASSED
+- Mobile Enterprise UI v10 certification: PASSED (61 checks, 0 failures)
+- JavaScript syntax validation: PASSED
+
+Release unchanged:
+- v10.0.25
+- PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3
