@@ -1,0 +1,22 @@
+Phase R2 — Provider Registration & Hydration
+
+Root Cause:
+Desktop Bootstrap consumers could call Smart Reports and Payroll before their provider globals had registered. R1 waited for readiness but could not recover if the provider script itself never registered.
+
+Fix:
+- Added targeted desktop fallback hydration for smart/smart-services.js and payroll/payroll-core.js.
+- Explicitly registered Smart Services public provider functions on window.
+- Added provider-ready events for Smart Reports and Payroll.
+
+Modified files:
+- performance/mobile-startup-loading-gate.js
+- smart/smart-services.js
+- payroll/payroll-core.js
+
+Verification:
+- JS syntax: PASSED
+- Mobile Enterprise UI v10: 61/61 PASSED
+- Localization certification/lockdown/runtime completion: PASSED
+- Smart Reports API/runtime/readiness/translation checks: PASSED
+
+Release unchanged: v10.0.25

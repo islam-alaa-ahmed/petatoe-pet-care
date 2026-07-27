@@ -219,3 +219,12 @@ function renderSmartServicesReport(){
 function toggleSmartServicesMore(){smartServicesShowAll=!smartServicesShowAll;renderSmartServicesReport();setSmartTab('services')}
 function setSmartServicesYear(y){smartServicesYear=y;smartServicesShowAll=false;renderSmartServicesReport();setSmartTab('services')}
 function setSmartServicesSort(mode){smartServicesSort=mode;smartServicesShowAll=false;renderSmartServicesReport();setSmartTab('services')}
+
+
+/* Phase R2: explicit Smart Services provider registration for lazy/desktop hydration. */
+window.smartServicesScopedData = smartServicesScopedData;
+window.renderSmartServicesReport = renderSmartServicesReport;
+window.toggleSmartServicesMore = toggleSmartServicesMore;
+window.setSmartServicesYear = setSmartServicesYear;
+window.setSmartServicesSort = setSmartServicesSort;
+try{ window.dispatchEvent(new CustomEvent('petatoe:smart-services-ready')); }catch(_e){}

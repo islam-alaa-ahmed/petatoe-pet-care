@@ -126,6 +126,27 @@
     }
   }
 
+
+  var desktopProviderFallbacks = {
+    payroll: 'payroll/payroll-core.js?v=9.1.5',
+    smartReports: 'smart/smart-services.js'
+  };
+
+  function loadDesktopProviderFallback(name){
+    var src = desktopProviderFallbacks[name];
+    if(!src) return Promise.resolve(false);
+    var state = states[name] || (states[name] = {});
+    if(state.providerFallbackPromise) return state.providerFallbackPromise;
+    state.providerFallbackPromise = loadOne({src:src,defer:false}).then(function(){
+      try{ window.dispatchEvent(new CustomEvent('petatoe:desktop-provider-fallback',{detail:{group:name,src:src}})); }catch(_){}
+      return true;
+    }).catch(function(error){
+      state.providerFallbackError = String(error && error.message || error);
+      return false;
+    });
+    return state.providerFallbackPromise;
+  }
+
   function desktopGroupReady(name){
     try{
       if(name === 'payroll') return !!(window.PETATOEPayroll && typeof window.PETATOEPayroll.openTab === 'function');
@@ -142,6 +163,8 @@
     if(states[name] && states[name].promise) return states[name].promise;
     var state = states[name] = { status: 'waiting-desktop', startedAt: Date.now(), promise: null };
     state.promise = new Promise(function(resolve){
+      var fallbackStarted = false;
+      var fallbackAt = Date.now() + 250;
       var deadline = Date.now() + 6000;
       (function check(){
         if(desktopGroupReady(name)){
@@ -149,6 +172,12 @@
           state.finishedAt = Date.now();
           notify(name, true);
           resolve(true);
+          return;
+        }
+        if(!fallbackStarted && Date.now() >= fallbackAt && desktopProviderFallbacks[name]){
+          fallbackStarted = true;
+          state.status = 'loading-desktop-provider-fallback';
+          loadDesktopProviderFallback(name).then(function(){ window.setTimeout(check, 0); });
           return;
         }
         if(Date.now() >= deadline){

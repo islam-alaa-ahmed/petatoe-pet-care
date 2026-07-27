@@ -988,4 +988,6 @@
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(byId('payrollArea'))render();},200)});else setTimeout(function(){if(byId('payrollArea'))render();},200);
   }
   setTimeout(loadPayrollFromSupabase,0);
+
+  try{ window.dispatchEvent(new CustomEvent('petatoe:payroll-provider-ready')); }catch(_e){}
 })();
