@@ -1,9 +1,9 @@
-/* PETATOE Phase D3.5 — Runtime Bootstrap Trace (diagnostics only; no runtime behavior changes) */
+/* PETATOE Phase D3.6 — Earliest Bootstrap Trace integration (diagnostics only; no runtime behavior changes) */
 (function startupCleanProfiler(global) {
   'use strict';
   if (!global || global.PETATOEStartupDiagnostics) return;
 
-  var VERSION = '10.0.25-d3-5-runtime-bootstrap-trace';
+  var VERSION = '10.0.25-d3-6-earliest-bootstrap-trace';
   var perf = global.performance;
   var startEpoch = Date.now();
   var events = [];
@@ -166,6 +166,9 @@
       viewport: { width: Number(global.innerWidth || 0), height: Number(global.innerHeight || 0), dpr: Number(global.devicePixelRatio || 1) },
       online: global.navigator ? global.navigator.onLine !== false : true,
       summary: buildSummary(),
+      earliestBootstrap: global.PETATOEEarliestBootstrapTrace && typeof global.PETATOEEarliestBootstrapTrace.getReport === 'function'
+        ? global.PETATOEEarliestBootstrapTrace.getReport()
+        : null,
       runtimeBootstrap: { phases: bootstrapPhases(), finalState: runtimeState() },
       navigation: navigationRow(),
       paints: paintRows(),

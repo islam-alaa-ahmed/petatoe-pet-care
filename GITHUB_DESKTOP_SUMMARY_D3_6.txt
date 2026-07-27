@@ -1,0 +1,14 @@
+Phase D3.6 — Earliest Bootstrap Trace
+
+Added diagnostics-only tracing from the first executable point in index.html.
+
+Modified:
+- index.html
+- performance/startup-clean-profiler.js
+
+Added:
+- performance/earliest-bootstrap-trace.js
+- PHASE_D3_6_VERIFICATION_REPORT.md
+- GITHUB_DESKTOP_SUMMARY_D3_6.txt
+
+No business logic, Supabase, auth, permissions, UI design, desktop/tablet behavior, or release version changes.
