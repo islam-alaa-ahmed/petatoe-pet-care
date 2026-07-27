@@ -1,0 +1,11 @@
+Phase D3.3 — Clean Startup Probe & About App Diagnostics
+
+Added a low-overhead startup profiler that keeps measurements in memory during startup and persists one snapshot only after load stabilization. Added Startup/FCP/Mobile Shell/Long Tasks summary cards and a localized “Copy Advanced Diagnostics” button inside the mobile About App screen.
+
+Files:
+index.html
+performance/startup-clean-profiler.js
+mobile/about-app.js
+css/mobile/mobile-about-app.css
+i18n/localization-center/dictionary-store.js
+PHASE_D3_3_VERIFICATION_REPORT.md

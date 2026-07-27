@@ -21,6 +21,15 @@
     if(!value)return t('never','لم يتم الفحص بعد');
     try{return new Intl.DateTimeFormat(document.documentElement.lang&&document.documentElement.lang.indexOf('en')===0?'en-US':'ar-EG',{dateStyle:'medium',timeStyle:'short',calendar:'gregory'}).format(value)}catch(_){return value.toLocaleString()}
   }
+  function diagnosticsSummary(){
+    var api=window.PETATOEStartupDiagnostics;
+    if(!api||typeof api.getSummary!=='function')return null;
+    try{return api.getSummary()}catch(_){return null}
+  }
+  function metricValue(value){
+    if(value==null||!isFinite(Number(value)))return t('notAvailable','غير متاح');
+    return String(Math.round(Number(value)))+' '+t('milliseconds','مللي ثانية');
+  }
   function statusCopy(){
     if(currentStatus==='checking')return {badge:t('checking','جارٍ الفحص'),title:t('checkingTitle','جارٍ التحقق من الإصدار'),message:t('checkingMessage','يتم الآن الاتصال بخدمة التحديث والتحقق من أحدث نسخة منشورة.'),tone:'checking'};
     if(currentStatus==='available')return {badge:t('updateAvailable','تحديث متاح'),title:t('newVersionTitle','يوجد إصدار أحدث'),message:t('newVersionMessage','يمكنك تثبيت أحدث نسخة منشورة الآن دون فقد الجلسة أو إعدادات التطبيق.'),tone:'available'};
@@ -50,6 +59,16 @@
           '<button type="button" class="pet-about__maintenance-btn" data-pet-about-action="reload" '+(maintenanceBusy?'disabled':'')+'><b>'+esc(t('reloadApp','إعادة تحميل التطبيق'))+'</b><small>'+esc(t('reloadAppHint','إعادة فتح التطبيق من الصفحة الحالية.'))+'</small></button>'+
         '</div>'+
       '</article>'+
+      (function(){var diagnostics=diagnosticsSummary();return '<article class="pet-about__diagnostics" aria-labelledby="petAboutDiagnosticsTitle">'+
+        '<div class="pet-about__diagnostics-head"><strong id="petAboutDiagnosticsTitle">'+esc(t('diagnosticsTitle','تشخيص بدء التشغيل'))+'</strong><span>'+esc(t('diagnosticsHint','ملخص مباشر لزمن فتح التطبيق والمهام الطويلة والموارد المحملة.'))+'</span></div>'+
+        '<div class="pet-about__diagnostics-grid">'+
+          '<div><span>'+esc(t('startupTime','زمن بدء التشغيل'))+'</span><b>'+esc(diagnostics?metricValue(diagnostics.startupDurationMs):t('diagnosticsPending','جارٍ جمع القياسات'))+'</b></div>'+
+          '<div><span>'+esc(t('firstContentfulPaint','أول ظهور للمحتوى'))+'</span><b>'+esc(diagnostics?metricValue(diagnostics.firstContentfulPaintMs):t('diagnosticsPending','جارٍ جمع القياسات'))+'</b></div>'+
+          '<div><span>'+esc(t('mobileShellTime','ظهور واجهة الموبايل'))+'</span><b>'+esc(diagnostics?metricValue(diagnostics.mobileRootMs):t('diagnosticsPending','جارٍ جمع القياسات'))+'</b></div>'+
+          '<div><span>'+esc(t('longTasks','المهام الطويلة'))+'</span><b>'+esc(diagnostics?String(diagnostics.longTaskCount):t('diagnosticsPending','جارٍ جمع القياسات'))+'</b></div>'+
+        '</div>'+
+        '<button type="button" class="pet-about__maintenance-btn pet-about__diagnostics-copy" data-pet-about-action="copy-diagnostics"><b>'+esc(t('advancedDiagnostics','نسخ تقرير التشخيص المتقدم'))+'</b><small>'+esc(t('advancedDiagnosticsHint','ينسخ تقريرًا منظمًا يشمل Startup وCSS والموارد والمهام الطويلة والأخطاء.'))+'</small></button>'+
+      '</article>'})()+
       '<button type="button" class="pet-about__check" data-pet-about-action="copy-trace">'+esc(t('copyPerformanceTrace','نسخ تقرير الأداء'))+'</button>'+
       '<small class="pet-about__release">'+esc(releaseName())+'</small>'+
     '</section>';
@@ -83,6 +102,19 @@
       var traceText=trace.text();
       if(String(traceText||'').trim())return String(traceText);
     }
+    return '';
+  }
+
+  function advancedDiagnosticsText(){
+    var api=window.PETATOEStartupDiagnostics;
+    if(api&&typeof api.finalize==='function')try{api.finalize()}catch(_){}
+    if(api&&typeof api.getTextReport==='function'){
+      try{var value=api.getTextReport();if(String(value||'').trim())return String(value)}catch(_){}
+    }
+    try{
+      var stored=window.localStorage&&window.localStorage.getItem('petatoe_startup_diagnostics_latest');
+      if(String(stored||'').trim())return String(stored);
+    }catch(_){}
     return '';
   }
 
@@ -131,6 +163,26 @@
   }
 
 
+  async function copyDiagnostics(){
+    var unavailable=t('diagnosticsUnavailable','تقرير التشخيص المتقدم غير متاح بعد.');
+    try{
+      var value=advancedDiagnosticsText();
+      if(!value)throw new Error(unavailable);
+      var copied=false;
+      if(navigator.clipboard&&typeof navigator.clipboard.writeText==='function'){
+        try{await navigator.clipboard.writeText(value);copied=true}catch(_){}
+      }
+      if(!copied)copied=legacyCopy(value);
+      if(!copied){window.prompt(t('advancedDiagnostics','نسخ تقرير التشخيص المتقدم'),value);return}
+      if(window.showToast)window.showToast(t('diagnosticsCopied','تم نسخ تقرير التشخيص المتقدم'));
+      else window.alert(t('diagnosticsCopied','تم نسخ تقرير التشخيص المتقدم'));
+    }catch(error){
+      var message=(error&&error.message)||unavailable;
+      if(window.showToast)window.showToast(message,'error');
+      else window.alert(message);
+    }
+  }
+
   function reloadApp(){
     var url=new URL(window.location.href);
     url.searchParams.set('_reload',String(Date.now()));
@@ -163,8 +215,8 @@
     if(!api||typeof api.apply!=='function'){currentStatus='error';statusDetail=t('updateUnavailable','خدمة التحديث غير متاحة في هذا المتصفح.');rerender();return;}
     currentStatus='updating';rerender();api.apply();
   }
-  document.addEventListener('click',function(event){var button=event.target&&event.target.closest&&event.target.closest('[data-pet-about-action]');if(!button)return;var action=button.getAttribute('data-pet-about-action');if(action==='check')check();if(action==='update')update();if(action==='copy-trace')copyTrace();if(action==='clear-cache')clearCacheAndReload();if(action==='reload')reloadApp();});
+  document.addEventListener('click',function(event){var button=event.target&&event.target.closest&&event.target.closest('[data-pet-about-action]');if(!button)return;var action=button.getAttribute('data-pet-about-action');if(action==='check')check();if(action==='update')update();if(action==='copy-trace')copyTrace();if(action==='copy-diagnostics')copyDiagnostics();if(action==='clear-cache')clearCacheAndReload();if(action==='reload')reloadApp();});
   window.addEventListener('petatoe:pwa-update-status',function(event){var detail=event.detail||{};if(detail.status==='available')currentStatus='available';else if(detail.status==='updating')currentStatus='updating';else if(detail.status==='updated')currentStatus='updated';else if(detail.status==='error'){currentStatus='error';statusDetail=detail.message||'';}if(detail.checkedAt)lastCheckAt=new Date(detail.checkedAt);rerender();});
   window.addEventListener('petatoe:language-changed',rerender);
-  window.PETATOEAboutApp={renderInto:renderInto,checkForUpdates:check,version:version,buildNumber:BUILD_NUMBER,releaseDate:RELEASE_DATE};
+  window.PETATOEAboutApp={renderInto:renderInto,checkForUpdates:check,version:version,buildNumber:BUILD_NUMBER,releaseDate:RELEASE_DATE,copyDiagnostics:copyDiagnostics};
 })();

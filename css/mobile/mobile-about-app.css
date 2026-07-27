@@ -51,3 +51,20 @@
   html[data-theme="light"] #settings .pet-about__maintenance-btn,body.light-mode #settings .pet-about__maintenance-btn{background:#f8faff;border-color:#dbe3ff;color:#111827}
   html[data-theme="light"] #settings .pet-about__maintenance-btn--danger,body.light-mode #settings .pet-about__maintenance-btn--danger{background:#fff7f7;border-color:#fecaca}
 }
+
+
+/* PETATOE Phase D3.3 — Mobile Startup Diagnostics Center */
+@media (max-width:900px){
+  #settings .pet-about__diagnostics{display:grid;gap:15px;padding:20px 22px;border:1px solid rgba(148,172,211,.22);border-radius:24px;background:rgba(18,31,52,.78);box-shadow:0 16px 34px rgba(3,10,22,.18)}
+  #settings .pet-about__diagnostics-head{display:grid;gap:5px}
+  #settings .pet-about__diagnostics-head strong{font-size:1.08rem}
+  #settings .pet-about__diagnostics-head span{color:var(--muted,#c0cad9);font-size:.9rem;line-height:1.6}
+  #settings .pet-about__diagnostics-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  #settings .pet-about__diagnostics-grid>div{display:grid;gap:7px;min-height:86px;padding:13px;border:1px solid rgba(148,172,211,.18);border-radius:16px;background:rgba(7,19,38,.34)}
+  #settings .pet-about__diagnostics-grid span{color:var(--muted,#c0cad9);font-size:.78rem;line-height:1.45}
+  #settings .pet-about__diagnostics-grid b{font-size:.96rem;line-height:1.35;overflow-wrap:anywhere}
+  #settings .pet-about__diagnostics-copy{margin-top:1px}
+  html[data-theme="light"] #settings .pet-about__diagnostics,body.light-mode #settings .pet-about__diagnostics{background:#fff;border-color:#dce4ef;box-shadow:0 12px 28px rgba(27,45,75,.08)}
+  html[data-theme="light"] #settings .pet-about__diagnostics-head span,html[data-theme="light"] #settings .pet-about__diagnostics-grid span,body.light-mode #settings .pet-about__diagnostics-head span,body.light-mode #settings .pet-about__diagnostics-grid span{color:#4b5563}
+  html[data-theme="light"] #settings .pet-about__diagnostics-grid>div,body.light-mode #settings .pet-about__diagnostics-grid>div{background:#f8fafc;border-color:#e2e8f0}
+}
