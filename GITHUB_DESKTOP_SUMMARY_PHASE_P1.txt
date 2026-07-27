@@ -1,1 +1,19 @@
-PETATOE Mobile Phase P1: decoupled the mobile boot overlay from late authentication completion, added first-stable-paint release, a 1400 ms safety deadline, and a compositor CSS safety fade to prevent the startup screen from remaining stuck. Preserved PETATOE v10.0.25 and the existing version token. Mobile startup only; no business logic, auth flow, Supabase, routing, service worker, desktop/tablet, or localization changes. All syntax, localization, Smart Reports, and Mobile v10 certification checks passed.
+Phase P1 — First Paint Optimization
+
+Root Cause:
+Parser-blocking data/security/Supabase bootstrap scripts were placed before the mobile first-paint shell even though the shell does not depend on them. This delayed reaching and hydrating the mobile shell.
+
+Fix:
+Moved the complete non-visual bootstrap block to immediately after the mobile shell while preserving its internal dependency order exactly.
+
+Modified files:
+- index.html
+- PHASE_P1_FIRST_PAINT_OPTIMIZATION_VERIFICATION_REPORT.md
+- GITHUB_DESKTOP_SUMMARY_PHASE_P1.txt
+
+Verification:
+- Mobile Enterprise UI v10 certification: PASSED (61/61)
+- Enterprise Localization Certification: PASSED
+- Production Localization Lockdown: PASSED
+- Runtime Translation Completion: PASSED
+- Release remains v10.0.25

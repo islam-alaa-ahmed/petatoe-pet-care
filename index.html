@@ -361,55 +361,8 @@ html.pet-mobile-booting::after{content:none!important;display:none!important;}
 <script src="inline-extracted/critical-date-number-ui-utils.js"></script>
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('inline-extracted/critical-date-number-ui-utils.js');</script>
 
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('data/storage.js');</script>
-<script src="data/storage.js"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('data/storage.js');</script>
+<!-- Phase P1: non-visual data/security bootstrap moved after the mobile first-paint shell. -->
 
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('data/data-source.js');</script>
-<script src="data/data-source.js"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('data/data-source.js');</script>
-
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('security/session-timeout.js');</script>
-<script src="security/session-timeout.js"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('security/session-timeout.js');</script>
-
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('data/apiClient.js');</script>
-<script src="data/apiClient.js"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('data/apiClient.js');</script>
-
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('components/security-hardening.js');</script>
-<script src="components/security-hardening.js"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('components/security-hardening.js');</script>
-
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('security/enterprise-security-hardening.js');</script>
-<script src="security/enterprise-security-hardening.js"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('security/enterprise-security-hardening.js');</script>
-
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('inline-extracted/shared-safe-utils.js');</script>
-<script src="inline-extracted/shared-safe-utils.js"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('inline-extracted/shared-safe-utils.js');</script>
-
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('inline-extracted/main-kpi-tooltip-viewport-fix.js');</script>
-<script src="inline-extracted/main-kpi-tooltip-viewport-fix.js"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('inline-extracted/main-kpi-tooltip-viewport-fix.js');</script>
-<!-- PETATOE v8.0.2 — Supabase Health Check ONLY: connection test, no migration, no data writes -->
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('supabase-config.js');</script>
-<script src="supabase-config.js?v=8.0.2-client1"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('supabase-config.js');</script>
-
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('supabase-client.js');</script>
-<script src="supabase-client.js?v=8.0.2-client1"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('supabase-client.js');</script>
-
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('core/supabase-repository.js');</script>
-<script src="core/supabase-repository.js?v=8.0.2-payroll1"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('core/supabase-repository.js');</script>
-
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('data-layer.js');</script>
-<script src="data-layer.js?v=8.0.2-dl1"></script>
-<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('data-layer.js');</script>
-
-<script src="supabase-health-check.js?v=8.0.2-client1" defer></script>
 
 <link href="css/core/tokens.css" rel="stylesheet"/>
 
@@ -954,6 +907,57 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('mobile-enterprise-v10-shell');</script>
 <script src="mobile/mobile-enterprise-v10-shell.js?v=10.0.25-b1-first-paint-shell"></script>
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('mobile-enterprise-v10-shell');</script>
+<!-- Phase P1 — deferred until after the mobile shell is visible. Original dependency order preserved. -->
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('data/storage.js');</script>
+<script src="data/storage.js"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('data/storage.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('data/data-source.js');</script>
+<script src="data/data-source.js"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('data/data-source.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('security/session-timeout.js');</script>
+<script src="security/session-timeout.js"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('security/session-timeout.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('data/apiClient.js');</script>
+<script src="data/apiClient.js"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('data/apiClient.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('components/security-hardening.js');</script>
+<script src="components/security-hardening.js"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('components/security-hardening.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('security/enterprise-security-hardening.js');</script>
+<script src="security/enterprise-security-hardening.js"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('security/enterprise-security-hardening.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('inline-extracted/shared-safe-utils.js');</script>
+<script src="inline-extracted/shared-safe-utils.js"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('inline-extracted/shared-safe-utils.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('inline-extracted/main-kpi-tooltip-viewport-fix.js');</script>
+<script src="inline-extracted/main-kpi-tooltip-viewport-fix.js"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('inline-extracted/main-kpi-tooltip-viewport-fix.js');</script>
+<!-- PETATOE v8.0.2 — Supabase Health Check ONLY: connection test, no migration, no data writes -->
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('supabase-config.js');</script>
+<script src="supabase-config.js?v=8.0.2-client1"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('supabase-config.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('supabase-client.js');</script>
+<script src="supabase-client.js?v=8.0.2-client1"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('supabase-client.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('core/supabase-repository.js');</script>
+<script src="core/supabase-repository.js?v=8.0.2-payroll1"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('core/supabase-repository.js');</script>
+
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('data-layer.js');</script>
+<script src="data-layer.js?v=8.0.2-dl1"></script>
+<script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('data-layer.js');</script>
+
+<script src="supabase-health-check.js?v=8.0.2-client1" defer></script>
+<!-- End Phase P1 deferred bootstrap block. -->
 <!-- ===== PETATOE PDF REPORT MODAL ===== -->
 <!-- ===== PRINT FRAME: يُملأ بـ JS قبل الطباعة ===== -->
 <div id="petatoe-print-frame" style="display:none"></div>
