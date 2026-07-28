@@ -16,7 +16,12 @@
     if(!gate||typeof gate.ensureGroup!=='function') return callback();
     return gate.ensureGroup(group).then(function(ready){if(ready!==false)return callback();}).catch(function(e){console.error('[PETATOE Filters] group readiness failed',group,e);});
   }
-  function renderSmartWhenReady(){ return ensure('smartReports', function(){ return call('renderSmartReports'); }); }
+  function renderSmartWhenReady(forceRemote){
+    var bridge=window.PETATOEDataReadyScreenHydration;
+    if(bridge&&typeof bridge.refreshSmart==='function'&&forceRemote) return bridge.refreshSmart();
+    if(bridge&&typeof bridge.openSmart==='function') return bridge.openSmart();
+    return ensure('smartReports', function(){ return call('renderSmartReports'); });
+  }
   function treasury(){ return window.PETATOETreasury || {}; }
   function warehouse(){ return window.PETATOEWarehouses || {}; }
   function warehouseUI(){ return window.PETATOEWarehouseUI || {}; }
@@ -74,7 +79,7 @@
   var actions={
     'dashboard-refresh': function(){ call('renderDashboardAll'); },
     'dashboard-reset': function(){ call('resetFilters'); },
-    'smart-refresh': function(){ renderSmartWhenReady(); },
+    'smart-refresh': function(){ renderSmartWhenReady(true); },
     'executive-refresh': function(){ call('renderExecutiveDashboard'); },
     'customer360-clear': function(){ var el=byId('customer360Search'); if(el) el.value=''; call('renderCustomer360Panel',''); },
     'treasury-reset': function(){ var t=treasury(); safe(function(){ if(typeof t.resetFilters==='function') t.resetFilters(); }); },

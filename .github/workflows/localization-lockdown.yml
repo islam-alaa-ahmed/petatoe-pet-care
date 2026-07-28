@@ -34,6 +34,8 @@ jobs:
         run: node scripts/startup-gate-single-source-check.js
       - name: Runtime readiness contract certification
         run: node scripts/runtime-readiness-contract-check.js
+      - name: Data-ready screen hydration certification
+        run: node scripts/data-ready-screen-hydration-contract-check.js
       - name: JavaScript syntax validation
         shell: bash
         run: |

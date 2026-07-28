@@ -20,12 +20,28 @@
     try{if(tabId==='records'&&typeof window.renderRecords==='function')window.renderRecords()}catch(e){console.error('PETATOE records render error',e)}
     try{if((tabId==='sales'||tabId==='vans'||tabId==='services')&&typeof window.renderDeep==='function')window.renderDeep()}catch(e){console.error('PETATOE deep render error',e)}
     if(tabId==='smart'){
-      ensure('smartReports',function(){
-        try{
-          if(typeof window.renderSmartReports==='function') window.renderSmartReports();
-          if(smartOpen&&typeof window.setSmartTab==='function') later(function(){window.setSmartTab(smartOpen)},0);
-        }catch(e){console.error('PETATOE smart render error',e)}
-      });
+      try{
+        if(window.PETATOEDataReadyScreenHydration&&typeof window.PETATOEDataReadyScreenHydration.openSmart==='function'){
+          window.PETATOEDataReadyScreenHydration.openSmart(smartOpen||'overview');
+        }else{
+          ensure('smartReports',function(){
+            if(typeof window.renderSmartReports==='function') window.renderSmartReports();
+            if(smartOpen&&typeof window.setSmartTab==='function') later(function(){window.setSmartTab(smartOpen)},0);
+          });
+        }
+      }catch(e){console.error('PETATOE smart render error',e)}
+    }
+    if(tabId==='payroll'){
+      try{
+        if(window.PETATOEDataReadyScreenHydration&&typeof window.PETATOEDataReadyScreenHydration.openPayroll==='function') window.PETATOEDataReadyScreenHydration.openPayroll('payroll');
+        else ensure('payroll',function(){if(window.PETATOEPayroll&&typeof window.PETATOEPayroll.render==='function')window.PETATOEPayroll.render();});
+      }catch(e){console.error('PETATOE payroll render error',e)}
+    }
+    if(tabId==='salarySlip'){
+      try{
+        if(window.PETATOEDataReadyScreenHydration&&typeof window.PETATOEDataReadyScreenHydration.openPayroll==='function') window.PETATOEDataReadyScreenHydration.openPayroll('salarySlip');
+        else ensure('payroll',function(){if(window.PETATOEPayroll&&typeof window.PETATOEPayroll.renderSalarySlip==='function')window.PETATOEPayroll.renderSalarySlip();});
+      }catch(e){console.error('PETATOE salary slip render error',e)}
     }
     try{if(tabId==='customer360'&&typeof window.renderCustomer360Panel==='function')window.renderCustomer360Panel()}catch(e){console.error('PETATOE customer360 render error',e)}
     try{if(tabId==='dashboard'&&typeof window.renderDashboardAll==='function')window.renderDashboardAll()}catch(e){console.error('PETATOE dashboard render error',e)}

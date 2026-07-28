@@ -1,1 +1,8 @@
-PETATOE v10.0.25 Phase B2: converted 47 non-critical Smart Reports, report UI, sales/invoice, commission, and printing scripts from direct parser-blocking startup scripts into device-gated mobile boot declarations. Desktop preserves the original synchronous script order; physical phones register these groups and hydrate them only on pointer prefetch, route demand, or guarded first-click replay. Added dependency-aware loading so Smart Reports, Sales, and Printing load shared report UI first, while retaining the P6 no-document-observer architecture and the B1 first-paint shell. Mobile parser-blocking local JavaScript was reduced from 121 scripts / 2,402,263 bytes to 74 scripts / 1,332,961 bytes. No version, business logic, Supabase, API, authentication, permissions, service worker, desktop behavior, or localization changes. All syntax, localization, Smart Reports, and Mobile v10 certification checks passed.
+fix(runtime): hydrate active Smart Reports and Payroll screens
+
+- Add isolated data-ready screen hydration bridge
+- Render Smart Reports after sales data becomes ready
+- Make Smart Reports Refresh sync Supabase before render
+- Render Payroll immediately after provider/Supabase readiness
+- Prevent duplicate hydration and render loops
+- Add CI contract certification for hydration behavior
