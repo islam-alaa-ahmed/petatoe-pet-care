@@ -1,0 +1,7 @@
+fix(critical): restore single startup gate source
+
+- Remove obsolete inline PETATOEMobileStartupGate implementation from index.html
+- Load performance/mobile-startup-loading-gate.js once as the authoritative runtime source
+- Activate desktop provider readiness checks instead of immediate true readiness
+- Align startup gate diagnostic version with PETATOE v10.0.25 Phase A1
+- Add startup-gate single-source certification to GitHub Actions
