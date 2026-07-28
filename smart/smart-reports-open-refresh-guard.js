@@ -40,13 +40,29 @@
     }catch(_e){return false;}
   }
   function runtimeRows(){
+    // Smart Reports renderSmartReports()/smartData() reads the legacy `records`
+    // array. Readiness must therefore be measured against that same canonical
+    // render source, not only PETATOEDataSource.
+    try{return Array.isArray(window.records)?window.records:[];}catch(_e){return [];}
+  }
+  function dataSourceRows(){
     try{
       if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.getRecordsSync==='function'){
         var rows=window.PETATOEDataSource.getRecordsSync();
         if(Array.isArray(rows))return rows;
       }
     }catch(_e){}
-    try{return Array.isArray(window.records)?window.records:[];}catch(_e){return [];}
+    return [];
+  }
+  function commitDataSourceToLegacy(reason){
+    try{
+      if(typeof window.petatoeApplySalesRecordsFromRuntime==='function'){
+        return !!window.petatoeApplySalesRecordsFromRuntime(reason||'smart-reports-canonical-commit');
+      }
+    }catch(e){try{console.warn('[PETATOE Smart] canonical runtime commit failed',e);}catch(_e){}}
+    var rows=dataSourceRows();
+    if(rows.length){setRuntimeRows(rows,reason||'smart-reports-canonical-fallback');return true;}
+    return false;
   }
   function rowsCount(){return runtimeRows().length;}
   function rememberRows(rows){
@@ -102,23 +118,37 @@
     syncPromise=Promise.resolve().then(async function(){
       var existing=runtimeRows();
       rememberRows(existing);
-      if(existing.length&&!force){dataState='ready';return{rows:existing.length,confirmed:true,empty:false,source:'runtime-cache'};}
-      if(!dataLayerReady())return{rows:existing.length,confirmed:false,empty:false,source:'data-layer-not-ready'};
+      if(existing.length&&!force){dataState='ready';return{rows:existing.length,confirmed:true,empty:false,source:'legacy-records'};}
+
+      // First commit any rows already present in PETATOEDataSource into the
+      // exact legacy array consumed by smartData()/renderSmartReports().
+      if(commitDataSourceToLegacy('smart-reports-runtime-commit')){
+        existing=runtimeRows();
+        if(existing.length){rememberRows(existing);dataState='ready';return{rows:existing.length,confirmed:true,empty:false,source:'runtime-commit'};}
+      }
+
       dataState='loading';
       try{
-        var res=await window.PETATOEDataLayer.readSalesRecords({maxRows:false,pageSize:1000});
-        if(res&&res.ok&&Array.isArray(res.data)){
-          if(res.data.length){setRuntimeRows(res.data,'smart-reports-v9414-supabase');return{rows:res.data.length,confirmed:true,empty:false,source:'supabase'};}
-          // An empty response is only accepted after the full readiness window. Until
-          // then keep the last valid dashboard/data and continue waiting for hydration.
-          if(lastValidRows.length){restoreLastValidRows();return{rows:lastValidRows.length,confirmed:true,empty:false,source:'last-valid-cache'};}
-          var elapsed=retryStartedAt?now()-retryStartedAt:0;
-          if(elapsed>=DATA_WAIT_TIMEOUT_MS){setRuntimeRows([],'smart-reports-v9414-confirmed-empty');return{rows:0,confirmed:true,empty:true,source:'supabase-confirmed-empty'};}
-          return{rows:0,confirmed:false,empty:false,source:'supabase-empty-grace'};
+        if(typeof window.petatoeSyncSalesReportsFromSupabase==='function'){
+          await window.petatoeSyncSalesReportsFromSupabase();
+          existing=runtimeRows();
+          if(existing.length){rememberRows(existing);dataState='ready';return{rows:existing.length,confirmed:true,empty:false,source:'canonical-supabase-sync'};}
+        }else if(dataLayerReady()){
+          var res=await window.PETATOEDataLayer.readSalesRecords({maxRows:false,pageSize:1000});
+          if(res&&res.ok&&Array.isArray(res.data)&&res.data.length){
+            setRuntimeRows(res.data,'smart-reports-direct-supabase-fallback');
+            return{rows:res.data.length,confirmed:true,empty:false,source:'direct-supabase-fallback'};
+          }
         }
       }catch(e){try{console.warn('[PETATOE Smart] data readiness deferred',e);}catch(_e){}}
+
       if(lastValidRows.length){restoreLastValidRows();return{rows:lastValidRows.length,confirmed:true,empty:false,source:'last-valid-cache'};}
-      return{rows:rowsCount(),confirmed:false,empty:false,source:'sync-not-ready'};
+      var elapsed=retryStartedAt?now()-retryStartedAt:0;
+      if(elapsed>=DATA_WAIT_TIMEOUT_MS){
+        setRuntimeRows([],'smart-reports-confirmed-empty');
+        return{rows:0,confirmed:true,empty:true,source:'confirmed-empty'};
+      }
+      return{rows:0,confirmed:false,empty:false,source:'sync-not-ready'};
     }).finally(function(){syncPromise=null;});
     return syncPromise;
   }
@@ -177,6 +207,10 @@
 
   window.PETATOEOpenSmartReports=openSmartReports;
   window.PETATOESmartReportsReadyRender=renderSmartReady;
+  window.PETATOESmartReportsRefresh=function(tab){
+    clearRetry();retryStartedAt=now();
+    return renderSmartReady(clean(tab||activeSmartTab()||'overview')||'overview','public-smart-refresh',true);
+  };
   window.PETATOESmartReportsDataReadiness={
     state:function(){return{state:dataState,rows:rowsCount(),lastValidRows:lastValidRows.length,retryCount:retryCount,waitingSince:retryStartedAt||null};},
     isConfirmed:function(){return dataState==='ready'||dataState==='empty';},
@@ -191,7 +225,7 @@
     rememberRows(runtimeRows());
     dataState=rowsCount()?'ready':'unknown';
     clearRetry();retryStartedAt=now();
-    openSmartReports(activeSmartTab()||'overview',e);
+    renderSmartReady(activeSmartTab()||'overview','manual-smart-refresh',true);
     return false;
   },true);
 

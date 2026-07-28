@@ -1,0 +1,7 @@
+fix: restore canonical data ownership for Smart Reports and Payroll
+
+- Make Smart Reports guard the single open/refresh/render owner
+- Commit DataSource rows to legacy records before Smart Reports render
+- Remove competing Smart Reports logic from hydration bridge
+- Add stable Payroll Supabase readiness promise
+- Render Payroll and Salary Statement after data readiness

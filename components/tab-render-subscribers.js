@@ -21,14 +21,14 @@
     try{if((tabId==='sales'||tabId==='vans'||tabId==='services')&&typeof window.renderDeep==='function')window.renderDeep()}catch(e){console.error('PETATOE deep render error',e)}
     if(tabId==='smart'){
       try{
-        if(window.PETATOEDataReadyScreenHydration&&typeof window.PETATOEDataReadyScreenHydration.openSmart==='function'){
-          window.PETATOEDataReadyScreenHydration.openSmart(smartOpen||'overview');
-        }else{
-          ensure('smartReports',function(){
-            if(typeof window.renderSmartReports==='function') window.renderSmartReports();
+        ensure('smartReports',function(){
+          if(typeof window.PETATOESmartReportsReadyRender==='function'){
+            window.PETATOESmartReportsReadyRender(smartOpen||'overview','tab-render-subscriber',false);
+          }else if(typeof window.renderSmartReports==='function'){
+            window.renderSmartReports(smartOpen||'overview');
             if(smartOpen&&typeof window.setSmartTab==='function') later(function(){window.setSmartTab(smartOpen)},0);
-          });
-        }
+          }
+        });
       }catch(e){console.error('PETATOE smart render error',e)}
     }
     if(tabId==='payroll'){

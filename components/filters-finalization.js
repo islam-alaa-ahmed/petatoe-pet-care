@@ -17,10 +17,11 @@
     return gate.ensureGroup(group).then(function(ready){if(ready!==false)return callback();}).catch(function(e){console.error('[PETATOE Filters] group readiness failed',group,e);});
   }
   function renderSmartWhenReady(forceRemote){
-    var bridge=window.PETATOEDataReadyScreenHydration;
-    if(bridge&&typeof bridge.refreshSmart==='function'&&forceRemote) return bridge.refreshSmart();
-    if(bridge&&typeof bridge.openSmart==='function') return bridge.openSmart();
-    return ensure('smartReports', function(){ return call('renderSmartReports'); });
+    return ensure('smartReports', function(){
+      if(forceRemote&&typeof window.PETATOESmartReportsRefresh==='function') return window.PETATOESmartReportsRefresh();
+      if(typeof window.PETATOESmartReportsReadyRender==='function') return window.PETATOESmartReportsReadyRender('','filter-render',false);
+      return call('renderSmartReports');
+    });
   }
   function treasury(){ return window.PETATOETreasury || {}; }
   function warehouse(){ return window.PETATOEWarehouses || {}; }

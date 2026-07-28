@@ -34,6 +34,7 @@
   payrollCache[EMP_CONFIG_KEY]={prefix:'EMP',next:1,digits:4};
   payrollCache[COMM_SNAPSHOT_KEY]={};
   var payrollLoadStarted=false;
+  var payrollLoadPromise=null;
   var payrollLoaded=false;
 
   function payrollRepo(){return window.PETATOESupabaseRepository||null}
@@ -155,17 +156,18 @@
     try{if(byId('salarySlipArea'))renderSalarySlip()}catch(e){console.warn('PETATOEPayroll salary slip render after load failed',e)}
     try{document.dispatchEvent(new CustomEvent('petatoe:payroll-supabase-ready',{detail:{loaded:payrollLoaded}}))}catch(_e){}
   }
-  async function loadPayrollFromSupabase(){
-    if(payrollLoadStarted)return;
+  function loadPayrollFromSupabase(){
+    if(payrollLoaded)return Promise.resolve(true);
+    if(payrollLoadPromise)return payrollLoadPromise;
     payrollLoadStarted=true;
-    var R=payrollRepo();
-    if(!R||!R.hasClient||!R.hasClient()){
-      payrollLoadStarted=false;
-      console.warn('PETATOEPayroll Supabase repository/client not ready');
-      try{setTimeout(loadPayrollFromSupabase,300)}catch(_e){}
-      return;
-    }
-    try{
+    payrollLoadPromise=Promise.resolve().then(async function(){
+      var R=payrollRepo();
+      if(!R||!R.hasClient||!R.hasClient()){
+        console.warn('PETATOEPayroll Supabase repository/client not ready');
+        await new Promise(function(resolve){setTimeout(resolve,300)});
+        payrollLoadPromise=null;payrollLoadStarted=false;
+        return loadPayrollFromSupabase();
+      }
       var emps=typeof R.listPayrollEmployees==='function'?await R.listPayrollEmployees():await R.listJsonRows('payroll_employees',{order:'created_at'});
       var slipsRows=await R.listJsonRows('payroll_slips',{order:'created_at'});
       var master=await R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{});
@@ -175,7 +177,6 @@
         await R.saveSingleton('payroll_master_data',COMMISSION_SNAPSHOT_ROW_ID,canonicalSnapshots);
       }
       payrollCache[EMP_KEY]=Array.isArray(emps)?emps:[];
-      /* payroll_slips is the only operational source of truth. Legacy master.payrollSlips is intentionally ignored. */
       payrollCache[SLIP_KEY]=(Array.isArray(slipsRows)?slipsRows:[]).map(normalizeSlipRecord).sort(sortPayrollSlipsForDisplay);
       payrollCache[JOB_TYPES_KEY]=Array.isArray(master.jobTypes)?master.jobTypes:[];
       payrollCache[EMP_CONFIG_KEY]=employeeConfigNormalize(master.employeeConfig||payrollCache[EMP_CONFIG_KEY]);
@@ -183,7 +184,12 @@
       payrollLoaded=true;
       console.log('✅ PETATOE Payroll Supabase storage loaded', {employees:payrollCache[EMP_KEY].length, slips:payrollCache[SLIP_KEY].length});
       refreshPayrollViews();
-    }catch(e){payrollLoadStarted=false;console.warn('PETATOEPayroll Supabase load failed',e)}
+      return true;
+    }).catch(function(e){
+      console.warn('PETATOEPayroll Supabase load failed',e);
+      return false;
+    }).finally(function(){payrollLoadStarted=false;payrollLoadPromise=null;});
+    return payrollLoadPromise;
   }
   function uid(p){return (p||'id')+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7)}
   function nowPeriod(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
@@ -971,7 +977,8 @@
     accountsApprove:function(id){if(!isAccounts()){toastMsg(payrollT('workflow.accountsPermissionRequired','هذه الصلاحية للحسابات'));return}var s=slips().find(function(x){return x.id===id});if(!s||s.status!=='employee_approved'){toastMsg(payrollT('workflow.employeeApprovalRequired','لا يمكن اعتماد الصرف قبل موافقة الموظف'));return}notifyAfterPersist(setStatus(id,'accounts_approved',{accountsApprovedAt:new Date().toISOString(),accountsApprovedBy:(currentUser().fullName||currentUser().username),auditAction:'accounts_approve'}),payrollT('workflow.accountsApproved','تم اعتماد الصرف'))},
     markPaid:function(id){if(!isAccounts()){toastMsg(payrollT('workflow.accountsPermissionRequired','هذه الصلاحية للحسابات'));return}var s=slips().find(function(x){return x.id===id});if(!s||s.status!=='accounts_approved'){toastMsg(payrollT('workflow.accountsApprovalRequired','لا يمكن تسجيل الصرف قبل اعتماد الحسابات'));return}var reference=prompt(payrollT('workflow.paymentReferencePrompt','اكتب مرجع الصرف'),'');if(reference===null)return;reference=String(reference||'').trim();if(!reference){toastMsg(payrollT('workflow.paymentReferenceRequired','مرجع الصرف مطلوب'));return}var actor=payrollAuditActor();notifyAfterPersist(setStatus(id,'paid',{paidAt:new Date().toISOString(),paidBy:actor.name,paidById:actor.id,paymentReference:reference,auditAction:'mark_paid',auditReference:reference}),payrollT('workflow.paidRecorded','تم تسجيل الصرف'))},
     exportCsv:function(){var rows=[['period','employee','payment_method','base','housing','transport','commission_overtime','incentives','other_additions','deductions','net','status']].concat(slips().map(function(s){var e=getEmployee(s.employeeId)||{};var c=calcSlip(s);return [s.period,e.name||'',paymentLabel(s.paymentMethod),s.base,s.housing,s.transport,c.commission,s.incentives,c.additions,c.deductions,c.net,statusInfo(s.status)[0]]}));var csv=rows.map(function(r){return r.map(function(x){return '"'+String(x==null?'':x).replace(/"/g,'""')+'"'}).join(',')}).join('\n');var blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Payroll.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)},
-    reloadFromSupabase:function(){payrollLoadStarted=false;return loadPayrollFromSupabase()},
+    reloadFromSupabase:function(){payrollLoaded=false;payrollLoadStarted=false;payrollLoadPromise=null;return loadPayrollFromSupabase()},
+    whenSupabaseReady:function(){return loadPayrollFromSupabase()},
     isSupabaseLoaded:function(){return !!payrollLoaded}
   };
   if(!window.__PETATOE_PAYROLL_DELEGATES_BOUND__){

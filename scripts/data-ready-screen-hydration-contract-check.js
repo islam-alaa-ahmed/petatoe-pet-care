@@ -2,17 +2,21 @@ const fs=require('fs');
 function read(p){return fs.readFileSync(p,'utf8');}
 const index=read('index.html');
 const bridge=read('runtime/data-ready-screen-hydration.js');
+const guard=read('smart/smart-reports-open-refresh-guard.js');
 const tabs=read('components/tab-render-subscribers.js');
 const filters=read('components/filters-finalization.js');
+const payroll=read('payroll/payroll-core.js');
 const checks=[
   ['bridge loaded once',(index.match(/runtime\/data-ready-screen-hydration\.js/g)||[]).length===1],
-  ['records-ready listener',bridge.includes("petatoe:records-changed")],
-  ['smart remote sync',bridge.includes('petatoeSyncSalesReportsFromSupabase')],
-  ['smart in-flight guard',bridge.includes('smartOpenPromise')],
-  ['payroll Supabase readiness',bridge.includes('petatoe:payroll-supabase-ready')],
-  ['payroll reload contract',bridge.includes('reloadFromSupabase')],
-  ['tab subscriber uses bridge',tabs.includes('PETATOEDataReadyScreenHydration.openSmart')&&tabs.includes("openPayroll('payroll')")],
-  ['refresh uses remote bridge',filters.includes('bridge.refreshSmart')&&filters.includes('renderSmartWhenReady(true)')]
+  ['smart guard is sole smart lifecycle owner',guard.includes('PETATOESmartReportsReadyRender')&&guard.includes('PETATOESmartReportsRefresh')&&!bridge.includes('openSmart:')],
+  ['smart readiness uses legacy render source',guard.includes('Array.isArray(window.records)')&&guard.includes('commitDataSourceToLegacy')],
+  ['canonical Supabase sync before render',guard.includes('petatoeSyncSalesReportsFromSupabase')&&guard.includes('renderSmartReady')],
+  ['records-ready listener owned by smart guard',guard.includes("petatoe:records-changed")&&!bridge.includes("petatoe:records-changed")],
+  ['tab subscriber uses canonical smart guard',tabs.includes('PETATOESmartReportsReadyRender')&&!tabs.includes('PETATOEDataReadyScreenHydration.openSmart')],
+  ['refresh uses canonical smart API',filters.includes('PETATOESmartReportsRefresh')&&!filters.includes('bridge.refreshSmart')],
+  ['payroll Supabase readiness event',bridge.includes('petatoe:payroll-supabase-ready')],
+  ['payroll stable readiness promise',payroll.includes('payrollLoadPromise')&&payroll.includes('whenSupabaseReady')],
+  ['payroll tab subscriber hydrates requested view',tabs.includes("openPayroll('payroll')")&&tabs.includes("openPayroll('salarySlip')")]
 ];
 let failed=checks.filter(x=>!x[1]);
 checks.forEach(x=>console.log(`${x[1]?'PASS':'FAIL'}: ${x[0]}`));
