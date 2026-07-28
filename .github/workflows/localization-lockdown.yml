@@ -32,6 +32,8 @@ jobs:
         run: node scripts/mobile-enterprise-v10-certification-check.js
       - name: Startup Gate single-source certification
         run: node scripts/startup-gate-single-source-check.js
+      - name: Runtime readiness contract certification
+        run: node scripts/runtime-readiness-contract-check.js
       - name: JavaScript syntax validation
         shell: bash
         run: |

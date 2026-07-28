@@ -128,8 +128,32 @@
 
 
   var desktopProviderFallbacks = {
-    payroll: 'payroll/payroll-core.js?v=9.1.5',
-    smartReports: 'smart/smart-services.js'
+    payroll: 'payroll/payroll-core.js?v=9.1.5'
+  };
+
+  var desktopReadinessContracts = {
+    payroll: function(){
+      return !!(window.PETATOEPayroll &&
+        typeof window.PETATOEPayroll.openTab === 'function' &&
+        typeof window.PETATOEPayroll.renderSalarySlip === 'function' &&
+        typeof window.PETATOEPayroll.exportCsv === 'function');
+    },
+    smartReports: function(){
+      var tabs = window.PETATOESmartTabs || (window.PETATOE && window.PETATOE.SmartReports);
+      return typeof window.renderSmartReports === 'function' &&
+        typeof window.smartServicesScopedData === 'function' &&
+        !!(tabs && tabs.__ready && typeof tabs.setSmartTab === 'function') &&
+        typeof window.setSmartTab === 'function';
+    },
+    reportsUI: function(){
+      return !!(window.PETATOEReports || typeof window.renderReports === 'function' || typeof window.renderDashboardAll === 'function');
+    },
+    sales: function(){
+      return !!(window.PETATOESales || window.PETATOESalesInvoiceReport || typeof window.renderDeep === 'function');
+    },
+    printing: function(){
+      return !!(window.PETATOEPDF || typeof window.petatoeRefreshPdfReport === 'function' || typeof window.exportPagePDF === 'function');
+    }
   };
 
   function loadDesktopProviderFallback(name){
@@ -149,12 +173,8 @@
 
   function desktopGroupReady(name){
     try{
-      if(name === 'payroll') return !!(window.PETATOEPayroll && typeof window.PETATOEPayroll.openTab === 'function');
-      if(name === 'smartReports') return typeof window.renderSmartReports === 'function' && typeof window.smartServicesScopedData === 'function';
-      if(name === 'reportsUI') return !!(window.PETATOEReports || typeof window.renderReports === 'function' || typeof window.renderDashboardAll === 'function');
-      if(name === 'sales') return !!(window.PETATOESales || window.PETATOESalesInvoiceReport || typeof window.renderDeep === 'function');
-      if(name === 'printing') return !!(window.PETATOEPDF || typeof window.petatoeRefreshPdfReport === 'function' || typeof window.exportPagePDF === 'function');
-      return true;
+      var contract = desktopReadinessContracts[name];
+      return typeof contract === 'function' ? contract() === true : true;
     }catch(_){ return false; }
   }
 

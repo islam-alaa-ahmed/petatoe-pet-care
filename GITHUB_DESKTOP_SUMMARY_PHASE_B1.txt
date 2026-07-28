@@ -1,1 +1,7 @@
-PETATOE v10.0.25 Phase B1: implemented a real first-paint Mobile v10 shell instead of hiding startup behind a black full-screen cover. Added a small mobile-first critical stylesheet and an immediate Mobile v10 root directly after <body>, moved the essential mobile shell from script position 253/259 to 23/259, and split shell startup into immediate header/bottom-navigation rendering followed by DOM-ready drawer/identity hydration. Legacy desktop topbar/sidebar/overlay/nav and the old loader are suppressed from the phone's first CSS paint. The approved Enterprise Glass header/navigation are preserved. No release version, business logic, Supabase, API, auth, biometrics, permissions, service worker, desktop reports, or localization dictionary changes. Syntax, CSS, localization lockdown, runtime translation, Smart Reports, and Mobile v10 certification passed.
+fix(runtime): enforce complete desktop provider readiness
+
+- Require Smart Reports renderer, scoped-data provider, and Smart Tabs API before render
+- Require Payroll openTab, renderSalarySlip, and exportCsv before readiness
+- Remove partial Smart Reports desktop fallback that could duplicate the provider
+- Add runtime readiness contract certification to GitHub Actions
+- No business logic, Supabase, calculations, UI, localization, or release changes
