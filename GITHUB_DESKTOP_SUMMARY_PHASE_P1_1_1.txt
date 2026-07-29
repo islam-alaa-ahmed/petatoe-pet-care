@@ -1,0 +1,13 @@
+Phase P1.1.1 — Startup Runtime Measurement Harness
+
+Modified production files:
+- index.html
+- performance/startup-clean-profiler.js
+
+Added verification files:
+- scripts/startup-runtime-measurement-harness-check.js
+- PHASE_P1_1_1_STARTUP_RUNTIME_MEASUREMENT_HARNESS_VERIFICATION_REPORT.md
+- GITHUB_DESKTOP_SUMMARY_PHASE_P1_1_1.txt
+
+Summary:
+Expanded the existing diagnostics-only startup profiler to capture real shell, session, canonical data, dashboard, Smart Reports, FCP/LCP, long-task, and resource bottleneck timings. Extended finalization so late startup milestones are not lost. No business logic or visible UI changes.
