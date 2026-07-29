@@ -18,7 +18,7 @@ window.__PETATOE_EARLIEST_BOOT={startMs:(window.performance&&performance.now?per
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('core/mobile-device-profile.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/mobile-startup-loading-gate.js');</script>
-<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-smart-reports-sr1-state-machine"></script>
+<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-p1-2-startup-decomposition"></script>
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('performance/mobile-startup-loading-gate.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/startup-clean-profiler.js');</script>
@@ -1937,9 +1937,9 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <!-- === /PETATOE v3.8.95 TREASURY TRUE STABILITY FIX === -->
 <!-- === PETATOE v3.8.105 TREASURY MOVEMENT LOG REAL TAB FIX === -->
 <!-- PETATOE v3.8.146 SETTINGS CENTER EXTRACTED -->
-<script src="settings/users.js"></script>
-<script src="settings/permissions.js?v=9.4.8-settings-localization-phase61"></script>
-<script src="inline-extracted/children-expenses-nav-guard.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('settingsSetup','settings/users.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('settingsSetup','settings/permissions.js?v=9.4.8-settings-localization-phase61',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','inline-extracted/children-expenses-nav-guard.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-core.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-storage.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-budget.js',false);</script>
@@ -1953,15 +1953,15 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-expenses-facade.js',true);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-expenses-controlled-migration.js',true);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-expenses-final-stability-audit.js',true);</script>
-<script src="inline-extracted/children-expenses-core.js"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','inline-extracted/children-expenses-core.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('settingsSetup','settings/setup.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('diagnostics','settings/audit.js',true);</script>
-<script src="i18n/localization-center/settings-backup.js?v=9.4.23-a3-1"></script>
-<script src="settings/backup.js?v=9.4.23-a3-1"></script>
-<script src="settings/settings.js?v=9.4.8-settings-localization-phase61"></script>
-<script src="i18n/localization-center/dashboard.js?v=9.4.23-operations-localization-completion"></script>
-<script src="sales/contract-candidates-report.js"></script>
-<script src="sales/contract-candidates-dark-fix.js?v=9.1.8-legacy-cleanup-pack1"></script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('settingsSetup','i18n/localization-center/settings-backup.js?v=9.4.23-a3-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('settingsSetup','settings/backup.js?v=9.4.23-a3-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('settingsSetup','settings/settings.js?v=9.4.8-settings-localization-phase61',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('settingsSetup','i18n/localization-center/dashboard.js?v=9.4.23-operations-localization-completion',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/contract-candidates-report.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/contract-candidates-dark-fix.js?v=9.1.8-legacy-cleanup-pack1',false);</script>
 <!-- === PETATOE v3.8.131 SETTINGS MENU DUPLICATE REMOVAL - FINAL GUARD === -->
 <script defer="" src="inline-extracted/settings-menu-dedupe.js"></script>
 <!-- === PETATOE v3.8.141 SETTINGS ACCORDION COLLAPSED DEFAULT CLEAN FIX === -->

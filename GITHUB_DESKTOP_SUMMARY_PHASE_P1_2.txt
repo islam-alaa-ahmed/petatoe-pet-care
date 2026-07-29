@@ -1,0 +1,22 @@
+Phase P1.2 — Enterprise Startup Decomposition
+
+Root Cause:
+Desktop registerOrWrite() emitted all feature-group scripts during initial parsing, so modules not needed for the dashboard joined the cold-start waterfall. Mobile already demand-loaded those groups, but desktop bypassed the loader.
+
+Modified files:
+- index.html
+- performance/mobile-startup-loading-gate.js
+- scripts/startup-decomposition-check.js
+
+Change:
+- Added guarded desktop lazy groups for diagnostics, XLSX, settings, children, operations, warehouses, payroll, treasury, smart reports, sales, commissions and printing.
+- Reused the existing ordered group loader and interaction triggers.
+- Converted direct Settings/Children/Sales scripts to canonical gated registration.
+- Preserved dashboard critical boot and reports UI startup ownership.
+
+Verification:
+- JS syntax: PASSED
+- Decomposition check: 12/12 PASSED
+- Mobile Enterprise UI v10: 61/61 PASSED
+- Localization certification: PASSED
+- Runtime translation completion: PASSED

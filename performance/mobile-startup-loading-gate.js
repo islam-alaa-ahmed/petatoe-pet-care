@@ -7,6 +7,16 @@
 
   var groups = Object.create(null);
   var states = Object.create(null);
+  var desktopLazyGroups = {
+    diagnostics: true, xlsx: true, settingsSetup: true, children: true,
+    operations: true, warehouses: true, payroll: true, treasury: true,
+    smartReports: true, sales: true, commission: true, printing: true
+  };
+
+  function shouldLazyLoad(group){
+    group = normalizeGroup(String(group || ''));
+    return isMobile || desktopLazyGroups[group] === true;
+  }
   var startupInteractive = document.readyState !== 'loading';
 
   var mobileBootFinished = false;
@@ -70,8 +80,9 @@
     group = normalizeGroup(String(group || 'misc'));
     src = safeSrc(src);
     if(!groups[group]) groups[group] = [];
-    groups[group].push({ src: src, defer: !!defer, desktopWritten: !isMobile });
-    if(!isMobile){
+    var lazy = shouldLazyLoad(group);
+    groups[group].push({ src: src, defer: !!defer, desktopWritten: !lazy });
+    if(!lazy){
       writeDesktopScript(src, !!defer);
       return;
     }
@@ -270,7 +281,7 @@
 
   function ensureGroup(name){
     name = normalizeGroup(String(name || ''));
-    if(!isMobile) return waitForDesktopGroup(name);
+    if(!shouldLazyLoad(name)) return waitForDesktopGroup(name);
 
     var existing = states[name];
     if(groupContractReady(name)){
@@ -370,7 +381,7 @@
   }
 
   function installTriggers(){
-    if(!isMobile || window.__PETATOE_MOBILE_STARTUP_GATE_TRIGGERS__) return;
+    if(window.__PETATOE_MOBILE_STARTUP_GATE_TRIGGERS__) return;
     window.__PETATOE_MOBILE_STARTUP_GATE_TRIGGERS__ = true;
 
     document.addEventListener('pointerdown', function(event){
@@ -480,11 +491,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, version: '10.0.25-smart-reports-sr1-state-machine', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-p1-2-startup-decomposition', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-smart-reports-sr1-state-machine',
+    version: '10.0.25-p1-2-startup-decomposition',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
