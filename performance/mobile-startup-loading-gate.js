@@ -237,43 +237,49 @@
     if(groupContractReady(name)) return Promise.resolve(true);
     var existing = states[name];
     if(existing && existing.promise && existing.status !== 'not-ready' && existing.status !== 'failed') return existing.promise;
+
+    var queue = (groups[name] || []).slice();
     var state = states[name] = existing || {};
-    state.status = 'waiting-desktop';
+    state.status = state.scriptsLoaded ? 'waiting-desktop' : 'loading-desktop';
     state.startedAt = Date.now();
     state.finishedAt = 0;
     state.error = '';
     state.attempts = (state.attempts || 0) + 1;
-    state.promise = new Promise(function(resolve){
-      var fallbackStarted = false;
-      var fallbackAt = Date.now() + 250;
-      var deadline = Date.now() + 6000;
-      (function check(){
-        if(groupContractReady(name)){
-          state.status = 'loaded';
-          state.finishedAt = Date.now();
-          state.promise = null;
-          notify(name, true);
-          resolve(true);
-          return;
-        }
-        if(!fallbackStarted && Date.now() >= fallbackAt && desktopProviderFallbacks[name]){
-          fallbackStarted = true;
-          state.status = 'loading-desktop-provider-fallback';
-          loadDesktopProviderFallback(name).then(function(){ window.setTimeout(check, 0); });
-          return;
-        }
-        if(Date.now() >= deadline){
-          state.status = 'not-ready';
-          state.finishedAt = Date.now();
-          state.error = 'Desktop group not ready: ' + name;
-          state.readiness = readinessSnapshot(name);
-          state.promise = null;
-          notify(name, false, new Error(state.error));
-          resolve(false);
-          return;
-        }
-        window.setTimeout(check, 25);
-      })();
+    var dependencyQueue = (dependencies[name] || []).slice();
+
+    state.promise = dependencyQueue.reduce(function(chain, dependency){
+      return chain.then(function(){ return ensureGroup(dependency); });
+    }, Promise.resolve()).then(function(){
+      if(state.scriptsLoaded || !queue.length) return true;
+      return queue.reduce(function(chain, item){
+        return chain.then(function(){ return loadOne(item); });
+      }, Promise.resolve()).then(function(){ state.scriptsLoaded = true; return true; });
+    }).then(function(){
+      state.status = 'waiting-desktop';
+      return waitForGroupContract(name, 6000);
+    }).then(function(ready){
+      state.finishedAt = Date.now();
+      state.promise = null;
+      if(!ready){
+        state.status = 'not-ready';
+        state.error = 'Desktop group not ready: ' + name;
+        state.readiness = readinessSnapshot(name);
+        notify(name, false, new Error(state.error));
+        return false;
+      }
+      state.status = 'loaded';
+      state.readiness = readinessSnapshot(name);
+      notify(name, true);
+      setTimeout(function(){ refreshActiveModule(name); }, 0);
+      return true;
+    }).catch(function(error){
+      state.status = 'failed';
+      state.finishedAt = Date.now();
+      state.error = String(error && error.message || error);
+      state.readiness = readinessSnapshot(name);
+      state.promise = null;
+      notify(name, false, error);
+      return false;
     });
     return state.promise;
   }
