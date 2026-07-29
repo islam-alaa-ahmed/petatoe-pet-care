@@ -1,0 +1,7 @@
+fix(smart-reports): recover runtime provider registration
+
+- add canonical Smart Services/Tabs registration recovery
+- ensure providers before Smart Reports readiness evaluation
+- force fresh provider scripts only when APIs are missing
+- align critical Smart Reports cache tokens
+- preserve report calculations, queries and UI

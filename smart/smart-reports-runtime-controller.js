@@ -72,18 +72,28 @@
     };
   }
   function ensureSmartRuntime(){
-    var gate=window.PETATOEMobileStartupGate;
-    if(gate&&typeof gate.ensureGroup==='function'){
-      return Promise.resolve(gate.ensureGroup('smartReports')).then(function(ready){
-        if(ready===true) return true;
-        var status=typeof gate.getGroupStatus==='function'?gate.getGroupStatus('smartReports'):null;
-        var detail=status&&status.readiness?status.readiness:readinessSnapshot();
-        throw new Error('Smart Reports runtime is not ready: '+JSON.stringify(detail));
-      });
-    }
-    var status=readinessSnapshot();
-    var ready=status.renderSmartReports&&(status.smartServices||status.legacySmartServices)&&status.smartTabs&&status.setSmartTab;
-    return ready?Promise.resolve(true):Promise.reject(new Error('Smart Reports provider contract is incomplete: '+JSON.stringify(status)));
+    var registration=window.PETATOESmartRuntimeRegistration;
+    var recover=registration&&typeof registration.ensure==='function'
+      ? Promise.resolve(registration.ensure())
+      : Promise.resolve(true);
+    return recover.then(function(recovered){
+      if(recovered!==true){
+        var registrationStatus=registration&&typeof registration.getStatus==='function'?registration.getStatus():null;
+        throw new Error('Smart Reports provider registration failed: '+JSON.stringify(registrationStatus||readinessSnapshot()));
+      }
+      var gate=window.PETATOEMobileStartupGate;
+      if(gate&&typeof gate.ensureGroup==='function'){
+        return Promise.resolve(gate.ensureGroup('smartReports')).then(function(ready){
+          if(ready===true) return true;
+          var status=typeof gate.getGroupStatus==='function'?gate.getGroupStatus('smartReports'):null;
+          var detail=status&&status.readiness?status.readiness:readinessSnapshot();
+          throw new Error('Smart Reports runtime is not ready: '+JSON.stringify(detail));
+        });
+      }
+      var status=readinessSnapshot();
+      var ready=status.renderSmartReports&&(status.smartServices||status.legacySmartServices)&&status.smartTabs&&status.setSmartTab;
+      return ready?true:Promise.reject(new Error('Smart Reports provider contract is incomplete: '+JSON.stringify(status)));
+    });
   }
   function synchronize(forceRemote,reason){
     return Promise.resolve().then(async function(){
