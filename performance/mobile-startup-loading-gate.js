@@ -281,7 +281,7 @@
 
   function ensureGroup(name){
     name = normalizeGroup(String(name || ''));
-    if(!shouldLazyLoad(name)) return waitForDesktopGroup(name);
+    if(!isMobile) return waitForDesktopGroup(name);
 
     var existing = states[name];
     if(groupContractReady(name)){
@@ -491,11 +491,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-p1-2-startup-decomposition', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-smart-reports-sr1-state-machine', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-p1-2-startup-decomposition',
+    version: '10.0.25-smart-reports-sr1-state-machine',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
