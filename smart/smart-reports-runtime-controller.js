@@ -8,7 +8,11 @@
   window.__PETATOE_SMART_REPORTS_RUNTIME_CONTROLLER_SR2__=true;
 
   var activePromise=null;
+  var activeRequest=null;
   var pendingRequest=null;
+  var remoteRefreshPromise=null;
+  var remoteRefreshCount=0;
+  var coalescedRefreshCount=0;
   var lastRequestedTab='overview';
   var lastReason='startup';
   var lastResult=false;
@@ -100,7 +104,15 @@
   function synchronize(forceRemote,reason){
     return Promise.resolve().then(async function(){
       if(forceRemote&&typeof window.petatoeSyncSalesReportsFromSupabase==='function'){
-        await window.petatoeSyncSalesReportsFromSupabase();
+        if(!remoteRefreshPromise){
+          remoteRefreshCount+=1;
+          remoteRefreshPromise=Promise.resolve(window.petatoeSyncSalesReportsFromSupabase()).finally(function(){
+            remoteRefreshPromise=null;
+          });
+        }else{
+          coalescedRefreshCount+=1;
+        }
+        await remoteRefreshPromise;
       }
       commitRuntimeRows((reason||'smart-reports')+'-canonical-commit');
       return true;
@@ -152,6 +164,7 @@
     if(activePromise||!pendingRequest) return activePromise||Promise.resolve(lastResult);
     var request=pendingRequest;
     pendingRequest=null;
+    activeRequest=request;
     activePromise=runRequest(request).catch(function(error){
       lastResult=false;
       lastError=String(error&&error.message||error);
@@ -159,6 +172,7 @@
       return false;
     }).finally(function(){
       activePromise=null;
+      activeRequest=null;
     }).then(function(result){
       if(pendingRequest) return drainQueue();
       return result;
@@ -166,6 +180,14 @@
     return activePromise;
   }
   function requestRender(tab,reason,forceRemote,skipSync){
+    if(forceRemote&&activePromise&&activeRequest&&activeRequest.forceRemote){
+      coalescedRefreshCount+=1;
+      return activePromise;
+    }
+    if(forceRemote&&pendingRequest&&pendingRequest.forceRemote){
+      coalescedRefreshCount+=1;
+      return activePromise||drainQueue();
+    }
     pendingRequest={
       tab:normalizeTab(tab||currentTab()),
       reason:clean(reason)||'smart-render',
@@ -205,6 +227,10 @@
     return {
       __ready:true,
       active:!!activePromise,
+      activeRemoteRefresh:!!(activeRequest&&activeRequest.forceRemote),
+      remoteRefreshInFlight:!!remoteRefreshPromise,
+      remoteRefreshCount:remoteRefreshCount,
+      coalescedRefreshCount:coalescedRefreshCount,
       queued:!!pendingRequest,
       open:smartIsOpen(),
       tab:lastRequestedTab,

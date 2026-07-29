@@ -1,0 +1,3 @@
+Phase SR5.3 — Smart Reports Refresh De-duplication
+
+Prevented repeated Smart Reports refresh clicks from creating duplicate Supabase refresh requests and duplicate renders. Concurrent refresh actions now join one in-flight remote refresh promise. Added refresh ownership diagnostics and contract/runtime verification scripts. No business logic, queries, calculations, UI, localization, bootstrap order, or release version changes.
