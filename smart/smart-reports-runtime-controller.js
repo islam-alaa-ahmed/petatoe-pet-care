@@ -34,23 +34,22 @@
   }
   function runtimeRows(){
     try{
-      if(typeof window.petatoeSmartReportsRows==='function'){
-        var rows=window.petatoeSmartReportsRows();
+      var provider=window.PETATOESmartReportsData;
+      if(provider&&typeof provider.getRows==='function'){
+        var rows=provider.getRows();
         if(Array.isArray(rows)) return rows;
-      }
-    }catch(_e){}
-    try{
-      if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.getRecordsSync==='function'){
-        var sourceRows=window.PETATOEDataSource.getRecordsSync();
-        if(Array.isArray(sourceRows)) return sourceRows;
       }
     }catch(_e){}
     return Array.isArray(window.records)?window.records:[];
   }
   function commitRuntimeRows(reason){
     try{
+      var provider=window.PETATOESmartReportsData;
+      if(provider&&typeof provider.syncLegacy==='function'){
+        return provider.syncLegacy(reason||'smart-reports-sr4');
+      }
       if(typeof window.petatoeApplySalesRecordsFromRuntime==='function'){
-        return window.petatoeApplySalesRecordsFromRuntime(reason||'smart-reports-sr2');
+        return window.petatoeApplySalesRecordsFromRuntime(reason||'smart-reports-sr4-fallback');
       }
     }catch(error){
       try{console.warn('[PETATOE Smart] canonical data commit failed',error);}catch(_e){}
@@ -97,6 +96,11 @@
   }
   function synchronize(forceRemote,reason){
     return Promise.resolve().then(async function(){
+      var provider=window.PETATOESmartReportsData;
+      if(forceRemote&&provider&&typeof provider.refresh==='function'){
+        await provider.refresh((reason||'smart-reports')+'-remote-refresh');
+        return true;
+      }
       if(forceRemote&&typeof window.petatoeSyncSalesReportsFromSupabase==='function'){
         await window.petatoeSyncSalesReportsFromSupabase();
       }

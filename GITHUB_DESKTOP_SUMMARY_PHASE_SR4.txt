@@ -1,0 +1,6 @@
+fix(smart-reports): unify canonical data ownership
+
+- add one Smart Reports data provider
+- make core, runtime controller, and tabs read the same rows
+- synchronize PETATOEDataSource to legacy records before render
+- add Smart Reports data provider certification

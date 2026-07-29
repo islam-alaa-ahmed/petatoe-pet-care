@@ -1718,7 +1718,15 @@ function petatoeSmartRerender(tab){
   setSmartTab(target);
 }
 
-function smartData(){return (records||[]).slice()} // v5.1.29: detached from removed Smart header filters
+function smartData(){
+  try{
+    if(window.PETATOESmartReportsData&&typeof window.PETATOESmartReportsData.getRows==='function'){
+      const rows=window.PETATOESmartReportsData.getRows();
+      if(Array.isArray(rows))return rows.slice();
+    }
+  }catch(_e){}
+  return (records||[]).slice();
+} // SR4: canonical Smart Reports data provider with legacy fallback
 function smartDateValue(r){
   const ds=parseDate(r.date);
   if(!ds)return null;
