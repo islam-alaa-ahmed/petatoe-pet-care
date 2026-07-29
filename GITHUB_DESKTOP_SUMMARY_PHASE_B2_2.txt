@@ -1,0 +1,9 @@
+fix: activate event-driven Smart Reports runtime controller
+
+- Add one canonical Smart Reports lifecycle controller
+- Load it after smart-tabs and before tab subscribers
+- Sync PETATOEDataSource into legacy records before every render
+- Make Refresh perform remote sync, canonical commit, cache clear, and render
+- React to records-changed without polling or retry timers
+- Keep legacy smart-reports-open-refresh-guard unloaded
+- Extend runtime hydration certification
