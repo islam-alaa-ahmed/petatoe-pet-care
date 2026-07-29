@@ -167,9 +167,41 @@ function petatoeNormalizeSalesRowsForReports(rows){
     return x;
   });
 }
+function petatoeSalesCommitRevision(rows){
+  var hash=2166136261;
+  function push(value){
+    var text=String(value==null?'':value);
+    for(var i=0;i<text.length;i++){
+      hash^=text.charCodeAt(i);
+      hash=Math.imul(hash,16777619);
+    }
+    hash^=31;
+    hash=Math.imul(hash,16777619);
+  }
+  (Array.isArray(rows)?rows:[]).forEach(function(row){
+    row=row||{};
+    Object.keys(row).sort().forEach(function(key){
+      push(key);
+      var value=row[key];
+      if(value&&typeof value==='object'){
+        try{push(JSON.stringify(value));}catch(_e){push(String(value));}
+      }else push(value);
+    });
+    push('|row|');
+  });
+  return 'sales-'+(Array.isArray(rows)?rows.length:0)+'-'+(hash>>>0).toString(16);
+}
 function petatoeApplyCanonicalSalesRows(rows, reason, source, options){
   options=options||{};
   rows=petatoeNormalizeSalesRowsForReports(rows);
+  var revision=petatoeSalesCommitRevision(rows);
+  var previous=window.__PETATOE_SALES_REPORTS_COMMIT_STATE__||null;
+  if(previous&&previous.revision===revision){
+    previous.duplicateCount=(Number(previous.duplicateCount)||0)+1;
+    previous.lastDuplicateReason=reason||'sync';
+    previous.lastDuplicateTime=new Date().toISOString();
+    return true;
+  }
   records=rows.slice();
   try{window.records=records;}catch(_e){}
   if(options.commitToDataSource!==false){
@@ -181,12 +213,25 @@ function petatoeApplyCanonicalSalesRows(rows, reason, source, options){
   try{renderDashboardAll();}catch(_e){console.warn('[PETATOE Sales Source Bridge] dashboard render skipped',_e);}
   try{if(document.getElementById('records')&&document.getElementById('records').classList.contains('active')&&typeof renderRecords==='function')renderRecords();}catch(_e){}
   try{
+    var committedAt=new Date().toISOString();
+    var sequence=(previous&&Number(previous.sequence)||0)+1;
+    window.__PETATOE_SALES_REPORTS_COMMIT_STATE__={
+      revision:revision,
+      sequence:sequence,
+      rows:records.length,
+      reason:reason||'sync',
+      source:source||'PETATOEDataLayer.readSalesRecords',
+      committedAt:committedAt,
+      duplicateCount:0
+    };
     window.__PETATOE_SALES_REPORTS_SOURCE_STATUS__={
       source:source||'PETATOEDataLayer.readSalesRecords',
       rows:records.length,
       totalInc:records.reduce(function(s,r){return s+petatoeCanonicalNumber(r,['__canonicalTotalInc','total_inc','totalInc','total'])},0),
       reason:reason||'sync',
-      time:new Date().toISOString()
+      revision:revision,
+      sequence:sequence,
+      time:committedAt
     };
   }catch(_e){}
   try{
@@ -194,6 +239,8 @@ function petatoeApplyCanonicalSalesRows(rows, reason, source, options){
       reason:reason||'sync',
       source:source||'PETATOEDataLayer.readSalesRecords',
       rows:records.length,
+      revision:revision,
+      sequence:window.__PETATOE_SALES_REPORTS_COMMIT_STATE__&&window.__PETATOE_SALES_REPORTS_COMMIT_STATE__.sequence||0,
       status:window.__PETATOE_SALES_REPORTS_SOURCE_STATUS__||null
     }}));
   }catch(_e){}

@@ -1,0 +1,11 @@
+Phase SR5.2 — Idempotent Canonical Commit
+
+Modified:
+- inline-extracted/legacy-application-core.js
+- smart/smart-reports-runtime-controller.js
+
+Added verification:
+- scripts/smart-reports-idempotent-commit-check.js
+- PHASE_SR5_2_IDEMPOTENT_CANONICAL_COMMIT_VERIFICATION_REPORT.md
+
+Result: duplicate canonical commits and duplicate revision-driven Smart Reports renders are suppressed. No business logic, Supabase, UI, localization, or version change.

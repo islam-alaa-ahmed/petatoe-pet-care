@@ -15,6 +15,7 @@
   var lastError='';
   var renderCount=0;
   var lastCommittedDetail=null;
+  var lastRenderedRevision='';
 
   function clean(value){ return String(value==null?'':value).trim(); }
   function normalizeTab(value){
@@ -123,6 +124,11 @@
       if(typeof window.renderSmartReports!=='function') throw new Error('renderSmartReports is unavailable');
       window.renderSmartReports(tab);
       activateTab(tab);
+      try{
+        var commitState=window.__PETATOE_SALES_REPORTS_COMMIT_STATE__||null;
+        var revision=clean(commitState&&commitState.revision||(lastCommittedDetail&&lastCommittedDetail.revision));
+        if(revision) lastRenderedRevision=revision;
+      }catch(_e){}
       renderCount+=1;
       lastResult=true;
       lastError='';
@@ -207,6 +213,7 @@
       lastError:lastError,
       renderCount:renderCount,
       lastCommittedDetail:lastCommittedDetail,
+      lastRenderedRevision:lastRenderedRevision,
       readiness:readinessSnapshot(),
       gate:group
     };
@@ -238,6 +245,8 @@
 
   window.addEventListener('petatoe:sales-records-committed',function(event){
     lastCommittedDetail=event&&event.detail||null;
+    var revision=clean(lastCommittedDetail&&lastCommittedDetail.revision);
+    if(revision&&revision===lastRenderedRevision) return;
     if(activePromise||!smartIsOpen()) return;
     requestRender(currentTab(),'sales-records-committed',false,true);
   });
