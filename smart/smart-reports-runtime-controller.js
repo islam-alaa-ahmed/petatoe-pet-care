@@ -40,6 +40,12 @@
   }
   function runtimeRows(){
     try{
+      if(window.PETATOESmartReportsReadAdapter&&typeof window.PETATOESmartReportsReadAdapter.readRows==='function'){
+        var adaptedRows=window.PETATOESmartReportsReadAdapter.readRows();
+        if(Array.isArray(adaptedRows)) return adaptedRows;
+      }
+    }catch(_e){}
+    try{
       if(typeof window.petatoeSmartReportsRows==='function'){
         var rows=window.petatoeSmartReportsRows();
         if(Array.isArray(rows)) return rows;
@@ -74,7 +80,8 @@
       setSmartTab:typeof window.setSmartTab==='function',
       controller:true,
       sourceRows:runtimeRows().length,
-      legacyRows:Array.isArray(window.records)?window.records.length:0
+      legacyRows:Array.isArray(window.records)?window.records.length:0,
+      readAdapter:!!(window.PETATOESmartReportsReadAdapter&&window.PETATOESmartReportsReadAdapter.__ready)
     };
   }
   function ensureSmartRuntime(){

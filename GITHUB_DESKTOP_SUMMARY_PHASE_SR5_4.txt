@@ -1,0 +1,27 @@
+Phase SR5.4 — Runtime Read Adapter Isolation
+
+Root Cause:
+Smart Reports still had mixed read ownership after canonical commit: smartData() read the legacy records array directly while runtime diagnostics could inspect other sources. There was no isolated read-only boundary over committed sales rows.
+
+Fix:
+Added an optional PETATOESmartReportsReadAdapter that snapshots canonical committed window.records rows only after petatoe:sales-records-committed. smartData() and the runtime controller now prefer the adapter while preserving legacy fallbacks. The adapter is not part of the critical Smart Reports startup gate and performs no fetching, commits, normalization, rendering, or Supabase access.
+
+Modified:
+index.html
+inline-extracted/legacy-application-core.js
+smart/smart-reports-runtime-controller.js
+
+Added:
+smart/smart-reports-read-adapter.js
+scripts/smart-reports-read-adapter-isolation-check.js
+PHASE_SR5_4_RUNTIME_READ_ADAPTER_ISOLATION_VERIFICATION_REPORT.md
+GITHUB_DESKTOP_SUMMARY_PHASE_SR5_4.txt
+
+Verification:
+Syntax PASSED
+Read Adapter Isolation 9/9 PASSED
+Event Ownership 7/7 PASSED
+Idempotent Commit 8/8 PASSED
+Refresh De-duplication 9/9 PASSED
+Single Controller 9/9 PASSED
+Data-ready Hydration 13/13 PASSED
