@@ -67,12 +67,9 @@
 
   function records(){
     try{
-      var provider = window.PETATOESmartReportsData;
-      var rows = provider && typeof provider.getRows === 'function'
-        ? provider.getRows()
-        : (window.PETATOEDataSource && typeof window.PETATOEDataSource.getRecordsSync === 'function'
-          ? window.PETATOEDataSource.getRecordsSync()
-          : []);
+      var rows = window.PETATOEDataSource && typeof window.PETATOEDataSource.getRecordsSync === 'function'
+        ? window.PETATOEDataSource.getRecordsSync()
+        : [];
       var stamp = recordsSignature(rows);
       if(stamp !== perfState.recordsStamp){
         perfState.recordsStamp = stamp;

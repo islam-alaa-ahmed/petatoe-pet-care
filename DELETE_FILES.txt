@@ -1,0 +1,5 @@
+Delete these SR4-only files from the project after copying the rollback files:
+smart/smart-reports-data-provider.js
+scripts/smart-reports-data-provider-check.js
+
+They are no longer referenced after this rollback. Deleting them prevents accidental reuse.

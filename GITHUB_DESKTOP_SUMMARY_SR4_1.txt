@@ -1,0 +1,6 @@
+fix: rollback SR4 Smart Reports data-provider regression
+
+- Restore SR3 Smart Reports runtime order
+- Restore legacy smartData and smart-tabs behavior
+- Remove SR4 data provider from critical bootstrap path
+- Delete obsolete SR4 provider/check files
