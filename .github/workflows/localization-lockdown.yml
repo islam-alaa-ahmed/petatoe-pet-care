@@ -38,6 +38,8 @@ jobs:
         run: node scripts/data-ready-screen-hydration-contract-check.js
       - name: Smart Reports single-controller certification
         run: node scripts/smart-reports-single-controller-check.js
+      - name: Smart Reports event ownership certification
+        run: node scripts/smart-reports-event-ownership-check.js
       - name: JavaScript syntax validation
         shell: bash
         run: |

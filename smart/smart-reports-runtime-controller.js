@@ -14,6 +14,7 @@
   var lastResult=false;
   var lastError='';
   var renderCount=0;
+  var lastCommittedDetail=null;
 
   function clean(value){ return String(value==null?'':value).trim(); }
   function normalizeTab(value){
@@ -135,6 +136,7 @@
   }
   function runRequest(request){
     return ensureSmartRuntime().then(function(){
+      if(request.skipSync===true) return true;
       return synchronize(request.forceRemote,request.reason);
     }).then(function(){
       return renderNow(request.tab,request.reason);
@@ -157,11 +159,12 @@
     });
     return activePromise;
   }
-  function requestRender(tab,reason,forceRemote){
+  function requestRender(tab,reason,forceRemote,skipSync){
     pendingRequest={
       tab:normalizeTab(tab||currentTab()),
       reason:clean(reason)||'smart-render',
-      forceRemote:!!forceRemote
+      forceRemote:!!forceRemote,
+      skipSync:skipSync===true
     };
     lastRequestedTab=pendingRequest.tab;
     return drainQueue();
@@ -203,6 +206,7 @@
       lastResult:lastResult,
       lastError:lastError,
       renderCount:renderCount,
+      lastCommittedDetail:lastCommittedDetail,
       readiness:readinessSnapshot(),
       gate:group
     };
@@ -232,8 +236,9 @@
     requestRender(detail.smartOpen||currentTab(),'smart-tabchange',false);
   });
 
-  window.addEventListener('petatoe:records-changed',function(){
-    commitRuntimeRows('smart-reports-records-changed');
-    if(smartIsOpen()) requestRender(currentTab(),'records-changed',false);
+  window.addEventListener('petatoe:sales-records-committed',function(event){
+    lastCommittedDetail=event&&event.detail||null;
+    if(activePromise||!smartIsOpen()) return;
+    requestRender(currentTab(),'sales-records-committed',false,true);
   });
 })();

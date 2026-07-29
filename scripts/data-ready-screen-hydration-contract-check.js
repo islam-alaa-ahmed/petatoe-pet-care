@@ -14,7 +14,7 @@ const checks=[
   ['smart lifecycle has one event-driven owner',controller.includes('PETATOESmartReportsReadyRender')&&controller.includes('PETATOESmartReportsRefresh')&&!bridge.includes('openSmart:')],
   ['canonical runtime commit before render',controller.includes('petatoeApplySalesRecordsFromRuntime')&&controller.includes('canonical-commit')&&/runRequest\(request\)[\s\S]*?ensureSmartRuntime\(\)[\s\S]*?synchronize\(request\.forceRemote[\s\S]*?renderNow\(request\.tab/.test(controller)],
   ['remote refresh before canonical render',controller.includes('petatoeSyncSalesReportsFromSupabase')&&controller.includes('public-refresh')],
-  ['records-ready listener owned by controller',controller.includes("petatoe:records-changed")&&!bridge.includes("petatoe:records-changed")],
+  ['post-commit listener owned by controller',controller.includes("petatoe:sales-records-committed")&&!controller.includes("window.addEventListener('petatoe:records-changed'")&&!bridge.includes("petatoe:records-changed")],
   ['tab subscriber delegates Smart lifecycle ownership',!tabs.includes("if(tabId==='smart')")&&!tabs.includes('PETATOESmartReportsReadyRender')&&!tabs.includes('PETATOEDataReadyScreenHydration.openSmart')],
   ['refresh uses canonical smart API',filters.includes('PETATOESmartReportsRuntime')&&filters.includes('runtime.refresh()')&&!filters.includes('bridge.refreshSmart')],
   ['payroll Supabase readiness event',bridge.includes('petatoe:payroll-supabase-ready')],

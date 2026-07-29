@@ -1,0 +1,7 @@
+fix(smart-reports): make canonical sales commit the sole records event owner
+
+- Emit petatoe:sales-records-committed after legacy records are committed
+- Stop Smart Reports controller from committing raw records-changed events
+- Render open Smart Reports only from the post-commit event
+- Add sync-bypass and active-request duplicate suppression
+- Add event ownership certification to GitHub Actions

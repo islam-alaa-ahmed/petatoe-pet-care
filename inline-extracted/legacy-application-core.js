@@ -189,6 +189,14 @@ function petatoeApplyCanonicalSalesRows(rows, reason, source, options){
       time:new Date().toISOString()
     };
   }catch(_e){}
+  try{
+    window.dispatchEvent(new CustomEvent('petatoe:sales-records-committed',{detail:{
+      reason:reason||'sync',
+      source:source||'PETATOEDataLayer.readSalesRecords',
+      rows:records.length,
+      status:window.__PETATOE_SALES_REPORTS_SOURCE_STATUS__||null
+    }}));
+  }catch(_e){}
   return true;
 }
 function petatoeApplySalesRecordsFromRuntime(reason){
