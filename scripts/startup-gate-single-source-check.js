@@ -30,8 +30,16 @@ requireCheck(count(gate, 'window.PETATOEMobileStartupGate =') === 1,
   'External startup-gate must define window.PETATOEMobileStartupGate exactly once.');
 requireCheck(gate.includes("if(!isMobile) return waitForDesktopGroup(name);"),
   'Desktop ensureGroup must use waitForDesktopGroup().');
-requireCheck(gate.includes("version: '10.0.25-runtime-restoration-a1'"),
-  'Startup-gate runtime version is not aligned with Phase A1.');
+requireCheck(gate.includes("version: '10.0.25-smart-reports-sr1-state-machine'"),
+  'Startup-gate runtime version is not aligned with Smart Reports SR1 state machine.');
+requireCheck(gate.includes('state.promise = null;') && gate.includes("state.status = 'not-ready';"),
+  'Failed readiness must be retryable and must not retain a resolved false promise.');
+requireCheck(gate.includes('waitForGroupContract(name, 6000)'),
+  'Mobile script loading must be followed by provider-contract verification.');
+requireCheck(gate.includes('getGroupStatus: getGroupStatus') && gate.includes('invalidateGroup: invalidateGroup'),
+  'Startup gate must expose detailed status and recovery APIs.');
+requireCheck(gate.includes('if(ready !== true || !el || !el.isConnected) return;'),
+  'Lazy route replay must not run after a false readiness result.');
 requireCheck(workflow.includes('node scripts/startup-gate-single-source-check.js'),
   'Startup-gate single-source check is not wired into GitHub Actions.');
 

@@ -1,4 +1,4 @@
-/* PETATOE v10.0.25 — Smart Reports event-driven runtime controller.
+/* PETATOE v10.0.25 SR1 — Smart Reports event-driven runtime controller.
  * Owns open/refresh/data-ready rendering without polling or changing report logic.
  */
 (function(){
@@ -60,8 +60,10 @@
     var gate=window.PETATOEMobileStartupGate;
     if(gate&&typeof gate.ensureGroup==='function'){
       return Promise.resolve(gate.ensureGroup('smartReports')).then(function(ready){
-        if(!ready) throw new Error('Smart Reports runtime is not ready');
-        return true;
+        if(ready === true) return true;
+        var status = typeof gate.getGroupStatus === 'function' ? gate.getGroupStatus('smartReports') : null;
+        var detail = status ? JSON.stringify(status.readiness || {}) : 'status unavailable';
+        throw new Error('Smart Reports runtime is not ready: ' + detail);
       });
     }
     var services=window.PETATOESmartServices;
@@ -85,6 +87,10 @@
     return activePromise;
   }
 
+  window.PETATOESmartReportsRuntimeStatus=function(){
+    var gate=window.PETATOEMobileStartupGate;
+    return gate&&typeof gate.getGroupStatus==='function' ? gate.getGroupStatus('smartReports') : {group:'smartReports',ready:false,status:'gate-unavailable'};
+  };
   window.PETATOESmartReportsReadyRender=function(tab,reason,forceRemote){
     return requestRender(tab,reason||'public-ready-render',!!forceRemote);
   };

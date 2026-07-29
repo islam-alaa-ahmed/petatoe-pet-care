@@ -181,18 +181,66 @@
     }catch(_){ return false; }
   }
 
+
+  function groupContractReady(name){
+    return desktopGroupReady(name);
+  }
+
+  function readinessSnapshot(name){
+    var services = window.PETATOESmartServices;
+    var tabs = window.PETATOESmartTabs || (window.PETATOE && window.PETATOE.SmartReports);
+    if(name === 'smartReports'){
+      return {
+        renderSmartReports: typeof window.renderSmartReports === 'function',
+        smartServices: !!(services && services.__ready && typeof services.scopedData === 'function'),
+        legacySmartServices: typeof window.smartServicesScopedData === 'function',
+        smartTabs: !!(tabs && tabs.__ready && typeof tabs.setSmartTab === 'function'),
+        setSmartTab: typeof window.setSmartTab === 'function'
+      };
+    }
+    if(name === 'payroll'){
+      return {
+        payroll: !!window.PETATOEPayroll,
+        openTab: !!(window.PETATOEPayroll && typeof window.PETATOEPayroll.openTab === 'function'),
+        renderSalarySlip: !!(window.PETATOEPayroll && typeof window.PETATOEPayroll.renderSalarySlip === 'function'),
+        exportCsv: !!(window.PETATOEPayroll && typeof window.PETATOEPayroll.exportCsv === 'function')
+      };
+    }
+    return { ready: groupContractReady(name) };
+  }
+
+  function waitForGroupContract(name, timeoutMs){
+    timeoutMs = Math.max(250, Number(timeoutMs || 6000));
+    if(groupContractReady(name)) return Promise.resolve(true);
+    return new Promise(function(resolve){
+      var deadline = Date.now() + timeoutMs;
+      (function check(){
+        if(groupContractReady(name)) return resolve(true);
+        if(Date.now() >= deadline) return resolve(false);
+        window.setTimeout(check, 25);
+      })();
+    });
+  }
+
   function waitForDesktopGroup(name){
-    if(desktopGroupReady(name)) return Promise.resolve(true);
-    if(states[name] && states[name].promise) return states[name].promise;
-    var state = states[name] = { status: 'waiting-desktop', startedAt: Date.now(), promise: null };
+    if(groupContractReady(name)) return Promise.resolve(true);
+    var existing = states[name];
+    if(existing && existing.promise && existing.status !== 'not-ready' && existing.status !== 'failed') return existing.promise;
+    var state = states[name] = existing || {};
+    state.status = 'waiting-desktop';
+    state.startedAt = Date.now();
+    state.finishedAt = 0;
+    state.error = '';
+    state.attempts = (state.attempts || 0) + 1;
     state.promise = new Promise(function(resolve){
       var fallbackStarted = false;
       var fallbackAt = Date.now() + 250;
       var deadline = Date.now() + 6000;
       (function check(){
-        if(desktopGroupReady(name)){
+        if(groupContractReady(name)){
           state.status = 'loaded';
           state.finishedAt = Date.now();
+          state.promise = null;
           notify(name, true);
           resolve(true);
           return;
@@ -206,7 +254,10 @@
         if(Date.now() >= deadline){
           state.status = 'not-ready';
           state.finishedAt = Date.now();
-          notify(name, false, new Error('Desktop group not ready: ' + name));
+          state.error = 'Desktop group not ready: ' + name;
+          state.readiness = readinessSnapshot(name);
+          state.promise = null;
+          notify(name, false, new Error(state.error));
           resolve(false);
           return;
         }
@@ -216,34 +267,65 @@
     return state.promise;
   }
 
+
   function ensureGroup(name){
     name = normalizeGroup(String(name || ''));
     if(!isMobile) return waitForDesktopGroup(name);
-    if(states[name] && states[name].promise) return states[name].promise;
+
+    var existing = states[name];
+    if(groupContractReady(name)){
+      if(existing){ existing.status = 'loaded'; existing.promise = null; existing.finishedAt = Date.now(); }
+      return Promise.resolve(true);
+    }
+    if(existing && existing.promise && existing.status !== 'not-ready' && existing.status !== 'failed') return existing.promise;
+
     var queue = (groups[name] || []).slice();
     if(!queue.length) return Promise.resolve(false);
-    var state = states[name] = { status: 'loading', startedAt: Date.now(), promise: null };
+    var state = states[name] = existing || {};
+    state.status = state.scriptsLoaded ? 'waiting-provider-contract' : 'loading';
+    state.startedAt = Date.now();
+    state.finishedAt = 0;
+    state.error = '';
+    state.attempts = (state.attempts || 0) + 1;
     var dependencyQueue = (dependencies[name] || []).slice();
+
     state.promise = dependencyQueue.reduce(function(chain, dependency){
       return chain.then(function(){ return ensureGroup(dependency); });
     }, Promise.resolve()).then(function(){
+      if(state.scriptsLoaded) return true;
       return queue.reduce(function(chain, item){
         return chain.then(function(){ return loadOne(item); });
-      }, Promise.resolve());
+      }, Promise.resolve()).then(function(){ state.scriptsLoaded = true; return true; });
     }).then(function(){
-      state.status = 'loaded';
+      state.status = 'waiting-provider-contract';
+      return waitForGroupContract(name, 6000);
+    }).then(function(ready){
       state.finishedAt = Date.now();
+      state.promise = null;
+      if(!ready){
+        state.status = 'not-ready';
+        state.error = 'Mobile group provider contract not ready: ' + name;
+        state.readiness = readinessSnapshot(name);
+        notify(name, false, new Error(state.error));
+        return false;
+      }
+      state.status = 'loaded';
+      state.readiness = readinessSnapshot(name);
       notify(name, true);
       setTimeout(function(){ refreshActiveModule(name); }, 0);
       return true;
     }).catch(function(error){
       state.status = 'failed';
+      state.finishedAt = Date.now();
       state.error = String(error && error.message || error);
+      state.readiness = readinessSnapshot(name);
+      state.promise = null;
       notify(name, false, error);
-      throw error;
+      return false;
     });
     return state.promise;
   }
+
 
   function groupForElement(el){
     if(!el) return '';
@@ -307,8 +389,8 @@
       }
       event.preventDefault();
       event.stopImmediatePropagation();
-      ensureGroup(group).then(function(){
-        if(!el || !el.isConnected) return;
+      ensureGroup(group).then(function(ready){
+        if(ready !== true || !el || !el.isConnected) return;
         if(el.dataset) el.dataset.petatoeLazyReplay = '1';
         el.click();
       }).catch(function(error){
@@ -348,23 +430,73 @@
     }, { once: true });
   }
 
+  function getGroupStatus(name){
+    name = normalizeGroup(String(name || ''));
+    var state = states[name] || {};
+    return {
+      group: name,
+      ready: groupContractReady(name),
+      status: state.status || (groupContractReady(name) ? 'loaded' : 'idle'),
+      attempts: state.attempts || 0,
+      scriptsLoaded: !!state.scriptsLoaded,
+      startedAt: state.startedAt || 0,
+      finishedAt: state.finishedAt || 0,
+      error: state.error || '',
+      readiness: readinessSnapshot(name)
+    };
+  }
+
+  function invalidateGroup(name, reason){
+    name = normalizeGroup(String(name || ''));
+    var state = states[name] || (states[name] = {});
+    state.promise = null;
+    state.status = groupContractReady(name) ? 'loaded' : 'idle';
+    state.error = reason ? String(reason) : '';
+    state.readiness = readinessSnapshot(name);
+    return getGroupStatus(name);
+  }
+
+  function installProviderReadyRecovery(){
+    var bindings = [
+      ['petatoe:smart-services-ready','smartReports'],
+      ['petatoe:smart-tabs-ready','smartReports'],
+      ['petatoe:smart-reports-ready','smartReports'],
+      ['petatoe:payroll-provider-ready','payroll']
+    ];
+    bindings.forEach(function(binding){
+      window.addEventListener(binding[0], function(){
+        var name = binding[1];
+        var state = states[name];
+        if(state && (state.status === 'not-ready' || state.status === 'failed')) invalidateGroup(name, binding[0]);
+      });
+      document.addEventListener(binding[0], function(){
+        var name = binding[1];
+        var state = states[name];
+        if(state && (state.status === 'not-ready' || state.status === 'failed')) invalidateGroup(name, binding[0]);
+      });
+    });
+  }
+
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, version: '10.0.25-runtime-restoration-a1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, version: '10.0.25-smart-reports-sr1-state-machine', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-runtime-restoration-a1',
+    version: '10.0.25-smart-reports-sr1-state-machine',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
     normalizeGroup: normalizeGroup,
+    getGroupStatus: getGroupStatus,
+    invalidateGroup: invalidateGroup,
     snapshot: snapshot,
     finishBoot: finishBoot,
     armBootDeadline: armBootDeadline
   };
 
+  installProviderReadyRecovery();
   installTriggers();
   scheduleCriticalShellRelease();
 })();

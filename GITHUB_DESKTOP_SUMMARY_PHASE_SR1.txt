@@ -1,0 +1,7 @@
+fix: make Smart Reports readiness retryable and contract-aware
+
+- Clear stale false readiness promises so later attempts can recover
+- Verify provider contracts after mobile scripts finish loading
+- Prevent route replay when readiness resolves false
+- Add detailed Smart Reports runtime status diagnostics
+- Update cache tokens and startup-gate regression certification
