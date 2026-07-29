@@ -12,7 +12,7 @@ const checks=[
   ['legacy retry guard not loaded',!index.includes('smart/smart-reports-open-refresh-guard.js')],
   ['smart controller ordered after tabs and before subscribers',index.indexOf('smart/smart-tabs.js') < index.indexOf('smart/smart-reports-runtime-controller.js') && index.indexOf('smart/smart-reports-runtime-controller.js') < index.indexOf('components/tab-render-subscribers.js')],
   ['smart lifecycle has one event-driven owner',controller.includes('PETATOESmartReportsReadyRender')&&controller.includes('PETATOESmartReportsRefresh')&&!bridge.includes('openSmart:')],
-  ['canonical runtime commit before render',controller.includes('petatoeApplySalesRecordsFromRuntime')&&controller.includes('final-commit')&&/activePromise=synchronize\([\s\S]*?\.then\(function\(\)\{[\s\S]*?renderNow\(tab/.test(controller)],
+  ['canonical runtime commit before render',controller.includes('petatoeApplySalesRecordsFromRuntime')&&controller.includes('final-commit')&&/activePromise=ensureSmartRuntime\(\)[\s\S]*?synchronize\([\s\S]*?renderNow\(tab/.test(controller)],
   ['remote refresh before canonical render',controller.includes('petatoeSyncSalesReportsFromSupabase')&&controller.includes('public-smart-refresh')],
   ['records-ready listener owned by controller',controller.includes("petatoe:records-changed")&&!bridge.includes("petatoe:records-changed")],
   ['tab subscriber uses canonical smart API',tabs.includes('PETATOESmartReportsReadyRender')&&!tabs.includes('PETATOEDataReadyScreenHydration.openSmart')],

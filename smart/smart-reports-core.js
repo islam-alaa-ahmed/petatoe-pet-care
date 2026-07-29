@@ -986,7 +986,10 @@ function renderSmartReports(){
   const vanRows=vanAvgRev.map(v=>`<tr><td>${v[0]}</td><td>${fmt0(v[2])}</td><td>${money(v[1])}</td><td>${money(v[3])}</td><td>${safeDiv(v[1],total)*100 .toFixed?'' : ''}</td></tr>`).join('');
   const vanRowsFixed=vanAvgRev.map(v=>`<tr><td>${v[0]}</td><td>${fmt0(v[2])}</td><td>${money(v[1])}</td><td>${money(v[3])}</td><td>${safeDiv(v[1],total).toLocaleString('en-US',{style:'percent',maximumFractionDigits:1})}</td></tr>`).join('');
   const weakServices=serviceSum.slice().reverse().slice(0,10);
-  const servicesScopedData=smartServicesScopedData();
+  const smartServicesProvider=(window.PETATOESmartServices&&window.PETATOESmartServices.__ready&&typeof window.PETATOESmartServices.scopedData==='function')
+    ? window.PETATOESmartServices.scopedData
+    : (typeof window.smartServicesScopedData==='function'?window.smartServicesScopedData:null);
+  const servicesScopedData=smartServicesProvider?smartServicesProvider():[];
   const servicesScopedSum=Object.entries(groupSum(servicesScopedData,'item')).sort((a,b)=>b[1]-a[1]);
   const servicesWeakScoped=servicesScopedSum.slice().reverse().slice(0,10);
   const cashVal=(paySum.find(x=>String(x[0]).includes('نقد'))||['',0])[1];

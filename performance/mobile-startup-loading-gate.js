@@ -140,8 +140,11 @@
     },
     smartReports: function(){
       var tabs = window.PETATOESmartTabs || (window.PETATOE && window.PETATOE.SmartReports);
+      var services = window.PETATOESmartServices;
+      var servicesReady = !!(services && services.__ready && typeof services.scopedData === 'function') ||
+        typeof window.smartServicesScopedData === 'function';
       return typeof window.renderSmartReports === 'function' &&
-        typeof window.smartServicesScopedData === 'function' &&
+        servicesReady &&
         !!(tabs && tabs.__ready && typeof tabs.setSmartTab === 'function') &&
         typeof window.setSmartTab === 'function';
     },

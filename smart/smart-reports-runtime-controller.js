@@ -56,12 +56,31 @@
       return true;
     });
   }
+  function ensureSmartRuntime(){
+    var gate=window.PETATOEMobileStartupGate;
+    if(gate&&typeof gate.ensureGroup==='function'){
+      return Promise.resolve(gate.ensureGroup('smartReports')).then(function(ready){
+        if(!ready) throw new Error('Smart Reports runtime is not ready');
+        return true;
+      });
+    }
+    var services=window.PETATOESmartServices;
+    var ready=typeof window.renderSmartReports==='function' &&
+      ((services&&services.__ready&&typeof services.scopedData==='function') || typeof window.smartServicesScopedData==='function') &&
+      typeof window.setSmartTab==='function';
+    return ready?Promise.resolve(true):Promise.reject(new Error('Smart Reports provider contract is incomplete'));
+  }
   function requestRender(tab,reason,forceRemote){
     tab=clean(tab)||currentTab()||'overview';
     lastRequestedTab=tab;
     if(activePromise) return activePromise.then(function(){return renderNow(lastRequestedTab,reason||'queued-smart-render');});
-    activePromise=synchronize(!!forceRemote,reason).then(function(){
+    activePromise=ensureSmartRuntime().then(function(){
+      return synchronize(!!forceRemote,reason);
+    }).then(function(){
       return renderNow(tab,reason||'smart-render');
+    }).catch(function(error){
+      try{console.error('[PETATOE Smart] runtime readiness failed',error);}catch(_e){}
+      return false;
     }).finally(function(){ activePromise=null; });
     return activePromise;
   }

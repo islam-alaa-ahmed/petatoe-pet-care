@@ -1,0 +1,7 @@
+fix(smart-reports): restore canonical services dependency contract
+
+- Add PETATOESmartServices canonical provider namespace
+- Resolve Smart Reports services data through the provider namespace
+- Await Smart Reports runtime readiness before sync/render
+- Align B3 cache tokens for services, core, and controller
+- Update hydration contract certification

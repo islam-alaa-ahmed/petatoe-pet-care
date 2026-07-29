@@ -221,10 +221,19 @@ function setSmartServicesYear(y){smartServicesYear=y;smartServicesShowAll=false;
 function setSmartServicesSort(mode){smartServicesSort=mode;smartServicesShowAll=false;renderSmartServicesReport();setSmartTab('services')}
 
 
-/* Phase R2: explicit Smart Services provider registration for lazy/desktop hydration. */
-window.smartServicesScopedData = smartServicesScopedData;
-window.renderSmartServicesReport = renderSmartServicesReport;
-window.toggleSmartServicesMore = toggleSmartServicesMore;
-window.setSmartServicesYear = setSmartServicesYear;
-window.setSmartServicesSort = setSmartServicesSort;
-try{ window.dispatchEvent(new CustomEvent('petatoe:smart-services-ready')); }catch(_e){}
+/* Phase B3: canonical Smart Services provider namespace. */
+window.PETATOESmartServices = Object.freeze({
+  __ready: true,
+  scopedData: smartServicesScopedData,
+  render: renderSmartServicesReport,
+  toggleMore: toggleSmartServicesMore,
+  setYear: setSmartServicesYear,
+  setSort: setSmartServicesSort
+});
+/* Backward-compatible globals for legacy callers. */
+window.smartServicesScopedData = window.PETATOESmartServices.scopedData;
+window.renderSmartServicesReport = window.PETATOESmartServices.render;
+window.toggleSmartServicesMore = window.PETATOESmartServices.toggleMore;
+window.setSmartServicesYear = window.PETATOESmartServices.setYear;
+window.setSmartServicesSort = window.PETATOESmartServices.setSort;
+try{ window.dispatchEvent(new CustomEvent('petatoe:smart-services-ready',{detail:{provider:'PETATOESmartServices'}})); }catch(_e){}
