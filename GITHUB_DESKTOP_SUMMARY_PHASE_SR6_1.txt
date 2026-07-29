@@ -1,0 +1,14 @@
+Phase SR6.1 — Smart Reports Cache Token Reconciliation
+
+Modified:
+- index.html
+- smart/smart-runtime-registration.js
+- service-worker.js
+
+Added:
+- scripts/smart-reports-cache-token-reconciliation-check.js
+- PHASE_SR6_1_SMART_REPORTS_CACHE_TOKEN_RECONCILIATION_VERIFICATION_REPORT.md
+- GITHUB_DESKTOP_SUMMARY_PHASE_SR6_1.txt
+
+Purpose:
+Unify the critical Smart Reports runtime cache-busting token, runtime-registration retry token, and Service Worker cache namespace without changing runtime order, calculations, Supabase, UI, localization, or release identity.

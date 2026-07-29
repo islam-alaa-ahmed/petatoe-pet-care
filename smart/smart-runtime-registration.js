@@ -8,7 +8,7 @@
   if(window.__PETATOE_SMART_RUNTIME_REGISTRATION_SR3__) return;
   window.__PETATOE_SMART_RUNTIME_REGISTRATION_SR3__ = true;
 
-  var BUILD = '10.0.25-smart-reports-sr3-registration';
+  var BUILD = '10.0.25-smart-reports-sr6-1-cache-reconciliation';
   var activePromise = null;
   var attempts = 0;
   var lastError = '';
