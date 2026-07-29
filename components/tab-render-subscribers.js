@@ -19,18 +19,9 @@
     if(selfManaged[tabId]) return;
     try{if(tabId==='records'&&typeof window.renderRecords==='function')window.renderRecords()}catch(e){console.error('PETATOE records render error',e)}
     try{if((tabId==='sales'||tabId==='vans'||tabId==='services')&&typeof window.renderDeep==='function')window.renderDeep()}catch(e){console.error('PETATOE deep render error',e)}
-    if(tabId==='smart'){
-      try{
-        ensure('smartReports',function(){
-          if(typeof window.PETATOESmartReportsReadyRender==='function'){
-            window.PETATOESmartReportsReadyRender(smartOpen||'overview','tab-render-subscriber',false);
-          }else if(typeof window.renderSmartReports==='function'){
-            window.renderSmartReports(smartOpen||'overview');
-            if(smartOpen&&typeof window.setSmartTab==='function') later(function(){window.setSmartTab(smartOpen)},0);
-          }
-        });
-      }catch(e){console.error('PETATOE smart render error',e)}
-    }
+    /* Smart Reports lifecycle is owned exclusively by PETATOESmartReportsRuntime.
+       The canonical controller listens to petatoe:tabchange and performs readiness,
+       data synchronization and rendering exactly once. */
     if(tabId==='payroll'){
       try{
         if(window.PETATOEDataReadyScreenHydration&&typeof window.PETATOEDataReadyScreenHydration.openPayroll==='function') window.PETATOEDataReadyScreenHydration.openPayroll('payroll');

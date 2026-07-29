@@ -1,0 +1,7 @@
+fix(smart-reports): establish one canonical lifecycle controller
+
+- Centralize open, readiness, data sync, render and refresh
+- Remove Smart Reports rendering from tab subscribers
+- Route filter refresh through PETATOESmartReportsRuntime
+- Keep smart-router as compatibility/navigation layer
+- Add single-controller CI certification

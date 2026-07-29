@@ -18,6 +18,10 @@
   function openSmartReports(tab, event){
     try{ if(event && typeof event.preventDefault === 'function') event.preventDefault(); }catch(_e){}
     var target = normalizeSmartTab(tab);
+    var runtime = window.PETATOESmartReportsRuntime;
+    if(runtime && runtime.__ready && typeof runtime.open === 'function'){
+      return runtime.open(target, event);
+    }
     try{
       if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function'){
         window.PETATOERouter.openTab('smart', target);
@@ -25,7 +29,6 @@
         window.PETATOEInlineHandlers.moduleCall('router', 'openTab', 'smart', target);
       }else if(typeof window.tab === 'function'){
         window.tab('smart');
-        if(typeof window.setSmartTab === 'function') window.setSmartTab(target);
       }else{
         throw new Error('Smart Reports router is unavailable');
       }
@@ -36,7 +39,7 @@
     }
   }
 
-  // Stable public API used by the header and legacy integrations.
+  // Compatibility bridge only. The canonical controller replaces this once loaded.
   window.PETATOEOpenSmartReports = openSmartReports;
 
   function perfNow(){ try{ return (window.performance && performance.now) ? performance.now() : Date.now(); }catch(e){ return Date.now(); } }

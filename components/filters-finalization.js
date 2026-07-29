@@ -17,11 +17,12 @@
     return gate.ensureGroup(group).then(function(ready){if(ready!==false)return callback();}).catch(function(e){console.error('[PETATOE Filters] group readiness failed',group,e);});
   }
   function renderSmartWhenReady(forceRemote){
-    return ensure('smartReports', function(){
-      if(forceRemote&&typeof window.PETATOESmartReportsRefresh==='function') return window.PETATOESmartReportsRefresh();
-      if(typeof window.PETATOESmartReportsReadyRender==='function') return window.PETATOESmartReportsReadyRender('','filter-render',false);
-      return call('renderSmartReports');
-    });
+    var runtime=window.PETATOESmartReportsRuntime;
+    if(runtime&&runtime.__ready){
+      return forceRemote?runtime.refresh():runtime.render('', 'filter-render');
+    }
+    console.error('[PETATOE Filters] Smart Reports runtime controller is unavailable');
+    return false;
   }
   function treasury(){ return window.PETATOETreasury || {}; }
   function warehouse(){ return window.PETATOEWarehouses || {}; }
