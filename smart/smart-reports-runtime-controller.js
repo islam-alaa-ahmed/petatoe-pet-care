@@ -151,6 +151,15 @@
       renderCount+=1;
       lastResult=true;
       lastError='';
+      try{
+        window.dispatchEvent(new CustomEvent('petatoe:smart-reports-ready',{detail:{
+          tab:tab,
+          reason:lastReason,
+          renderCount:renderCount,
+          rows:runtimeRows().length,
+          revision:lastRenderedRevision
+        }}));
+      }catch(_e){}
       return true;
     }catch(error){
       lastResult=false;

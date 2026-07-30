@@ -209,9 +209,18 @@ function petatoeApplyCanonicalSalesRows(rows, reason, source, options){
   }
   try{if(Array.isArray(window.importData))window.importData=[];}catch(_e){}
   try{if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex();}catch(_e){}
-  try{populateFilters();}catch(_e){}
-  try{renderDashboardAll();}catch(_e){console.warn('[PETATOE Sales Source Bridge] dashboard render skipped',_e);}
-  try{if(document.getElementById('records')&&document.getElementById('records').classList.contains('active')&&typeof renderRecords==='function')renderRecords();}catch(_e){}
+  try{
+    var scheduleUiCommit=function(){
+      try{populateFilters();}catch(_e){}
+      try{renderDashboardAll();}catch(_e){console.warn('[PETATOE Sales Source Bridge] dashboard render skipped',_e);}
+      try{if(document.getElementById('records')&&document.getElementById('records').classList.contains('active')&&typeof renderRecords==='function')renderRecords();}catch(_e){}
+    };
+    if(document.readyState==='loading'||!window.__PETATOE_INITIAL_DASHBOARD_UI_COMMIT_DONE__){
+      window.__PETATOE_INITIAL_DASHBOARD_UI_COMMIT_DONE__=true;
+      var deferUi=function(){window.setTimeout(scheduleUiCommit,0);};
+      if(typeof window.requestAnimationFrame==='function')window.requestAnimationFrame(deferUi);else deferUi();
+    }else scheduleUiCommit();
+  }catch(_e){}
   try{
     var committedAt=new Date().toISOString();
     var sequence=(previous&&Number(previous.sequence)||0)+1;
@@ -923,7 +932,7 @@ function yearButtons(target,current,fn){
   let all=`<button class="year-chip ${current==='all'?'active':''}" onclick="${fn}('all')">كل السنوات 🌐</button>`;
   $(target).innerHTML=one+all;
 }
-function renderDashboardAll(){if(!records.length&&!window.__PETATOE_SALES_SOURCE_STATUS__)return;let data=filtered();renderDashboardKpis(data);renderDashboardCharts(data);renderReportsCenter(records);if($('sales').classList.contains('active')||$('vans').classList.contains('active')||$('services').classList.contains('active'))renderDeep()}
+function renderDashboardAll(){if(!records.length&&!window.__PETATOE_SALES_SOURCE_STATUS__)return;let data=filtered();renderDashboardKpis(data);renderDashboardCharts(data);renderReportsCenter(records);if($('sales').classList.contains('active')||$('vans').classList.contains('active')||$('services').classList.contains('active'))renderDeep();try{window.dispatchEvent(new CustomEvent('petatoe:dashboard-rendered',{detail:{rows:records.length,filteredRows:data.length,source:'renderDashboardAll'}}));}catch(_e){}}
 function dashboardComparableData(y){
   const ctx=ytdContext(+y+1);
   if(ctx && String(ctx.prevYear)===String(y)) return ctx.prev;
