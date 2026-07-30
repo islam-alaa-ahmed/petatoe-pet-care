@@ -2911,9 +2911,10 @@
       // NAV-OPS-01: appointments and reference data share one panel, therefore
       // the requested sub-route must travel inside the same deterministic event.
       // Never reset to add before a delayed second navigation attempt.
+      var navigationScreen=String(d.navigationScreen||'').trim();
       var explicitSubTab=String(d.appointmentsSubTab||'').trim();
       var pendingSubTab=String(window.__PETATOE_APPOINTMENTS_NAV_INTENT__||'').trim();
-      var requestedSubTab=explicitSubTab||pendingSubTab||'add';
+      var requestedSubTab=explicitSubTab||(navigationScreen==='appointmentsMaster'?'master':'')||pendingSubTab||'add';
       window.__PETATOE_APPOINTMENTS_NAV_INTENT__=requestedSubTab;
       setTab(requestedSubTab);
       window.__PETATOE_APPOINTMENTS_NAV_APPLIED__=requestedSubTab;

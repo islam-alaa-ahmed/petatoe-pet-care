@@ -36,14 +36,18 @@
   function normalizeRouteIntent(tabId,routeIntent){
     routeIntent=routeIntent&&typeof routeIntent==='object'?routeIntent:{};
     var appointmentsSubTab='';
-    if(tabId==='appointments') appointmentsSubTab=String(routeIntent.appointmentsSubTab||'add').trim()||'add';
-    return {appointmentsSubTab:appointmentsSubTab,source:String(routeIntent.source||'').trim()};
+    var navigationScreen=String(routeIntent.navigationScreen||'').trim();
+    if(tabId==='appointments'){
+      appointmentsSubTab=String(routeIntent.appointmentsSubTab||(navigationScreen==='appointmentsMaster'?'master':'add')).trim()||'add';
+      if(appointmentsSubTab==='master'&&!navigationScreen) navigationScreen='appointmentsMaster';
+    }
+    return {appointmentsSubTab:appointmentsSubTab,navigationScreen:navigationScreen,source:String(routeIntent.source||'').trim()};
   }
   function dispatchTabChange(tabId,smartOpen,routeIntent){
     var intent=normalizeRouteIntent(tabId,routeIntent);
     try{
       if(tabId==='appointments') window.__PETATOE_APPOINTMENTS_NAV_INTENT__=intent.appointmentsSubTab;
-      document.dispatchEvent(new CustomEvent('petatoe:tabchange',{detail:{tabId:tabId,smartOpen:smartOpen||'',previousTab:window.PETATOERouter&&window.PETATOERouter.current||'',appointmentsSubTab:intent.appointmentsSubTab,source:intent.source}}));
+      document.dispatchEvent(new CustomEvent('petatoe:tabchange',{detail:{tabId:tabId,smartOpen:smartOpen||'',previousTab:window.PETATOERouter&&window.PETATOERouter.current||'',appointmentsSubTab:intent.appointmentsSubTab,navigationScreen:intent.navigationScreen,source:intent.source}}));
     }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
   }
   function reportRouteBlocked(tabId, reason){

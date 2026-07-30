@@ -233,13 +233,15 @@
       var tab=b.getAttribute('data-tab');
       if(tab){
         e.preventDefault(); e.stopPropagation();
-        var appointmentsSubTab=tab==='appointments'?(b.getAttribute('data-appointments-subtab')||'add'):'';
+        var navigationScreen=String(b.getAttribute('data-pet-nav-screen')||'').trim();
+        var appointmentsSubTab=tab==='appointments'?(b.getAttribute('data-appointments-subtab')||(navigationScreen==='appointmentsMaster'?'master':'add')):'';
         if(tab==='appointments'){
           window.__PETATOE_APPOINTMENTS_NAV_INTENT__=normalizeAppointmentsSubTab(appointmentsSubTab);
           window.__PETATOE_APPOINTMENTS_NAV_APPLIED__='';
         }
         petatoeSidebarOpenTab(tab,b.getAttribute('data-smart-open')||'',{
           appointmentsSubTab:appointmentsSubTab,
+          navigationScreen:navigationScreen,
           source:'canonical-navigation'
         });
         if(tab==='appointments') applyAppointmentsNavigationIntent();

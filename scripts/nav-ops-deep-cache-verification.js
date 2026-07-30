@@ -6,7 +6,7 @@ function assert(ok, message){
   else console.log('PASS:', message);
 }
 
-const token = '10.0.25-reference-data-runtime-fix-2';
+const token = '10.0.25-operations-button-contract-fix-3';
 const index = read('index.html');
 const sw = read('service-worker.js');
 
