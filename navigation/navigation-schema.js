@@ -67,6 +67,53 @@
   }
   function activate(item){
     if(!item||!item.source||!document.contains(item.source)) return false;
+    var data=item.attributes||attrs(item.source);
+    var inertOwner=item.source.closest&&item.source.closest('[inert]');
+
+    // Mobile Enterprise v10 keeps the canonical desktop navigation subtree inert
+    // and uses it only as the schema/permission source. Programmatic click() on an
+    // inert source is not a deterministic navigation contract, so route directly
+    // while preserving every captured intent attribute (especially appointments/master).
+    if(inertOwner){
+      var settingsMain=data['data-settings-main']||'';
+      if(settingsMain){
+        var settingsSub=data['data-settings-sub']||'';
+        var settingsAction=data['data-settings-action']||'';
+        try{window.__PETATOE_SETTINGS_MAIN__=settingsMain;window.__PETATOE_SETTINGS_SUB__=settingsSub;}catch(_e){}
+        if(window.PETATOERouter&&typeof window.PETATOERouter.openTab==='function'){
+          window.PETATOERouter.openTab('settings','',{source:'navigation-schema-mobile'});
+        }else if(typeof window.tab==='function'){
+          window.tab('settings');
+        }else return false;
+        try{document.dispatchEvent(new CustomEvent('petatoe:settingsnavigate',{detail:{main:settingsMain,sub:settingsSub,action:settingsAction}}));}catch(_e){}
+        if(settingsAction==='restore'){
+          setTimeout(function(){
+            try{
+              if(typeof window.petV110PickRestore==='function') window.petV110PickRestore();
+              else if(typeof window.petatoeRestorePicker==='function') window.petatoeRestorePicker();
+            }catch(_e){}
+          },180);
+        }
+        return true;
+      }
+
+      var tab=data['data-tab']||'';
+      if(tab){
+        var smartOpen=data['data-smart-open']||'';
+        var routeIntent={source:'navigation-schema-mobile'};
+        if(tab==='appointments') routeIntent.appointmentsSubTab=data['data-appointments-subtab']||'add';
+        if(window.PETATOERouter&&typeof window.PETATOERouter.openTab==='function'){
+          window.PETATOERouter.openTab(tab,smartOpen,routeIntent);
+          return true;
+        }
+        if(typeof window.tab==='function'){
+          window.tab(tab,smartOpen,routeIntent);
+          return true;
+        }
+        return false;
+      }
+    }
+
     item.source.click();
     return true;
   }
