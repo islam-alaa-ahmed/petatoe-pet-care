@@ -1,9 +1,12 @@
-PETATOE v10.0.15 — Runtime Data Trace Audit R3
+PETATOE SG-2.1 Certification Version Lock Hotfix
 
-- Added diagnostic-only runtime tracing before the mobile startup gate.
-- Measures fetch requests, sales query duration, row/page counts, runtime commit, filters, dashboard KPIs, charts, and full dashboard render.
-- Stores the latest trace locally without recording customer or sales row contents.
-- Added a localized “Copy Performance Trace” action to Mobile About App for real iPhone testing.
-- No business logic, calculations, SQL, Supabase schema, permissions, security, or loading sequence changes.
-- Synchronized release, Service Worker, localization runtime, smart runtime, About App, CSS headers, package version, and mobile certification token.
-- Localization, startup, Smart Reports, Mobile UI, and Native iOS static checks passed.
+Root Cause:
+The Service Worker APP_VERSION was intentionally updated to 10.0.25-sg2-runtime-hydration-fix-2, while the Mobile Enterprise certification still expected the previous SG-2 version. This caused Localization Lockdown to stop before the remaining certification jobs.
+
+File Modified:
+- scripts/mobile-enterprise-v10-certification-check.js
+
+Validation:
+- Mobile Enterprise UI v10 certification: PASSED (61/61)
+
+No runtime, business logic, localization dictionary, UI, router, or Service Worker behavior was changed.
