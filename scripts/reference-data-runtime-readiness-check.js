@@ -14,5 +14,5 @@ check(nav.includes("[data-appointment-section=\"'+requested+'\"]"),'runtime appl
 check(ops.includes("var requestedSubTab=explicitSubTab||pendingSubTab||'add';"),'operations preserves pending sub-route before fallback');
 check(ops.includes("petatoe:appointments-intent-applied"),'operations acknowledges applied intent');
 check(index.includes('10.0.25-reference-data-runtime-fix-2'),'HTML assets use new runtime cache token');
-check(worker.includes("const APP_VERSION = '10.0.25-operations-runtime-gate-fix-4';"),'service worker namespace rotated');
+check(worker.includes("const APP_VERSION = '10.0.25-startup-gate-stabilization-1';"),'service worker namespace rotated');
 if(process.exitCode) process.exit(process.exitCode);

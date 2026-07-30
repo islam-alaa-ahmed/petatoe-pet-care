@@ -9,10 +9,10 @@ function check(ok, label){
 const gate = read('performance/mobile-startup-loading-gate.js');
 const index = read('index.html');
 const worker = read('service-worker.js');
-check(/operations:\s*function\(\)\{[\s\S]*PETATOEAppointments[\s\S]*typeof appointments\.setTab === 'function'/.test(gate), 'operations has an explicit runtime readiness contract');
-check(gate.includes("if(/appointment|vehicleoperations|operationkpis|operation|موعد|تشغيل/.test(text)) return 'operations';\n    if(/report|analytics|dashboard report|تقرير|تقارير|تحليلات/.test(text)) return 'reportsUI';"), 'operations element classification precedes generic reports classification');
-check(gate.includes("if(/appointment|vehicleoperations|operationkpis|operation/.test(marker)) return 'operations';\n    if(/report|analytics/.test(marker)) return 'reportsUI';"), 'operations panel classification precedes generic reports classification');
-check(gate.includes("if(name === 'operations')") && gate.includes('appointmentsApi: !!appointments'), 'operations readiness diagnostics are exposed');
-check(index.includes('performance/mobile-startup-loading-gate.js?v=10.0.25-operations-runtime-gate-fix-4'), 'HTML loads the corrected startup gate token');
-check(worker.includes("const APP_VERSION = '10.0.25-operations-runtime-gate-fix-4';"), 'service worker namespace matches the runtime gate fix');
+check(/operations:\s*function\(\)\{[\s\S]*PETATOEAppointments[\s\S]*typeof appointments\.setTab === 'function'[\s\S]*PETATOEOperationsVehicles[\s\S]*PETATOEOperationsReports[\s\S]*PETATOEOperationsStatus[\s\S]*PETATOEOperationsPayments/.test(gate), 'operations has a complete runtime readiness contract');
+check(gate.includes("appointmentsMaster:'operations'") && gate.includes("vehicleOperationsReports:'operations'"), 'operations uses explicit screen identity mapping');
+check(gate.includes("if(/appointment|vehicleoperations|operationkpis|operation/.test(marker)) return 'operations';") && gate.indexOf("if(/appointment|vehicleoperations|operationkpis|operation/.test(marker)) return 'operations';") < gate.indexOf("if(/report|analytics/.test(marker)) return 'reportsUI';"), 'operations panel fallback precedes generic reports fallback');
+check(gate.includes("if(name === 'operations')") && gate.includes('appointmentsApi: !!appointments') && gate.includes('vehicles: !!window.PETATOEOperationsVehicles') && gate.includes('reports: !!window.PETATOEOperationsReports'), 'operations readiness diagnostics cover primary providers');
+check(index.includes('performance/mobile-startup-loading-gate.js?v=10.0.25-startup-gate-stabilization-1'), 'HTML loads the corrected startup gate token');
+check(worker.includes("const APP_VERSION = '10.0.25-startup-gate-stabilization-1';"), 'service worker namespace matches the runtime gate fix');
 if(process.exitCode) process.exit(process.exitCode);

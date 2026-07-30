@@ -143,11 +143,49 @@
   };
 
   var desktopReadinessContracts = {
+    xlsx: function(){
+      return !!(window.XLSX && window.XLSX.utils && typeof window.XLSX.utils.book_new === 'function');
+    },
     operations: function(){
       var appointments = window.PETATOEAppointments || window.__PETATOEAppointmentsLegacyEngine || window.PETATOEOperationsAppointmentsInternal;
       return !!(appointments &&
         typeof appointments.setTab === 'function' &&
-        (typeof appointments.render === 'function' || typeof appointments.init === 'function'));
+        (typeof appointments.render === 'function' || typeof appointments.init === 'function') &&
+        window.PETATOEOperationsVehicles &&
+        window.PETATOEOperationsReports &&
+        window.PETATOEOperationsStatus &&
+        window.PETATOEOperationsPayments);
+    },
+    warehouses: function(){
+      return !!(window.PETATOEWarehouses && typeof window.PETATOEWarehouses.render === 'function' &&
+        window.PETATOEWarehouseUI && typeof window.PETATOEWarehouseUI.renderAll === 'function');
+    },
+    treasury: function(){
+      return !!(window.PETATOETreasury && typeof window.PETATOETreasury.render === 'function');
+    },
+    children: function(){
+      return !!(window.PETATOEChildrenExpenses && typeof window.PETATOEChildrenExpenses.render === 'function');
+    },
+    commission: function(){
+      return typeof window.renderCommissionSystem === 'function' && typeof window.setCommissionTab === 'function';
+    },
+    settingsSetup: function(){
+      return typeof window.renderSettingsPanelV110 === 'function';
+    },
+    diagnostics: function(){
+      return !!(window.PETATOEObservability && window.PETATOEObservability.__ready === true && typeof window.PETATOEObservability.snapshot === 'function');
+    },
+    fleet: function(){
+      return !!(window.PETATOEFleet && typeof window.PETATOEFleet.render === 'function');
+    },
+    obligations: function(){
+      return typeof window.petObligationsBoot === 'function';
+    },
+    movement: function(){
+      return typeof window.renderMovementCenter === 'function';
+    },
+    localizationRemote: function(){
+      return !!(window.PETATOE_LOCALIZATION_LOADER && typeof window.PETATOE_LOCALIZATION_LOADER.load === 'function');
     },
     payroll: function(){
       return !!(window.PETATOEPayroll &&
@@ -194,7 +232,7 @@
   function desktopGroupReady(name){
     try{
       var contract = desktopReadinessContracts[name];
-      return typeof contract === 'function' ? contract() === true : true;
+      return typeof contract === 'function' ? contract() === true : false;
     }catch(_){ return false; }
   }
 
@@ -221,7 +259,11 @@
         appointmentsApi: !!appointments,
         setTab: !!(appointments && typeof appointments.setTab === 'function'),
         render: !!(appointments && typeof appointments.render === 'function'),
-        init: !!(appointments && typeof appointments.init === 'function')
+        init: !!(appointments && typeof appointments.init === 'function'),
+        vehicles: !!window.PETATOEOperationsVehicles,
+        reports: !!window.PETATOEOperationsReports,
+        status: !!window.PETATOEOperationsStatus,
+        payments: !!window.PETATOEOperationsPayments
       };
     }
     if(name === 'payroll'){
@@ -263,7 +305,12 @@
     var dependencyQueue = (dependencies[name] || []).slice();
 
     state.promise = dependencyQueue.reduce(function(chain, dependency){
-      return chain.then(function(){ return ensureGroup(dependency); });
+      return chain.then(function(){
+        return ensureGroup(dependency).then(function(ready){
+          if(ready !== true) throw new Error('Dependency not ready: ' + dependency + ' -> ' + name);
+          return true;
+        });
+      });
     }, Promise.resolve()).then(function(){
       if(state.scriptsLoaded || !queue.length) return true;
       return queue.reduce(function(chain, item){
@@ -322,7 +369,12 @@
     var dependencyQueue = (dependencies[name] || []).slice();
 
     state.promise = dependencyQueue.reduce(function(chain, dependency){
-      return chain.then(function(){ return ensureGroup(dependency); });
+      return chain.then(function(){
+        return ensureGroup(dependency).then(function(ready){
+          if(ready !== true) throw new Error('Dependency not ready: ' + dependency + ' -> ' + name);
+          return true;
+        });
+      });
     }, Promise.resolve()).then(function(){
       if(state.scriptsLoaded) return true;
       return queue.reduce(function(chain, item){
@@ -359,45 +411,72 @@
   }
 
 
+  var screenGroupMap = {
+    appointments:'operations', appointmentsMaster:'operations', vehicleOperations:'operations',
+    vehicleOperationsReports:'operations', operationKpis:'operations',
+    warehouses:'warehouses', warehouseAlerts:'warehouses', treasury:'treasury',
+    payroll:'payroll', salarySlip:'payroll', commissionStatement:'payroll',
+    childrenExpenses:'children', commission:'commission', commissionSystem:'commission',
+    settings:'settingsSetup', setup:'settingsSetup', users:'settingsSetup', permissions:'settingsSetup', backup:'settingsSetup',
+    diagnostics:'diagnostics', observability:'diagnostics', performanceMonitoring:'diagnostics',
+    smartReports:'smartReports', customer360:'smartReports', salesInvoice:'sales', sales:'sales',
+    fleet:'fleet', obligations:'obligations', movementCenter:'movement'
+  };
+
+  function explicitGroupForElement(el){
+    if(!el || !el.getAttribute) return '';
+    var declared = el.getAttribute('data-pet-lazy-group');
+    if(declared) return normalizeGroup(declared);
+    var keys = [
+      el.getAttribute('data-pet-nav-screen'),
+      el.getAttribute('data-tab'),
+      el.getAttribute('data-target')
+    ];
+    for(var i=0;i<keys.length;i++){
+      var key = String(keys[i] || '').replace(/^#/,'');
+      if(screenGroupMap[key]) return screenGroupMap[key];
+    }
+    return '';
+  }
+
   function groupForElement(el){
     if(!el) return '';
-    var text = [el.id, el.getAttribute && el.getAttribute('data-tab'), el.getAttribute && el.getAttribute('data-target'), el.getAttribute && el.getAttribute('href'), el.textContent].join(' ').toLowerCase();
-    if(/smartreport|smart-report|تحليل ذكي|التقارير الذكية|customer360|عميل 360/.test(text)) return 'smartReports';
-    if(/commission|عمولة|عمولات/.test(text)) return 'commission';
-    if(/salesinvoice|sales-invoice|invoice|فاتورة|فواتير|مبيعات/.test(text)) return 'sales';
+    if(el.id === 'sideLauncher' || (el.matches && el.matches('[data-v142-toggle], .pet-v142-toggle'))) return '';
+    var explicit = explicitGroupForElement(el);
+    if(explicit) return explicit;
+    var panel = el.closest ? el.closest('.panel,[data-panel]') : null;
+    var panelGroup = groupForPanel(panel);
+    if(panelGroup) return panelGroup;
+    var text = [el.id, el.getAttribute && el.getAttribute('href'), el.getAttribute && el.getAttribute('aria-label'), el.getAttribute && el.getAttribute('title')].join(' ').toLowerCase();
+    if(/excel|xlsx|استيراد excel|تصدير excel/.test(text)) return 'xlsx';
     if(/print|pdf|طباعة|تصدير الصفحة/.test(text)) return 'printing';
-    if(/appointment|vehicleoperations|operationkpis|operation|موعد|تشغيل/.test(text)) return 'operations';
-    if(/report|analytics|dashboard report|تقرير|تقارير|تحليلات/.test(text)) return 'reportsUI';
-    if(/fleet|أسطول/.test(text)) return 'fleet';
-    if(/obligation|التزام|التزامات/.test(text)) return 'obligations';
-    if(/movementcenter|movement center|مركز الحركات|الحركات اليدوية/.test(text)) return 'movement';
-    if(/settings|setup|إعدادات|التهيئة/.test(text)) return 'settingsSetup';
-    if(/payroll|salary|commissionstatement|راتب|رواتب|كشف الراتب/.test(text)) return 'payroll';
-    if(/treasury|خزين/.test(text)) return 'treasury';
-    if(/warehouse|مخزن|مخازن/.test(text)) return 'warehouses';
-    if(/childrenexpenses|children|مصروفات الأبناء/.test(text)) return 'children';
-    if(/audit|diagnostic|observability|performance monitoring|تدقيق|مراقبة الأداء|الأداء والمراقبة/.test(text)) return 'diagnostics';
-    if(/excel|xlsx|استيراد|تصدير/.test(text)) return 'xlsx';
+    if(/smartreport|smart-report|customer360/.test(text)) return 'smartReports';
+    if(/salesinvoice|sales-invoice/.test(text)) return 'sales';
+    if(/audit|diagnostic|observability/.test(text)) return 'diagnostics';
     return '';
   }
 
   function groupForPanel(panel){
     if(!panel) return '';
-    var marker = ((panel.id || '') + ' ' + (panel.getAttribute('data-pet-module') || '')).toLowerCase();
-    if(/smartreport|smart-report|customer360/.test(marker)) return 'smartReports';
-    if(/commission/.test(marker)) return 'commission';
-    if(/salesinvoice|sales-invoice|invoice|sales/.test(marker)) return 'sales';
+    var explicit = panel.getAttribute && panel.getAttribute('data-pet-lazy-group');
+    if(explicit) return normalizeGroup(explicit);
+    var id = String(panel.id || '').replace(/^#/,'');
+    if(screenGroupMap[id]) return screenGroupMap[id];
+    var marker = (id + ' ' + (panel.getAttribute('data-pet-module') || '')).toLowerCase();
     if(/appointment|vehicleoperations|operationkpis|operation/.test(marker)) return 'operations';
-    if(/report|analytics/.test(marker)) return 'reportsUI';
+    if(/children/.test(marker)) return 'children';
+    if(/warehouse/.test(marker)) return 'warehouses';
+    if(/treasury/.test(marker)) return 'treasury';
+    if(/payroll|salaryslip|commissionstatement/.test(marker)) return 'payroll';
+    if(/commission/.test(marker)) return 'commission';
+    if(/settings|setup|permissions|users|backup/.test(marker)) return 'settingsSetup';
+    if(/smartreport|customer360/.test(marker)) return 'smartReports';
+    if(/salesinvoice|sales-invoice|invoice/.test(marker)) return 'sales';
+    if(/observability|diagnostic|audit/.test(marker)) return 'diagnostics';
     if(/fleet/.test(marker)) return 'fleet';
     if(/obligation/.test(marker)) return 'obligations';
     if(/movement/.test(marker)) return 'movement';
-    if(/settings|setup/.test(marker)) return 'settingsSetup';
-    if(/payroll|salaryslip|commissionstatement/.test(marker)) return 'payroll';
-    if(/treasury/.test(marker)) return 'treasury';
-    if(/warehouse/.test(marker)) return 'warehouses';
-    if(/observability|diagnostic|audit/.test(marker)) return 'diagnostics';
-    if(/children/.test(marker)) return 'children';
+    if(/report|analytics/.test(marker)) return 'reportsUI';
     return '';
   }
 
@@ -414,11 +493,11 @@
     document.addEventListener('click', function(event){
       var el = event.target && event.target.closest ? event.target.closest('button,a,[data-tab],[data-target],[onclick]') : null;
       var group = groupForElement(el);
-      if(!group || (states[group] && states[group].status === 'loaded')) return;
       if(el && el.dataset && el.dataset.petatoeLazyReplay === '1'){
         delete el.dataset.petatoeLazyReplay;
         return;
       }
+      if(!group || (states[group] && states[group].status === 'loaded')) return;
       event.preventDefault();
       event.stopImmediatePropagation();
       ensureGroup(group).then(function(ready){
@@ -512,11 +591,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-smart-reports-sr1-state-machine', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-startup-gate-stabilization-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-smart-reports-sr1-state-machine',
+    version: '10.0.25-startup-gate-stabilization-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
