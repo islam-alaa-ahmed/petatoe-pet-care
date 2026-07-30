@@ -143,6 +143,12 @@
   };
 
   var desktopReadinessContracts = {
+    operations: function(){
+      var appointments = window.PETATOEAppointments || window.__PETATOEAppointmentsLegacyEngine || window.PETATOEOperationsAppointmentsInternal;
+      return !!(appointments &&
+        typeof appointments.setTab === 'function' &&
+        (typeof appointments.render === 'function' || typeof appointments.init === 'function'));
+    },
     payroll: function(){
       return !!(window.PETATOEPayroll &&
         typeof window.PETATOEPayroll.openTab === 'function' &&
@@ -207,6 +213,15 @@
         legacySmartServices: typeof window.smartServicesScopedData === 'function',
         smartTabs: !!(tabs && tabs.__ready && typeof tabs.setSmartTab === 'function'),
         setSmartTab: typeof window.setSmartTab === 'function'
+      };
+    }
+    if(name === 'operations'){
+      var appointments = window.PETATOEAppointments || window.__PETATOEAppointmentsLegacyEngine || window.PETATOEOperationsAppointmentsInternal;
+      return {
+        appointmentsApi: !!appointments,
+        setTab: !!(appointments && typeof appointments.setTab === 'function'),
+        render: !!(appointments && typeof appointments.render === 'function'),
+        init: !!(appointments && typeof appointments.init === 'function')
       };
     }
     if(name === 'payroll'){
@@ -351,8 +366,8 @@
     if(/commission|عمولة|عمولات/.test(text)) return 'commission';
     if(/salesinvoice|sales-invoice|invoice|فاتورة|فواتير|مبيعات/.test(text)) return 'sales';
     if(/print|pdf|طباعة|تصدير الصفحة/.test(text)) return 'printing';
+    if(/appointment|vehicleoperations|operationkpis|operation|موعد|تشغيل/.test(text)) return 'operations';
     if(/report|analytics|dashboard report|تقرير|تقارير|تحليلات/.test(text)) return 'reportsUI';
-    if(/appointment|operation|موعد|تشغيل/.test(text)) return 'operations';
     if(/fleet|أسطول/.test(text)) return 'fleet';
     if(/obligation|التزام|التزامات/.test(text)) return 'obligations';
     if(/movementcenter|movement center|مركز الحركات|الحركات اليدوية/.test(text)) return 'movement';
@@ -372,8 +387,8 @@
     if(/smartreport|smart-report|customer360/.test(marker)) return 'smartReports';
     if(/commission/.test(marker)) return 'commission';
     if(/salesinvoice|sales-invoice|invoice|sales/.test(marker)) return 'sales';
+    if(/appointment|vehicleoperations|operationkpis|operation/.test(marker)) return 'operations';
     if(/report|analytics/.test(marker)) return 'reportsUI';
-    if(/appointment|operation|vehicleoperations/.test(marker)) return 'operations';
     if(/fleet/.test(marker)) return 'fleet';
     if(/obligation/.test(marker)) return 'obligations';
     if(/movement/.test(marker)) return 'movement';

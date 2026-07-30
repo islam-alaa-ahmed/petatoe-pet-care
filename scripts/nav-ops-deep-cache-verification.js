@@ -6,7 +6,8 @@ function assert(ok, message){
   else console.log('PASS:', message);
 }
 
-const token = '10.0.25-operations-button-contract-fix-3';
+const token = '10.0.25-reference-data-runtime-fix-2';
+const serviceWorkerToken = '10.0.25-operations-runtime-gate-fix-4';
 const index = read('index.html');
 const sw = read('service-worker.js');
 
@@ -25,7 +26,7 @@ requiredAssets.forEach((asset) => {
   assert(new RegExp(escaped + '\\?v=' + token).test(index), `${asset} uses the unified cache token`);
 });
 
-assert(sw.includes(`const APP_VERSION = '${token}';`), 'service worker cache namespace matches the navigation fix');
+assert(sw.includes(`const APP_VERSION = '${serviceWorkerToken}';`), 'service worker cache namespace matches the current runtime release');
 assert(sw.includes('navigation\\/(?:navigation|navigation-state|navigation-schema)'), 'navigation runtime files are classified as critical');
 assert(sw.includes('router\\/(?:navigation-controller|route-registry)'), 'router runtime files are classified as critical');
 assert(sw.includes('operations\\/operations-legacy-engine'), 'operations owner is classified as critical');
