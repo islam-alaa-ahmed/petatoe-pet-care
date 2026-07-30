@@ -11,7 +11,7 @@
     treasury:'treasury', warehouses:'vehicles', warehouse:'vehicles', obligations:'obligations', expenses:'expenses',
     commissions:'commissions', commissionStatement:'commissionStatement', fleet:'vehicles', vehicles:'vehicles',
     payroll:'payroll', salarySlip:'salarySlip', childrenExpenses:'childrenExpenses',
-    appointments:'appointments', 'appointments-master':'setup', appointmentsMaster:'setup',
+    appointments:'appointments', 'appointments-master':'appointments', appointmentsMaster:'appointments',
     vehicleOperations:'vehicleOperations', vehicleOperationsReports:'vehicleOperationsReports', operationKpis:'operationKpis',
     settings:'settings', system:'settings', setup:'setup', permissions:'permissions', users:'users', audit:'audit'
   };

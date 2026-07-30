@@ -44,7 +44,9 @@
       aliases: normalizeArray(meta.aliases),
       scriptHints: normalizeArray(meta.scriptHints),
       cssHints: normalizeArray(meta.cssHints),
-      notes: normalize(meta.notes || '')
+      notes: normalize(meta.notes || ''),
+      defaultIntent: meta.defaultIntent && typeof meta.defaultIntent === 'object' ? Object.freeze(clone(meta.defaultIntent)) : Object.freeze({}),
+      aliasIntents: meta.aliasIntents && typeof meta.aliasIntents === 'object' ? Object.freeze(clone(meta.aliasIntents)) : Object.freeze({})
     });
     return true;
   }
@@ -79,7 +81,7 @@
   // Business routes prepared by SAFE tracks
   register('smart', { moduleId:'smart-reports', title:'Smart Reports', owner:'smart-reports', panelId:'smart', eager:true, lazyCandidate:true, requiresPermission:'reports', scriptHints:['smart/smart-reports-core.js'] });
   register('operations', { moduleId:'operations', title:'Operations', owner:'operations', panelId:'appointments', eager:true, lazyCandidate:true, requiresPermission:'appointments', scriptHints:['operations/*.js'] });
-  register('appointments', { moduleId:'operations', title:'Appointments', owner:'operations', panelId:'appointments', eager:true, lazyCandidate:true, requiresPermission:'appointments', aliases:['appointmentsMaster','appointments-master'], scriptHints:['inline-extracted/appointments-core.js','operations/*.js'] });
+  register('appointments', { moduleId:'operations', title:'Appointments', owner:'operations', panelId:'appointments', eager:true, lazyCandidate:true, requiresPermission:'appointments', aliases:['appointmentsMaster','appointments-master'], defaultIntent:{appointmentsSubTab:'add'}, aliasIntents:{appointmentsMaster:{appointmentsSubTab:'master'},'appointments-master':{appointmentsSubTab:'master'}}, scriptHints:['inline-extracted/appointments-core.js','operations/*.js'], notes:'Reference-data aliases resolve to the appointments panel with appointmentsSubTab=master.' });
   register('vehicleOperations', { moduleId:'operations', title:'Vehicle Operations', owner:'operations', panelId:'vehicleOperations', eager:true, lazyCandidate:true, requiresPermission:'vehicleOperations', aliases:['vehicles','fleet'], scriptHints:['operations/*.js'] });
   register('vehicleOperationsReports', { moduleId:'operations', title:'Vehicle Operations Reports', owner:'operations', panelId:'vehicleOperationsReports', eager:true, lazyCandidate:true, requiresPermission:'vehicleOperationsReports', scriptHints:['operations/*.js'] });
   register('operationKpis', { moduleId:'operations', title:'Operation KPIs', owner:'operations', panelId:'operationKpis', eager:true, lazyCandidate:true, requiresPermission:'operationKpis', scriptHints:['operations/*.js'] });

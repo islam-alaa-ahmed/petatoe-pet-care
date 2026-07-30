@@ -8,9 +8,30 @@
   function qsa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel));}
   function byIdSafe(id){return document.getElementById(id);}
   function currentTab(){var p=document.querySelector('.panel.active');return p?p.id:'dashboard';}
-  function markNav(tabId,smartOpen){qsa('#nav button[data-tab], #nav .pet-nav-direct[data-tab]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-tab')===tabId && (!smartOpen || b.getAttribute('data-smart-open')===smartOpen));});}
+  function markNav(tabId,smartOpen,routeIntent){
+    routeIntent=routeIntent&&typeof routeIntent==='object'?routeIntent:{};
+    var requestedAppointmentsSubTab=tabId==='appointments'?String(routeIntent.appointmentsSubTab||'add').trim()||'add':'';
+    qsa('#nav button[data-tab], #nav .pet-nav-direct[data-tab]').forEach(function(b){
+      var match=b.getAttribute('data-tab')===tabId && (!smartOpen || b.getAttribute('data-smart-open')===smartOpen);
+      if(match&&tabId==='appointments'){
+        var buttonSubTab=String(b.getAttribute('data-appointments-subtab')||'add').trim()||'add';
+        match=buttonSubTab===requestedAppointmentsSubTab;
+      }
+      b.classList.toggle('active',match);
+    });
+  }
   function runBuiltinRenderers(tabId,smartOpen){
     // v3.11.22: Router is navigation-only. Rendering is handled by petatoe:tabchange subscribers.
+  }
+  function normalizeRouteRequest(tabId,routeIntent){
+    routeIntent=routeIntent&&typeof routeIntent==='object'?routeIntent:{};
+    var requestedId=String(tabId||'').trim();
+    var appointmentsAlias=requestedId==='appointmentsMaster'||requestedId==='appointments-master';
+    if(appointmentsAlias){
+      tabId='appointments';
+      if(!routeIntent.appointmentsSubTab) routeIntent.appointmentsSubTab='master';
+    }
+    return {tabId:String(tabId||'').trim(),routeIntent:routeIntent};
   }
   function normalizeRouteIntent(tabId,routeIntent){
     routeIntent=routeIntent&&typeof routeIntent==='object'?routeIntent:{};
@@ -47,6 +68,9 @@
   }
   function openTab(tabId,smartOpen,routeIntent){
     if(!tabId) return false;
+    var normalizedRequest=normalizeRouteRequest(tabId,routeIntent);
+    tabId=normalizedRequest.tabId;
+    routeIntent=normalizedRequest.routeIntent;
     smartOpen=smartOpen||'';
     if(!routeAllowed(tabId)){
       reportRouteBlocked(tabId,'permission-denied');
@@ -60,7 +84,7 @@
     window.PETATOERouter.current=tabId;
     window.PETATOERouter.currentSmart=smartOpen;
     if(sameActive){
-      markNav(tabId,smartOpen);
+      markNav(tabId,smartOpen,normalizeRouteIntent(tabId,routeIntent));
       try{ if(typeof closeSidebar==='function') closeSidebar(); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
       // PETATOE v6.1.205: opening an already-active tab must still notify screen modules.
       // Otherwise settings/users/permissions can stay blank because their render subscriber never runs.
@@ -68,7 +92,7 @@
       return true;
     }
     if(target){ qsa('.panel').forEach(function(p){p.classList.remove('active')}); target.classList.add('active'); }
-    markNav(tabId,smartOpen);
+    markNav(tabId,smartOpen,normalizeRouteIntent(tabId,routeIntent));
     try{ if(typeof closeSidebar==='function') closeSidebar(); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
     runBuiltinRenderers(tabId,smartOpen);
     dispatchTabChange(tabId,smartOpen,routeIntent);

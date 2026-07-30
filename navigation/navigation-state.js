@@ -49,17 +49,22 @@
     return clean(screen);
   }
 
-  function screenForPanel(panel){
+  function screenForPanel(panel, appointmentsTab){
     panel = clean(panel);
-    var btn = q('#nav button[data-tab="'+panel.replace(/"/g,'\\"')+'"]');
+    appointmentsTab = clean(appointmentsTab);
+    var selector = '#nav button[data-tab="'+panel.replace(/"/g,'\\"')+'"]';
+    if(panel === 'appointments' && appointmentsTab){
+      selector += '[data-appointments-subtab="'+appointmentsTab.replace(/"/g,'\\"')+'"]';
+    }
+    var btn = q(selector);
     return normalizeScreen((btn && (btn.getAttribute('data-pet-nav-screen') || btn.getAttribute('data-pet-permission-screen'))) || panel);
   }
 
-  function canOpenPanel(panel){
+  function canOpenPanel(panel, appointmentsTab){
     if(!panel || panel === 'dashboard') return true;
     try{
       var P = window.PETATOENavigationPermissions;
-      if(P && typeof P.canOpen === 'function') return !!P.canOpen(screenForPanel(panel));
+      if(P && typeof P.canOpen === 'function') return !!P.canOpen(screenForPanel(panel, appointmentsTab));
     }catch(_e){ return false; }
     return true;
   }
@@ -163,7 +168,7 @@
     if(!s || !s.panel){ releaseRestoreHold(); return false; }
     var uk = userKey();
     if(s.userKey && uk && s.userKey !== uk){ clear(); return false; }
-    if(!canOpenPanel(s.panel)){ releaseRestoreHold(); return false; }
+    if(!canOpenPanel(s.panel, s.appointmentsTab)){ releaseRestoreHold(); return false; }
 
     RESTORE_DONE = true;
     RESTORE_FLAG = true;
