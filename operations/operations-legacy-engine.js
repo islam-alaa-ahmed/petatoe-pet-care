@@ -2911,9 +2911,13 @@
       // NAV-OPS-01: appointments and reference data share one panel, therefore
       // the requested sub-route must travel inside the same deterministic event.
       // Never reset to add before a delayed second navigation attempt.
-      var requestedSubTab=String(d.appointmentsSubTab||window.__PETATOE_APPOINTMENTS_NAV_INTENT__||'add').trim()||'add';
+      var explicitSubTab=String(d.appointmentsSubTab||'').trim();
+      var pendingSubTab=String(window.__PETATOE_APPOINTMENTS_NAV_INTENT__||'').trim();
+      var requestedSubTab=explicitSubTab||pendingSubTab||'add';
       window.__PETATOE_APPOINTMENTS_NAV_INTENT__=requestedSubTab;
       setTab(requestedSubTab);
+      window.__PETATOE_APPOINTMENTS_NAV_APPLIED__=requestedSubTab;
+      document.dispatchEvent(new CustomEvent('petatoe:appointments-intent-applied',{detail:{appointmentsSubTab:requestedSubTab,source:d.source||'operations-runtime'}}));
       return;
     }
     if(tab==='vehicleOperations'||tab==='vehicleOperationsReports'||tab==='operationKpis'){
@@ -3236,7 +3240,10 @@
   window.__PETATOEAppointmentsLegacyEngine=appointmentsPublicApi;
   window.PETATOEAppointments=appointmentsPublicApi;
   try{
-    if(window.__PETATOE_APPOINTMENTS_NAV_INTENT__) setTab(window.__PETATOE_APPOINTMENTS_NAV_INTENT__);
-    document.dispatchEvent(new CustomEvent('petatoe:appointments-ready',{detail:{api:'legacy-engine'}}));
+    if(window.__PETATOE_APPOINTMENTS_NAV_INTENT__){
+      setTab(window.__PETATOE_APPOINTMENTS_NAV_INTENT__);
+      window.__PETATOE_APPOINTMENTS_NAV_APPLIED__=window.__PETATOE_APPOINTMENTS_NAV_INTENT__;
+    }
+    document.dispatchEvent(new CustomEvent('petatoe:appointments-ready',{detail:{api:'legacy-engine',appointmentsSubTab:window.__PETATOE_APPOINTMENTS_NAV_APPLIED__||''}}));
   }catch(_e){}
 })();

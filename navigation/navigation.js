@@ -191,6 +191,31 @@
       var ar=petBlock7937_q('.pet-v142-arrow',g); if(ar) ar.textContent=open?'▼':'▶';
     });
   }
+  function normalizeAppointmentsSubTab(value){
+    value=String(value||'').trim();
+    return value||'add';
+  }
+  function appointmentsRuntimeApi(){
+    var candidates=[window.PETATOEAppointments,window.__PETATOEAppointmentsLegacyEngine,window.PETATOEOperationsAppointmentsInternal];
+    for(var i=0;i<candidates.length;i++){
+      if(candidates[i]&&typeof candidates[i].setTab==='function') return candidates[i];
+    }
+    return null;
+  }
+  function applyAppointmentsNavigationIntent(){
+    if(!window.__PETATOE_APPOINTMENTS_NAV_INTENT__) return false;
+    var requested=normalizeAppointmentsSubTab(window.__PETATOE_APPOINTMENTS_NAV_INTENT__);
+    var api=appointmentsRuntimeApi();
+    if(!api) return false;
+    api.setTab(requested);
+    var expected=document.querySelector('[data-appointment-section="'+requested+'"]');
+    var applied=!!(expected&&expected.classList.contains('active'));
+    if(applied){
+      window.__PETATOE_APPOINTMENTS_NAV_APPLIED__=requested;
+      document.dispatchEvent(new CustomEvent('petatoe:appointments-intent-applied',{detail:{appointmentsSubTab:requested,source:'canonical-navigation'}}));
+    }
+    return applied;
+  }
   function bind(nav){
     if(nav.__petV142Bound) return; nav.__petV142Bound=true;
     nav.addEventListener('click',function(e){
@@ -209,10 +234,15 @@
       if(tab){
         e.preventDefault(); e.stopPropagation();
         var appointmentsSubTab=tab==='appointments'?(b.getAttribute('data-appointments-subtab')||'add'):'';
+        if(tab==='appointments'){
+          window.__PETATOE_APPOINTMENTS_NAV_INTENT__=normalizeAppointmentsSubTab(appointmentsSubTab);
+          window.__PETATOE_APPOINTMENTS_NAV_APPLIED__='';
+        }
         petatoeSidebarOpenTab(tab,b.getAttribute('data-smart-open')||'',{
           appointmentsSubTab:appointmentsSubTab,
           source:'canonical-navigation'
         });
+        if(tab==='appointments') applyAppointmentsNavigationIntent();
         return false;
       }
     },true);
@@ -264,5 +294,15 @@
   document.addEventListener('petatoe:userchanged',function(){scheduleBuild(30);});
   window.addEventListener('petatoe:identity-ready',function(){scheduleBuild(30);});
   document.addEventListener('petatoe:navigationpermissionsapplied',function(){setTimeout(markActive,30);});
-  document.addEventListener('petatoe:tabchange',function(){setTimeout(markActive,60)});
+  document.addEventListener('petatoe:appointments-ready',function(){
+    if(applyAppointmentsNavigationIntent()) markActive();
+  });
+  document.addEventListener('petatoe:tabchange',function(e){
+    var d=e&&e.detail||{};
+    if(d.tabId==='appointments'&&d.appointmentsSubTab){
+      window.__PETATOE_APPOINTMENTS_NAV_INTENT__=normalizeAppointmentsSubTab(d.appointmentsSubTab);
+      applyAppointmentsNavigationIntent();
+    }
+    setTimeout(markActive,60);
+  });
 })();

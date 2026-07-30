@@ -1,7 +1,7 @@
 /* PETATOE PWA Enterprise Service Worker — V10-P1 Update Engine */
 'use strict';
 
-const APP_VERSION = '10.0.25-nav-ops-deep-fix-1';
+const APP_VERSION = '10.0.25-reference-data-runtime-fix-2';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;
