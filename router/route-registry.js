@@ -91,7 +91,8 @@
   register('treasury', { moduleId:'treasury', title:'Treasury', owner:'treasury', panelId:'treasury', eager:true, lazyCandidate:true, sensitive:true, requiresPermission:'treasury', scriptHints:['treasury/*.js'] });
   register('payroll', { moduleId:'payroll', title:'Payroll', owner:'payroll', panelId:'payroll', eager:true, lazyCandidate:true, sensitive:true, protected:true, requiresPermission:'payroll', scriptHints:['payroll/*.js'] });
   register('salarySlip', { moduleId:'payroll', title:'Salary Slip', owner:'payroll', panelId:'salarySlip', eager:true, lazyCandidate:true, sensitive:true, protected:true, requiresPermission:'salarySlip', scriptHints:['payroll/*.js'] });
-  register('commissionStatement', { moduleId:'commissions', title:'Commission Statement', owner:'commissions', panelId:'commissionStatement', eager:true, lazyCandidate:true, requiresPermission:'commissionStatement', aliases:['commissions'], scriptHints:['commissions/*.js'] });
+  register('commissions', { moduleId:'commissions', title:'Commission System', owner:'commissions', panelId:'commissions', eager:true, lazyCandidate:true, requiresPermission:'commissions', scriptHints:['inline-extracted/commission-inline.js','inline-extracted/commission-tab-visibility-fix.js'], notes:'The panel is injected by the commission runtime after the canonical commissions route is activated.' });
+  register('commissionStatement', { moduleId:'commissions', title:'Commission Statement', owner:'commissions', panelId:'commissionStatement', eager:true, lazyCandidate:true, requiresPermission:'commissionStatement', scriptHints:['inline-extracted/commission-inline.js'] });
 
   // Sales and supporting routes
   register('sales', { moduleId:'sales', title:'Sales', owner:'sales', panelId:'sales', eager:true, lazyCandidate:true, requiresPermission:'sales', scriptHints:['sales/*.js'] });

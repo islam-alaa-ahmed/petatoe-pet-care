@@ -10,7 +10,7 @@
   var desktopLazyGroups = {
     diagnostics: true, xlsx: true, settingsSetup: true, children: true,
     operations: true, warehouses: true, payroll: true, treasury: true,
-    smartReports: true, sales: true, commission: true, printing: true
+    smartReports: true, customer360: true, sales: true, commission: true, printing: true
   };
 
   function shouldLazyLoad(group){
@@ -52,13 +52,14 @@
     fleet: 'fleet', obligations: 'obligations', movement: 'movement', movementCenter: 'movement',
     settingsSetup: 'settingsSetup', localizationRemote: 'localizationRemote',
     xlsx: 'xlsx', excel: 'xlsx', diagnostics: 'diagnostics', audit: 'diagnostics', observability: 'diagnostics',
-    smartReports: 'smartReports', smart: 'smartReports', analytics: 'smartReports',
+    smartReports: 'smartReports', smart: 'smartReports', analytics: 'smartReports', customer360: 'customer360', customers: 'customer360',
     reportsUI: 'reportsUI', reports: 'reportsUI', printing: 'printing', print: 'printing', pdf: 'printing',
     sales: 'sales', invoices: 'sales', commission: 'commission', commissions: 'commission'
   };
 
   var dependencies = {
     smartReports: ['reportsUI'],
+    customer360: [],
     sales: ['reportsUI'],
     printing: ['reportsUI']
   };
@@ -117,6 +118,10 @@
       var tabId = active && active.id ? active.id : '';
       if(group === 'operations' && window.PETATOEAppointments){
         if(typeof window.PETATOEAppointments.render === 'function') window.PETATOEAppointments.render();
+      }else if(group === 'commission' && tabId === 'commissions' && typeof window.renderCommissionSystem === 'function'){
+        window.renderCommissionSystem();
+      }else if(group === 'customer360' && typeof window.renderCustomer360Panel === 'function'){
+        window.renderCustomer360Panel();
       }else if(group === 'children' && window.PETATOEChildrenExpenses && typeof window.PETATOEChildrenExpenses.render === 'function'){
         window.PETATOEChildrenExpenses.render();
       }else if(group === 'warehouses'){
@@ -167,7 +172,14 @@
       return !!(window.PETATOEChildrenExpenses && typeof window.PETATOEChildrenExpenses.render === 'function');
     },
     commission: function(){
-      return typeof window.renderCommissionSystem === 'function' && typeof window.setCommissionTab === 'function';
+      return typeof window.renderCommissionSystem === 'function' &&
+        typeof window.setCommissionTab === 'function' &&
+        typeof window.renderCommissionStatementPage === 'function';
+    },
+    customer360: function(){
+      return typeof window.renderCustomer360Panel === 'function' &&
+        typeof window.showCustomer360 === 'function' &&
+        typeof window.openCustomer360 === 'function';
     },
     settingsSetup: function(){
       return typeof window.renderSettingsPanelV110 === 'function';
@@ -244,6 +256,13 @@
   function readinessSnapshot(name){
     var services = window.PETATOESmartServices;
     var tabs = window.PETATOESmartTabs || (window.PETATOE && window.PETATOE.SmartReports);
+    if(name === 'customer360'){
+      return {
+        renderCustomer360Panel: typeof window.renderCustomer360Panel === 'function',
+        showCustomer360: typeof window.showCustomer360 === 'function',
+        openCustomer360: typeof window.openCustomer360 === 'function'
+      };
+    }
     if(name === 'smartReports'){
       return {
         renderSmartReports: typeof window.renderSmartReports === 'function',
@@ -416,10 +435,10 @@
     vehicleOperationsReports:'operations', operationKpis:'operations',
     warehouses:'warehouses', warehouseAlerts:'warehouses', treasury:'treasury',
     payroll:'payroll', salarySlip:'payroll', commissionStatement:'payroll',
-    childrenExpenses:'children', commission:'commission', commissionSystem:'commission',
+    childrenExpenses:'children', commission:'commission', commissions:'commission', commissionSystem:'commission',
     settings:'settingsSetup', setup:'settingsSetup', users:'settingsSetup', permissions:'settingsSetup', backup:'settingsSetup',
     diagnostics:'diagnostics', observability:'diagnostics', performanceMonitoring:'diagnostics',
-    smartReports:'smartReports', customer360:'smartReports', salesInvoice:'sales', sales:'sales',
+    smartReports:'smartReports', customer360:'customer360', customers:'customer360', salesInvoice:'sales', sales:'sales',
     fleet:'fleet', obligations:'obligations', movementCenter:'movement'
   };
 
@@ -450,7 +469,8 @@
     var text = [el.id, el.getAttribute && el.getAttribute('href'), el.getAttribute && el.getAttribute('aria-label'), el.getAttribute && el.getAttribute('title')].join(' ').toLowerCase();
     if(/excel|xlsx|استيراد excel|تصدير excel/.test(text)) return 'xlsx';
     if(/print|pdf|طباعة|تصدير الصفحة/.test(text)) return 'printing';
-    if(/smartreport|smart-report|customer360/.test(text)) return 'smartReports';
+    if(/customer360/.test(text)) return 'customer360';
+    if(/smartreport|smart-report/.test(text)) return 'smartReports';
     if(/salesinvoice|sales-invoice/.test(text)) return 'sales';
     if(/audit|diagnostic|observability/.test(text)) return 'diagnostics';
     return '';
@@ -470,7 +490,8 @@
     if(/payroll|salaryslip|commissionstatement/.test(marker)) return 'payroll';
     if(/commission/.test(marker)) return 'commission';
     if(/settings|setup|permissions|users|backup/.test(marker)) return 'settingsSetup';
-    if(/smartreport|customer360/.test(marker)) return 'smartReports';
+    if(/customer360/.test(marker)) return 'customer360';
+    if(/smartreport/.test(marker)) return 'smartReports';
     if(/salesinvoice|sales-invoice|invoice/.test(marker)) return 'sales';
     if(/observability|diagnostic|audit/.test(marker)) return 'diagnostics';
     if(/fleet/.test(marker)) return 'fleet';
@@ -591,11 +612,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-startup-gate-stabilization-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg2-runtime-validation-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-startup-gate-stabilization-1',
+    version: '10.0.25-sg2-runtime-validation-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
