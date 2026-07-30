@@ -233,15 +233,13 @@
       var tab=b.getAttribute('data-tab');
       if(tab){
         e.preventDefault(); e.stopPropagation();
-        var navigationScreen=String(b.getAttribute('data-pet-nav-screen')||'').trim();
-        var appointmentsSubTab=tab==='appointments'?(b.getAttribute('data-appointments-subtab')||(navigationScreen==='appointmentsMaster'?'master':'add')):'';
+        var appointmentsSubTab=tab==='appointments'?(b.getAttribute('data-appointments-subtab')||'add'):'';
         if(tab==='appointments'){
           window.__PETATOE_APPOINTMENTS_NAV_INTENT__=normalizeAppointmentsSubTab(appointmentsSubTab);
           window.__PETATOE_APPOINTMENTS_NAV_APPLIED__='';
         }
         petatoeSidebarOpenTab(tab,b.getAttribute('data-smart-open')||'',{
           appointmentsSubTab:appointmentsSubTab,
-          navigationScreen:navigationScreen,
           source:'canonical-navigation'
         });
         if(tab==='appointments') applyAppointmentsNavigationIntent();
@@ -264,10 +262,14 @@
       if(active==='appointments'){
         var appointmentsActiveTab='';
         try{
-          var appointmentTab=petBlock7937_q('#appointments .appointments-tab.active[data-appointment-tab]');
-          appointmentsActiveTab=appointmentTab?appointmentTab.getAttribute('data-appointment-tab'):'';
+          var appointmentSection=petBlock7937_q('#appointments [data-appointment-section].active');
+          appointmentsActiveTab=appointmentSection?appointmentSection.getAttribute('data-appointment-section'):'';
+          if(!appointmentsActiveTab){
+            var appointmentTab=petBlock7937_q('#appointments .appointments-tab.active[data-appointment-tab]');
+            appointmentsActiveTab=appointmentTab?appointmentTab.getAttribute('data-appointment-tab'):'';
+          }
         }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('navigation/navigation.js',e);}
-        if(appointmentsActiveTab==='master') activeBtn=firstVisibleButton('button[data-tab="appointments"][data-appointments-subtab="master"]',nav);
+        if(appointmentsActiveTab==='master') activeBtn=firstVisibleButton('button[data-pet-nav-screen="appointmentsMaster"]',nav)||firstVisibleButton('button[data-tab="appointments"][data-appointments-subtab="master"]',nav);
       }
       if(!activeBtn) activeBtn=firstVisibleButton('button[data-tab="'+active+'"]',nav);
       var grp=activeBtn&&activeBtn.closest('.pet-v142-group'); groupId=grp?grp.getAttribute('data-group'):'';
