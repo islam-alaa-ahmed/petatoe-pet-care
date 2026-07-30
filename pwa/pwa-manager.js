@@ -19,6 +19,24 @@
   const lang = () => (document.documentElement.lang || localStorage.getItem('petatoe_language') || 'ar').toLowerCase().startsWith('en') ? 'en' : 'ar';
   const text = (ar, en) => lang() === 'en' ? en : ar;
 
+  function cleanTransientCacheBustParams() {
+    try {
+      const url = new URL(window.location.href);
+      let changed = false;
+      ['_pwa', '_reload'].forEach((name) => {
+        if (url.searchParams.has(name)) {
+          url.searchParams.delete(name);
+          changed = true;
+        }
+      });
+      if (!changed || !window.history || typeof window.history.replaceState !== 'function') return;
+      const cleanUrl = `${url.pathname}${url.search}${url.hash}`;
+      window.history.replaceState(window.history.state, document.title, cleanUrl);
+    } catch (_) { /* URL cleanup is non-critical. */ }
+  }
+
+  cleanTransientCacheBustParams();
+
   function publishStatus(status, extra) {
     state.status = status;
     state.lastError = extra && extra.message ? String(extra.message) : '';

@@ -11,6 +11,20 @@
   var statusDetail='';
   var maintenanceBusy=false;
 
+  function cleanTransientCacheBustParams(){
+    try{
+      var url=new URL(window.location.href);
+      var changed=false;
+      ['_pwa','_reload'].forEach(function(name){
+        if(url.searchParams.has(name)){url.searchParams.delete(name);changed=true;}
+      });
+      if(!changed||!window.history||typeof window.history.replaceState!=='function')return;
+      window.history.replaceState(window.history.state,document.title,url.pathname+url.search+url.hash);
+    }catch(_){/* URL cleanup is non-critical. */}
+  }
+
+  cleanTransientCacheBustParams();
+
   function isMobile(){return !!(window.matchMedia&&window.matchMedia('(max-width: 900px)').matches)}
   function center(){return window.PETATOE_LOCALIZATION_CENTER||null}
   function t(key,fallback){try{var c=center();return c&&typeof c.t==='function'?c.t('aboutApp.'+key,{}, {fallback:fallback,allowKeyFallback:true}):fallback}catch(_){return fallback}}
