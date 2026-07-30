@@ -118,8 +118,14 @@
       var tabId = active && active.id ? active.id : '';
       if(group === 'operations' && window.PETATOEAppointments){
         if(typeof window.PETATOEAppointments.render === 'function') window.PETATOEAppointments.render();
-      }else if(group === 'commission' && tabId === 'commissions' && typeof window.renderCommissionSystem === 'function'){
-        window.renderCommissionSystem();
+      }else if(group === 'commission'){
+        if(window.PETATOECommissionRuntime && typeof window.PETATOECommissionRuntime.ensurePanels === 'function') window.PETATOECommissionRuntime.ensurePanels();
+        if(tabId === 'commissions' && typeof window.renderCommissionSystem === 'function') window.renderCommissionSystem();
+        else if(tabId === 'commissionStatement' && typeof window.renderCommissionStatementPage === 'function') window.renderCommissionStatementPage();
+      }else if(group === 'smartReports'){
+        var smartRuntime = window.PETATOESmartReportsRuntime;
+        if(smartRuntime && smartRuntime.__ready && typeof smartRuntime.open === 'function') smartRuntime.open('', 'lazy-hydration');
+        else if(smartRuntime && smartRuntime.__ready && typeof smartRuntime.render === 'function') smartRuntime.render('', 'lazy-hydration');
       }else if(group === 'customer360' && typeof window.renderCustomer360Panel === 'function'){
         window.renderCustomer360Panel();
       }else if(group === 'children' && window.PETATOEChildrenExpenses && typeof window.PETATOEChildrenExpenses.render === 'function'){
@@ -172,9 +178,15 @@
       return !!(window.PETATOEChildrenExpenses && typeof window.PETATOEChildrenExpenses.render === 'function');
     },
     commission: function(){
-      return typeof window.renderCommissionSystem === 'function' &&
+      var runtime = window.PETATOECommissionRuntime;
+      if(runtime && typeof runtime.ensurePanels === 'function') runtime.ensurePanels();
+      return !!(runtime && runtime.__ready === true &&
+        typeof runtime.ensurePanels === 'function' &&
+        typeof window.renderCommissionSystem === 'function' &&
         typeof window.setCommissionTab === 'function' &&
-        typeof window.renderCommissionStatementPage === 'function';
+        typeof window.renderCommissionStatementPage === 'function' &&
+        document.getElementById('commissions') &&
+        document.getElementById('commissionStatement'));
     },
     customer360: function(){
       return typeof window.renderCustomer360Panel === 'function' &&
@@ -213,7 +225,10 @@
       return typeof window.renderSmartReports === 'function' &&
         servicesReady &&
         !!(tabs && tabs.__ready && typeof tabs.setSmartTab === 'function') &&
-        typeof window.setSmartTab === 'function';
+        typeof window.setSmartTab === 'function' &&
+        !!(window.PETATOESmartReportsRuntime && window.PETATOESmartReportsRuntime.__ready === true &&
+          typeof window.PETATOESmartReportsRuntime.render === 'function' &&
+          typeof window.PETATOESmartReportsRuntime.refresh === 'function');
     },
     reportsUI: function(){
       return !!(window.PETATOEReports || typeof window.renderReports === 'function' || typeof window.renderDashboardAll === 'function');
@@ -269,7 +284,10 @@
         smartServices: !!(services && services.__ready && typeof services.scopedData === 'function'),
         legacySmartServices: typeof window.smartServicesScopedData === 'function',
         smartTabs: !!(tabs && tabs.__ready && typeof tabs.setSmartTab === 'function'),
-        setSmartTab: typeof window.setSmartTab === 'function'
+        setSmartTab: typeof window.setSmartTab === 'function',
+        runtimeController: !!(window.PETATOESmartReportsRuntime && window.PETATOESmartReportsRuntime.__ready === true),
+        runtimeRender: !!(window.PETATOESmartReportsRuntime && typeof window.PETATOESmartReportsRuntime.render === 'function'),
+        runtimeRefresh: !!(window.PETATOESmartReportsRuntime && typeof window.PETATOESmartReportsRuntime.refresh === 'function')
       };
     }
     if(name === 'operations'){
@@ -612,11 +630,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg2-runtime-validation-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg2-runtime-hydration-fix-2', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg2-runtime-validation-1',
+    version: '10.0.25-sg2-runtime-hydration-fix-2',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

@@ -17,12 +17,14 @@
     return gate.ensureGroup(group).then(function(ready){if(ready!==false)return callback();}).catch(function(e){console.error('[PETATOE Filters] group readiness failed',group,e);});
   }
   function renderSmartWhenReady(forceRemote){
-    var runtime=window.PETATOESmartReportsRuntime;
-    if(runtime&&runtime.__ready){
-      return forceRemote?runtime.refresh():runtime.render('', 'filter-render');
-    }
-    console.error('[PETATOE Filters] Smart Reports runtime controller is unavailable');
-    return false;
+    return ensure('smartReports', function(){
+      var runtime=window.PETATOESmartReportsRuntime;
+      if(runtime&&runtime.__ready){
+        return forceRemote?runtime.refresh():runtime.render('', 'filter-render');
+      }
+      console.error('[PETATOE Filters] Smart Reports runtime controller is unavailable after group hydration');
+      return false;
+    });
   }
   function treasury(){ return window.PETATOETreasury || {}; }
   function warehouse(){ return window.PETATOEWarehouses || {}; }

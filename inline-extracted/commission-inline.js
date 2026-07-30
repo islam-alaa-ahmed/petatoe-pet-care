@@ -934,6 +934,10 @@ function ensureCommissionDelegation(){
     window.commissionSelectRow&&window.commissionSelectRow(parseInt(el.getAttribute('data-commission-select-row')||'0',10),el.getAttribute('data-commission-kind')||'');
   });
 }
-function commissionsInit(){ensureCommissionDelegation();injectPanel();injectCommissionStatementPanel();injectNav();patchTab();}
+function commissionsInit(){ensureCommissionDelegation();injectPanel();injectCommissionStatementPanel();injectNav();patchTab();return !!(petBlock5568_q('commissions')&&petBlock5568_q('commissionStatement'));}
+window.PETATOECommissionRuntime=window.PETATOECommissionRuntime||{};
+window.PETATOECommissionRuntime.__ready=true;
+window.PETATOECommissionRuntime.ensurePanels=commissionsInit;
+window.PETATOECommissionRuntime.renderSystem=function(){commissionsInit();return window.renderCommissionSystem&&window.renderCommissionSystem();};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',commissionsInit);else commissionsInit();
 })();
