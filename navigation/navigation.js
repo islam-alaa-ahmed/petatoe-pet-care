@@ -2,8 +2,6 @@
   'use strict';
   if(window.__PETATOE_NAVIGATION_MODULE_PHASE1__) return;
   window.__PETATOE_NAVIGATION_MODULE_PHASE1__=true;
-  var petatoeNavigationMobileMq=window.matchMedia&&window.matchMedia('(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)');
-  function mobileV10OwnsPresentation(){return window.PETATOEDeviceProfile?window.PETATOEDeviceProfile.isMobileDevice():!!(petatoeNavigationMobileMq&&petatoeNavigationMobileMq.matches);}
   // PETATOE v6.1.206 Phase 3: canonical navigation module with isolated permission gate.
   // This file owns building #nav and menu click routing only. Screen rendering remains inside each screen module.
   function petBlock7937_q(sel,root){return (root||document).querySelector(sel)}
@@ -43,8 +41,8 @@
       {settingsMain:'settings',settingsSub:'backup',settingsAction:'restore',title:'استعادة بيانات',sub:'استيراد نسخة JSON',titleKey:'navigation.settings.restore.title',subKey:'navigation.settings.restore.subtitle'}
     ]}
   ];
-  function petatoeSidebarOpenTab(tabName, smartOpen){
-    try{ if(window.PETATOERouter&&typeof window.PETATOERouter.openTab==='function') window.PETATOERouter.openTab(tabName, smartOpen||''); }
+  function petatoeSidebarOpenTab(tabName, smartOpen, routeIntent){
+    try{ if(window.PETATOERouter&&typeof window.PETATOERouter.openTab==='function') window.PETATOERouter.openTab(tabName, smartOpen||'',routeIntent||{}); }
     catch(e){ try{ qa('.panel').forEach(function(p){p.classList.toggle('active',p.id===tabName)}); }catch(_){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",_);} }
     try{document.body.classList.remove('sidebar-open')}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
     setTimeout(markActive,50);
@@ -194,10 +192,6 @@
     });
   }
   function bind(nav){
-    // On phones the v10 shell owns all interaction and active-state rendering.
-    // Keep #nav built for schema and permission extraction, but do not attach
-    // the legacy capture-phase click handler.
-    if(mobileV10OwnsPresentation()){nav.__petV142MobileIsolated=true;return;}
     if(nav.__petV142Bound) return; nav.__petV142Bound=true;
     nav.addEventListener('click',function(e){
       var t=e.target.closest&&e.target.closest('[data-v142-toggle]');
@@ -214,24 +208,16 @@
       var tab=b.getAttribute('data-tab');
       if(tab){
         e.preventDefault(); e.stopPropagation();
-        var appointmentsSubTab=b.getAttribute('data-appointments-subtab')||'';
-        petatoeSidebarOpenTab(tab,b.getAttribute('data-smart-open')||'');
-        if(tab==='appointments'&&appointmentsSubTab){
-          setTimeout(function(){
-            try{
-              if(window.PETATOEAppointments&&typeof window.PETATOEAppointments.setTab==='function') window.PETATOEAppointments.setTab(appointmentsSubTab);
-              else if(window.__PETATOEAppointmentsLegacyEngine&&typeof window.__PETATOEAppointmentsLegacyEngine.setTab==='function') window.__PETATOEAppointmentsLegacyEngine.setTab(appointmentsSubTab);
-              else if(window.PETATOEOperationsAppointmentsInternal&&typeof window.PETATOEOperationsAppointmentsInternal.setTab==='function') window.PETATOEOperationsAppointmentsInternal.setTab(appointmentsSubTab);
-            }catch(err){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('navigation/navigation.js',err);}
-            setTimeout(markActive,40);
-          },80);
-        }
+        var appointmentsSubTab=tab==='appointments'?(b.getAttribute('data-appointments-subtab')||'add'):'';
+        petatoeSidebarOpenTab(tab,b.getAttribute('data-smart-open')||'',{
+          appointmentsSubTab:appointmentsSubTab,
+          source:'canonical-navigation'
+        });
         return false;
       }
     },true);
   }
   function markActive(){
-    if(mobileV10OwnsPresentation()) return;
     var nav=petBlock7937_q('#nav'); if(!nav||!nav.classList.contains('pet-v142-nav')) return;
     var active=(petBlock7937_q('.panel.active')||{}).id||'dashboard';
     var sm=''; try{sm=window.__PETATOE_SETTINGS_MAIN__||'system'}catch(e){sm='system';}

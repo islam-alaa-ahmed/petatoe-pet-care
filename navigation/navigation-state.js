@@ -146,13 +146,6 @@
   function restoreInnerState(s){
     setTimeout(function(){
       try{
-        if(s.panel === 'appointments' && s.appointmentsTab){
-          if(window.PETATOEAppointments && typeof window.PETATOEAppointments.setTab === 'function') window.PETATOEAppointments.setTab(s.appointmentsTab);
-          else if(window.__PETATOEAppointmentsLegacyEngine && typeof window.__PETATOEAppointmentsLegacyEngine.setTab === 'function') window.__PETATOEAppointmentsLegacyEngine.setTab(s.appointmentsTab);
-          else if(window.PETATOEOperationsAppointmentsInternal && typeof window.PETATOEOperationsAppointmentsInternal.setTab === 'function') window.PETATOEOperationsAppointmentsInternal.setTab(s.appointmentsTab);
-        }
-      }catch(e){ try{console.warn('[PETATOE] appointment state restore skipped', e);}catch(_e){} }
-      try{
         if(s.panel === 'treasury' && s.treasuryTab && window.PETATOETreasuryTabsV82 && typeof window.PETATOETreasuryTabsV82.open === 'function'){
           window.PETATOETreasuryTabsV82.open(s.treasuryTab);
         }
@@ -176,8 +169,8 @@
     RESTORE_FLAG = true;
     try{
       if(s.panel === 'settings') openSettingsState(s);
-      else if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function') window.PETATOERouter.openTab(s.panel, s.smartOpen || '');
-      else if(window.tab) window.tab(s.panel);
+      else if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function') window.PETATOERouter.openTab(s.panel, s.smartOpen || '', {appointmentsSubTab:s.panel==='appointments'?(s.appointmentsTab||'add'):'', source:'navigation-state-restore'});
+      else if(window.tab) window.tab(s.panel, s.smartOpen || '', {appointmentsSubTab:s.panel==='appointments'?(s.appointmentsTab||'add'):'', source:'navigation-state-restore'});
       restoreInnerState(s);
     }catch(e){
       RESTORE_DONE = false;

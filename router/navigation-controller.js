@@ -12,35 +12,18 @@
   function runBuiltinRenderers(tabId,smartOpen){
     // v3.11.22: Router is navigation-only. Rendering is handled by petatoe:tabchange subscribers.
   }
-  var routeDispatchFrame=0,routeDispatchSeq=0,lastDispatchKey='',lastDispatchAt=0;
-  function now(){return window.performance&&typeof window.performance.now==='function'?window.performance.now():Date.now();}
-  function dispatchTabChange(tabId,smartOpen,previousTab,routeStartedAt){
-    var key=String(tabId||'')+'|'+String(smartOpen||'');
-    var requestedAt=now();
-    routeDispatchSeq+=1;
-    var token=routeDispatchSeq;
-    if(routeDispatchFrame){
-      try{window.cancelAnimationFrame(routeDispatchFrame);}catch(_e){}
-      routeDispatchFrame=0;
-    }
-    var run=function(){
-      routeDispatchFrame=0;
-      var stamp=now();
-      if(key===lastDispatchKey && stamp-lastDispatchAt<120) return;
-      lastDispatchKey=key;lastDispatchAt=stamp;
-      var detail={tabId:tabId,smartOpen:smartOpen||'',previousTab:previousTab||'',routeToken:token,routeStartedAt:routeStartedAt||requestedAt,routeDispatchedAt:stamp};
-      try{document.dispatchEvent(new CustomEvent('petatoe:tabchange',{detail:detail}));}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("router/navigation-controller.js",e);}
-      try{
-        window.requestAnimationFrame(function(){
-          var paintedAt=now();
-          window.PETATOENavigationPerformance=window.PETATOENavigationPerformance||{};
-          window.PETATOENavigationPerformance.last={tabId:tabId,smartOpen:smartOpen||'',previousTab:previousTab||'',routeToken:token,activationMs:Math.max(0,paintedAt-(routeStartedAt||requestedAt)),dispatchDelayMs:Math.max(0,stamp-(routeStartedAt||requestedAt)),paintedAt:paintedAt};
-          document.dispatchEvent(new CustomEvent('petatoe:routepainted',{detail:window.PETATOENavigationPerformance.last}));
-        });
-      }catch(_e){}
-    };
-    if(typeof window.requestAnimationFrame==='function') routeDispatchFrame=window.requestAnimationFrame(run);
-    else routeDispatchFrame=setTimeout(run,0);
+  function normalizeRouteIntent(tabId,routeIntent){
+    routeIntent=routeIntent&&typeof routeIntent==='object'?routeIntent:{};
+    var appointmentsSubTab='';
+    if(tabId==='appointments') appointmentsSubTab=String(routeIntent.appointmentsSubTab||'add').trim()||'add';
+    return {appointmentsSubTab:appointmentsSubTab,source:String(routeIntent.source||'').trim()};
+  }
+  function dispatchTabChange(tabId,smartOpen,routeIntent){
+    var intent=normalizeRouteIntent(tabId,routeIntent);
+    try{
+      if(tabId==='appointments') window.__PETATOE_APPOINTMENTS_NAV_INTENT__=intent.appointmentsSubTab;
+      document.dispatchEvent(new CustomEvent('petatoe:tabchange',{detail:{tabId:tabId,smartOpen:smartOpen||'',previousTab:window.PETATOERouter&&window.PETATOERouter.current||'',appointmentsSubTab:intent.appointmentsSubTab,source:intent.source}}));
+    }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
   }
   function reportRouteBlocked(tabId, reason){
     try{
@@ -62,9 +45,8 @@
     }
     return true;
   }
-  function openTab(tabId,smartOpen){
+  function openTab(tabId,smartOpen,routeIntent){
     if(!tabId) return false;
-    var routeStartedAt=now();
     smartOpen=smartOpen||'';
     if(!routeAllowed(tabId)){
       reportRouteBlocked(tabId,'permission-denied');
@@ -82,14 +64,14 @@
       try{ if(typeof closeSidebar==='function') closeSidebar(); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
       // PETATOE v6.1.205: opening an already-active tab must still notify screen modules.
       // Otherwise settings/users/permissions can stay blank because their render subscriber never runs.
-      dispatchTabChange(tabId,smartOpen,previous,routeStartedAt);
+      dispatchTabChange(tabId,smartOpen,routeIntent);
       return true;
     }
     if(target){ qsa('.panel').forEach(function(p){p.classList.remove('active')}); target.classList.add('active'); }
     markNav(tabId,smartOpen);
     try{ if(typeof closeSidebar==='function') closeSidebar(); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
     runBuiltinRenderers(tabId,smartOpen);
-    dispatchTabChange(tabId,smartOpen,previous,routeStartedAt);
+    dispatchTabChange(tabId,smartOpen,routeIntent);
     return true;
   }
   function bind(){
@@ -108,7 +90,7 @@
       return false;
     },true);
   }
-  window.PETATOENavigationController={openTab:openTab,currentTab:currentTab,bind:bind,markNav:markNav,getPerformance:function(){return window.PETATOENavigationPerformance&&window.PETATOENavigationPerformance.last||null;}};
+  window.PETATOENavigationController={openTab:openTab,currentTab:currentTab,bind:bind,markNav:markNav};
   window.PETATOERouter={openTab:openTab,currentTab:currentTab,bind:bind,current:currentTab()};
   window.tab=window.PETATOERouter.openTab; // single compatibility alias for legacy inline HTML
   function bindWhenReady(){ bind(); }

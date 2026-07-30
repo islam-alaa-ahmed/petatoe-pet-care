@@ -2908,10 +2908,12 @@
   document.addEventListener('petatoe:tabchange',function(e){
     var d=e&&e.detail||{}, tab=d.tabId||'';
     if(tab==='appointments'){
-      // PETATOE v6.4.91: direct sidebar entry for إدارة المواعيد must always
-      // return to the normal appointments dashboard, not keep the previous master tab.
-      // Master data sidebar entry still switches to master after this event via navigation.js.
-      setTab('add');
+      // NAV-OPS-01: appointments and reference data share one panel, therefore
+      // the requested sub-route must travel inside the same deterministic event.
+      // Never reset to add before a delayed second navigation attempt.
+      var requestedSubTab=String(d.appointmentsSubTab||window.__PETATOE_APPOINTMENTS_NAV_INTENT__||'add').trim()||'add';
+      window.__PETATOE_APPOINTMENTS_NAV_INTENT__=requestedSubTab;
+      setTab(requestedSubTab);
       return;
     }
     if(tab==='vehicleOperations'||tab==='vehicleOperationsReports'||tab==='operationKpis'){
@@ -3233,4 +3235,8 @@
   }
   window.__PETATOEAppointmentsLegacyEngine=appointmentsPublicApi;
   window.PETATOEAppointments=appointmentsPublicApi;
+  try{
+    if(window.__PETATOE_APPOINTMENTS_NAV_INTENT__) setTab(window.__PETATOE_APPOINTMENTS_NAV_INTENT__);
+    document.dispatchEvent(new CustomEvent('petatoe:appointments-ready',{detail:{api:'legacy-engine'}}));
+  }catch(_e){}
 })();
