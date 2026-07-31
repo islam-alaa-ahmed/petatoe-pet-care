@@ -10,6 +10,26 @@
 
   var legacyRender = window.renderSmartReports;
 
+  function traceRouter(stage, detail){
+    try{
+      var area=document.getElementById('smartReportsArea');
+      var entry={
+        at:Date.now(),
+        stage:String(stage||''),
+        detail:detail||null,
+        legacyRows:Array.isArray(window.records)?window.records.length:-1,
+        bootstrapped:window.__petatoeSmartReportsBootstrapped===true,
+        areaChildren:area&&area.children?area.children.length:-1,
+        areaReady:!!(area&&area.children&&area.children.length&&!area.querySelector('.smart-empty')),
+        areaHasEmpty:!!(area&&area.querySelector&&area.querySelector('.smart-empty'))
+      };
+      window.__PETATOE_SMART_RUNTIME_TRACE__=window.__PETATOE_SMART_RUNTIME_TRACE__||[];
+      window.__PETATOE_SMART_RUNTIME_TRACE__.push(entry);
+      if(window.__PETATOE_SMART_RUNTIME_TRACE__.length>200) window.__PETATOE_SMART_RUNTIME_TRACE__.shift();
+      return entry;
+    }catch(_e){ return null; }
+  }
+
   function normalizeSmartTab(tab){
     var target = String(tab || 'overview').trim() || 'overview';
     return target === 'business' ? 'forecast' : target;
@@ -101,11 +121,19 @@
 
   function renderEngine(tab){
     var target = tab || activeSmartTab();
-    if(window.__petatoeSmartReportsBootstrapped && smartAreaReady() && routeSmartReport(target)){
+    var wasBootstrapped=window.__petatoeSmartReportsBootstrapped===true;
+    var areaReady=smartAreaReady();
+    var routed=false;
+    if(wasBootstrapped && areaReady) routed=routeSmartReport(target);
+    traceRouter('router.renderEngine.decision',{tab:target,wasBootstrapped:wasBootstrapped,areaReady:areaReady,routed:routed});
+    if(wasBootstrapped && areaReady && routed){
+      traceRouter('router.renderEngine.short-circuit',{tab:target});
       return;
     }
     var __fullPerfStart = perfNow();
+    traceRouter('router.renderEngine.before-legacy',{tab:target,legacyRenderType:typeof legacyRender});
     var result = legacyRender.apply(this, arguments);
+    traceRouter('router.renderEngine.after-legacy',{tab:target,resultType:typeof result});
     window.__petatoeSmartReportsBootstrapped = true;
     perfPush('SmartReports.legacyFullRender', __fullPerfStart, {tab:target});
     return result;

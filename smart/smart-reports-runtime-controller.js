@@ -21,6 +21,28 @@
   var lastCommittedDetail=null;
   var lastRenderedRevision='';
 
+  function traceRuntime(stage, detail){
+    try{
+      var rows=[];
+      try{ rows=runtimeRows(); }catch(_e){}
+      var area=document.getElementById('smartReportsArea');
+      var entry={
+        at:Date.now(),
+        stage:String(stage||''),
+        detail:detail||null,
+        runtimeRows:Array.isArray(rows)?rows.length:-1,
+        legacyRows:Array.isArray(window.records)?window.records.length:-1,
+        bootstrapped:window.__petatoeSmartReportsBootstrapped===true,
+        areaChildren:area&&area.children?area.children.length:-1,
+        areaHasEmpty:!!(area&&area.querySelector&&area.querySelector('.smart-empty'))
+      };
+      window.__PETATOE_SMART_RUNTIME_TRACE__=window.__PETATOE_SMART_RUNTIME_TRACE__||[];
+      window.__PETATOE_SMART_RUNTIME_TRACE__.push(entry);
+      if(window.__PETATOE_SMART_RUNTIME_TRACE__.length>200) window.__PETATOE_SMART_RUNTIME_TRACE__.shift();
+      return entry;
+    }catch(_e){ return null; }
+  }
+
   function clean(value){ return String(value==null?'':value).trim(); }
   function normalizeTab(value){
     var tab=clean(value)||'overview';
@@ -117,8 +139,10 @@
     });
   }
   function synchronize(forceRemote,reason){
+    traceRuntime('controller.synchronize.requested',{forceRemote:!!forceRemote,reason:reason||''});
     return Promise.resolve().then(async function(){
       var rowsBefore=runtimeRows();
+      traceRuntime('controller.synchronize.before',{rowsBefore:rowsBefore.length});
       var needsInitialHydration=!rowsBefore.length;
       var shouldRefresh=!!forceRemote||needsInitialHydration;
       if(shouldRefresh&&typeof window.petatoeSyncSalesReportsFromSupabase==='function'){
@@ -131,8 +155,10 @@
           coalescedRefreshCount+=1;
         }
         await remoteRefreshPromise;
+        traceRuntime('controller.synchronize.remote-complete',{rowsAfterRemote:runtimeRows().length});
       }
-      commitRuntimeRows((reason||'smart-reports')+(needsInitialHydration?'-initial-hydration':'-canonical-commit'));
+      var commitResult=commitRuntimeRows((reason||'smart-reports')+(needsInitialHydration?'-initial-hydration':'-canonical-commit'));
+      traceRuntime('controller.synchronize.commit-complete',{commitResult:commitResult,needsInitialHydration:needsInitialHydration,rowsAfterCommit:runtimeRows().length});
       return true;
     });
   }
@@ -153,8 +179,10 @@
     try{
       if(typeof window.clearSmartReportCaches==='function') window.clearSmartReportCaches();
       var engine=renderEngine();
+      traceRuntime('controller.renderNow.before-engine',{tab:tab,reason:lastReason,engineReady:!!engine});
       if(!engine) throw new Error('Smart Reports render engine is unavailable');
-      engine.render(tab);
+      var engineResult=engine.render(tab);
+      traceRuntime('controller.renderNow.after-engine',{tab:tab,engineResultType:typeof engineResult});
       activateTab(tab);
       try{
         var commitState=window.__PETATOE_SALES_REPORTS_COMMIT_STATE__||null;
@@ -246,18 +274,22 @@
   function open(tab,event){
     try{if(event&&typeof event.preventDefault==='function')event.preventDefault();}catch(_e){}
     tab=normalizeTab(tab);
+    traceRuntime('controller.open.start',{tab:tab});
     navigate(tab);
 
     // Preserve the proven synchronous render contract so the dashboard body is
     // built immediately from the currently committed rows. Runtime ownership is
     // retained for readiness, synchronization, deduplication and remote refresh.
     try{
+      traceRuntime('controller.open.before-bridge',{tab:tab,bridgeType:typeof window.renderSmartReports});
       if(typeof window.renderSmartReports==='function') window.renderSmartReports(tab);
+      traceRuntime('controller.open.after-bridge',{tab:tab});
     }catch(error){
       lastError=String(error&&error.message||error);
       try{console.error('[PETATOE Smart] immediate render bridge failed',error);}catch(_e){}
     }
 
+    traceRuntime('controller.open.before-requestRender',{tab:tab});
     requestRender(tab,'public-smart-open',false);
     return false;
   }
