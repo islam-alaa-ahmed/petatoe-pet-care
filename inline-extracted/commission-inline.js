@@ -1,5 +1,7 @@
 (function(){
 'use strict';
+window.__PETATOE_COMMISSION_RUNTIME_FILE_EXECUTED__ = true;
+window.__PETATOE_COMMISSION_RUNTIME_VERSION__ = '10.0.25-commission-runtime-republish-4';
 const COMM_KEY='commissions';
 const COMM_SNAPSHOT_KEY='commissionSnapshots';
 const COMM_REMOTE_STORE_ID='commission_reference_data';
