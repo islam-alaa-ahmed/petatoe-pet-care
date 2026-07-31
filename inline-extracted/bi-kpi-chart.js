@@ -170,7 +170,7 @@
   }
   function petatoeBiMoreBtn(name,shown,total){
     if(total<=shown)return '';
-    return '<div class="smart-table-actions"><button type="button" class="btn btn-ghost" data-bi-more="'+name+'">انقر لعرض المزيد ('+Math.min(total,shown+10)+' / '+total+')</button></div>';
+    return '<div class="smart-table-actions"><button type="button" class="btn btn-ghost bi-more-btn" data-bi-action="show-more" data-bi-more="'+name+'" aria-label="عرض المزيد">انقر لعرض المزيد ('+Math.min(total,shown+10)+' / '+total+')</button></div>';
   }
   function petatoeBiPanelHead(title,sub,exportType){
     return '<div class="smart-report-head-actions bi-report-head"><div><h3>'+title+'</h3>'+(sub?'<p>'+sub+'</p>':'')+'</div><div class="smart-report-head-buttons"><button type="button" class="btn btn-green" data-bi-export-type="'+exportType+'">⬇️ Excel</button></div></div>';
@@ -229,9 +229,9 @@
     var healthAll=d.clients.slice(), bestAll=(d.bestClients||d.clients||[]), leakageAll=d.leak.inactive.slice(), servicesAll=d.leak.services.slice();
     var riskCustomers=healthAll.slice(0,healthLimit), bestCustomers=bestAll.slice(0,bestLimit), leakClients=leakageAll.slice(0,leakageLimit), leakSvc=servicesAll.slice(0,svcLimit);
     biTableCache={key:key,healthAll:healthAll,bestAll:bestAll,leakageAll:leakageAll,servicesAll:servicesAll,riskCustomers:riskCustomers,bestCustomers:bestCustomers,leakClients:leakClients,leakSvc:leakSvc,
-      risk:riskCustomers.map(function(c){return `<tr><td>${block_4289_esc(c.name)}</td><td>${badge(c.score)}</td><td>${fmt0(c.rec)} يوم</td><td>${money(c.value)}</td><td>${fmt0(c.inv)}</td><td><button class="btn btn-ghost">Customer 360</button></td></tr>`}).join(''),
-      best:bestCustomers.map(function(c){return `<tr><td>${block_4289_esc(c.name)}</td><td>${badge(c.score)}</td><td>${money(c.value)}</td><td>${fmt0(c.inv)}</td><td><button class="btn btn-ghost">فتح</button></td></tr>`}).join(''),
-      leak:leakClients.map(function(c){return `<tr><td>${block_4289_esc(c.name)}</td><td>${fmt0(c.rec)}</td><td>${money(c.avg)}</td><td>${money(c.lost)}</td><td><button class="btn btn-ghost">متابعة</button></td></tr>`}).join(''),
+      risk:riskCustomers.map(function(c){return `<tr><td>${block_4289_esc(c.name)}</td><td>${badge(c.score)}</td><td>${fmt0(c.rec)} يوم</td><td>${money(c.value)}</td><td>${fmt0(c.inv)}</td><td><button type="button" class="btn btn-ghost bi-row-action-btn" data-bi-customer-action="customer360" data-bi-client="${block_4289_esc(c.name)}">Customer 360</button></td></tr>`}).join(''),
+      best:bestCustomers.map(function(c){return `<tr><td>${block_4289_esc(c.name)}</td><td>${badge(c.score)}</td><td>${money(c.value)}</td><td>${fmt0(c.inv)}</td><td><button type="button" class="btn btn-ghost bi-row-action-btn" data-bi-customer-action="open" data-bi-client="${block_4289_esc(c.name)}">فتح</button></td></tr>`}).join(''),
+      leak:leakClients.map(function(c){return `<tr><td>${block_4289_esc(c.name)}</td><td>${fmt0(c.rec)}</td><td>${money(c.avg)}</td><td>${money(c.lost)}</td><td><button type="button" class="btn btn-ghost bi-row-action-btn" data-bi-customer-action="follow" data-bi-client="${block_4289_esc(c.name)}">متابعة</button></td></tr>`}).join(''),
       services:leakSvc.map(function(s){var t='الخدمة انخفضت بنسبة '+s.change.toFixed(1)+'%. آخر 3 شهور '+money(s.last3)+' مقابل '+money(s.prev3)+' في الفترة السابقة. التسريب المحتمل '+money(s.loss)+'.';return `<tr class="bi-data-row"${tipAttr(s.name,t)}><td>${block_4289_esc(s.name)} <span class="bi-tip-mark">i</span></td><td class="bi-tip-cell"${tipAttr('نسبة التغير', 'مقارنة آخر 3 شهور بالثلاث شهور السابقة. النسبة السالبة تعني هبوط.')}>${s.change.toFixed(1)}%</td><td>${money(s.last3)}</td><td>${money(s.prev3)}</td><td class="bi-tip-cell"${tipAttr('تسريب محتمل', 'الفرق بين الفترة السابقة وآخر 3 شهور عند وجود انخفاض.')}>${money(s.loss)}</td></tr>`}).join('')
     };
     return biTableCache;
@@ -243,7 +243,7 @@
     return true;
   }
   window.petatoeClearBICache=petatoeClearBICache;
-  var biRenderState={raf:0,pending:false,lastHtml:'',lastChartStamp:''};
+  var biRenderState={raf:0,pending:false,queued:false,lastHtml:'',lastChartStamp:''};
   function mountBiHtml(el,html){
     html=String(html||'');
     if(el.__petatoeBiLastHtml===html)return false;
@@ -251,9 +251,15 @@
     (window.PETATOESafeRender&&window.PETATOESafeRender.setHTML?window.PETATOESafeRender.setHTML(el,html):el.insertAdjacentHTML('beforeend',html));
     return true;
   }
+  function requestBusinessIntelligenceRender(){
+    if(biRenderState.pending){biRenderState.queued=true;return false;}
+    window.renderBusinessIntelligence();
+    return true;
+  }
+  window.PETATOERequestBusinessIntelligenceRender=requestBusinessIntelligenceRender;
   window.renderBusinessIntelligence=function(){
     var el=document.getElementById('biArea');if(!el)return;
-    if(biRenderState.pending)return;
+    if(biRenderState.pending){biRenderState.queued=true;return;}
     biRenderState.pending=true;
     var run=function(){
       biRenderState.pending=false;
@@ -280,16 +286,17 @@
       <div class="bi-panel"><h3>📊 KPI Center</h3><p>مؤشرات إدارية مركزة لا تغير أرقام التقارير الأصلية.</p><div class="bi-chart"><canvas id="biKpiChart"></canvas></div></div>
     </div>
     <div class="bi-grid bi-full-stack">
-      <div class="bi-panel">${petatoeBiPanelHead('❤️ Customer Health Score','أقل العملاء صحة — اضغط Customer 360 للمتابعة.','health')}${petatoeBiRenderTable('biCustomerHealthVirtualTable',healthAll,riskCustomers,[{label:'العميل',render:function(c){return block_4289_esc(c.name)}},{label:'Score',render:function(c){return badge(c.score)}},{label:'آخر غياب',render:function(c){return fmt0(c.rec)+' يوم'}},{label:'الإنفاق',render:function(c){return money(c.value)}},{label:'الفواتير',render:function(c){return fmt0(c.inv)}},{label:'الإجراء',render:function(){return '<button class="btn btn-ghost">Customer 360</button>'}}],'<th>العميل</th><th>Score</th><th>آخر غياب</th><th>الإنفاق</th><th>الفواتير</th><th>الإجراء</th>',tables.risk)}${petatoeBiMoreBtn('Health',riskCustomers.length,healthAll.length)}</div>
-      <div class="bi-panel">${petatoeBiPanelHead('🏆 أفضل العملاء صحة','عملاء يجب الحفاظ عليهم وتنمية مبيعاتهم.','best')}${petatoeBiRenderTable('biBestCustomersVirtualTable',bestAll,bestCustomers,[{label:'العميل',render:function(c){return block_4289_esc(c.name)}},{label:'Score',render:function(c){return badge(c.score)}},{label:'الإنفاق',render:function(c){return money(c.value)}},{label:'الفواتير',render:function(c){return fmt0(c.inv)}},{label:'الإجراء',render:function(){return '<button class="btn btn-ghost">فتح</button>'}}],'<th>العميل</th><th>Score</th><th>الإنفاق</th><th>الفواتير</th><th>الإجراء</th>',tables.best)}${petatoeBiMoreBtn('Best',bestCustomers.length,bestAll.length)}</div>
+      <div class="bi-panel">${petatoeBiPanelHead('❤️ Customer Health Score','أقل العملاء صحة — اضغط Customer 360 للمتابعة.','health')}${petatoeBiRenderTable('biCustomerHealthVirtualTable',healthAll,riskCustomers,[{label:'العميل',render:function(c){return block_4289_esc(c.name)}},{label:'Score',render:function(c){return badge(c.score)}},{label:'آخر غياب',render:function(c){return fmt0(c.rec)+' يوم'}},{label:'الإنفاق',render:function(c){return money(c.value)}},{label:'الفواتير',render:function(c){return fmt0(c.inv)}},{label:'الإجراء',render:function(c){return '<button type="button" class="btn btn-ghost bi-row-action-btn" data-bi-customer-action="customer360" data-bi-client="'+block_4289_esc(c.name)+'">Customer 360</button>'}}],'<th>العميل</th><th>Score</th><th>آخر غياب</th><th>الإنفاق</th><th>الفواتير</th><th>الإجراء</th>',tables.risk)}${petatoeBiMoreBtn('Health',riskCustomers.length,healthAll.length)}</div>
+      <div class="bi-panel">${petatoeBiPanelHead('🏆 أفضل العملاء صحة','عملاء يجب الحفاظ عليهم وتنمية مبيعاتهم.','best')}${petatoeBiRenderTable('biBestCustomersVirtualTable',bestAll,bestCustomers,[{label:'العميل',render:function(c){return block_4289_esc(c.name)}},{label:'Score',render:function(c){return badge(c.score)}},{label:'الإنفاق',render:function(c){return money(c.value)}},{label:'الفواتير',render:function(c){return fmt0(c.inv)}},{label:'الإجراء',render:function(c){return '<button type="button" class="btn btn-ghost bi-row-action-btn" data-bi-customer-action="open" data-bi-client="'+block_4289_esc(c.name)+'">فتح</button>'}}],'<th>العميل</th><th>Score</th><th>الإنفاق</th><th>الفواتير</th><th>الإجراء</th>',tables.best)}${petatoeBiMoreBtn('Best',bestCustomers.length,bestAll.length)}</div>
     </div>
     <div class="bi-grid bi-full-stack">
-      <div class="bi-panel">${petatoeBiPanelHead('💸 Revenue Leakage Detection','أعلى فرص التسريب المقدرة من العملاء الغائبين.','leakage')}${petatoeBiRenderTable('biRevenueLeakageVirtualTable',leakageAll,leakClients,[{label:'العميل',render:function(c){return block_4289_esc(c.name)}},{label:'أيام الغياب',render:function(c){return fmt0(c.rec)}},{label:'متوسط شهري',render:function(c){return money(c.avg)}},{label:'قيمة مفقودة تقديرية',render:function(c){return money(c.lost)}},{label:'الإجراء',render:function(){return '<button class="btn btn-ghost">متابعة</button>'}}],'<th>العميل</th><th>أيام الغياب</th><th>متوسط شهري</th><th>قيمة مفقودة تقديرية</th><th>الإجراء</th>',tables.leak)}${petatoeBiMoreBtn('Leakage',leakClients.length,leakageAll.length)}</div>
+      <div class="bi-panel">${petatoeBiPanelHead('💸 Revenue Leakage Detection','أعلى فرص التسريب المقدرة من العملاء الغائبين.','leakage')}${petatoeBiRenderTable('biRevenueLeakageVirtualTable',leakageAll,leakClients,[{label:'العميل',render:function(c){return block_4289_esc(c.name)}},{label:'أيام الغياب',render:function(c){return fmt0(c.rec)}},{label:'متوسط شهري',render:function(c){return money(c.avg)}},{label:'قيمة مفقودة تقديرية',render:function(c){return money(c.lost)}},{label:'الإجراء',render:function(c){return '<button type="button" class="btn btn-ghost bi-row-action-btn" data-bi-customer-action="follow" data-bi-client="'+block_4289_esc(c.name)+'">متابعة</button>'}}],'<th>العميل</th><th>أيام الغياب</th><th>متوسط شهري</th><th>قيمة مفقودة تقديرية</th><th>الإجراء</th>',tables.leak)}${petatoeBiMoreBtn('Leakage',leakClients.length,leakageAll.length)}</div>
       <div class="bi-panel">${petatoeBiPanelHead('📉 خدمات هابطة','خدمات انخفضت آخر 3 شهور مقارنة بالثلاث شهور السابقة.','services')}${petatoeBiRenderTable('biDecliningServicesVirtualTable',servicesAll,leakSvc,[{label:'الخدمة',render:function(s){var t='الخدمة انخفضت بنسبة '+s.change.toFixed(1)+'%. آخر 3 شهور '+money(s.last3)+' مقابل '+money(s.prev3)+' في الفترة السابقة. التسريب المحتمل '+money(s.loss)+'.';return block_4289_esc(s.name)+' <span class="bi-tip-mark">i</span>'}},{label:'التغير',render:function(s){return s.change.toFixed(1)+'%'}},{label:'آخر 3 شهور',render:function(s){return money(s.last3)}},{label:'قبلها',render:function(s){return money(s.prev3)}},{label:'تسريب محتمل',render:function(s){return money(s.loss)}}],'<th>الخدمة</th><th>التغير</th><th>آخر 3 شهور</th><th>قبلها</th><th>تسريب محتمل</th>',tables.services)}${petatoeBiMoreBtn('Services',leakSvc.length,servicesAll.length)}</div>
     </div>`;
     var htmlChanged=mountBiHtml(el,biHtml);
     var chartStamp=[d.health,Math.round(d.retention),d.atRisk,d.trend.change].join('|');
     if(htmlChanged||biRenderState.lastChartStamp!==chartStamp){biRenderState.lastChartStamp=chartStamp;try{chart('biKpiChart',{type:'bar',data:{labels:['Health','Retention','At Risk','Growth'],datasets:[{label:'BI Index',data:[d.health,Math.round(d.retention),Math.min(100,d.atRisk*10),Math.max(-100,Math.min(100,d.trend.change))],backgroundColor:[css('--green'),css('--cyan'),css('--red'),css('--purple')]}]},options:{...baseOpts(),scales:{y:{beginAtZero:true,ticks:{color:css('--chart-label')},grid:{color:'rgba(148,163,184,.12)'}},x:{ticks:{color:css('--chart-label')},grid:{display:false}}},plugins:{...baseOpts().plugins,legend:{display:false},petatoeLabels:{enabled:true,money:false,font:'900 11px Cairo'}}}})}catch(e){console.warn(e)}}
+      if(biRenderState.queued){biRenderState.queued=false;setTimeout(requestBusinessIntelligenceRender,0);}
     };
     if(window.requestIdleCallback){biRenderState.raf=requestIdleCallback(run,{timeout:260});}else if(window.requestAnimationFrame){biRenderState.raf=requestAnimationFrame(run);}else{setTimeout(run,0);}
   };
@@ -297,18 +304,42 @@
   window.injectBusinessIntelligence=injectBusinessIntelligence;
 
   function petBiDecodeHtml(v){var t=document.createElement('textarea');t.textContent=String(v||'');return t.value}
+  function openBiCustomer360(name){
+    name=petBiDecodeHtml(name);
+    if(!name)return Promise.resolve(false);
+    function openNow(){
+      if(typeof window.openPetClient360==='function'){window.openPetClient360(name);return true;}
+      if(window.PETATOERouter&&typeof window.PETATOERouter.openTab==='function'){
+        window.PETATOERouter.openTab('customer360');
+        setTimeout(function(){
+          var search=document.getElementById('customer360Search');if(search)search.value=name;
+          if(typeof window.renderCustomer360Panel==='function')window.renderCustomer360Panel(name);
+          if(typeof window.showCustomer360==='function')window.showCustomer360(name);
+        },80);
+        return true;
+      }
+      return false;
+    }
+    if(typeof window.openPetClient360==='function')return Promise.resolve(openNow());
+    var gate=window.PETATOEMobileStartupGate;
+    if(gate&&typeof gate.ensureGroup==='function'){
+      return Promise.resolve(gate.ensureGroup('customer360')).then(function(){return openNow();});
+    }
+    return Promise.resolve(openNow());
+  }
+  window.PETATOEOpenBICustomer360=openBiCustomer360;
   document.addEventListener('click',function(e){
     var more=e.target.closest&&e.target.closest('[data-bi-more]');
-    if(more){var name=more.getAttribute('data-bi-more');window['petatoeBi'+name+'Limit']=(window['petatoeBi'+name+'Limit']||10)+10;renderBusinessIntelligence();return}
+    if(more){e.preventDefault();e.stopPropagation();var name=more.getAttribute('data-bi-more');window['petatoeBi'+name+'Limit']=(window['petatoeBi'+name+'Limit']||10)+10;biTableCache.key='';requestBusinessIntelligenceRender();return}
     var exp=e.target.closest&&e.target.closest('[data-bi-export-type]');
     if(exp){window.exportPetatoeBIReport(exp.getAttribute('data-bi-export-type'));return}
     var act=e.target.closest&&e.target.closest('[data-bi-action]');
     if(act){var a=act.getAttribute('data-bi-action');if(a==='export-business-intelligence')exportBusinessIntelligenceExcel();else if(a==='refresh-business-intelligence')renderBusinessIntelligence();return}
+    var customerAction=e.target.closest&&e.target.closest('[data-bi-customer-action]');
+    if(customerAction){e.preventDefault();e.stopPropagation();openBiCustomer360(customerAction.getAttribute('data-bi-client')||'');return}
     var client=e.target.closest&&e.target.closest('[data-pet-client360]');
-    if(client){openPetClient360(petBiDecodeHtml(client.getAttribute('data-pet-client360')));return}
+    if(client){e.preventDefault();e.stopPropagation();openBiCustomer360(client.getAttribute('data-pet-client360'));return}
     if(e.target.closest&&e.target.closest('[data-payroll-action],#payrollArea,#salarySlipArea,.payroll-shell,.salary-slip-redesign-shell,.salary-slip-self-service'))return;
-    var btn=e.target.closest&&e.target.closest('button.btn-ghost');
-    if(btn && /Customer 360|فتح|متابعة/.test(btn.textContent||'')){var row=btn.closest('tr');var first=row&&row.children&&row.children[0];if(first)openPetClient360(first.textContent||'');return}
   },true);
   function ensureTip(){var t=document.getElementById('biInsightTooltip');if(!t){t=document.createElement('div');t.id='biInsightTooltip';document.body.appendChild(t)}return t}
   /* v3.11.10: using global clamp */
