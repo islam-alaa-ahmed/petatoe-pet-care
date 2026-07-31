@@ -7,6 +7,41 @@
 
   var groups = Object.create(null);
   var states = Object.create(null);
+  var runtimeDiagnostics = { sequence: 0, active: null, history: [] };
+
+  function diagnosticSourceMatches(filename, src){
+    filename = String(filename || '').split('#')[0];
+    src = String(src || '').split('#')[0];
+    if(!filename || !src) return true;
+    var cleanFilename = filename.split('?')[0];
+    var cleanSrc = src.split('?')[0];
+    return cleanFilename === cleanSrc || cleanFilename.slice(-cleanSrc.length) === cleanSrc || cleanSrc.slice(-cleanFilename.length) === cleanFilename;
+  }
+
+  function pushRuntimeDiagnostic(entry){
+    runtimeDiagnostics.history.push(entry);
+    if(runtimeDiagnostics.history.length > 40) runtimeDiagnostics.history.splice(0, runtimeDiagnostics.history.length - 40);
+  }
+
+  function captureActiveRuntimeError(kind, event){
+    var active = runtimeDiagnostics.active;
+    if(!active) return;
+    var filename = kind === 'error' ? String(event && event.filename || '') : '';
+    if(filename && !diagnosticSourceMatches(filename, active.src)) return;
+    var raw = kind === 'error' ? (event && (event.error || event.message)) : (event && event.reason);
+    var message = String(raw && raw.message || raw || (kind === 'error' ? 'Unknown runtime script error' : 'Unhandled promise rejection'));
+    var record = {
+      id: active.id, group: active.group, src: active.src, phase: 'executing', kind: kind,
+      message: message, filename: filename || active.src,
+      line: Number(event && event.lineno || 0), column: Number(event && event.colno || 0),
+      stack: String(raw && raw.stack || ''), timestamp: Date.now()
+    };
+    active.executionError = record;
+    pushRuntimeDiagnostic(record);
+  }
+
+  window.addEventListener('error', function(event){ captureActiveRuntimeError('error', event); }, true);
+  window.addEventListener('unhandledrejection', function(event){ captureActiveRuntimeError('unhandledrejection', event); });
   var desktopLazyGroups = {
     diagnostics: true, xlsx: true, settingsSetup: true, children: true,
     operations: true, warehouses: true, payroll: true, treasury: true,
@@ -89,19 +124,62 @@
     }
   }
 
-  function loadOne(item){
+  function attributedError(message, attribution){
+    var error = new Error(message);
+    error.petatoeAttribution = attribution || null;
+    return error;
+  }
+
+  function loadOne(item, group, state){
     return new Promise(function(resolve, reject){
+      var context = {
+        id: ++runtimeDiagnostics.sequence,
+        group: group,
+        src: item.src,
+        phase: 'loading',
+        startedAt: Date.now(),
+        executionError: null
+      };
+      runtimeDiagnostics.active = context;
+      state.currentScript = item.src;
+      state.currentPhase = 'loading';
       var node = document.createElement('script');
       node.src = item.src;
       node.async = false;
       node.dataset.petatoeMobileLazyLoaded = '1';
+      node.dataset.petatoeLazyGroup = group;
       node.onload = function(){
-        if(/xlsx/i.test(item.src)){
-          try{ delete window.__PETATOE_XLSX_STUB__; }catch(_){ window.__PETATOE_XLSX_STUB__ = false; }
-        }
-        resolve(item.src);
+        context.phase = 'executing';
+        state.currentPhase = 'executing';
+        window.setTimeout(function(){
+          if(runtimeDiagnostics.active === context) runtimeDiagnostics.active = null;
+          if(context.executionError){
+            state.failedScript = item.src;
+            state.currentScript = '';
+            state.currentPhase = 'failed';
+            return reject(attributedError('Runtime execution failed in ' + item.src + ': ' + context.executionError.message, context.executionError));
+          }
+          if(/xlsx/i.test(item.src)){
+            try{ delete window.__PETATOE_XLSX_STUB__; }catch(_){ window.__PETATOE_XLSX_STUB__ = false; }
+          }
+          state.loadedScripts = state.loadedScripts || [];
+          state.loadedScripts.push(item.src);
+          state.lastLoadedScript = item.src;
+          state.currentScript = '';
+          state.currentPhase = 'loaded';
+          pushRuntimeDiagnostic({ id: context.id, group: group, src: item.src, phase: 'loaded', kind: 'script', message: '', filename: item.src, line: 0, column: 0, stack: '', timestamp: Date.now() });
+          resolve(item.src);
+        }, 0);
       };
-      node.onerror = function(){ reject(new Error('Unable to load ' + item.src)); };
+      node.onerror = function(){
+        if(runtimeDiagnostics.active === context) runtimeDiagnostics.active = null;
+        var attribution = { id: context.id, group: group, src: item.src, phase: 'loading', kind: 'network', message: 'Unable to load script', filename: item.src, line: 0, column: 0, stack: '', timestamp: Date.now() };
+        pushRuntimeDiagnostic(attribution);
+        state.failedScript = item.src;
+        state.currentScript = '';
+        state.currentPhase = 'failed';
+        reject(attributedError('Unable to load ' + item.src, attribution));
+      };
       document.head.appendChild(node);
     });
   }
@@ -385,7 +463,7 @@
     }, Promise.resolve()).then(function(){
       if(state.scriptsLoaded || !queue.length) return true;
       return queue.reduce(function(chain, item){
-        return chain.then(function(){ return loadOne(item); });
+        return chain.then(function(){ return loadOne(item, name, state); });
       }, Promise.resolve()).then(function(){ state.scriptsLoaded = true; return true; });
     }).then(function(){
       state.status = 'waiting-desktop';
@@ -397,6 +475,7 @@
         state.status = 'not-ready';
         state.error = 'Desktop group not ready: ' + name;
         state.readiness = readinessSnapshot(name);
+        state.errorAttribution = { group: name, phase: 'provider-contract', lastLoadedScript: state.lastLoadedScript || '', failedScript: state.failedScript || '', readiness: state.readiness, timestamp: Date.now() };
         notify(name, false, new Error(state.error));
         return false;
       }
@@ -410,6 +489,7 @@
       state.finishedAt = Date.now();
       state.error = String(error && error.message || error);
       state.readiness = readinessSnapshot(name);
+      state.errorAttribution = error && error.petatoeAttribution ? error.petatoeAttribution : { group: name, phase: state.currentPhase || 'unknown', lastLoadedScript: state.lastLoadedScript || '', failedScript: state.failedScript || '', message: state.error, timestamp: Date.now() };
       state.promise = null;
       notify(name, false, error);
       return false;
@@ -449,7 +529,7 @@
     }, Promise.resolve()).then(function(){
       if(state.scriptsLoaded) return true;
       return queue.reduce(function(chain, item){
-        return chain.then(function(){ return loadOne(item); });
+        return chain.then(function(){ return loadOne(item, name, state); });
       }, Promise.resolve()).then(function(){ state.scriptsLoaded = true; return true; });
     }).then(function(){
       state.status = 'waiting-provider-contract';
@@ -461,6 +541,7 @@
         state.status = 'not-ready';
         state.error = 'Mobile group provider contract not ready: ' + name;
         state.readiness = readinessSnapshot(name);
+        state.errorAttribution = { group: name, phase: 'provider-contract', lastLoadedScript: state.lastLoadedScript || '', failedScript: state.failedScript || '', readiness: state.readiness, timestamp: Date.now() };
         notify(name, false, new Error(state.error));
         return false;
       }
@@ -474,6 +555,7 @@
       state.finishedAt = Date.now();
       state.error = String(error && error.message || error);
       state.readiness = readinessSnapshot(name);
+      state.errorAttribution = error && error.petatoeAttribution ? error.petatoeAttribution : { group: name, phase: state.currentPhase || 'unknown', lastLoadedScript: state.lastLoadedScript || '', failedScript: state.failedScript || '', message: state.error, timestamp: Date.now() };
       state.promise = null;
       notify(name, false, error);
       return false;
@@ -664,11 +746,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-4-readiness-contracts-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-5-runtime-error-attribution-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-4-readiness-contracts-1',
+    version: '10.0.25-sg4-5-runtime-error-attribution-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
@@ -676,6 +758,7 @@
     getGroupStatus: getGroupStatus,
     invalidateGroup: invalidateGroup,
     snapshot: snapshot,
+    getRuntimeDiagnostics: function(){ return { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }; },
     finishBoot: finishBoot,
     armBootDeadline: armBootDeadline
   };

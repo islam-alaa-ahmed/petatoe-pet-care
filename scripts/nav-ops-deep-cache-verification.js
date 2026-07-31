@@ -3,7 +3,7 @@ function read(path){ return fs.readFileSync(path, 'utf8'); }
 function assert(ok, message){ if(!ok){ console.error('FAIL:', message); process.exitCode = 1; } else console.log('PASS:', message); }
 const defaultToken = '10.0.25-reference-data-runtime-fix-2';
 const navigationToken = '10.0.25-reference-data-active-state-fix-5';
-const serviceWorkerToken = '10.0.25-sg4-4-readiness-contracts-1';
+const serviceWorkerToken = '10.0.25-sg4-5-runtime-error-attribution-1';
 const routeRegistryToken = '10.0.25-sg2-runtime-validation-1';
 const index = read('index.html');
 const sw = read('service-worker.js');

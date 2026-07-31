@@ -1,14 +1,15 @@
 # GitHub Desktop Summary
 
 ## Commit title
-fix: align Smart Reports public API certification with SG-4.3 runtime ownership
+`feat: add startup runtime error attribution diagnostics`
 
 ## Summary
-- Validate the stable Smart Reports public API from the canonical runtime controller.
-- Confirm legacy globals delegate to `PETATOESmartReportsRuntime`.
-- Reject duplicate public API ownership from `smart-router.js`.
-- Synchronize Smart Reports cache-token checks with `service-worker.js` `APP_VERSION`.
-- Preserve the SG-4.3 Single Runtime Owner architecture.
+- Attribute lazy script network failures to the exact group and source file.
+- Capture synchronous runtime errors and immediate unhandled rejections during script execution.
+- Distinguish loading, executing, loaded, failed, and provider-contract phases.
+- Preserve failed script, last loaded script, readiness snapshot, line, column, and stack metadata.
+- Expose bounded diagnostics through `PETATOEMobileStartupGate.getRuntimeDiagnostics()` and `snapshot()`.
+- Update release/cache certification locks to SG-4.5.
 
-## Modified files
-- `scripts/smart-reports-public-api-check.js`
+## Scope exclusions
+No business logic, loading order, readiness requirements, UI, localization, Supabase, SQL, or permissions behavior was changed.

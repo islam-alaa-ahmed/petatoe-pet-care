@@ -19,7 +19,7 @@ const tests = [
   ['fleet button declares explicit lazy group', /data-tab="fleet"[^>]*data-pet-lazy-group="fleet"/.test(index)],
   ['startup gate maps fleet to fleet group', /fleet:'fleet'/.test(gate)],
   ['ownership matrix documents fleet and vehicle operations separately', /Fleet Management[\s\S]*Vehicle Operations/.test(matrix)],
-  ['fleet runtime cache token is phase-specific', /fleet-inline\.js\?v=10\.0\.25-sg4-4-readiness-contracts-1/.test(index)]
+  ['fleet runtime cache token is phase-specific', /fleet-inline\.js\?v=10\.0\.25-sg4-5-runtime-error-attribution-1/.test(index)]
 ];
 let failed = 0;
 for (const [name, ok] of tests) {
