@@ -244,9 +244,20 @@
     return false;
   }
   function open(tab,event){
-    try{if(event&&event.preventDefault)event.preventDefault();}catch(_e){}
+    try{if(event&&typeof event.preventDefault==='function')event.preventDefault();}catch(_e){}
     tab=normalizeTab(tab);
     navigate(tab);
+
+    // Preserve the proven synchronous render contract so the dashboard body is
+    // built immediately from the currently committed rows. Runtime ownership is
+    // retained for readiness, synchronization, deduplication and remote refresh.
+    try{
+      if(typeof window.renderSmartReports==='function') window.renderSmartReports(tab);
+    }catch(error){
+      lastError=String(error&&error.message||error);
+      try{console.error('[PETATOE Smart] immediate render bridge failed',error);}catch(_e){}
+    }
+
     requestRender(tab,'public-smart-open',false);
     return false;
   }
@@ -292,8 +303,8 @@
   };
   window.PETATOESmartReportsRefresh=function(tab){ return api.refresh(tab); };
   window.PETATOEOpenSmartReports=function(tab,event){ return api.open(tab,event); };
-  // Legacy calls remain supported, but lifecycle ownership stays in the runtime.
-  window.renderSmartReports=function(tab){ return api.render(tab,'compat-renderSmartReports'); };
+  // The stable renderSmartReports compatibility bridge is owned by smart-router.js.
+  // Runtime remains the sole owner of open, refresh, readiness and synchronization.
 
   document.addEventListener('petatoe:tabchange',function(event){
     var detail=event&&event.detail||{};

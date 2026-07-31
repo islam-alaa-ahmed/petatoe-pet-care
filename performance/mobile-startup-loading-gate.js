@@ -758,11 +758,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-2-smart-reports-initial-data-hydration-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-6-2-smart-reports-initial-data-hydration-1',
+    version: '10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

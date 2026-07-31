@@ -11,8 +11,12 @@ const failures=[];
 if(!/window\.PETATOEOpenSmartReports\s*=\s*function\s*\([^)]*\)\s*\{\s*return\s+api\.open\(/s.test(runtime)){
   failures.push('Stable Smart Reports public API is not exported by the canonical runtime controller.');
 }
-if(!/window\.renderSmartReports\s*=\s*function\s*\([^)]*\)\s*\{\s*return\s+api\.render\(/s.test(runtime)){
-  failures.push('Legacy Smart Reports render API is not delegated to the canonical runtime controller.');
+if(!/window\.renderSmartReports\s*=\s*function\s*\([^)]*\)/s.test(router) ||
+   !/return\s+renderEngine\.apply\(this,\s*arguments\)/s.test(router)){
+  failures.push('Stable Smart Reports synchronous render bridge is not exported by smart-router.js.');
+}
+if(/window\.renderSmartReports\s*=(?!=)/.test(runtime)){
+  failures.push('Runtime controller must not replace the stable synchronous render bridge.');
 }
 if(/window\.PETATOEOpenSmartReports\s*=/.test(router)){
   failures.push('Smart router must not export a competing public open controller.');
@@ -41,7 +45,7 @@ if(!expectedAppVersion){
   }
 }
 
-const result={status:failures.length?'FAILED':'PASSED',checks:8,failures};
+const result={status:failures.length?'FAILED':'PASSED',checks:9,failures};
 console.log('Smart Reports Public API: '+result.status);
 console.log(JSON.stringify(result,null,2));
 if(failures.length) process.exit(1);

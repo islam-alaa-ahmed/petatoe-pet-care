@@ -117,6 +117,14 @@
     route: routeSmartReport,
     legacyRender: legacyRender
   });
+
+  // Stable compatibility render bridge. The router owns only the synchronous
+  // dashboard/body render contract; open, refresh, synchronization and lifecycle
+  // remain owned by PETATOESmartReportsRuntime.
+  window.renderSmartReports = function(tab){
+    return renderEngine.apply(this, arguments);
+  };
+
   // Compatibility route helper only; it does not own lifecycle or public open/refresh.
   window.petatoeSmartRouteReport = routeSmartReport;
 })();

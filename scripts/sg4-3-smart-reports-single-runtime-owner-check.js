@@ -8,7 +8,8 @@ const index=read('index.html');
 const checks=[
  ['runtime declares canonical owner',runtime.includes("__owner:'smart/smart-reports-runtime-controller.js'")],
  ['runtime owns public open API',runtime.includes('window.PETATOEOpenSmartReports=function')],
- ['runtime owns compatibility render API',runtime.includes('window.renderSmartReports=function')],
+ ['router owns stable compatibility render bridge',router.includes('window.renderSmartReports = function')&&router.includes('renderEngine.apply(this, arguments)')],
+ ['runtime does not replace compatibility render bridge',!runtime.includes('window.renderSmartReports=function')],
  ['router does not publish public open API',!router.includes('window.PETATOEOpenSmartReports =')],
  ['router publishes internal render engine',router.includes('window.PETATOESmartReportsRenderEngine = Object.freeze')],
  ['runtime consumes internal render engine',runtime.includes('PETATOESmartReportsRenderEngine')],
@@ -16,7 +17,7 @@ const checks=[
  ['navigation state delegates to runtime',nav.includes('PETATOESmartReportsRuntime')&&nav.includes('smartRuntime.activateTab')],
  ['startup contract requires render engine',gate.includes('PETATOESmartReportsRenderEngine')],
  ['startup contract no longer requires global setSmartTab',!gate.includes("setSmartTab: typeof window.setSmartTab")],
- ['release token aligned',index.includes('10.0.25-sg4-6-2-smart-reports-initial-data-hydration-1')]
+ ['release token aligned',index.includes('10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1')]
 ];
 let passed=0; for(const [name,ok] of checks){console.log(`${ok?'PASS':'FAIL'} ${name}`);if(ok)passed++;}
 console.log(`${passed} / ${checks.length} PASSED`); process.exit(passed===checks.length?0:1);

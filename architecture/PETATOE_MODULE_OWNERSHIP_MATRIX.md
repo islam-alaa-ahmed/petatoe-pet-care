@@ -21,10 +21,11 @@ This file documents ownership only. It does not change business logic.
 
 ## SG-4.3 Smart Reports ownership
 
-- Lifecycle/Open/Refresh/Render orchestration owner: `smart/smart-reports-runtime-controller.js`.
-- Low-level full/local render engine: `smart/smart-router.js` through `PETATOESmartReportsRenderEngine`; it does not publish open/refresh lifecycle APIs.
+- Lifecycle/Open/Refresh/Data synchronization owner: `smart/smart-reports-runtime-controller.js`.
+- Stable synchronous dashboard/body render bridge owner: `smart/smart-router.js` through `window.renderSmartReports` and `PETATOESmartReportsRenderEngine`.
+- `smart-router.js` does not own open, refresh, readiness, remote synchronization, or navigation lifecycle.
 - Tab rendering owner: `smart/smart-tabs.js` through `PETATOESmartTabs`.
-- Compatibility globals (`renderSmartReports`, `PETATOEOpenSmartReports`, `PETATOESmartReportsRefresh`) delegate only to the canonical runtime.
+- Compatibility globals `PETATOEOpenSmartReports` and `PETATOESmartReportsRefresh` delegate only to the canonical runtime.
 - Navigation state restoration delegates to `PETATOESmartReportsRuntime.activateTab()`.
 
 
