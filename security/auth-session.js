@@ -1,4 +1,4 @@
-/* PETATOE v9.0 - Auth Session Module
+/* PETATOE v10.0.25 - Auth Session Module
    Purpose: enforce an explicit user session before opening PETATOE, while preserving the existing Enterprise/LTS users and permissions architecture. */
 (function(window, document){
   'use strict';
@@ -8,7 +8,7 @@
 
   if(window.PETATOEAuth && window.PETATOEAuth.__ready){ return; }
 
-  var VERSION = '9.0';
+  var VERSION = '10.0.25';
   var AUTH_KEY = 'petatoe_auth_session_v668';
   var PWA_SESSION_KEY = 'petatoe_pwa_session_v1';
   var PWA_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;

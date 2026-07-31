@@ -150,7 +150,7 @@
 
 
   var desktopProviderFallbacks = {
-    payroll: 'payroll/payroll-core.js?v=9.1.5'
+    payroll: 'payroll/payroll-core.js?v=10.0.25'
   };
 
   var desktopReadinessContracts = {
@@ -628,11 +628,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg3-commission-runtime-ownership-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-infrastructure-hardening-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg3-commission-runtime-ownership-1',
+    version: '10.0.25-sg4-infrastructure-hardening-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

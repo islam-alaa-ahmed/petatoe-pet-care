@@ -3,7 +3,8 @@ function read(path){ return fs.readFileSync(path, 'utf8'); }
 function assert(ok, message){ if(!ok){ console.error('FAIL:', message); process.exitCode = 1; } else console.log('PASS:', message); }
 const defaultToken = '10.0.25-reference-data-runtime-fix-2';
 const navigationToken = '10.0.25-reference-data-active-state-fix-5';
-const serviceWorkerToken = '10.0.25-sg3-commission-runtime-ownership-1';
+const serviceWorkerToken = '10.0.25-sg4-infrastructure-hardening-1';
+const routeRegistryToken = '10.0.25-sg2-runtime-validation-1';
 const index = read('index.html');
 const sw = read('service-worker.js');
 const requiredAssets = [
@@ -13,7 +14,7 @@ const requiredAssets = [
 ];
 requiredAssets.forEach((asset) => {
   const escaped = asset.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const expectedToken = asset === 'navigation/navigation.js' ? navigationToken : (asset === 'router/route-registry.js' ? serviceWorkerToken : defaultToken);
+  const expectedToken = asset === 'navigation/navigation.js' ? navigationToken : (asset === 'router/route-registry.js' ? routeRegistryToken : defaultToken);
   assert(new RegExp(escaped + '\\?v=' + expectedToken).test(index), `${asset} uses its certified cache token`);
 });
 assert(sw.includes(`const APP_VERSION = '${serviceWorkerToken}';`), 'service worker cache namespace matches the current runtime release');

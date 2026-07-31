@@ -1,0 +1,16 @@
+fix: harden startup cache alignment and runtime version metadata
+
+- Align Startup Gate URL between index.html and Service Worker APP_SHELL
+- Rotate Service Worker cache namespace to SG-4 infrastructure hardening build
+- Update Payroll core cache token in registration and desktop fallback
+- Add cache-busting tokens to critical Smart Reports runtime files
+- Add cache-busting tokens to critical head utility scripts
+- Align Auth Session module metadata with PETATOE v10.0.25
+- Update affected certification locks without changing business logic
+
+No changes to:
+- Business calculations
+- Supabase queries or SQL
+- Permissions behavior
+- UI design or visible text
+- Commission SG-3 runtime ownership
