@@ -248,17 +248,14 @@ function block_6337_safeRender(target, markup, reason){var el=(typeof target==='
   window.renderSalesInvoiceReport=function(focusId){return api.render(focusId);};
 
   function injectSalesInvoiceReport(preferred){
-    var area=document.getElementById('smartReportsArea'), tabs=document.getElementById('smartTabs'); if(!area||!tabs)return;
-    var business=tabs.querySelector('[data-smart-tab="forecast"]');
-    if(!tabs.querySelector('[data-smart-tab="salesInvoices"]')){var btn=document.createElement('button'); btn.className='smart-pill'; btn.dataset.smartTab='salesInvoices'; btn.setAttribute('onclick',"setSmartTab('salesInvoices')"); btn.textContent=(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.t==='function'?window.PETATOE_LOCALIZATION_CENTER.t('smartReportsSource.tabs.salesInvoices',{}, {fallback:'تقرير فواتير المبيعات',allowKeyFallback:true}):'تقرير فواتير المبيعات'); if(business&&business.nextSibling)tabs.insertBefore(btn,business.nextSibling); else tabs.appendChild(btn);}
-    if(!area.querySelector('[data-smart-section="salesInvoices"]')){var sec=document.createElement('div'); sec.className='smart-tab-section'; sec.dataset.smartSection='salesInvoices'; var reportArea=document.createElement('div'); reportArea.id='salesInvoiceReportArea'; sec.appendChild(reportArea); var biSec=area.querySelector('[data-smart-section="forecast"]'); if(biSec&&biSec.nextSibling)area.insertBefore(sec,biSec.nextSibling); else area.appendChild(sec);}
-    var activeBtn=tabs.querySelector('[data-smart-tab="salesInvoices"].active');
-    var activeSec=area.querySelector('[data-smart-section="salesInvoices"].active');
-    if(preferred==='salesInvoices' || activeBtn || activeSec) renderSalesInvoiceReport();
+    var area=document.getElementById('salesInvoiceReportArea');
+    if(!area) return false;
+    var section=area.closest('[data-smart-section="salesInvoices"]');
+    var active=preferred==='salesInvoices' || (section && section.classList.contains('active'));
+    if(active) renderSalesInvoiceReport();
+    return true;
   }
   window.injectSalesInvoiceReport=injectSalesInvoiceReport;
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){injectSalesInvoiceReport()},80)});
-  setTimeout(function(){injectSalesInvoiceReport()},120);
 })();
 
 

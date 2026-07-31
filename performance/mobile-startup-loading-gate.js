@@ -45,7 +45,7 @@
   var desktopLazyGroups = {
     diagnostics: true, xlsx: true, settingsSetup: true, children: true,
     operations: true, warehouses: true, payroll: true, treasury: true,
-    smartReports: true, customer360: true, sales: true, commission: true, printing: true
+    smartReports: true, smartSalesInvoices: true, customer360: true, sales: true, commission: true, printing: true
   };
 
   function shouldLazyLoad(group){
@@ -103,13 +103,14 @@
     fleet: 'fleet', obligations: 'obligations', movement: 'movement', movementCenter: 'movement',
     settingsSetup: 'settingsSetup', localizationRemote: 'localizationRemote',
     xlsx: 'xlsx', excel: 'xlsx', diagnostics: 'diagnostics', audit: 'diagnostics', observability: 'diagnostics',
-    smartReports: 'smartReports', smart: 'smartReports', analytics: 'smartReports', customer360: 'customer360', customers: 'customer360',
+    smartReports: 'smartReports', smart: 'smartReports', analytics: 'smartReports', smartSalesInvoices: 'smartSalesInvoices', salesInvoices: 'smartSalesInvoices', customer360: 'customer360', customers: 'customer360',
     reportsUI: 'reportsUI', reports: 'reportsUI', printing: 'printing', print: 'printing', pdf: 'printing',
     sales: 'sales', invoices: 'sales', commission: 'commission', commissions: 'commission'
   };
 
   var dependencies = {
     smartReports: [],
+    smartSalesInvoices: [],
     customer360: [],
     sales: ['reportsUI'],
     printing: ['reportsUI']
@@ -120,7 +121,8 @@
      allowing the canonical Smart Reports group to load its router and runtime
      controller immediately. */
   var optionalDependencies = {
-    smartReports: ['reportsUI']
+    smartReports: ['reportsUI'],
+    smartSalesInvoices: ['reportsUI']
   };
 
   function normalizeGroup(name){ return aliases[name] || name; }
@@ -224,6 +226,9 @@
         var commissionRuntime = window.PETATOECommissionRuntime;
         if(tabId === 'commissions' && commissionRuntime && typeof commissionRuntime.renderSystem === 'function') commissionRuntime.renderSystem();
         else if(tabId === 'commissionStatement' && commissionRuntime && typeof commissionRuntime.renderStatement === 'function') commissionRuntime.renderStatement();
+      }else if(group === 'smartSalesInvoices'){
+        if(tabId === 'smart' && typeof window.injectSalesInvoiceReport === 'function') window.injectSalesInvoiceReport('salesInvoices');
+        if(tabId === 'smart' && window.PETATOESalesInvoiceReport && typeof window.PETATOESalesInvoiceReport.render === 'function') window.PETATOESalesInvoiceReport.render();
       }else if(group === 'smartReports'){
         var smartRuntime = window.PETATOESmartReportsRuntime;
         if(tabId === 'smart' && smartRuntime && smartRuntime.__ready && typeof smartRuntime.render === 'function') smartRuntime.render('', 'lazy-hydration');
@@ -332,6 +337,9 @@
         typeof window.PETATOEPayroll.openTab === 'function' &&
         typeof window.PETATOEPayroll.renderSalarySlip === 'function' &&
         typeof window.PETATOEPayroll.exportCsv === 'function');
+    },
+    smartSalesInvoices: function(){
+      return !!(window.PETATOESalesInvoiceReport && typeof window.PETATOESalesInvoiceReport.render === 'function' && typeof window.injectSalesInvoiceReport === 'function');
     },
     smartReports: function(){
       var tabs = window.PETATOESmartTabs || (window.PETATOE && window.PETATOE.SmartReports);
@@ -619,7 +627,7 @@
     childrenExpenses:'children', commission:'commission', commissions:'commission', commissionSystem:'commission',
     settings:'settingsSetup', setup:'settingsSetup', users:'settingsSetup', permissions:'settingsSetup', backup:'settingsSetup',
     diagnostics:'diagnostics', observability:'diagnostics', performanceMonitoring:'diagnostics',
-    smart:'smartReports', smartReports:'smartReports', customer360:'customer360', customers:'customer360', salesInvoice:'sales', sales:'sales',
+    smart:'smartReports', smartReports:'smartReports', smartSalesInvoices:'smartSalesInvoices', salesInvoices:'smartSalesInvoices', customer360:'customer360', customers:'customer360', salesInvoice:'sales', sales:'sales',
     fleet:'fleet', obligations:'obligations', movementCenter:'movement'
   };
 

@@ -100,35 +100,7 @@
   function ensureSalesInvoiceShell(){
     var tabs=q('#smartTabs'), area=q('#smartReportsArea');
     if(!tabs||!area) return false;
-    var btn=tabs.querySelector('[data-smart-tab="salesInvoices"]');
-    if(!btn){
-      btn=document.createElement('button');
-      btn.className='smart-pill';
-      btn.setAttribute('data-smart-tab','salesInvoices');
-      btn.dataset.smartTab='salesInvoices';
-      btn.type='button';
-      btn.textContent=(window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.t==='function'?window.PETATOE_LOCALIZATION_CENTER.t('smartReportsSource.tabs.salesInvoices',{}, {fallback:'تقرير فواتير المبيعات',allowKeyFallback:true}):'تقرير فواتير المبيعات');
-      btn.onclick=function(){ if(typeof window.setSmartTab==='function') window.setSmartTab('salesInvoices'); };
-      var business=tabs.querySelector('[data-smart-tab="forecast"]');
-      if(business && business.nextSibling) tabs.insertBefore(btn,business.nextSibling); else tabs.appendChild(btn);
-    }
-    var sec=area.querySelector('[data-smart-section="salesInvoices"]');
-    if(!sec){
-      sec=document.createElement('div');
-      sec.className='smart-tab-section';
-      sec.setAttribute('data-smart-section','salesInvoices');
-      sec.dataset.smartSection='salesInvoices';
-      var holder=document.createElement('div');
-      holder.id='salesInvoiceReportArea';
-      sec.appendChild(holder);
-      var bsec=area.querySelector('[data-smart-section="forecast"]');
-      if(bsec && bsec.nextSibling) area.insertBefore(sec,bsec.nextSibling); else area.appendChild(sec);
-    }else if(!q('#salesInvoiceReportArea',sec)){
-      var holder=document.createElement('div');
-      holder.id='salesInvoiceReportArea';
-      sec.appendChild(holder);
-    }
-    return true;
+    return !!(tabs.querySelector('[data-smart-tab="salesInvoices"]') && area.querySelector('[data-smart-section="salesInvoices"]') && q('#salesInvoiceReportArea',area));
   }
 
   function activateSmartTab(tab){
