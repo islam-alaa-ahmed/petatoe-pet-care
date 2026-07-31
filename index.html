@@ -18,7 +18,7 @@ window.__PETATOE_EARLIEST_BOOT={startMs:(window.performance&&performance.now?per
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('core/mobile-device-profile.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/mobile-startup-loading-gate.js');</script>
-<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-infrastructure-hardening-1"></script>
+<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-2-fleet-runtime-ownership-1"></script>
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('performance/mobile-startup-loading-gate.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/startup-clean-profiler.js');</script>
@@ -1505,7 +1505,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <button data-i18n="sidebar.obligations" data-tab="obligations">💳 الالتزامات</button>
 <button data-i18n="sidebar.payroll" data-tab="payroll">💼 إدارة الرواتب</button>
 <button data-i18n="sidebar.salarySlip" data-tab="salarySlip">📄 كشف الراتب</button>
-<button data-i18n="sidebar.fleet" data-tab="fleet">🚚 إدارة السيارات</button>
+<button data-i18n="sidebar.fleet" data-tab="fleet" data-pet-lazy-group="fleet">🚚 إدارة السيارات</button>
 <button data-i18n="sidebar.treasury" data-tab="treasury">🏦 الخزينة</button>
 <button data-i18n="sidebar.warehouses" data-tab="warehouses">📦 المخازن</button>
 </div>
@@ -1851,7 +1851,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/at-risk-clients-export.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/one-time-recurring-modal.js',false);</script>
 <!-- === PETATOE v3.5 FLEET MANAGEMENT - SAFE ADDITION === -->
-<script>window.PETATOEMobileStartupGate.registerOrWrite('fleet','inline-extracted/fleet-inline.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('fleet','inline-extracted/fleet-inline.js?v=10.0.25-sg4-2-fleet-runtime-ownership-1',false);</script>
 <!-- === /PETATOE v3.5 FLEET MANAGEMENT - SAFE ADDITION === -->
 <!-- === PETATOE v3.5 COMMISSION SYSTEM - APPEND ONLY === -->
 <script>window.PETATOEMobileStartupGate.registerOrWrite('commission','commissions/commission-runtime-bootstrap.js?v=10.0.25-sg3-commission-runtime-ownership-1',false);</script>

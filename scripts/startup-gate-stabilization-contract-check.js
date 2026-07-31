@@ -23,7 +23,7 @@ check(gate.includes("childrenExpenses:'children'"), 'children expenses map to ch
 check(gate.includes("customer360:'customer360'"), 'Customer 360 owns an isolated lazy group');
 check(index.includes("registerOrWrite('customer360','inline-extracted/customer360-runtime-data-binding-fix.js"), 'Customer 360 runtime registered in its isolated group');
 check(gate.includes("window.PETATOEOperationsVehicles") && gate.includes("window.PETATOEOperationsReports") && gate.includes("window.PETATOEOperationsStatus") && gate.includes("window.PETATOEOperationsPayments"), 'operations contract covers all primary providers');
-check(index.includes('performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-infrastructure-hardening-1'), 'HTML uses stabilization cache token');
-check(worker.includes("const APP_VERSION = '10.0.25-sg4-infrastructure-hardening-1';"), 'service worker cache namespace matches');
+check(index.includes('performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-2-fleet-runtime-ownership-1'), 'HTML uses stabilization cache token');
+check(worker.includes("const APP_VERSION = '10.0.25-sg4-2-fleet-runtime-ownership-1';"), 'service worker cache namespace matches');
 if(process.exitCode) process.exit(process.exitCode);
 console.log(`Startup Gate Stabilization Contract: PASSED — ${passed} checks`);

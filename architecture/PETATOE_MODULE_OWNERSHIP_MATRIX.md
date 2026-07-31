@@ -1,0 +1,19 @@
+# PETATOE Module Ownership Matrix — SG-4.2
+
+This file documents ownership only. It does not change business logic.
+
+| Module | Canonical Route | Navigation Owner | Lazy Group | Runtime Owner | Panel Owner | Permission Key |
+|---|---|---|---|---|---|---|
+| Fleet Management | `fleet` | `navigation/navigation.js` | `fleet` | `inline-extracted/fleet-inline.js` (`PETATOEFleet`) | Fleet runtime (`#fleet`) | `vehicles` |
+| Vehicle Operations | `vehicleOperations` | `navigation/navigation.js` | `operations` | Operations runtime | Static `#vehicleOperations` | `vehicleOperations` |
+| Smart Reports | `smart` | `navigation/navigation.js` | `smartReports` | `smart/smart-reports-runtime-controller.js` | Static `#smart` | `reports` |
+| Operations / Appointments | `appointments` | `navigation/navigation.js` | `operations` | `PETATOEAppointments` compatibility facade | Static `#appointments` | `appointments` |
+| Children Expenses | `childrenExpenses` | `navigation/navigation.js` | `children` | `PETATOEChildrenExpenses` compatibility facade | Static `#childrenExpenses` | `childrenExpenses` |
+| Commissions | `commissions` | `navigation/navigation.js` | `commission` | `PETATOECommissionRuntime` | Commission bootstrap | `commissions` |
+
+## Fleet ownership rules
+
+1. `fleet` is a dedicated canonical route and is not an alias of `vehicleOperations`.
+2. Only `navigation/navigation.js` may create or bind the Fleet navigation button.
+3. `fleet-inline.js` owns runtime rendering and the dynamic `#fleet` panel only.
+4. Startup Gate maps `fleet` exclusively to the `fleet` lazy group.
