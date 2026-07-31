@@ -18,7 +18,7 @@ window.__PETATOE_EARLIEST_BOOT={startMs:(window.performance&&performance.now?per
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('core/mobile-device-profile.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/mobile-startup-loading-gate.js');</script>
-<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1"></script>
+<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-6-4-smart-reports-load-before-open-1"></script>
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('performance/mobile-startup-loading-gate.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/startup-clean-profiler.js');</script>
@@ -731,7 +731,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <div class="app">
 <main class="main">
 <header class="topbar">
-<div class="top-left pet-topbar-compact-actions"><button class="side-launcher" id="sideLauncher" onclick="toggleSidebar()" title="فتح القائمة الرئيسية"><span class="launch-logo">🐾</span><span class="launch-text"><b>PETATOE</b><small>Analytics System</small></span></button><button class="search pet-topbar-search-icon" id="topbarSearch" type="button" onclick="openGlobalSearch()" aria-label="فتح البحث" title="بحث">🔍</button><button class="top-paw-up-btn" id="topPawBackToTopBtn" title="Click للأعلى — Double Click لآخر الصفحة — اسحب لأعلى/أسفل للتمرير"><span class="paw-icon">🐾</span><span class="paw-tip">Click للأعلى<span class="drag-hint">Double Click لآخر الصفحة</span></span></button><button class="reports-btn" data-i18n="topbar.reports" data-pet-permission-screen="reports" onclick="return PETATOEInlineHandlers.moduleCall('router','openTab','smart','overview')">📑 التقارير</button><button class="reports-btn" data-i18n="topbar.pdf" data-pet-permission-screen="reports" id="headerPdfBtn" type="button" onclick="return PETATOEHeaderPdfSafeOpen(event)" style="background:linear-gradient(135deg,#dc2626,#b91c1c);box-shadow:0 12px 32px rgba(220,38,38,.32)">📊 تقرير PDF</button></div>
+<div class="top-left pet-topbar-compact-actions"><button class="side-launcher" id="sideLauncher" onclick="toggleSidebar()" title="فتح القائمة الرئيسية"><span class="launch-logo">🐾</span><span class="launch-text"><b>PETATOE</b><small>Analytics System</small></span></button><button class="search pet-topbar-search-icon" id="topbarSearch" type="button" onclick="openGlobalSearch()" aria-label="فتح البحث" title="بحث">🔍</button><button class="top-paw-up-btn" id="topPawBackToTopBtn" title="Click للأعلى — Double Click لآخر الصفحة — اسحب لأعلى/أسفل للتمرير"><span class="paw-icon">🐾</span><span class="paw-tip">Click للأعلى<span class="drag-hint">Double Click لآخر الصفحة</span></span></button><button class="reports-btn" data-i18n="topbar.reports" data-pet-permission-screen="reports" data-pet-lazy-group="smartReports" data-pet-nav-screen="smart" data-tab="smart" onclick="return PETATOEInlineHandlers.moduleCall('router','openTab','smart','overview')">📑 التقارير</button><button class="reports-btn" data-i18n="topbar.pdf" data-pet-permission-screen="reports" id="headerPdfBtn" type="button" onclick="return PETATOEHeaderPdfSafeOpen(event)" style="background:linear-gradient(135deg,#dc2626,#b91c1c);box-shadow:0 12px 32px rgba(220,38,38,.32)">📊 تقرير PDF</button></div>
 <div class="top-right"><span class="pill" id="today"></span><div class="pet-language-switcher" id="petLanguageSwitcher"><button class="pill pet-language-toggle" id="petLanguageToggle" type="button" data-i18n-title="language.toggleTitle" title="تغيير اللغة" aria-label="تغيير اللغة" aria-haspopup="listbox" aria-expanded="false"><span class="pet-language-current" id="petLanguageCurrent">AR</span><span class="pet-language-caret">▾</span></button><div class="pet-language-menu" id="petLanguageMenu" role="listbox" aria-label="اختيار اللغة"><button type="button" class="pet-language-option" data-pet-lang="ar" role="option">عربي</button><button type="button" class="pet-language-option" data-pet-lang="en" role="option">English</button></div></div><span class="pill toggle" onclick="toggleTheme()"><span class="switch"><i></i></span><span id="themeLabel">Dark</span></span><div class="pill pet-notification-trigger" id="topbarNotifBtn" role="button" tabindex="0" aria-label="الإشعارات" aria-haspopup="menu" aria-expanded="false"><span class="pet-notification-bell">🔔</span><b id="topbarNotifCount" style="color:#ef4444">0</b></div><div class="user" id="topbarUserBlock"><div><b id="topbarUserName">...</b><br/><small data-i18n="topbar.loading" id="topbarUserRole" style="color:var(--muted)">جارٍ التحميل</small></div><div class="avatar">🐾</div></div></div>
 </header>
 <section class="page">
@@ -1836,7 +1836,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-vehicles.js?v=9.1.8-legacy-cleanup-pack1',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-customers.js?v=10.0.25',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-core.js?v=10.0.25-runtime-restoration-b3',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-router.js?v=10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-router.js?v=10.0.25-sg4-6-4-smart-reports-load-before-open-1',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-interactions-real.js?v=9.0.0-elc-phase8g',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-export-engine.js?v=9.2.3-source-migration-pack2',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-facade.js?v=10.0.25',false);</script>
@@ -1851,7 +1851,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/at-risk-clients-export.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/one-time-recurring-modal.js',false);</script>
 <!-- === PETATOE v3.5 FLEET MANAGEMENT - SAFE ADDITION === -->
-<script>window.PETATOEMobileStartupGate.registerOrWrite('fleet','inline-extracted/fleet-inline.js?v=10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('fleet','inline-extracted/fleet-inline.js?v=10.0.25-sg4-6-4-smart-reports-load-before-open-1',false);</script>
 <!-- === /PETATOE v3.5 FLEET MANAGEMENT - SAFE ADDITION === -->
 <!-- === PETATOE v3.5 COMMISSION SYSTEM - APPEND ONLY === -->
 <script>window.PETATOEMobileStartupGate.registerOrWrite('commission','commissions/commission-runtime-bootstrap.js?v=10.0.25-sg3-commission-runtime-ownership-1',false);</script>
@@ -1859,7 +1859,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <!-- === /PETATOE v3.5 COMMISSION SYSTEM - APPEND ONLY === -->
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-tabs.js?v=10.0.25-smart-reports-sr3-registration',false);</script>
 <script src="smart/smart-runtime-registration.js?v=10.0.25-smart-reports-sr3-registration"></script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-runtime-controller.js?v=10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-runtime-controller.js?v=10.0.25-sg4-6-4-smart-reports-load-before-open-1',false);</script>
 <script src="smart/smart-reports-read-adapter.js?v=10.0.25-smart-reports-sr5-4-read-adapter"></script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/duplicate-policy.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/import-engine.js',false);</script>
@@ -1950,7 +1950,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-charts.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','i18n/localization-center/children-expenses-a5-1.js?v=9.4.23-a5-1',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-legacy-engine.js',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('children','inline-extracted/children-expenses-core.js?v=10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('children','inline-extracted/children-expenses-core.js?v=10.0.25-sg4-6-4-smart-reports-load-before-open-1',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-expenses-facade.js',true);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-expenses-controlled-migration.js',true);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('children','children-expenses/children-expenses-final-stability-audit.js',true);</script>
@@ -1974,8 +1974,8 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-workflow-real.js',false);</script>
 
 <script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-report-dataset.js',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-legacy-engine.js?v=10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','inline-extracted/appointments-core.js?v=10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-legacy-engine.js?v=10.0.25-sg4-6-4-smart-reports-load-before-open-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','inline-extracted/appointments-core.js?v=10.0.25-sg4-6-4-smart-reports-load-before-open-1',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-appointments.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-vehicles.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-status.js',false);</script>
@@ -2034,7 +2034,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/filters-core.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/filters-adapters.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/buttons-core.js',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/tables-core.js?v=10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/tables-core.js?v=10.0.25-sg4-6-4-smart-reports-load-before-open-1',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/export-core.js',false);</script>
 <script data-petatoe-safe-micro-batch="v8.0.0-GA" defer="" src="components/export/export-core.js?v=10.0.25-c1-7-export-namespace"></script>
 <script data-petatoe-safe-micro-batch="v8.0.0-GA" defer="" src="components/export/export-filters.js?v=10.0.25-c1-7-export-namespace"></script>

@@ -131,7 +131,7 @@
 
   function itemButton(it){
     var b=document.createElement('button'); b.type='button';
-    if(it.tab){b.setAttribute('data-tab',it.tab);b.setAttribute('data-pet-nav-screen',it.screen||it.tab);}
+    if(it.tab){b.setAttribute('data-tab',it.tab);b.setAttribute('data-pet-nav-screen',it.screen||it.tab);if(it.tab==='smart')b.setAttribute('data-pet-lazy-group','smartReports');}
     if(it.appointmentsSubTab)b.setAttribute('data-appointments-subtab',it.appointmentsSubTab);
     if(it.smartOpen)b.setAttribute('data-smart-open',it.smartOpen);
     if(it.settingsMain){b.setAttribute('data-settings-main',it.settingsMain);b.setAttribute('data-pet-nav-screen',it.screen||it.settingsMain);}

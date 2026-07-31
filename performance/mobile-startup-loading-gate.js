@@ -202,8 +202,7 @@
         else if(tabId === 'commissionStatement' && commissionRuntime && typeof commissionRuntime.renderStatement === 'function') commissionRuntime.renderStatement();
       }else if(group === 'smartReports'){
         var smartRuntime = window.PETATOESmartReportsRuntime;
-        if(smartRuntime && smartRuntime.__ready && typeof smartRuntime.open === 'function') smartRuntime.open('', 'lazy-hydration');
-        else if(smartRuntime && smartRuntime.__ready && typeof smartRuntime.render === 'function') smartRuntime.render('', 'lazy-hydration');
+        if(tabId === 'smart' && smartRuntime && smartRuntime.__ready && typeof smartRuntime.render === 'function') smartRuntime.render('', 'lazy-hydration');
       }else if(group === 'customer360' && typeof window.renderCustomer360Panel === 'function'){
         window.renderCustomer360Panel();
       }else if(group === 'children' && window.PETATOEChildrenExpenses && typeof window.PETATOEChildrenExpenses.render === 'function'){
@@ -758,11 +757,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-4-smart-reports-load-before-open-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-6-3-smart-reports-render-bridge-recovery-1',
+    version: '10.0.25-sg4-6-4-smart-reports-load-before-open-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
