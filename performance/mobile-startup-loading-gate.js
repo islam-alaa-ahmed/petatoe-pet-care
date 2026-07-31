@@ -192,7 +192,14 @@
         typeof window.openCustomer360 === 'function';
     },
     settingsSetup: function(){
-      return typeof window.renderSettingsPanelV110 === 'function';
+      return !!(
+        window.__PETATOE_SETTINGS_CORE_BOOTED__ === true &&
+        typeof window.renderSettingsPanelV110 === 'function' &&
+        window.PETATOEUsersModule && typeof window.PETATOEUsersModule.renderUsersBody === 'function' &&
+        window.PETATOEPermissions && typeof window.PETATOEPermissions.renderPermissionsBody === 'function' &&
+        window.PETATOESetup && typeof window.PETATOESetup.renderSetupBody === 'function' &&
+        window.PETATOEBackup && typeof window.PETATOEBackup.renderBackupBody === 'function'
+      );
     },
     diagnostics: function(){
       return !!(window.PETATOEObservability && window.PETATOEObservability.__ready === true && typeof window.PETATOEObservability.snapshot === 'function');
@@ -229,13 +236,43 @@
           typeof window.PETATOESmartReportsRuntime.refresh === 'function');
     },
     reportsUI: function(){
-      return !!(window.PETATOEReports || typeof window.renderReports === 'function' || typeof window.renderDashboardAll === 'function');
+      return !!(
+        window.PETATOEReports &&
+        window.PETATOECards &&
+        window.PETATOETables &&
+        window.PETATOEKPI &&
+        window.PETATOECharts &&
+        window.PETATOEHeatmap &&
+        window.PETATOEReportAdapters &&
+        window.PETATOEFiltersState &&
+        window.PETATOEFiltersRender &&
+        window.PETATOEFiltersEvents &&
+        window.PETATOEFilters &&
+        window.PETATOEFiltersAdapters &&
+        window.PETATOEButtons &&
+        window.PETATOEExport
+      );
     },
     sales: function(){
-      return !!(window.PETATOESales || window.PETATOESalesInvoiceReport || typeof window.renderDeep === 'function');
+      return !!(
+        window.PETATOESalesDuplicatePolicy &&
+        window.__PETATOE_SALES_IMPORT_ENGINE_SINGLETON__ === true &&
+        window.__PETATOE_ENTRY_REFERENCES_BINDINGS__ &&
+        window.__PETATOE_SALES_CRUD_SUPABASE_BINDING__ &&
+        window.PETATOESalesInvoiceReport && typeof window.PETATOESalesInvoiceReport.render === 'function' &&
+        window.__PETATOE_INVOICE_MANUAL_MULTI_ITEMS_SINGLETON__ === true &&
+        window.__PETATOE_CONTRACT_CANDIDATES_REPORT_BINDINGS__
+      );
     },
     printing: function(){
-      return !!(window.PETATOEPDF || typeof window.petatoeRefreshPdfReport === 'function' || typeof window.exportPagePDF === 'function');
+      return !!(
+        typeof window.petatoeOpenPdfModal === 'function' &&
+        typeof window.petatoeRefreshPdfReport === 'function' &&
+        typeof window.petatoePrintPdf === 'function' &&
+        typeof window.petatoeExportActivePagePdf === 'function' &&
+        typeof window.petatoeEnsureFullPagePdfButtons === 'function' &&
+        window.PETATOE_FULL_PAGE_PDF_EXPORT_READY === true
+      );
     }
   };
 
@@ -627,11 +664,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-3-smart-runtime-owner-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-4-readiness-contracts-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-3-smart-runtime-owner-1',
+    version: '10.0.25-sg4-4-readiness-contracts-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

@@ -30,7 +30,7 @@ requireCheck(count(gate, 'window.PETATOEMobileStartupGate =') === 1,
   'External startup-gate must define window.PETATOEMobileStartupGate exactly once.');
 requireCheck(gate.includes("if(!isMobile) return waitForDesktopGroup(name);"),
   'Desktop ensureGroup must use waitForDesktopGroup().');
-requireCheck(gate.includes("version: '10.0.25-sg4-3-smart-runtime-owner-1'"),
+requireCheck(gate.includes("version: '10.0.25-sg4-4-readiness-contracts-1'"),
   'Startup-gate runtime version is not aligned with Smart Reports SR1 state machine.');
 requireCheck(gate.includes('state.promise = null;') && gate.includes("state.status = 'not-ready';"),
   'Failed readiness must be retryable and must not retain a resolved false promise.');
