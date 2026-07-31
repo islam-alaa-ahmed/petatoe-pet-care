@@ -162,7 +162,7 @@
       appointments:'appointments', vehicleOperations:'vehicleOperations', vehicleOperationsReports:'vehicleOperationsReports', operationKpis:'operationKpis',
       smart:'reports', executive:'reports', records:'reports', logs:'audit', entry:'sales', import:'sales', sales:'sales',
       customer360:'customers', services:'services', vans:'vehicles', warehouses:'vehicles', fleet:'vehicles',
-      treasury:'treasury', obligations:'obligations', payroll:'payroll', salarySlip:'salarySlip', commissionStatement:'commissionStatement',
+      treasury:'treasury', obligations:'obligations', payroll:'payroll', salarySlip:'salarySlip', commissions:'commissions', commissionStatement:'commissionStatement',
       childrenExpenses:'childrenExpenses', settings:'settings'
     };
     return normalizeScreen(map[panelId]||panelId);

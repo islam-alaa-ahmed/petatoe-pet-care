@@ -18,8 +18,8 @@
   function groupFor(tab){
     return ({
       childrenExpenses:'main', entry:'operations', import:'operations', records:'operations', logs:'operations',
-      smart:'analytics', customer360:'analytics', commissions:'analytics',
-      executive:'management', obligations:'management', payroll:'management', salarySlip:'management', commissionStatement:'management', fleet:'management', treasury:'management', warehouses:'management',
+      smart:'analytics', customer360:'analytics',
+      executive:'management', obligations:'management', payroll:'management', salarySlip:'management', commissions:'management', commissionStatement:'management', fleet:'management', treasury:'management', warehouses:'management',
       settings:'system'
     })[tab] || '';
   }

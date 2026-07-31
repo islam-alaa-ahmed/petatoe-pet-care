@@ -91,7 +91,7 @@
   register('treasury', { moduleId:'treasury', title:'Treasury', owner:'treasury', panelId:'treasury', eager:true, lazyCandidate:true, sensitive:true, requiresPermission:'treasury', scriptHints:['treasury/*.js'] });
   register('payroll', { moduleId:'payroll', title:'Payroll', owner:'payroll', panelId:'payroll', eager:true, lazyCandidate:true, sensitive:true, protected:true, requiresPermission:'payroll', scriptHints:['payroll/*.js'] });
   register('salarySlip', { moduleId:'payroll', title:'Salary Slip', owner:'payroll', panelId:'salarySlip', eager:true, lazyCandidate:true, sensitive:true, protected:true, requiresPermission:'salarySlip', scriptHints:['payroll/*.js'] });
-  register('commissions', { moduleId:'commissions', title:'Commission System', owner:'commissions', panelId:'commissions', eager:true, lazyCandidate:true, requiresPermission:'commissions', scriptHints:['inline-extracted/commission-inline.js','inline-extracted/commission-tab-visibility-fix.js'], notes:'The panel is injected by the commission runtime after the canonical commissions route is activated.' });
+  register('commissions', { moduleId:'commissions', title:'Commission System', owner:'commissions', panelId:'commissions', eager:true, lazyCandidate:true, requiresPermission:'commissions', scriptHints:['commissions/commission-runtime-bootstrap.js','inline-extracted/commission-inline.js'], notes:'The bootstrap owns panel availability; the business runtime owns rendering.' });
   register('commissionStatement', { moduleId:'commissions', title:'Commission Statement', owner:'commissions', panelId:'commissionStatement', eager:true, lazyCandidate:true, requiresPermission:'commissionStatement', scriptHints:['inline-extracted/commission-inline.js'] });
 
   // Sales and supporting routes

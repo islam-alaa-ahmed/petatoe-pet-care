@@ -9,7 +9,7 @@ const checks=[
   ["smart button declares group",index.includes('data-pet-lazy-group="smartReports" data-tab="smart"')],
   ["commission button declares group",index.includes('data-pet-lazy-group="commission" data-tab="commissions"')],
   ["commission statement declares group",index.includes('data-pet-lazy-group="commission" data-tab="commissionStatement"')],
-  ["commission refresh uses runtime API",gate.includes("PETATOECommissionRuntime.renderSystem")],
+  ["commission refresh uses runtime API",gate.includes("commissionRuntime.renderSystem")],
   ["filters do not own readiness",!filters.includes("ensure('smartReports'")&&!filters.includes('ensure("smartReports"')],
   ["filters delegate to runtime",filters.includes('window.PETATOESmartReportsRuntime')]
 ];

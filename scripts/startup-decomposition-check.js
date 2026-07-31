@@ -5,7 +5,7 @@ const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const gate = fs.readFileSync(path.join(root, 'performance/mobile-startup-loading-gate.js'), 'utf8');
 const checks = [
-  ['gate cache token', index.includes('10.0.25-sg2-runtime-validation-1')],
+  ['gate cache token', index.includes('10.0.25-sg3-commission-runtime-ownership-1')],
   ['desktop lazy policy', gate.includes('desktopLazyGroups') && gate.includes('shouldLazyLoad')],
   ['generic triggers', gate.includes('function installTriggers(){\n    if(window.__PETATOE_MOBILE_STARTUP_GATE_TRIGGERS__) return;')],
   ['generic ensure loader', gate.includes("if(!isMobile) return waitForDesktopGroup(name);")],

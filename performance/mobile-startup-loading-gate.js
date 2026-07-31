@@ -45,7 +45,7 @@
 
   var aliases = {
     operation: 'operations', operations: 'operations', appointments: 'operations',
-    payroll: 'payroll', salarySlip: 'payroll', commissionStatement: 'payroll',
+    payroll: 'payroll', salarySlip: 'payroll', commissionStatement: 'commission',
     treasury: 'treasury',
     warehouse: 'warehouses', warehouses: 'warehouses', warehouseAlerts: 'warehouses',
     children: 'children', childrenExpenses: 'children',
@@ -119,9 +119,9 @@
       if(group === 'operations' && window.PETATOEAppointments){
         if(typeof window.PETATOEAppointments.render === 'function') window.PETATOEAppointments.render();
       }else if(group === 'commission'){
-        if(window.PETATOECommissionRuntime && typeof window.PETATOECommissionRuntime.ensurePanels === 'function') window.PETATOECommissionRuntime.ensurePanels();
-        if(tabId === 'commissions' && window.PETATOECommissionRuntime && typeof window.PETATOECommissionRuntime.renderSystem === 'function') window.PETATOECommissionRuntime.renderSystem();
-        else if(tabId === 'commissionStatement' && typeof window.renderCommissionStatementPage === 'function') window.renderCommissionStatementPage();
+        var commissionRuntime = window.PETATOECommissionRuntime;
+        if(tabId === 'commissions' && commissionRuntime && typeof commissionRuntime.renderSystem === 'function') commissionRuntime.renderSystem();
+        else if(tabId === 'commissionStatement' && commissionRuntime && typeof commissionRuntime.renderStatement === 'function') commissionRuntime.renderStatement();
       }else if(group === 'smartReports'){
         var smartRuntime = window.PETATOESmartReportsRuntime;
         if(smartRuntime && smartRuntime.__ready && typeof smartRuntime.open === 'function') smartRuntime.open('', 'lazy-hydration');
@@ -179,12 +179,10 @@
     },
     commission: function(){
       var runtime = window.PETATOECommissionRuntime;
-      if(runtime && typeof runtime.ensurePanels === 'function') runtime.ensurePanels();
-      return !!(runtime && runtime.__ready === true &&
+      return !!(runtime && runtime.__ready === true && runtime.status === 'ready' &&
         typeof runtime.ensurePanels === 'function' &&
-        typeof window.renderCommissionSystem === 'function' &&
-        typeof window.setCommissionTab === 'function' &&
-        typeof window.renderCommissionStatementPage === 'function' &&
+        typeof runtime.renderSystem === 'function' &&
+        typeof runtime.renderStatement === 'function' &&
         document.getElementById('commissions') &&
         document.getElementById('commissionStatement'));
     },
@@ -505,8 +503,8 @@
     if(/children/.test(marker)) return 'children';
     if(/warehouse/.test(marker)) return 'warehouses';
     if(/treasury/.test(marker)) return 'treasury';
-    if(/payroll|salaryslip|commissionstatement/.test(marker)) return 'payroll';
-    if(/commission/.test(marker)) return 'commission';
+    if(/commissionstatement|commission/.test(marker)) return 'commission';
+    if(/payroll|salaryslip/.test(marker)) return 'payroll';
     if(/settings|setup|permissions|users|backup/.test(marker)) return 'settingsSetup';
     if(/customer360/.test(marker)) return 'customer360';
     if(/smartreport/.test(marker)) return 'smartReports';
@@ -630,11 +628,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg2-runtime-hydration-fix-2', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg3-commission-runtime-ownership-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg2-runtime-hydration-fix-2',
+    version: '10.0.25-sg3-commission-runtime-ownership-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
