@@ -18,5 +18,5 @@ ok('Interaction layer delegates tab ownership only',!interactions.includes("ensu
 ok('Retry action is wired',interactions.includes("case 'retry-sales-invoices'")&&tabs.includes('retrySalesInvoices: activateSalesInvoices'));
 ok('Invoice injector no longer creates tab dynamically',!invoice.includes("document.createElement('button')")&&!invoice.includes("document.createElement('div')"));
 ok('Dark compatibility file no longer creates canonical tab',!dark.includes("btn=document.createElement('button')")&&!dark.includes("sec=document.createElement('div')"));
-ok('Touched cache tokens are updated',index.includes('mobile-startup-loading-gate.js?v=10.0.25-sg4-7-smart-interactions-1')&&index.includes('smart/smart-tabs.js?v=10.0.25-sg4-7-smart-interactions-1'));
+ok('Touched cache tokens are updated',index.includes('mobile-startup-loading-gate.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1')&&index.includes('smart/smart-tabs.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1'));
 const failed=checks.filter(x=>!x.pass); console.log(JSON.stringify({status:failed.length?'FAILED':'PASSED',checks:checks.length,failed:failed.map(x=>x.name)},null,2)); process.exit(failed.length?1:0);

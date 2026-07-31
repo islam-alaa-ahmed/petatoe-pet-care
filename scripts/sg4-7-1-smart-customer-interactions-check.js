@@ -18,7 +18,7 @@ check('Customer interaction controller owns capture click', customers.includes('
 check('Customer interaction controller owns capture change', customers.includes("document.addEventListener('change'"));
 check('Customer pane rebuild bypasses public router bridge', customers.includes('window.__petatoeLegacyRenderSmartReports'));
 check('Runtime audit API is exposed', customers.includes('PETATOESmartCustomerInteractionAudit'));
-check('Modified scripts use fresh cache tokens', index.includes('legacy-application-core.js?v=10.0.25-sg4-7-1-customer-interactions-1') && index.includes('smart-customers.js?v=10.0.25-sg4-7-1-customer-interactions-1') && index.includes('smart-reports-core.js?v=10.0.25-sg4-7-1-customer-interactions-1'));
+check('Modified scripts use fresh cache tokens', index.includes('legacy-application-core.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1') && index.includes('smart-customers.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1') && index.includes('smart-reports-core.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1'));
 const failed=checks.filter(x=>!x.ok);
 console.log(JSON.stringify({status:failed.length?'FAILED':'PASSED',checks:checks.length,passed:checks.length-failed.length,failed},null,2));
 process.exit(failed.length?1:0);

@@ -1,0 +1,30 @@
+const fs=require('fs');
+const path=require('path');
+const root=path.resolve(__dirname,'..');
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const index=read('index.html');
+const gate=read('performance/mobile-startup-loading-gate.js');
+const tabs=read('smart/smart-tabs.js');
+const core=read('smart/smart-reports-core.js');
+const exec=read('inline-extracted/exec-alerts-block.js');
+const bi=read('inline-extracted/bi-kpi-chart.js');
+const report=read('sales/sales-invoice-report.js');
+const failures=[];
+function ok(cond,msg){if(!cond) failures.push(msg);}
+ok(index.includes("registerOrWrite('smartSalesInvoices','sales/sales-invoice-report.js"),'sales invoice report must belong to smartSalesInvoices');
+ok(index.includes("registerOrWrite('smartSalesInvoices','sales/invoice-print-preview.js"),'invoice preview must belong to smartSalesInvoices');
+ok(!index.includes("registerOrWrite('sales','sales/sales-invoice-report.js"),'legacy sales ownership must be absent');
+ok(gate.includes("smartSalesInvoices: function()"),'dedicated readiness contract missing');
+ok(gate.includes("sales: ['reportsUI', 'smartSalesInvoices']"),'sales dependency must preserve invoice runtime');
+ok(tabs.includes("ensureRuntime('smartSalesInvoices')"),'smart tabs must hydrate invoice runtime');
+ok(report.includes('A stale guard may survive a prior partial or cached execution'),'stale guard recovery missing');
+ok(report.includes('window.PETATOESalesInvoiceReport=api'),'sales invoice public API missing');
+ok(report.includes('window.injectSalesInvoiceReport=injectSalesInvoiceReport'),'sales invoice injector missing');
+ok(exec.includes('petOpenCustomer360Safe'),'Customer 360 safe runtime path missing');
+ok(bi.includes('data-bi-customer-action'),'BI explicit customer actions missing');
+ok(bi.includes('queued'),'BI queued render protection missing');
+ok(core.includes("center.t('smartReportsSource.finalPass.'+key, params || {}, { fallback: fallback" ) || core.includes("center.t('smartReportsSource.finalPass.'+key,params||{},{fallback:fallback"),'localization fallback contract missing');
+ok(index.includes('Consolidated inactive-customer sort control contract'),'inactive sort CSS contract missing');
+ok(index.includes('#smart .inactive-sort-btn > *{color:inherit!important;opacity:1!important;visibility:visible!important;font:inherit!important;}'),'nested sort labels visibility missing');
+if(failures.length){console.error('SG-4.7.6 Consolidated Regression: FAILED'); failures.forEach(x=>console.error('- '+x)); process.exit(1);} 
+console.log('SG-4.7.6 Consolidated Regression: PASSED (15/15)');

@@ -10,7 +10,7 @@ const checks = [
   ['queued render recovery', /queued:false/.test(bi) && /requestBusinessIntelligenceRender/.test(bi)],
   ['BI cache invalidation on more', /biTableCache\.key='';requestBusinessIntelligenceRender\(\)/.test(bi)],
   ['no text-only row routing', !/\/Customer 360\|فتح\|متابعة\//.test(bi)],
-  ['cache token updated', index.includes("inline-extracted/bi-kpi-chart.js?v=10.0.25-sg4-7-2-bi-actions-root-fix-1")]
+  ['cache token updated', index.includes("inline-extracted/bi-kpi-chart.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1")]
 ];
 let failed = 0;
 for (const [name, ok] of checks) {

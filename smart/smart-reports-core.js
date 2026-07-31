@@ -686,7 +686,7 @@ function renderSmartReports(){
       valueLabel:String(customerCompareValueLabel?customerCompareValueLabel():'')
     };
     const encoded=encodeURIComponent(JSON.stringify(payload));
-    return `<button type="button" class="new-cust-more-btn customer-yoy-lost-details-btn" data-lost-details="${htmlSafe(encoded)}" onmouseenter="customerCompareShowLostDetailsBubble(this)" onfocus="customerCompareShowLostDetailsBubble(this)" onmouseleave="customerCompareScheduleLostDetailsHide()" onblur="customerCompareScheduleLostDetailsHide()">${smartReportHtml('actions.viewDetails','عرض التفاصيل')} 👁️</button>`;
+    return `<button type="button" class="new-cust-more-btn customer-yoy-lost-details-btn" data-smart-action="customer-compare-lost-details" data-lost-details="${htmlSafe(encoded)}" onmouseenter="customerCompareShowLostDetailsBubble(this)" onfocus="customerCompareShowLostDetailsBubble(this)" onmouseleave="customerCompareScheduleLostDetailsHide()" onblur="customerCompareScheduleLostDetailsHide()">${smartReportHtml('actions.viewDetails','عرض التفاصيل')} 👁️</button>`;
   };
   const customerCompareRenderVirtualTable=(id,rows,limit,columns,fallbackHtml)=>{
     const shouldVirtualize=!!(window.PETATOETables && typeof window.PETATOETables.render==='function' && Array.isArray(rows) && rows.length>0 && limit>=rows.length);

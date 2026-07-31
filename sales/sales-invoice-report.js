@@ -2,7 +2,12 @@
 /* Fix: Sales invoice tab appears immediately and full render runs only when the invoice tab is active. */
 /* === PETATOE v3.8.19 SALES INVOICE REPORT - APPEND ONLY SAFE ADDITION === */
 (function(){
-  if(window.__PETATOE_SALES_INVOICE_REPORT_PATCH__)return;
+  if(window.__PETATOE_SALES_INVOICE_REPORT_PATCH__ &&
+     window.PETATOESalesInvoiceReport &&
+     typeof window.PETATOESalesInvoiceReport.render === 'function' &&
+     typeof window.injectSalesInvoiceReport === 'function') return;
+  /* A stale guard may survive a prior partial or cached execution. Reset ownership
+     and rebuild the provider unless the complete public contract already exists. */
   window.__PETATOE_SALES_INVOICE_REPORT_PATCH__=true;
 
   function salesInvoiceT(key, fallback, params){
