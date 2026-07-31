@@ -3,7 +3,7 @@ function read(path){ return fs.readFileSync(path,'utf8'); }
 const nav = read('router/navigation-controller.js');
 const index = read('index.html');
 const sw = read('service-worker.js');
-const version = '10.0.25-sg4-6-8-smart-runtime-trace-1';
+const version = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';
 const checks = [
   ['route hydration helper exists', nav.includes('function hydrateRouteRuntime(tabId)')],
   ['smart route owns hydration', nav.includes("gate.ensureGroup('smartReports')")],

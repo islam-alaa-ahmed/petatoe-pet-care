@@ -109,10 +109,18 @@
   };
 
   var dependencies = {
-    smartReports: ['reportsUI'],
+    smartReports: [],
     customer360: [],
     sales: ['reportsUI'],
     printing: ['reportsUI']
+  };
+
+  /* SG-4.6.9: Smart Reports must not be blocked by the full reportsUI provider
+     contract. Start reportsUI hydration in parallel as a soft dependency while
+     allowing the canonical Smart Reports group to load its router and runtime
+     controller immediately. */
+  var optionalDependencies = {
+    smartReports: ['reportsUI']
   };
 
   function normalizeGroup(name){ return aliases[name] || name; }
@@ -479,6 +487,12 @@
     state.error = '';
     state.attempts = (state.attempts || 0) + 1;
     var dependencyQueue = (dependencies[name] || []).slice();
+    var optionalDependencyQueue = (optionalDependencies[name] || []).slice();
+    optionalDependencyQueue.forEach(function(dependency){
+      ensureGroup(dependency).catch(function(error){
+        if(window.console && console.warn) console.warn('[PETATOE Mobile Gate] optional dependency hydration failed', dependency, '->', name, error);
+      });
+    });
 
     state.promise = dependencyQueue.reduce(function(chain, dependency){
       return chain.then(function(){
@@ -545,6 +559,12 @@
     state.error = '';
     state.attempts = (state.attempts || 0) + 1;
     var dependencyQueue = (dependencies[name] || []).slice();
+    var optionalDependencyQueue = (optionalDependencies[name] || []).slice();
+    optionalDependencyQueue.forEach(function(dependency){
+      ensureGroup(dependency).catch(function(error){
+        if(window.console && console.warn) console.warn('[PETATOE Mobile Gate] optional dependency hydration failed', dependency, '->', name, error);
+      });
+    });
 
     state.promise = dependencyQueue.reduce(function(chain, dependency){
       return chain.then(function(){
@@ -795,11 +815,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-8-smart-runtime-trace-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-6-8-smart-runtime-trace-1',
+    version: '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

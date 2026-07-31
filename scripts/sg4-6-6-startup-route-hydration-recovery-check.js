@@ -7,7 +7,7 @@ const checks = [
   ['pending groups hydrated after interactive', gate.includes('hydratePendingStartupGroups();')],
   ['active restored panel scanned', gate.includes("document.querySelector('.panel.active, .panel.is-active, [data-panel].active')")],
   ['tabchange no longer discarded', !gate.includes("if(!startupInteractive) return;\n      var id = event && event.detail && event.detail.tabId;")],
-  ['release version aligned', gate.includes('10.0.25-sg4-6-8-smart-runtime-trace-1')]
+  ['release version aligned', gate.includes('10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1')]
 ];
 const failed = checks.filter(([,ok])=>!ok);
 console.log(`SG-4.6.6 Startup Route Hydration Recovery: ${failed.length?'FAILED':'PASSED'}`);
