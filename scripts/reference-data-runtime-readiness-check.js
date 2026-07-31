@@ -13,6 +13,6 @@ check(nav.includes("if(tab==='appointments') applyAppointmentsNavigationIntent()
 check(nav.includes("[data-appointment-section=\"'+requested+'\"]"),'runtime application verifies final active section');
 check(ops.includes("var requestedSubTab=explicitSubTab||pendingSubTab||'add';"),'operations preserves pending sub-route before fallback');
 check(ops.includes("petatoe:appointments-intent-applied"),'operations acknowledges applied intent');
-check(index.includes('10.0.25-sg4-6-4-smart-reports-load-before-open-1'),'HTML assets use new runtime cache token');
-check(worker.includes("const APP_VERSION = '10.0.25-sg4-6-4-smart-reports-load-before-open-1';"),'service worker namespace rotated');
+check(index.includes('10.0.25-sg4-6-5-smart-reports-nonblocking-navigation-1'),'HTML assets use new runtime cache token');
+check(worker.includes("const APP_VERSION = '10.0.25-sg4-6-5-smart-reports-nonblocking-navigation-1';"),'service worker namespace rotated');
 if(process.exitCode) process.exit(process.exitCode);

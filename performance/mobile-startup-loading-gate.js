@@ -664,6 +664,16 @@
         return;
       }
       if(!group || (states[group] && states[group].status === 'loaded')) return;
+      /* SG-4.6.5: Smart Reports navigation must never be blocked by provider readiness.
+         Start hydration in parallel and allow the canonical Router / inline handler to
+         open the screen immediately. A failed or delayed optional dependency must not
+         turn the Reports buttons into dead controls. */
+      if(group === 'smartReports'){
+        ensureGroup(group).catch(function(error){
+          if(window.console && console.warn) console.warn('[PETATOE Mobile Gate] Smart Reports background hydration failed', error);
+        });
+        return;
+      }
       event.preventDefault();
       event.stopImmediatePropagation();
       ensureGroup(group).then(function(ready){
@@ -757,11 +767,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-4-smart-reports-load-before-open-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-5-smart-reports-nonblocking-navigation-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-6-4-smart-reports-load-before-open-1',
+    version: '10.0.25-sg4-6-5-smart-reports-nonblocking-navigation-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
