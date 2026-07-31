@@ -53,6 +53,22 @@
     return isMobile || desktopLazyGroups[group] === true;
   }
   var startupInteractive = document.readyState !== 'loading';
+  var pendingStartupGroups = Object.create(null);
+
+  function rememberPendingStartupGroup(group){
+    group = normalizeGroup(String(group || ''));
+    if(group) pendingStartupGroups[group] = true;
+  }
+
+  function hydratePendingStartupGroups(){
+    var pending = Object.keys(pendingStartupGroups);
+    pendingStartupGroups = Object.create(null);
+    pending.forEach(function(group){
+      ensureGroup(group).catch(function(error){
+        if(window.console && console.warn) console.warn('[PETATOE Mobile Gate] deferred startup hydration failed', group, error);
+      });
+    });
+  }
 
   var mobileBootFinished = false;
   var mobileBootStartedAt = Date.now();
@@ -691,19 +707,31 @@
     }, true);
 
     document.addEventListener('petatoe:tabchange', function(event){
-      if(!startupInteractive) return;
       var id = event && event.detail && event.detail.tabId;
       if(!id) return;
       var panel = document.getElementById(id);
       var group = groupForPanel(panel);
-      if(group) ensureGroup(group).catch(function(){});
+      if(!group) return;
+      if(!startupInteractive){
+        rememberPendingStartupGroup(group);
+        return;
+      }
+      ensureGroup(group).catch(function(){});
     }, true);
 
     /* Phase P6: canonical pointerdown and petatoe:tabchange signals own lazy hydration.
        The previous document-wide class MutationObserver watched every active-state
        mutation and duplicated the same group resolution on each route. */
 
-    function markStartupInteractive(){ startupInteractive = true; }
+    function markStartupInteractive(){
+      startupInteractive = true;
+      try{
+        var activePanel = document.querySelector('.panel.active, .panel.is-active, [data-panel].active');
+        var activeGroup = groupForPanel(activePanel);
+        if(activeGroup) rememberPendingStartupGroup(activeGroup);
+      }catch(_e){}
+      hydratePendingStartupGroups();
+    }
     if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', markStartupInteractive, { once: true });
     else markStartupInteractive();
 
@@ -767,11 +795,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-5-smart-reports-nonblocking-navigation-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-6-startup-route-hydration-recovery-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-6-5-smart-reports-nonblocking-navigation-1',
+    version: '10.0.25-sg4-6-6-startup-route-hydration-recovery-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
