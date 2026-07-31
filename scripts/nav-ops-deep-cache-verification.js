@@ -3,7 +3,7 @@ function read(path){ return fs.readFileSync(path, 'utf8'); }
 function assert(ok, message){ if(!ok){ console.error('FAIL:', message); process.exitCode = 1; } else console.log('PASS:', message); }
 const defaultToken = '10.0.25-reference-data-runtime-fix-2';
 const navigationToken = '10.0.25-reference-data-active-state-fix-5';
-const serviceWorkerToken = '10.0.25-sg4-6-1-smart-reports-data-render-recovery-1';
+const serviceWorkerToken = '10.0.25-sg4-6-2-smart-reports-initial-data-hydration-1';
 const ownershipToken = serviceWorkerToken;
 const routeRegistryToken = '10.0.25-sg2-runtime-validation-1';
 const index = read('index.html');

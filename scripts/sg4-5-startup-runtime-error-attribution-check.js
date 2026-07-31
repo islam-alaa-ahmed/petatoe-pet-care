@@ -6,7 +6,7 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const gatePath = path.join(root, 'performance/mobile-startup-loading-gate.js');
 const gate = fs.readFileSync(gatePath, 'utf8');
-const version = '10.0.25-sg4-6-1-smart-reports-data-render-recovery-1';
+const version = '10.0.25-sg4-6-2-smart-reports-initial-data-hydration-1';
 const checks = [
   ['runtime diagnostics state is bounded', /runtimeDiagnostics\s*=\s*\{[\s\S]*history:\s*\[\]/.test(gate) && /history\.length\s*>\s*40/.test(gate)],
   ['window runtime errors are captured', /addEventListener\(['"]error['"][\s\S]*captureActiveRuntimeError/.test(gate)],

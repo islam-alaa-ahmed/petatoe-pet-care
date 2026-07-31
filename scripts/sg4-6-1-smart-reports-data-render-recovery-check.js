@@ -12,7 +12,7 @@ const checks=[
   ['tables core preserves renderer methods',tables.includes('Tables.showMoreState = Tables.showMoreState || showMoreState')],
   ['reportsUI requires table render function',gate.includes("typeof window.PETATOETables.render === 'function'")],
   ['reportsUI requires filter normalize function',gate.includes("typeof window.PETATOEFilters.normalize === 'function'")],
-  ['tables core hotfix cache token registered',index.includes("components/tables-core.js?v=10.0.25-sg4-6-1-smart-reports-data-render-recovery-1")]
+  ['tables core hotfix cache token registered',index.includes("components/tables-core.js?v=10.0.25-sg4-6-2-smart-reports-initial-data-hydration-1")]
 ];
 let failed=0;
 for(const [name,ok] of checks){console.log(`${ok?'PASS':'FAIL'} ${name}`);if(!ok)failed++;}

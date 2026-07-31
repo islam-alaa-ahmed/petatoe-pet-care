@@ -118,7 +118,10 @@
   }
   function synchronize(forceRemote,reason){
     return Promise.resolve().then(async function(){
-      if(forceRemote&&typeof window.petatoeSyncSalesReportsFromSupabase==='function'){
+      var rowsBefore=runtimeRows();
+      var needsInitialHydration=!rowsBefore.length;
+      var shouldRefresh=!!forceRemote||needsInitialHydration;
+      if(shouldRefresh&&typeof window.petatoeSyncSalesReportsFromSupabase==='function'){
         if(!remoteRefreshPromise){
           remoteRefreshCount+=1;
           remoteRefreshPromise=Promise.resolve(window.petatoeSyncSalesReportsFromSupabase()).finally(function(){
@@ -129,7 +132,7 @@
         }
         await remoteRefreshPromise;
       }
-      commitRuntimeRows((reason||'smart-reports')+'-canonical-commit');
+      commitRuntimeRows((reason||'smart-reports')+(needsInitialHydration?'-initial-hydration':'-canonical-commit'));
       return true;
     });
   }

@@ -16,7 +16,7 @@ const checks=[
  ['navigation state delegates to runtime',nav.includes('PETATOESmartReportsRuntime')&&nav.includes('smartRuntime.activateTab')],
  ['startup contract requires render engine',gate.includes('PETATOESmartReportsRenderEngine')],
  ['startup contract no longer requires global setSmartTab',!gate.includes("setSmartTab: typeof window.setSmartTab")],
- ['release token aligned',index.includes('10.0.25-sg4-6-1-smart-reports-data-render-recovery-1')]
+ ['release token aligned',index.includes('10.0.25-sg4-6-2-smart-reports-initial-data-hydration-1')]
 ];
 let passed=0; for(const [name,ok] of checks){console.log(`${ok?'PASS':'FAIL'} ${name}`);if(ok)passed++;}
 console.log(`${passed} / ${checks.length} PASSED`); process.exit(passed===checks.length?0:1);
