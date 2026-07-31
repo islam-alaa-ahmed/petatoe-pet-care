@@ -16,7 +16,7 @@
     if(runtime&&runtime.__ready){
       return forceRemote?runtime.refresh():runtime.render('', 'filter-render');
     }
-    console.error('[PETATOE Filters] Smart Reports runtime controller is unavailable');
+    /* Lazy runtime is not loaded yet; the Startup Gate owns readiness. */
     return false;
   }
   function treasury(){ return window.PETATOETreasury || {}; }

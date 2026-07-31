@@ -120,7 +120,7 @@
         if(typeof window.PETATOEAppointments.render === 'function') window.PETATOEAppointments.render();
       }else if(group === 'commission'){
         if(window.PETATOECommissionRuntime && typeof window.PETATOECommissionRuntime.ensurePanels === 'function') window.PETATOECommissionRuntime.ensurePanels();
-        if(tabId === 'commissions' && typeof window.renderCommissionSystem === 'function') window.renderCommissionSystem();
+        if(tabId === 'commissions' && window.PETATOECommissionRuntime && typeof window.PETATOECommissionRuntime.renderSystem === 'function') window.PETATOECommissionRuntime.renderSystem();
         else if(tabId === 'commissionStatement' && typeof window.renderCommissionStatementPage === 'function') window.renderCommissionStatementPage();
       }else if(group === 'smartReports'){
         var smartRuntime = window.PETATOESmartReportsRuntime;
@@ -452,11 +452,11 @@
     appointments:'operations', appointmentsMaster:'operations', vehicleOperations:'operations',
     vehicleOperationsReports:'operations', operationKpis:'operations',
     warehouses:'warehouses', warehouseAlerts:'warehouses', treasury:'treasury',
-    payroll:'payroll', salarySlip:'payroll', commissionStatement:'payroll',
+    payroll:'payroll', salarySlip:'payroll', commissionStatement:'commission',
     childrenExpenses:'children', commission:'commission', commissions:'commission', commissionSystem:'commission',
     settings:'settingsSetup', setup:'settingsSetup', users:'settingsSetup', permissions:'settingsSetup', backup:'settingsSetup',
     diagnostics:'diagnostics', observability:'diagnostics', performanceMonitoring:'diagnostics',
-    smartReports:'smartReports', customer360:'customer360', customers:'customer360', salesInvoice:'sales', sales:'sales',
+    smart:'smartReports', smartReports:'smartReports', customer360:'customer360', customers:'customer360', salesInvoice:'sales', sales:'sales',
     fleet:'fleet', obligations:'obligations', movementCenter:'movement'
   };
 

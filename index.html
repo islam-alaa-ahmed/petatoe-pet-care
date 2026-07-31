@@ -18,7 +18,7 @@ window.__PETATOE_EARLIEST_BOOT={startMs:(window.performance&&performance.now?per
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('core/mobile-device-profile.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/mobile-startup-loading-gate.js');</script>
-<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-sg2-runtime-hydration-fix-2"></script>
+<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-sg2-route-group-fix-3"></script>
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('performance/mobile-startup-loading-gate.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/startup-clean-profiler.js');</script>
@@ -1491,10 +1491,10 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <input class="pet-nav-group-check" hidden="" id="petNavGroupAnalytics" type="checkbox"/>
 <label class="pet-nav-group-toggle" data-nav-group="analytics" for="petNavGroupAnalytics"><span data-i18n="sidebar.analytics">📈 التحليلات</span><i>▶</i></label>
 <div class="pet-nav-group-items">
-<button data-i18n="sidebar.smartReports" data-tab="smart">🧠 التقارير الذكية</button>
+<button data-i18n="sidebar.smartReports" data-pet-lazy-group="smartReports" data-tab="smart">🧠 التقارير الذكية</button>
 <button data-i18n="sidebar.customer360" data-tab="customer360">👤 Customer 360</button>
-<button data-i18n="sidebar.commissions" data-tab="commissions">💰 نظام العمولات</button>
-<button data-i18n="sidebar.commissionStatement" data-tab="commissionStatement">📄 كشف العمولة</button>
+<button data-i18n="sidebar.commissions" data-pet-lazy-group="commission" data-tab="commissions">💰 نظام العمولات</button>
+<button data-i18n="sidebar.commissionStatement" data-pet-lazy-group="commission" data-tab="commissionStatement">📄 كشف العمولة</button>
 </div>
 </div>
 <div class="pet-nav-group" data-group="management">
@@ -2051,7 +2051,7 @@ window.PETATOEPhase2ReportLogicAudit=function(){
 <script defer="" src="components/theme/cards.js"></script>
 <script defer="" src="components/theme/forms.js"></script>
 <script defer="" src="components/theme/tables.js"></script>
-<script defer="" src="components/filters-finalization.js?v=10.0.25-sg2-runtime-hydration-fix-2"></script>
+<script defer="" src="components/filters-finalization.js?v=10.0.25-sg2-route-group-fix-3"></script>
 <script defer="" src="components/runtime-ui-stabilization.js?v=10.0.25-navigation-runtime-isolation-c2-3"></script>
 <script defer="" src="components/liquid-glass-ui.js?v=10.0.25-navigation-runtime-isolation-c2-3"></script>
 <script defer="" src="components/phase6f-safe-inline-cleanup.js"></script>
