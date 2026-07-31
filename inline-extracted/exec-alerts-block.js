@@ -211,13 +211,41 @@ function scrollDashboardToBottom(ev){
   function scheduleAttachDrillHints(delay){clearTimeout(scheduleAttachDrillHints._t);scheduleAttachDrillHints._t=setTimeout(attachDrillHints,delay||100)}
 
   function petDecodeHtml(v){var t=document.createElement('textarea');t.innerHTML=String(v||'');return t.value}
+  function petOpenCustomer360Safe(name){
+    name=petDecodeHtml(name||'').trim();
+    function openNow(){
+      if(typeof window.openPetClient360==='function'){ window.openPetClient360(name); return true; }
+      if(window.PETATOERouter && typeof window.PETATOERouter.openTab==='function'){
+        window.PETATOERouter.openTab('customer360');
+        window.setTimeout(function(){
+          var search=document.getElementById('customer360Search');
+          if(search) search.value=name;
+          if(typeof window.renderCustomer360Panel==='function') window.renderCustomer360Panel(name);
+          if(typeof window.showCustomer360==='function') window.showCustomer360(name);
+        },60);
+        return true;
+      }
+      return false;
+    }
+    if(openNow()) return Promise.resolve(true);
+    var gate=window.PETATOEMobileStartupGate;
+    if(!gate || typeof gate.ensureGroup!=='function') return Promise.resolve(false);
+    return Promise.resolve(gate.ensureGroup('customer360')).then(function(ready){
+      if(ready!==true) throw new Error('customer360 readiness failed');
+      if(!openNow()) throw new Error('openPetClient360 unavailable after customer360 readiness');
+      return true;
+    }).catch(function(error){
+      try{console.error('[PETATOE Customer360] runtime open failed',error);}catch(_e){}
+      return false;
+    });
+  }
   function handleExecDelegatedClick(e){
     var alertEl=e.target.closest&&e.target.closest('[data-exec-alert-index]');
     if(alertEl){openExecutiveAlert(parseInt(alertEl.getAttribute('data-exec-alert-index'),10)||0);return true}
     var drill=e.target.closest&&e.target.closest('[data-exec-drill]');
     if(drill){var kind=drill.getAttribute('data-exec-drill');if(kind==='total')openPetDrill('👑 إجمالي مبيعات الإدارة','تفاصيل الفلتر الإداري الحالي',execFiltered());else if(kind==='invoices')openPetDrill('🧾 الفواتير','كل فواتير الفلتر الإداري',execFiltered());else if(kind==='clients')openPetDrill('👥 العملاء','كل عمليات العملاء داخل الفلتر',execFiltered());else if(kind==='alerts'){var block=document.getElementById('execAlertsBlock');if(block)block.scrollIntoView({behavior:'smooth'});}return true}
     var client=e.target.closest&&e.target.closest('[data-pet-client360]');
-    if(client){openPetClient360(petDecodeHtml(client.getAttribute('data-pet-client360')));return true}
+    if(client){petOpenCustomer360Safe(client.getAttribute('data-pet-client360'));return true}
     var filterBtn=e.target.closest&&e.target.closest('[data-exec-filter]');
     if(filterBtn){var type=filterBtn.getAttribute('data-exec-filter'),val=petDecodeHtml(filterBtn.getAttribute('data-exec-value'));if(type==='service')openPetDrill('🧩 '+val,'تفاصيل الخدمة',execFiltered().filter(function(r){return String(r.item||'غير محدد')===val}));else if(type==='van')openPetDrill('🚐 '+val,'تفاصيل السيارة',execFiltered().filter(function(r){return String(r.van||'غير محدد')===val}));return true}
     var exp=e.target.closest&&e.target.closest('[data-pet-drill-export]');
@@ -234,7 +262,7 @@ function scrollDashboardToBottom(ev){
     if(invRow){var invCell=invRow.children&&invRow.children[1];if(invCell)openPetInvoiceDrill(invCell.textContent||'');return true}
     if(e.target.closest&&e.target.closest('[data-payroll-action],#payrollArea,#salarySlipArea,.payroll-shell,.salary-slip-redesign-shell,.salary-slip-self-service'))return false;
     var customerBtn=e.target.closest&&e.target.closest('button.btn-ghost');
-    if(customerBtn && /Customer 360|متابعة|فتح/.test(customerBtn.textContent||'')){var row=customerBtn.closest('tr');var first=row&&row.children&&row.children[0];if(first && /Customer 360|متابعة|فتح/.test(customerBtn.textContent||'')){openPetClient360(first.textContent||'');return true}}
+    if(customerBtn && /Customer 360|متابعة|فتح/.test(customerBtn.textContent||'')){var explicit=customerBtn.getAttribute('data-bi-client')||customerBtn.getAttribute('data-pet-client360')||customerBtn.getAttribute('data-client-name')||'';var row=customerBtn.closest('tr');var named=row&&row.querySelector&&row.querySelector('[data-bi-client],[data-client-name],[data-customer-name]');var name=explicit||(named&&(named.getAttribute('data-bi-client')||named.getAttribute('data-client-name')||named.getAttribute('data-customer-name')))||'';if(!name&&row){var cells=row.children||[];for(var ci=cells.length-1;ci>=0;ci--){var txt=String(cells[ci].textContent||'').trim();if(txt&&!/^(Customer 360|متابعة|فتح)$/.test(txt)){name=txt;break;}}}petOpenCustomer360Safe(name);return true}
     return false;
   }
   document.addEventListener('click',function(e){

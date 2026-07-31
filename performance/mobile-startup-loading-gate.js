@@ -112,7 +112,7 @@
     smartReports: [],
     smartSalesInvoices: [],
     customer360: [],
-    sales: ['reportsUI'],
+    sales: ['reportsUI', 'smartSalesInvoices'],
     printing: ['reportsUI']
   };
 
