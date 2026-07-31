@@ -365,7 +365,30 @@ function petatoeSmartHandleAction(el, ev){
     case 'contract-candidate-more': window.contractCandidateLimit=Number(el.dataset.limit||10); renderSmartReports(); setSmartTab('customers'); return true;
     case 'recommendation-toggle': { const card=el.closest('.smart-rec-pro-card'); if(card) card.classList.toggle('open'); } return true;
     case 'recommendation-open': petatoeOpenSmartRecReport(el.dataset.target||'',el.dataset.report||''); return true;
-    case 'smart-tab': setSmartTab(el.dataset.smartTab||el.dataset.tab||'overview'); return true;
+    case 'smart-tab': {
+      const target=el.dataset.smartTab||el.dataset.tab||'overview';
+      setSmartTab(target);
+      if(target==='salesInvoices'){
+        const activateSalesInvoices=function(){
+          try{
+            if(typeof window.injectSalesInvoiceReport==='function') window.injectSalesInvoiceReport('salesInvoices');
+            else if(typeof window.renderSalesInvoiceReport==='function') window.renderSalesInvoiceReport();
+          }catch(error){
+            if(window.console&&console.error) console.error('PETATOE sales invoice sub-tab activation failed',error);
+          }
+        };
+        activateSalesInvoices();
+        const gate=window.PETATOEMobileStartupGate;
+        if(gate&&typeof gate.ensureGroup==='function'){
+          Promise.resolve(gate.ensureGroup('sales')).then(function(ready){
+            if(ready===true) activateSalesInvoices();
+          }).catch(function(error){
+            if(window.console&&console.warn) console.warn('PETATOE sales invoice runtime hydration failed',error);
+          });
+        }
+      }
+      return true;
+    }
     case 'export-at-risk-clients': if(window.exportSmartAtRiskClients) window.exportSmartAtRiskClients(); return true;
     case 'at-risk-more': window.smartAtRiskLimit=(window.smartAtRiskLimit||10)+10; renderSmartReports(); return true;
     case 'sales-target-toggle': toggleSalesTargetEditor(ev); return true;

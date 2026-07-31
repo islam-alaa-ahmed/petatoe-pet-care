@@ -625,13 +625,13 @@
 
   function explicitGroupForElement(el){
     if(!el || !el.getAttribute) return '';
+    /* SG-4.6.12: A Smart Reports sub-tab always belongs to the Smart Reports
+       interaction surface, even when it declares a secondary runtime group.
+       Secondary groups are hydrated by the sub-tab handler after the click is
+       allowed through; the startup gate must never capture-block the tab. */
+    if(el.getAttribute('data-smart-tab')) return 'smartReports';
     var declared = el.getAttribute('data-pet-lazy-group');
     if(declared) return normalizeGroup(declared);
-    /* SG-4.6.11: Smart Reports sub-tabs are not top-level application routes.
-       Resolve them to the Smart Reports runtime before interpreting legacy
-       data-tab values such as \"sales\", which otherwise map to the heavy sales
-       entry/import group and block the sub-tab click in capture phase. */
-    if(el.getAttribute('data-smart-tab')) return 'smartReports';
     var keys = [
       el.getAttribute('data-pet-nav-screen'),
       el.getAttribute('data-tab'),
@@ -820,11 +820,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-12-sales-invoice-subtab-runtime-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1',
+    version: '10.0.25-sg4-6-12-sales-invoice-subtab-runtime-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
