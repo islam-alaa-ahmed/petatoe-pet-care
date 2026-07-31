@@ -123,11 +123,9 @@
     var target = tab || activeSmartTab();
     var wasBootstrapped=window.__petatoeSmartReportsBootstrapped===true;
     var areaReady=smartAreaReady();
-    var routed=false;
-    if(wasBootstrapped && areaReady) routed=routeSmartReport(target);
-    traceRouter('router.renderEngine.decision',{tab:target,wasBootstrapped:wasBootstrapped,areaReady:areaReady,routed:routed});
-    if(wasBootstrapped && areaReady && routed){
-      traceRouter('router.renderEngine.short-circuit',{tab:target});
+    traceRouter('router.renderEngine.decision',{tab:target,wasBootstrapped:wasBootstrapped,areaReady:areaReady,routed:null});
+    if(window.__petatoeSmartReportsBootstrapped && smartAreaReady() && routeSmartReport(target)){
+      traceRouter('router.renderEngine.short-circuit',{tab:target,wasBootstrapped:true,areaReady:true,routed:true});
       return;
     }
     var __fullPerfStart = perfNow();
