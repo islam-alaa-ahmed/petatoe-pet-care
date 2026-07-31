@@ -156,7 +156,10 @@
         }
       }catch(e){ try{console.warn('[PETATOE] treasury state restore skipped', e);}catch(_e){} }
       try{
-        if(s.panel === 'smart' && s.smartTab && typeof window.setSmartTab === 'function') window.setSmartTab(s.smartTab);
+        if(s.panel === 'smart' && s.smartTab){
+          var smartRuntime=window.PETATOESmartReportsRuntime;
+          if(smartRuntime&&smartRuntime.__ready&&typeof smartRuntime.activateTab==='function') smartRuntime.activateTab(s.smartTab);
+        }
       }catch(e){ try{console.warn('[PETATOE] smart state restore skipped', e);}catch(_e){} }
       scheduleSave('restore-complete', 400);
     }, 420);

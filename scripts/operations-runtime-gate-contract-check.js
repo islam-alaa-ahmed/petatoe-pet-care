@@ -13,6 +13,6 @@ check(/operations:\s*function\(\)\{[\s\S]*PETATOEAppointments[\s\S]*typeof appoi
 check(gate.includes("appointmentsMaster:'operations'") && gate.includes("vehicleOperationsReports:'operations'"), 'operations uses explicit screen identity mapping');
 check(gate.includes("if(/appointment|vehicleoperations|operationkpis|operation/.test(marker)) return 'operations';") && gate.indexOf("if(/appointment|vehicleoperations|operationkpis|operation/.test(marker)) return 'operations';") < gate.indexOf("if(/report|analytics/.test(marker)) return 'reportsUI';"), 'operations panel fallback precedes generic reports fallback');
 check(gate.includes("if(name === 'operations')") && gate.includes('appointmentsApi: !!appointments') && gate.includes('vehicles: !!window.PETATOEOperationsVehicles') && gate.includes('reports: !!window.PETATOEOperationsReports'), 'operations readiness diagnostics cover primary providers');
-check(index.includes('performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-2-fleet-runtime-ownership-1'), 'HTML loads the corrected startup gate token');
-check(worker.includes("const APP_VERSION = '10.0.25-sg4-2-fleet-runtime-ownership-1';"), 'service worker namespace matches the runtime gate fix');
+check(index.includes('performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-3-smart-runtime-owner-1'), 'HTML loads the corrected startup gate token');
+check(worker.includes("const APP_VERSION = '10.0.25-sg4-3-smart-runtime-owner-1';"), 'service worker namespace matches the runtime gate fix');
 if(process.exitCode) process.exit(process.exitCode);

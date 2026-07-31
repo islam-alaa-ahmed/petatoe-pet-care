@@ -278,11 +278,10 @@
     }
     if(name === 'smartReports'){
       return {
-        renderSmartReports: typeof window.renderSmartReports === 'function',
+        renderEngine: !!(window.PETATOESmartReportsRenderEngine && window.PETATOESmartReportsRenderEngine.__ready === true && typeof window.PETATOESmartReportsRenderEngine.render === 'function'),
         smartServices: !!(services && services.__ready && typeof services.scopedData === 'function'),
         legacySmartServices: typeof window.smartServicesScopedData === 'function',
         smartTabs: !!(tabs && tabs.__ready && typeof tabs.setSmartTab === 'function'),
-        setSmartTab: typeof window.setSmartTab === 'function',
         runtimeController: !!(window.PETATOESmartReportsRuntime && window.PETATOESmartReportsRuntime.__ready === true),
         runtimeRender: !!(window.PETATOESmartReportsRuntime && typeof window.PETATOESmartReportsRuntime.render === 'function'),
         runtimeRefresh: !!(window.PETATOESmartReportsRuntime && typeof window.PETATOESmartReportsRuntime.refresh === 'function')
@@ -628,11 +627,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-2-fleet-runtime-ownership-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-3-smart-runtime-owner-1', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-2-fleet-runtime-ownership-1',
+    version: '10.0.25-sg4-3-smart-runtime-owner-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

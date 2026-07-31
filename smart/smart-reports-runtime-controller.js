@@ -1,4 +1,4 @@
-/* PETATOE v10.0.25 SR2 — Canonical Smart Reports lifecycle controller.
+/* PETATOE v10.0.25 SG-4.3 — Canonical Smart Reports lifecycle controller.
  * Single owner of open, readiness, data synchronization, render, refresh and
  * records-changed hydration. Report calculations and queries remain untouched.
  */
@@ -69,15 +69,23 @@
     }
     return false;
   }
+  function renderEngine(){
+    var engine=window.PETATOESmartReportsRenderEngine;
+    if(engine&&engine.__ready&&typeof engine.render==='function') return engine;
+    return null;
+  }
+  function tabsController(){
+    var tabs=window.PETATOESmartTabs||(window.PETATOE&&window.PETATOE.SmartReports);
+    return tabs&&tabs.__ready&&typeof tabs.setSmartTab==='function'?tabs:null;
+  }
   function readinessSnapshot(){
     var services=window.PETATOESmartServices;
     var tabs=window.PETATOESmartTabs||(window.PETATOE&&window.PETATOE.SmartReports);
     return {
-      renderSmartReports:typeof window.renderSmartReports==='function',
+      renderEngine:!!renderEngine(),
       smartServices:!!(services&&services.__ready&&typeof services.scopedData==='function'),
       legacySmartServices:typeof window.smartServicesScopedData==='function',
       smartTabs:!!(tabs&&tabs.__ready&&typeof tabs.setSmartTab==='function'),
-      setSmartTab:typeof window.setSmartTab==='function',
       controller:true,
       sourceRows:runtimeRows().length,
       legacyRows:Array.isArray(window.records)?window.records.length:0,
@@ -104,7 +112,7 @@
         });
       }
       var status=readinessSnapshot();
-      var ready=status.renderSmartReports&&(status.smartServices||status.legacySmartServices)&&status.smartTabs&&status.setSmartTab;
+      var ready=status.renderEngine&&(status.smartServices||status.legacySmartServices)&&status.smartTabs;
       return ready?true:Promise.reject(new Error('Smart Reports provider contract is incomplete: '+JSON.stringify(status)));
     });
   }
@@ -128,8 +136,9 @@
   function activateTab(tab){
     tab=normalizeTab(tab);
     lastRequestedTab=tab;
-    if(typeof window.setSmartTab==='function'){
-      window.setSmartTab(tab);
+    var tabs=tabsController();
+    if(tabs){
+      tabs.setSmartTab(tab);
       return true;
     }
     return false;
@@ -140,8 +149,9 @@
     lastReason=reason||'render';
     try{
       if(typeof window.clearSmartReportCaches==='function') window.clearSmartReportCaches();
-      if(typeof window.renderSmartReports!=='function') throw new Error('renderSmartReports is unavailable');
-      window.renderSmartReports(tab);
+      var engine=renderEngine();
+      if(!engine) throw new Error('Smart Reports render engine is unavailable');
+      engine.render(tab);
       activateTab(tab);
       try{
         var commitState=window.__PETATOE_SALES_REPORTS_COMMIT_STATE__||null;
@@ -263,6 +273,7 @@
 
   var api=Object.freeze({
     __ready:true,
+    __owner:'smart/smart-reports-runtime-controller.js',
     open:open,
     render:function(tab,reason){return requestRender(tab,reason||'public-render',false);},
     refresh:function(tab){return requestRender(tab||currentTab(),'public-refresh',true);},
@@ -277,7 +288,9 @@
     return requestRender(tab,reason||'compat-ready-render',!!forceRemote);
   };
   window.PETATOESmartReportsRefresh=function(tab){ return api.refresh(tab); };
-  window.PETATOEOpenSmartReports=open;
+  window.PETATOEOpenSmartReports=function(tab,event){ return api.open(tab,event); };
+  // Legacy calls remain supported, but lifecycle ownership stays in the runtime.
+  window.renderSmartReports=function(tab){ return api.render(tab,'compat-renderSmartReports'); };
 
   document.addEventListener('petatoe:tabchange',function(event){
     var detail=event&&event.detail||{};

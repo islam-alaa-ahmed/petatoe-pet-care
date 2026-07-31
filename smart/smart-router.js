@@ -39,8 +39,8 @@
     }
   }
 
-  // Compatibility bridge only. The canonical controller replaces this once loaded.
-  window.PETATOEOpenSmartReports = openSmartReports;
+  // SG-4.3: navigation/open lifecycle is owned exclusively by PETATOESmartReportsRuntime.
+  // Keep this local fallback private; do not publish another public open controller.
 
   function perfNow(){ try{ return (window.performance && performance.now) ? performance.now() : Date.now(); }catch(e){ return Date.now(); } }
   function perfPush(name, start, meta){
@@ -99,7 +99,7 @@
     return false;
   }
 
-  window.renderSmartReports = function(tab){
+  function renderEngine(tab){
     var target = tab || activeSmartTab();
     if(window.__petatoeSmartReportsBootstrapped && smartAreaReady() && routeSmartReport(target)){
       return;
@@ -111,5 +111,12 @@
     return result;
   };
 
+  window.PETATOESmartReportsRenderEngine = Object.freeze({
+    __ready: true,
+    render: renderEngine,
+    route: routeSmartReport,
+    legacyRender: legacyRender
+  });
+  // Compatibility route helper only; it does not own lifecycle or public open/refresh.
   window.petatoeSmartRouteReport = routeSmartReport;
 })();

@@ -17,3 +17,12 @@ This file documents ownership only. It does not change business logic.
 2. Only `navigation/navigation.js` may create or bind the Fleet navigation button.
 3. `fleet-inline.js` owns runtime rendering and the dynamic `#fleet` panel only.
 4. Startup Gate maps `fleet` exclusively to the `fleet` lazy group.
+
+
+## SG-4.3 Smart Reports ownership
+
+- Lifecycle/Open/Refresh/Render orchestration owner: `smart/smart-reports-runtime-controller.js`.
+- Low-level full/local render engine: `smart/smart-router.js` through `PETATOESmartReportsRenderEngine`; it does not publish open/refresh lifecycle APIs.
+- Tab rendering owner: `smart/smart-tabs.js` through `PETATOESmartTabs`.
+- Compatibility globals (`renderSmartReports`, `PETATOEOpenSmartReports`, `PETATOESmartReportsRefresh`) delegate only to the canonical runtime.
+- Navigation state restoration delegates to `PETATOESmartReportsRuntime.activateTab()`.
