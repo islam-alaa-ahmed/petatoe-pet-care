@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,'..');
 const controller=fs.readFileSync(path.join(root,'smart/smart-reports-runtime-controller.js'),'utf8');
 const index=fs.readFileSync(path.join(root,'index.html'),'utf8');
 const sw=fs.readFileSync(path.join(root,'service-worker.js'),'utf8');
-const version='10.0.25-sg4-6-6-startup-route-hydration-recovery-1';
+const version='10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1';
 const checks=[
   ['empty runtime rows trigger initial hydration',controller.includes('var needsInitialHydration=!rowsBefore.length;')],
   ['initial hydration uses canonical Supabase sync',controller.includes('shouldRefresh&&typeof window.petatoeSyncSalesReportsFromSupabase')],

@@ -70,12 +70,34 @@
     }
     return true;
   }
+  function hydrateRouteRuntime(tabId){
+    if(tabId !== 'smart') return;
+    try{
+      var gate = window.PETATOEMobileStartupGate;
+      if(gate && typeof gate.ensureGroup === 'function'){
+        gate.ensureGroup('smartReports').catch(function(error){
+          if(window.console && console.warn) console.warn('[PETATOE Router] Smart Reports route hydration failed', error);
+        });
+      }
+    }catch(error){
+      try{
+        if(window.PETATOEDiagnostics && typeof window.PETATOEDiagnostics.capture === 'function'){
+          window.PETATOEDiagnostics.capture('warn','router.smartReports.hydration',{message:String(error && error.message || error)});
+        }
+      }catch(_e){}
+    }
+  }
   function openTab(tabId,smartOpen,routeIntent){
     if(!tabId) return false;
     var normalizedRequest=normalizeRouteRequest(tabId,routeIntent);
     tabId=normalizedRequest.tabId;
     routeIntent=normalizedRequest.routeIntent;
     smartOpen=smartOpen||'';
+    /* SG-4.6.7: route ownership must start Smart Reports hydration itself.
+       This is intentionally non-blocking: navigation remains responsive while the
+       canonical Startup Gate loads providers. It also covers restored/programmatic
+       routes that never emit pointerdown/click before openTab(). */
+    hydrateRouteRuntime(tabId);
     if(!routeAllowed(tabId)){
       reportRouteBlocked(tabId,'permission-denied');
       tabId='dashboard';
