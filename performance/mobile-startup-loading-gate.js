@@ -627,6 +627,11 @@
     if(!el || !el.getAttribute) return '';
     var declared = el.getAttribute('data-pet-lazy-group');
     if(declared) return normalizeGroup(declared);
+    /* SG-4.6.11: Smart Reports sub-tabs are not top-level application routes.
+       Resolve them to the Smart Reports runtime before interpreting legacy
+       data-tab values such as \"sales\", which otherwise map to the heavy sales
+       entry/import group and block the sub-tab click in capture phase. */
+    if(el.getAttribute('data-smart-tab')) return 'smartReports';
     var keys = [
       el.getAttribute('data-pet-nav-screen'),
       el.getAttribute('data-tab'),

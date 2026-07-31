@@ -365,7 +365,7 @@ function petatoeSmartHandleAction(el, ev){
     case 'contract-candidate-more': window.contractCandidateLimit=Number(el.dataset.limit||10); renderSmartReports(); setSmartTab('customers'); return true;
     case 'recommendation-toggle': { const card=el.closest('.smart-rec-pro-card'); if(card) card.classList.toggle('open'); } return true;
     case 'recommendation-open': petatoeOpenSmartRecReport(el.dataset.target||'',el.dataset.report||''); return true;
-    case 'smart-tab': setSmartTab(el.dataset.tab||'overview'); return true;
+    case 'smart-tab': setSmartTab(el.dataset.smartTab||el.dataset.tab||'overview'); return true;
     case 'export-at-risk-clients': if(window.exportSmartAtRiskClients) window.exportSmartAtRiskClients(); return true;
     case 'at-risk-more': window.smartAtRiskLimit=(window.smartAtRiskLimit||10)+10; renderSmartReports(); return true;
     case 'sales-target-toggle': toggleSalesTargetEditor(ev); return true;
