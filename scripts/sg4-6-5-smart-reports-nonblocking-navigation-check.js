@@ -2,7 +2,7 @@ const fs = require('fs');
 const gate = fs.readFileSync('performance/mobile-startup-loading-gate.js','utf8');
 const index = fs.readFileSync('index.html','utf8');
 const worker = fs.readFileSync('service-worker.js','utf8');
-const version = '10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1';
+const version = '10.0.25-sg4-6-8-smart-runtime-trace-1';
 const checks = [
   ['Smart Reports has explicit non-blocking branch', gate.includes("if(group === 'smartReports')")],
   ['Smart Reports hydration still starts', gate.includes("ensureGroup(group).catch(function(error)")],
