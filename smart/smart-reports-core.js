@@ -15,14 +15,14 @@ function smartReportHtml(key, fallback, params){
 
 function smartA354T(key,fallback,params){
   var center=window.PETATOE_LOCALIZATION_CENTER;
-  if(center&&typeof center.t==='function') return center.t('smartReportsSource.recommendationChrome.'+key,fallback,params);
+  if(center&&typeof center.t==='function') return center.t('smartReportsSource.recommendationChrome.'+key,params||{},{fallback:fallback});
   return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,name){return params&&params[name]!=null?String(params[name]):'';});
 }
 
 
 function smartA355T(key,fallback,params){
   var center=window.PETATOE_LOCALIZATION_CENTER;
-  if(center&&typeof center.t==='function') return center.t('smartReportsSource.finalPass.'+key,fallback,params);
+  if(center&&typeof center.t==='function') return center.t('smartReportsSource.finalPass.'+key,params||{},{fallback:fallback});
   return String(fallback==null?'':fallback).replace(/\{(\w+)\}/g,function(_,name){return params&&params[name]!=null?String(params[name]):'';});
 }
 
@@ -686,7 +686,7 @@ function renderSmartReports(){
       valueLabel:String(customerCompareValueLabel?customerCompareValueLabel():'')
     };
     const encoded=encodeURIComponent(JSON.stringify(payload));
-    return `<button type="button" class="new-cust-more-btn customer-yoy-lost-details-btn" data-smart-action="customer-compare-lost-details" data-lost-details="${htmlSafe(encoded)}" onmouseenter="customerCompareShowLostDetailsBubble(this)" onfocus="customerCompareShowLostDetailsBubble(this)" onmouseleave="customerCompareScheduleLostDetailsHide()" onblur="customerCompareScheduleLostDetailsHide()">${smartReportHtml('actions.viewDetails','عرض التفاصيل')} 👁️</button>`;
+    return `<button type="button" class="new-cust-more-btn customer-yoy-lost-details-btn" data-lost-details="${htmlSafe(encoded)}" onmouseenter="customerCompareShowLostDetailsBubble(this)" onfocus="customerCompareShowLostDetailsBubble(this)" onmouseleave="customerCompareScheduleLostDetailsHide()" onblur="customerCompareScheduleLostDetailsHide()">${smartReportHtml('actions.viewDetails','عرض التفاصيل')} 👁️</button>`;
   };
   const customerCompareRenderVirtualTable=(id,rows,limit,columns,fallbackHtml)=>{
     const shouldVirtualize=!!(window.PETATOETables && typeof window.PETATOETables.render==='function' && Array.isArray(rows) && rows.length>0 && limit>=rows.length);

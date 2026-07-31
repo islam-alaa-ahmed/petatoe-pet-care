@@ -18,7 +18,7 @@ window.__PETATOE_EARLIEST_BOOT={startMs:(window.performance&&performance.now?per
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('core/mobile-device-profile.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/mobile-startup-loading-gate.js');</script>
-<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1"></script>
+<script src="performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-6-12-sales-invoice-subtab-runtime-1"></script>
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.end('performance/mobile-startup-loading-gate.js');</script>
 
 <script>window.PETATOEEarliestBootstrapTrace&&window.PETATOEEarliestBootstrapTrace.begin('performance/startup-clean-profiler.js');</script>
@@ -347,66 +347,6 @@ html.pet-mobile-booting::after{content:none!important;display:none!important;}
 #smart .sales-target-month-btn.no-data.active{opacity:1}
 #smart .smart-section-isolated-note{display:none!important}
 
-
-
-/* PETATOE SG-4.7.4 — Inactive customers sort controls visual contract */
-#smart .inactive-sort-actions{
-  display:grid!important;
-  grid-template-columns:repeat(4,minmax(170px,1fr))!important;
-  gap:12px!important;
-  width:100%!important;
-  margin:14px 0 18px!important;
-  align-items:stretch!important;
-}
-#smart .inactive-sort-btn{
-  appearance:none!important;
-  -webkit-appearance:none!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  min-width:0!important;
-  min-height:46px!important;
-  padding:10px 16px!important;
-  border:1px solid rgba(148,163,184,.34)!important;
-  border-radius:14px!important;
-  background:linear-gradient(180deg,rgba(71,85,105,.72),rgba(51,65,85,.82))!important;
-  color:#f8fafc!important;
-  opacity:1!important;
-  font-family:'Cairo',system-ui,sans-serif!important;
-  font-size:14px!important;
-  font-weight:800!important;
-  line-height:1.45!important;
-  text-align:center!important;
-  white-space:normal!important;
-  overflow:visible!important;
-  text-overflow:clip!important;
-  cursor:pointer!important;
-  position:relative!important;
-  z-index:1!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 8px 18px rgba(2,6,23,.18)!important;
-  transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease,background .16s ease!important;
-}
-#smart .inactive-sort-btn:hover{
-  transform:translateY(-1px)!important;
-  border-color:rgba(34,211,238,.72)!important;
-  background:linear-gradient(180deg,rgba(71,85,105,.9),rgba(30,41,59,.94))!important;
-  box-shadow:0 0 0 1px rgba(34,211,238,.18),0 10px 24px rgba(2,6,23,.24)!important;
-}
-#smart .inactive-sort-btn:focus-visible{
-  outline:3px solid rgba(34,211,238,.34)!important;
-  outline-offset:3px!important;
-}
-#smart .inactive-sort-btn.active{
-  color:#fff!important;
-  font-weight:900!important;
-}
-@media(max-width:1100px){
-  #smart .inactive-sort-actions{grid-template-columns:repeat(2,minmax(180px,1fr))!important;}
-}
-@media(max-width:620px){
-  #smart .inactive-sort-actions{grid-template-columns:1fr!important;gap:10px!important;}
-  #smart .inactive-sort-btn{min-height:44px!important;font-size:13px!important;}
-}
 
 /* PETATOE v5.1.70 - Smart Vehicles tab full-width ordered reports */
 .smart-tab-section[data-smart-section="vehicles"] .smart-vehicles-stack{
@@ -1581,7 +1521,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 </div><div class="overlay" id="overlay" onclick="closeSidebar()"></div><div class="toast" id="toast"></div>
 <script crossorigin="anonymous" referrerpolicy="no-referrer" data-petatoe-cdn="chartjs" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="components/runtime-libraries-guard.js?v=10.0.25-c1-9-chart-after-shell"></script>
-<script src="inline-extracted/legacy-application-core.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1"></script>
+<script src="inline-extracted/legacy-application-core.js?v=10.0.25-b4-js-boot-slimming"></script>
 <script src="core/dashboard-critical-boot.js?v=10.0.25-c1-dashboard-critical-boot"></script>
 <script src="router/navigation-controller.js?v=10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1"></script>
 <!-- FIXED BUILD v5: report year filters are independent from dashboard filters + horizontal scroll table -->
@@ -1894,17 +1834,17 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','components/safe-render-helpers.js?v=10.0.25',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-services.js?v=10.0.25-smart-reports-sr3-registration',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-vehicles.js?v=9.1.8-legacy-cleanup-pack1',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-customers.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-core.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-customers.js?v=10.0.25',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-core.js?v=10.0.25-sg4-7-5-inactive-sort-labels-root-fix-1',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-router.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-interactions-real.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-interactions-real.js?v=10.0.25-sg4-6-12-sales-invoice-subtab-runtime-1',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-export-engine.js?v=9.2.3-source-migration-pack2',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-facade.js?v=10.0.25',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-integration.js?v=10.0.25',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/exec-alerts-block.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/bi-kpi-chart.js?v=10.0.25-sg4-7-2-bi-actions-root-fix-1',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('customer360','inline-extracted/customer360-return.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('customer360','inline-extracted/customer360-runtime-data-binding-fix.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/exec-alerts-block.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/bi-kpi-chart.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('customer360','inline-extracted/customer360-return.js',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('customer360','inline-extracted/customer360-runtime-data-binding-fix.js?v=9.1.7-business-pack2',false);</script>
 <script src="security/password-security.js"></script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/smart-reports-inline.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('printing','inline-extracted/print-engine.js',false);</script>
@@ -1917,7 +1857,7 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <script>window.PETATOEMobileStartupGate.registerOrWrite('commission','commissions/commission-runtime-bootstrap.js?v=10.0.25-sg3-commission-runtime-ownership-1',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('commission','inline-extracted/commission-inline.js?v=10.0.25-sg3-commission-runtime-ownership-1',false);</script>
 <!-- === /PETATOE v3.5 COMMISSION SYSTEM - APPEND ONLY === -->
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-tabs.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-tabs.js?v=10.0.25-smart-reports-sr3-registration',false);</script>
 <script src="smart/smart-runtime-registration.js?v=10.0.25-smart-reports-sr3-registration"></script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-runtime-controller.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1',false);</script>
 <script src="smart/smart-reports-read-adapter.js?v=10.0.25-smart-reports-sr5-4-read-adapter"></script>
@@ -1929,8 +1869,8 @@ html[data-theme="light"] .smart-rec-filter[aria-pressed="true"]{color:#fff!impor
 <!-- === PETATOE v3.8.5 UNIVERSAL FULL PAGE PDF EXPORT - SAFE ADDITION === -->
 <script>window.PETATOEMobileStartupGate.registerOrWrite('printing','inline-extracted/full-page-pdf-export.js?v=10.0.25-b4-js-boot-slimming',false);</script>
 <!-- PETATOE v3.11.38: Sales Invoice, Obligations and Warehouse runtime moved to external modules. -->
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartSalesInvoices','sales/sales-invoice-report.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>
-<script>window.PETATOEMobileStartupGate.registerOrWrite('smartSalesInvoices','sales/invoice-print-preview.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/sales-invoice-report.js?v=9.1.8-legacy-cleanup-pack1',false);</script>
+<script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/invoice-print-preview.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('sales','sales/invoice-manual-multi-items.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('obligations','obligations/obligations-core.js',false);</script>
 <script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','i18n/localization-center/payroll-ui-a3-4.js?v=9.4.23-a3-4',false);</script>
