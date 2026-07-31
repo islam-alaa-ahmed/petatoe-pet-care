@@ -1869,7 +1869,14 @@ function customerCompareRefresh(){
     window.smartActiveTab='customers';
     window.customerAnalysisSubTab='compare';
   }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
-  if(typeof renderSmartReports==='function') renderSmartReports();
+  // SG-4.7.1: Customer Compare owns a full customer-pane rebuild. The public
+  // Smart Reports bridge may short-circuit to local routing after bootstrap and
+  // therefore must not be used for filter/more/sort actions that change table DOM.
+  if(typeof window.__petatoeLegacyRenderSmartReports==='function'){
+    window.__petatoeLegacyRenderSmartReports();
+  }else if(typeof renderSmartReports==='function'){
+    renderSmartReports('customers');
+  }
   setTimeout(function(){
     try{
       document.querySelectorAll('[data-smart-section]').forEach(function(p){
@@ -1939,6 +1946,9 @@ function customerCompareShowMore(key){
   window[key]=(top==='all')?999999:(current+10);
   customerCompareRefresh();
 }
+window.customerCompareSetFilter=customerCompareSetFilter;
+window.customerCompareShowMore=customerCompareShowMore;
+window.customerCompareRefresh=customerCompareRefresh;
 
 function exportCustomerCompareSection(kind){
   try{
@@ -2129,6 +2139,9 @@ if(!window.__PETATOE_CUSTOMER_COMPARE_FILTER_BIND__){
   document.addEventListener('change',function(e){
     const el=e.target && e.target.closest ? e.target.closest('[data-customer-compare-filter]') : null;
     if(!el) return;
+    try{ e.preventDefault(); }catch(_e){}
+    try{ e.stopPropagation(); }catch(_e){}
+    try{ e.stopImmediatePropagation(); }catch(_e){}
     customerCompareSetFilter(el.getAttribute('data-customer-compare-filter'), el.value);
   },true);
   document.addEventListener('click',function(e){

@@ -469,3 +469,155 @@
     if(el) handleCustomerAction(el, ev);
   }, true);
 })();
+
+/* PETATOE SG-4.7.1 — Customer Reports Interaction Ownership Consolidation
+   Customer comparison and inactive-customer controls must rebuild the customer
+   report DOM directly. They must not rely on the public Smart Reports bridge,
+   because the bridge may intentionally short-circuit to local tab routing after
+   bootstrap. Capture ownership also prevents the legacy bubble handler from
+   executing the same action twice. */
+(function(){
+  'use strict';
+  if(window.__PETATOE_SMART_CUSTOMER_INTERACTIONS_SG471__) return;
+  window.__PETATOE_SMART_CUSTOMER_INTERACTIONS_SG471__ = true;
+
+  function stopEvent(ev){
+    if(!ev) return;
+    try{ ev.preventDefault(); }catch(_e){}
+    try{ ev.stopPropagation(); }catch(_e){}
+    try{ ev.stopImmediatePropagation(); }catch(_e){}
+  }
+
+  function rebuildCustomerPane(subtab){
+    try{
+      window.smartActiveTab = 'customers';
+      window.customerAnalysisSubTab = subtab || window.customerAnalysisSubTab || 'overview';
+      if(typeof window.__petatoeLegacyRenderSmartReports === 'function'){
+        window.__petatoeLegacyRenderSmartReports();
+      }else if(typeof window.renderSmartReports === 'function'){
+        window.renderSmartReports('customers');
+      }
+      if(typeof window.setCustomerAnalysisTab === 'function'){
+        window.setCustomerAnalysisTab(window.customerAnalysisSubTab);
+      }
+      return true;
+    }catch(error){
+      if(window.console && console.error) console.error('[PETATOE Smart Customers] customer pane rebuild failed', error);
+      return false;
+    }
+  }
+
+  function handleClick(el, ev){
+    if(!el || !el.dataset) return false;
+    var action = el.dataset.smartAction || '';
+
+    if(action === 'customer-compare-tax'){
+      stopEvent(ev);
+      if(typeof window.customerCompareSetFilter === 'function'){
+        window.customerCompareSetFilter('tax', el.dataset.tax || 'gross');
+      }
+      return true;
+    }
+
+    if(action === 'customer-compare-more'){
+      stopEvent(ev);
+      if(typeof window.customerCompareShowMore === 'function'){
+        window.customerCompareShowMore(el.dataset.key || '');
+      }
+      return true;
+    }
+
+    if(action === 'customer-compare-export'){
+      stopEvent(ev);
+      if(typeof window.exportCustomerCompareSection === 'function'){
+        window.exportCustomerCompareSection(el.dataset.kind || '');
+      }
+      return true;
+    }
+
+    if(action === 'customer-compare-lost-details'){
+      stopEvent(ev);
+      if(typeof window.customerCompareShowLostDetailsBubble === 'function'){
+        window.customerCompareShowLostDetailsBubble(el);
+      }
+      return true;
+    }
+
+    if(action === 'customer-insight-more'){
+      stopEvent(ev);
+      window.customerInsightTableLimit = Number(el.dataset.limit || 10) || 10;
+      return rebuildCustomerPane('overview');
+    }
+
+    if(action === 'inactive-recovery-more'){
+      stopEvent(ev);
+      window.inactiveRecoveryTableLimit = Number(el.dataset.limit || 15) || 15;
+      return rebuildCustomerPane('ai');
+    }
+
+    if(action === 'inactive-sort'){
+      stopEvent(ev);
+      window.inactiveCustomerSort = el.dataset.sort || 'spend';
+      window.inactiveCustTableLimit = 15;
+      return rebuildCustomerPane('ai');
+    }
+
+    if(action === 'inactive-more'){
+      stopEvent(ev);
+      window.inactiveCustTableLimit = Number(el.dataset.limit || 15) || 15;
+      return rebuildCustomerPane('ai');
+    }
+
+    return false;
+  }
+
+  document.addEventListener('click', function(ev){
+    var el = ev.target && ev.target.closest ? ev.target.closest([
+      '[data-smart-action="customer-compare-tax"]',
+      '[data-smart-action="customer-compare-more"]',
+      '[data-smart-action="customer-compare-export"]',
+      '[data-smart-action="customer-compare-lost-details"]',
+      '[data-smart-action="customer-insight-more"]',
+      '[data-smart-action="inactive-recovery-more"]',
+      '[data-smart-action="inactive-sort"]',
+      '[data-smart-action="inactive-more"]'
+    ].join(',')) : null;
+    if(el) handleClick(el, ev);
+  }, true);
+
+  document.addEventListener('change', function(ev){
+    var el = ev.target && ev.target.closest ? ev.target.closest('[data-smart-action="customer-compare-filter"],[data-customer-compare-filter]') : null;
+    if(!el) return;
+    stopEvent(ev);
+    var field = el.dataset.customerCompareFilter || el.getAttribute('data-customer-compare-filter') || '';
+    if(typeof window.customerCompareSetFilter === 'function'){
+      window.customerCompareSetFilter(field, el.value);
+    }
+  }, true);
+
+  window.PETATOESmartCustomerInteractionAudit = function(){
+    var selectors = {
+      compareFilters: '[data-smart-action="customer-compare-filter"],[data-customer-compare-filter]',
+      compareTax: '[data-smart-action="customer-compare-tax"]',
+      compareMore: '[data-smart-action="customer-compare-more"]',
+      compareDetails: '[data-smart-action="customer-compare-lost-details"]',
+      insightMore: '[data-smart-action="customer-insight-more"]',
+      inactiveRecoveryMore: '[data-smart-action="inactive-recovery-more"]',
+      inactiveSort: '[data-smart-action="inactive-sort"]',
+      inactiveMore: '[data-smart-action="inactive-more"]'
+    };
+    var counts = {};
+    Object.keys(selectors).forEach(function(key){ counts[key] = document.querySelectorAll(selectors[key]).length; });
+    return {
+      owner: 'smart/smart-customers.js#SG-4.7.1',
+      bound: window.__PETATOE_SMART_CUSTOMER_INTERACTIONS_SG471__ === true,
+      functions: {
+        compareSetFilter: typeof window.customerCompareSetFilter === 'function',
+        compareShowMore: typeof window.customerCompareShowMore === 'function',
+        compareDetails: typeof window.customerCompareShowLostDetailsBubble === 'function',
+        legacyRender: typeof window.__petatoeLegacyRenderSmartReports === 'function'
+      },
+      controls: counts
+    };
+  };
+})();

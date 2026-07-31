@@ -1,0 +1,24 @@
+const fs=require('fs');
+const read=p=>fs.readFileSync(p,'utf8');
+const core=read('smart/smart-reports-core.js');
+const customers=read('smart/smart-customers.js');
+const legacy=read('inline-extracted/legacy-application-core.js');
+const index=read('index.html');
+const checks=[];
+function check(name,ok){checks.push({name,ok:!!ok});}
+check('Customer compare refresh uses direct legacy rebuild', legacy.includes("window.__petatoeLegacyRenderSmartReports"));
+check('Customer compare functions are explicitly exported', legacy.includes('window.customerCompareSetFilter=customerCompareSetFilter') && legacy.includes('window.customerCompareShowMore=customerCompareShowMore'));
+check('Customer compare native filters have canonical action', core.includes('data-smart-action="customer-compare-filter"'));
+check('Tax mode buttons have canonical action', core.includes('data-smart-action="customer-compare-tax"'));
+check('Comparison show-more buttons have canonical action', core.includes('data-smart-action="customer-compare-more"'));
+check('Lost customer details has click action', core.includes('data-smart-action="customer-compare-lost-details"'));
+check('Inactive sorting buttons have canonical action', core.includes('data-smart-action="inactive-sort"'));
+check('Inactive show-more buttons have canonical action', core.includes('data-smart-action="inactive-more"'));
+check('Customer interaction controller owns capture click', customers.includes('__PETATOE_SMART_CUSTOMER_INTERACTIONS_SG471__') && customers.includes("document.addEventListener('click'"));
+check('Customer interaction controller owns capture change', customers.includes("document.addEventListener('change'"));
+check('Customer pane rebuild bypasses public router bridge', customers.includes('window.__petatoeLegacyRenderSmartReports'));
+check('Runtime audit API is exposed', customers.includes('PETATOESmartCustomerInteractionAudit'));
+check('Modified scripts use fresh cache tokens', index.includes('legacy-application-core.js?v=10.0.25-sg4-7-1-customer-interactions-1') && index.includes('smart-customers.js?v=10.0.25-sg4-7-1-customer-interactions-1') && index.includes('smart-reports-core.js?v=10.0.25-sg4-7-1-customer-interactions-1'));
+const failed=checks.filter(x=>!x.ok);
+console.log(JSON.stringify({status:failed.length?'FAILED':'PASSED',checks:checks.length,passed:checks.length-failed.length,failed},null,2));
+process.exit(failed.length?1:0);
