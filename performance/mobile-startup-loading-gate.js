@@ -236,10 +236,14 @@
       return !!(window.XLSX && window.XLSX.utils && typeof window.XLSX.utils.book_new === 'function');
     },
     operations: function(){
-      var appointments = window.PETATOEAppointments || window.__PETATOEAppointmentsLegacyEngine || window.PETATOEOperationsAppointmentsInternal;
+      var appointments = window.PETATOEAppointments;
       return !!(appointments &&
+        appointments.__ready === true &&
+        appointments.__owner === 'inline-extracted/appointments-core.js' &&
         typeof appointments.setTab === 'function' &&
-        (typeof appointments.render === 'function' || typeof appointments.init === 'function') &&
+        typeof appointments.render === 'function' &&
+        window.__PETATOEAppointmentsLegacyEngine &&
+        window.__PETATOEAppointmentsLegacyEngine.__legacyEngine === true &&
         window.PETATOEOperationsVehicles &&
         window.PETATOEOperationsReports &&
         window.PETATOEOperationsStatus &&
@@ -253,7 +257,13 @@
       return !!(window.PETATOETreasury && typeof window.PETATOETreasury.render === 'function');
     },
     children: function(){
-      return !!(window.PETATOEChildrenExpenses && typeof window.PETATOEChildrenExpenses.render === 'function');
+      var children = window.PETATOEChildrenExpenses;
+      return !!(children &&
+        children.__ready === true &&
+        children.__owner === 'inline-extracted/children-expenses-core.js' &&
+        typeof children.render === 'function' &&
+        window.__PETATOEChildrenExpensesLegacyEngine &&
+        window.__PETATOEChildrenExpensesLegacyEngine.__legacyEngine === true);
     },
     commission: function(){
       var runtime = window.PETATOECommissionRuntime;
@@ -403,7 +413,7 @@
       };
     }
     if(name === 'operations'){
-      var appointments = window.PETATOEAppointments || window.__PETATOEAppointmentsLegacyEngine || window.PETATOEOperationsAppointmentsInternal;
+      var appointments = window.PETATOEAppointments;
       return {
         appointmentsApi: !!appointments,
         setTab: !!(appointments && typeof appointments.setTab === 'function'),
@@ -746,11 +756,11 @@
   function snapshot(){
     var registered = {};
     Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-5-runtime-error-attribution-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-operations-children-ownership-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
-    version: '10.0.25-sg4-5-runtime-error-attribution-1',
+    version: '10.0.25-sg4-6-operations-children-ownership-1',
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,

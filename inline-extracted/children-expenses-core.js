@@ -57,6 +57,7 @@
   var api = {
     __ready: true,
     __facade: true,
+    __owner: 'inline-extracted/children-expenses-core.js',
     __phase: 'CHILDREN-12_FINAL_DEEP_EXTRACTION',
 
     render: function(){ return callLegacy('render', arguments); },

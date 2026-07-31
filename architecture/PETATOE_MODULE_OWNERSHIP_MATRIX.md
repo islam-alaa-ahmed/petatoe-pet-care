@@ -1,4 +1,4 @@
-# PETATOE Module Ownership Matrix — SG-4.2
+# PETATOE Module Ownership Matrix — SG-4.6
 
 This file documents ownership only. It does not change business logic.
 
@@ -7,8 +7,8 @@ This file documents ownership only. It does not change business logic.
 | Fleet Management | `fleet` | `navigation/navigation.js` | `fleet` | `inline-extracted/fleet-inline.js` (`PETATOEFleet`) | Fleet runtime (`#fleet`) | `vehicles` |
 | Vehicle Operations | `vehicleOperations` | `navigation/navigation.js` | `operations` | Operations runtime | Static `#vehicleOperations` | `vehicleOperations` |
 | Smart Reports | `smart` | `navigation/navigation.js` | `smartReports` | `smart/smart-reports-runtime-controller.js` | Static `#smart` | `reports` |
-| Operations / Appointments | `appointments` | `navigation/navigation.js` | `operations` | `PETATOEAppointments` compatibility facade | Static `#appointments` | `appointments` |
-| Children Expenses | `childrenExpenses` | `navigation/navigation.js` | `children` | `PETATOEChildrenExpenses` compatibility facade | Static `#childrenExpenses` | `childrenExpenses` |
+| Operations / Appointments | `appointments` | `navigation/navigation.js` | `operations` | `inline-extracted/appointments-core.js` (`PETATOEAppointments`) | Static `#appointments` | `appointments` |
+| Children Expenses | `childrenExpenses` | `navigation/navigation.js` | `children` | `inline-extracted/children-expenses-core.js` (`PETATOEChildrenExpenses`) | Static `#childrenExpenses` | `childrenExpenses` |
 | Commissions | `commissions` | `navigation/navigation.js` | `commission` | `PETATOECommissionRuntime` | Commission bootstrap | `commissions` |
 
 ## Fleet ownership rules
@@ -26,3 +26,20 @@ This file documents ownership only. It does not change business logic.
 - Tab rendering owner: `smart/smart-tabs.js` through `PETATOESmartTabs`.
 - Compatibility globals (`renderSmartReports`, `PETATOEOpenSmartReports`, `PETATOESmartReportsRefresh`) delegate only to the canonical runtime.
 - Navigation state restoration delegates to `PETATOESmartReportsRuntime.activateTab()`.
+
+
+## SG-4.6 Operations and Children ownership
+
+### Operations
+- Canonical public runtime owner: `inline-extracted/appointments-core.js` through `window.PETATOEAppointments`.
+- Legacy implementation owner: `operations/operations-legacy-engine.js` through `window.__PETATOEAppointmentsLegacyEngine` only.
+- The legacy engine must never assign `window.PETATOEAppointments`.
+- Controlled migration may wrap the canonical facade but must preserve its `__owner` marker and delegate through the canonical API.
+- Startup readiness is based on the canonical facade plus the quarantined legacy engine and extracted Operations providers.
+
+### Children Expenses
+- Canonical public runtime owner: `inline-extracted/children-expenses-core.js` through `window.PETATOEChildrenExpenses`.
+- Legacy implementation owner: `children-expenses/children-legacy-engine.js` through `window.__PETATOEChildrenExpensesLegacyEngine` only.
+- The legacy engine must never assign `window.PETATOEChildrenExpenses`.
+- Controlled migration may wrap the canonical facade but must preserve its `__owner` marker and delegate through the canonical API.
+- Startup readiness is based on the canonical facade plus the quarantined legacy engine.

@@ -47,6 +47,9 @@
   ];
 
   var facade = {
+    __ready: true,
+    __facade: true,
+    __owner: 'inline-extracted/appointments-core.js',
     version: 'OPS-22-legacy-quarantine-facade',
     get operationsApi(){ return operations(); },
     get legacyApi(){ return legacyEngine(); },

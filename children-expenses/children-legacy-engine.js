@@ -3,7 +3,7 @@
    No sales, commission, reports, filters, or print logic touched. */
 (function(){
   'use strict';
-  if(window.PETATOEChildrenExpenses && window.PETATOEChildrenExpenses.__ready) return;
+  if(window.__PETATOEChildrenExpensesLegacyEngine && window.__PETATOEChildrenExpensesLegacyEngine.__ready) return;
   var currency = 'SAR';
 
   function warn(e){ try{ if(window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch) window.PETATOEUtils.warnSilentCatch('children-expenses-core.js', e); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("children-expenses/children-legacy-engine.js",e);} }
@@ -681,9 +681,8 @@
   function editRow(id){ return callChildrenModule('entry','editRow',arguments,editRowInternal); }
   function deleteRow(id){ return callChildrenModule('entry','deleteRow',arguments,deleteRowInternal); }
   function init(){ clearForm(); clearBudgetForm(); render(); }
-  var legacyApi={__ready:true,__legacyEngine:true,render:render,setTab:setTab,clearForm:clearForm,clearBudgetForm:clearBudgetForm,resetFilters:resetFilters,resetReportFilters:resetReportFilters,resetAnnualFilters:resetAnnualFilters,saveFromForm:saveFromForm,saveBudgetFromForm:saveBudgetFromForm,editRow:editRow,deleteRow:deleteRow,editBudget:editBudget,deleteBudget:deleteBudget,exportReportExcel:exportReportExcel,printReport:printReport,read:read,readBudgets:readBudgets};
+  var legacyApi={__ready:true,__legacyEngine:true,__owner:'children-expenses/children-legacy-engine.js',render:render,setTab:setTab,clearForm:clearForm,clearBudgetForm:clearBudgetForm,resetFilters:resetFilters,resetReportFilters:resetReportFilters,resetAnnualFilters:resetAnnualFilters,saveFromForm:saveFromForm,saveBudgetFromForm:saveBudgetFromForm,editRow:editRow,deleteRow:deleteRow,editBudget:editBudget,deleteBudget:deleteBudget,exportReportExcel:exportReportExcel,printReport:printReport,read:read,readBudgets:readBudgets};
   window.__PETATOEChildrenExpensesLegacyEngine = legacyApi;
-  window.PETATOEChildrenExpenses = legacyApi;
   document.addEventListener('petatoe:tabchange', function(e){ if(e&&e.detail&&e.detail.tabId==='childrenExpenses') setTimeout(render,40); });
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();
