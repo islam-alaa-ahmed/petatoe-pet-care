@@ -1,0 +1,2850 @@
+{
+  "generatedAt": "2026-08-01T01:03:30.050Z",
+  "mode": "audit",
+  "manifest": {
+    "schemaVersion": 1,
+    "product": "PETATOE",
+    "releaseVersion": "10.0.25",
+    "releaseLabel": "v10.0.25",
+    "releaseName": "PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3",
+    "buildVersion": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+    "cacheVersion": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+    "runtimeContracts": {
+      "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
+      "smartReportsReadAdapter": "10.0.25-smart-reports-sr5-4-read-adapter",
+      "navigationRuntime": "10.0.25-navigation-runtime-isolation-c2-3"
+    },
+    "native": {
+      "latestVersion": "10.0.0",
+      "minimumSupportedVersion": "10.0.0"
+    },
+    "policy": {
+      "releaseVersionPurpose": "User-visible product release.",
+      "cacheVersionPurpose": "Browser and service-worker cache invalidation.",
+      "runtimeContractPurpose": "Compatibility contract; changes only when the contract changes.",
+      "manualVersionLiteralsAllowed": false
+    }
+  },
+  "summary": {
+    "filesScanned": 780,
+    "occurrences": 445,
+    "uniqueTokens": 83,
+    "alignedChecks": 8,
+    "driftChecks": 1
+  },
+  "checks": [
+    {
+      "id": "manifest.release.index",
+      "expected": "v10.0.25",
+      "actual": "v10.0.25",
+      "aligned": true
+    },
+    {
+      "id": "manifest.release.name.index",
+      "expected": "PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3",
+      "actual": "PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3",
+      "aligned": true
+    },
+    {
+      "id": "manifest.release.file",
+      "expected": "PETATOE v10.0.25",
+      "actual": "PETATOE v10.0.25",
+      "aligned": true
+    },
+    {
+      "id": "manifest.cache.serviceWorker",
+      "expected": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "actual": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "aligned": false
+    },
+    {
+      "id": "manifest.cache.startupGateUrl",
+      "expected": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "actual": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "aligned": true
+    },
+    {
+      "id": "manifest.contract.startupGate",
+      "expected": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "actual": null,
+      "aligned": true,
+      "note": "Contract is intentionally independent from cache version; exact runtime field is audited in Phase 1B."
+    },
+    {
+      "id": "manifest.native.latest",
+      "expected": "10.0.0",
+      "actual": "10.0.0",
+      "aligned": true
+    },
+    {
+      "id": "manifest.native.minimum",
+      "expected": "10.0.0",
+      "actual": "10.0.0",
+      "aligned": true
+    },
+    {
+      "id": "runtime.manifest.generated",
+      "expected": "generated from canonical JSON",
+      "actual": "03649b1ee6b48533d85b43315ac50d841370f71bbe4209f434c2c97d1c8a1739",
+      "aligned": true
+    }
+  ],
+  "uniqueTokens": [
+    "10.0.0",
+    "10.0.0-m3",
+    "10.0.0-m4",
+    "10.0.0-mobile-dashboard-m2",
+    "10.0.0-mobile-experience-m5",
+    "10.0.0-mobile-management-m4",
+    "10.0.0-mobile-reports-m3",
+    "10.0.0-mobile-shell-m1",
+    "10.0.0-n3",
+    "10.0.0-passkey-biometric-first-s2",
+    "10.0.0-passkey-enrollment-recovery-s3",
+    "10.0.0-passkey-state-machine-s4",
+    "10.0.10-mobile-css-consolidation-p2-3",
+    "10.0.22-mobile-main-menu-redesign-n3",
+    "10.0.23-mobile-corrective-parity-c1",
+    "10.0.24-unified-navigation-c2-2",
+    "10.0.25",
+    "10.0.25-b1-first-paint-shell",
+    "10.0.25-b3-critical-css-split",
+    "10.0.25-b4-js-boot-slimming",
+    "10.0.25-bootstrap-integrity-p0-1",
+    "10.0.25-c1-7-export-namespace",
+    "10.0.25-c1-9-chart-after-shell",
+    "10.0.25-c1-dashboard-critical-boot",
+    "10.0.25-commission-runtime-republish-4",
+    "10.0.25-d3-2-css-isolation",
+    "10.0.25-d3-2-fontless",
+    "10.0.25-d3-3-diagnostics-center",
+    "10.0.25-d3-6-earliest-bootstrap-trace",
+    "10.0.25-navigation-runtime-isolation-c2-3",
+    "10.0.25-observer-timer-reduction-p6",
+    "10.0.25-operations-button-contract-fix-3",
+    "10.0.25-p1-1-1-startup-runtime-measurement",
+    "10.0.25-p7-1",
+    "10.0.25-p7-3-1-single-scroll-ownership",
+    "10.0.25-reference-data-active-state-fix-5",
+    "10.0.25-reference-data-runtime-fix-2",
+    "10.0.25-runtime-restoration-a1",
+    "10.0.25-runtime-restoration-b2",
+    "10.0.25-runtime-restoration-b3",
+    "10.0.25-sg2-route-group-fix-3",
+    "10.0.25-sg2-runtime-validation-1",
+    "10.0.25-sg3-commission-runtime-ownership-1",
+    "10.0.25-sg4-6-12-sales-invoice-subtab-runtime-1",
+    "10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1",
+    "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+    "10.0.25-sg4-7-3-runtime-provider-recovery-1",
+    "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+    "10.0.25-smart-reports-sr1-state-machine",
+    "10.0.25-smart-reports-sr2-single-controller",
+    "10.0.25-smart-reports-sr3-registration",
+    "10.0.25-smart-reports-sr4-data-provider",
+    "10.0.25-smart-reports-sr5-4-read-adapter",
+    "10.0.25-smart-reports-sr6-1-cache-reconciliation",
+    "10.0.25-transient-url-cleanup-1",
+    "10.0.3-enterprise-performance-observability",
+    "10.0.4-observability-settings-screen",
+    "10.0.5-mobile-startup-performance",
+    "10.0.7-mobile-redesign-m1",
+    "v10.0.1",
+    "v10.0.1-supabase-only",
+    "v10.0.10",
+    "v10.0.11",
+    "v10.0.12",
+    "v10.0.13",
+    "v10.0.14",
+    "v10.0.15",
+    "v10.0.16",
+    "v10.0.17",
+    "v10.0.18",
+    "v10.0.19",
+    "v10.0.20",
+    "v10.0.21",
+    "v10.0.22",
+    "v10.0.23",
+    "v10.0.24",
+    "v10.0.25",
+    "v10.0.5",
+    "v10.0.6",
+    "v10.0.7",
+    "v10.0.8",
+    "v10.0.8-mobile-startup-gate-p2-1",
+    "v10.0.9"
+  ],
+  "occurrences": [
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY.txt",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "PETATOE v10.0.25 Phase P7.1: introduced stable physical-phone ownership so rotating an iPhone no longer disables Mobile v10 and exposes desktop presentation. Added a canonical mobile device profile, first-paint device/orientation classes, p"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_D3_6_HOTFIX.txt",
+      "line": 18,
+      "token": "v10.0.25",
+      "excerpt": "- v10.0.25"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PETATOE_V10_0_11_PWA_CACHE_STRATEGY_P2_4.txt",
+      "line": 1,
+      "token": "v10.0.11",
+      "excerpt": "PETATOE v10.0.11 — PWA Cache Strategy Optimization P2.4"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PETATOE_V10_0_11_PWA_CACHE_STRATEGY_P2_4.txt",
+      "line": 11,
+      "token": "v10.0.11",
+      "excerpt": "- Synchronized release, Service Worker, localization runtime, smart runtime, About App, and certification tokens to v10.0.11."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PETATOE_V10_0_12_RUNTIME_OWNERSHIP_P2_5.txt",
+      "line": 1,
+      "token": "v10.0.12",
+      "excerpt": "PETATOE v10.0.12 — Runtime Ownership P2.5"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PHASE_A1.txt",
+      "line": 6,
+      "token": "v10.0.25",
+      "excerpt": "- Align startup gate diagnostic version with PETATOE v10.0.25 Phase A1"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PHASE_P0_1.txt",
+      "line": 15,
+      "token": "v10.0.25",
+      "excerpt": "Release remains v10.0.25 / PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PHASE_P1.txt",
+      "line": 19,
+      "token": "v10.0.25",
+      "excerpt": "- Release remains v10.0.25"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PHASE_P2.txt",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "PETATOE Mobile Phase P2: split 47 non-critical Smart Reports, report UI, sales, commission, and printing scripts out of the mobile parser-blocking startup path. Added dependency-aware demand loading, pointer-down prefetch, and safe click re"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PHASE_P3.txt",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "PETATOE Mobile Phase P3: consolidated mobile navigation presentation ownership under the Mobile v10 shell. Simple mobile route requests now enter through the canonical navigation controller once, while legacy sidebar and desktop-menu active"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PHASE_P7_2.txt",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "PETATOE v10.0.25 Phase P7.2: created an independent Mobile v10 presentation root so the mobile header, drawer, backdrop, and bottom navigation no longer reuse or mount inside the desktop topbar/body presentation layer. The mobile header is "
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PHASE_P7_3.txt",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "PETATOE v10.0.25 Phase P7.3: introduced an independent mobile dashboard presentation host under the Mobile v10 root. On physical phones the canonical dashboard panel is mounted outside the desktop content tree, while desktop placement is re"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_PHASE_R2.txt",
+      "line": 22,
+      "token": "v10.0.25",
+      "excerpt": "Release unchanged: v10.0.25"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_SG4_INFRASTRUCTURE_HARDENING.txt",
+      "line": 8,
+      "token": "v10.0.25",
+      "excerpt": "- Align Auth Session module metadata with PETATOE v10.0.25"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_10.txt",
+      "line": 1,
+      "token": "v10.0.10",
+      "excerpt": "PETATOE v10.0.10 — Mobile CSS Consolidation P2.3"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_14.txt",
+      "line": 1,
+      "token": "v10.0.14",
+      "excerpt": "PETATOE v10.0.14 — Sales Data Refresh Loop Elimination R2"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_14.txt",
+      "line": 9,
+      "token": "v10.0.14",
+      "excerpt": "- Synchronized release, Service Worker, localization, smart runtime, About App, CSS headers, and certification tokens to v10.0.14."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_16_R4.txt",
+      "line": 1,
+      "token": "v10.0.16",
+      "excerpt": "PETATOE v10.0.16 — Startup Dependency & Strict Mobile Lazy Loading R4"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_16_R4.txt",
+      "line": 10,
+      "token": "v10.0.16",
+      "excerpt": "- Synchronized PETATOE v10.0.16 release tokens and passed all localization, mobile, startup, Smart Reports, and native iOS static checks."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_17_R5.txt",
+      "line": 1,
+      "token": "v10.0.17",
+      "excerpt": "PETATOE v10.0.17 — Core Bootstrap Split R5"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_17_R5.txt",
+      "line": 3,
+      "token": "v10.0.16",
+      "excerpt": "- Confirmed from the v10.0.16 iPhone trace that sales finishes once in about 3.4 seconds while document startup remains blocked until about 25.8 seconds."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_17_R5.txt",
+      "line": 9,
+      "token": "v10.0.17",
+      "excerpt": "- Synchronized PETATOE v10.0.17 release tokens, Service Worker, runtime, About App, CSS headers, package version, and certification rule."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_18_R6.txt",
+      "line": 1,
+      "token": "v10.0.18",
+      "excerpt": "PETATOE v10.0.18 — Dashboard Render Stabilization R6"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_18_R6.txt",
+      "line": 9,
+      "token": "v10.0.18",
+      "excerpt": "- Synchronized release to PETATOE v10.0.18 / PETATOE_V10_0_18_DASHBOARD_RENDER_STABILIZATION_R6."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_19_N1.txt",
+      "line": 1,
+      "token": "v10.0.19",
+      "excerpt": "PETATOE v10.0.19 — Native Biometric Entry Parity N1"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_19_N1.txt",
+      "line": 10,
+      "token": "v10.0.19",
+      "excerpt": "- Synchronized release to PETATOE v10.0.19 / PETATOE_V10_0_19_NATIVE_BIOMETRIC_ENTRY_PARITY_N1."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_20_N2.txt",
+      "line": 1,
+      "token": "v10.0.20",
+      "excerpt": "PETATOE v10.0.20 — Mobile Navigation Performance N2"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_20_N2.txt",
+      "line": 9,
+      "token": "v10.0.20",
+      "excerpt": "- Synchronized release to PETATOE v10.0.20 / PETATOE_V10_0_20_MOBILE_NAVIGATION_PERFORMANCE_N2."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_21_N3.txt",
+      "line": 1,
+      "token": "v10.0.21",
+      "excerpt": "PETATOE v10.0.21 — Mobile Main Menu Redesign N3"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_21_N3.txt",
+      "line": 9,
+      "token": "v10.0.21",
+      "excerpt": "- Synchronized release to PETATOE v10.0.21 / PETATOE_V10_0_21_MOBILE_MAIN_MENU_REDESIGN_N3."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_22.txt",
+      "line": 1,
+      "token": "v10.0.22",
+      "excerpt": "PETATOE v10.0.22 — Mobile Dashboard Controls Hotfix"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_22.txt",
+      "line": 8,
+      "token": "v10.0.22",
+      "excerpt": "- Synchronized release metadata to PETATOE v10.0.22 / PETATOE_V10_0_22_MOBILE_DASHBOARD_CONTROLS_HOTFIX."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_23_C1.txt",
+      "line": 1,
+      "token": "v10.0.23",
+      "excerpt": "PETATOE v10.0.23 — Mobile Corrective Parity C1"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_23_C1.txt",
+      "line": 11,
+      "token": "v10.0.23",
+      "excerpt": "- Release synchronized to PETATOE v10.0.23 / PETATOE_V10_0_23_MOBILE_CORRECTIVE_PARITY_C1."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_5.txt",
+      "line": 1,
+      "token": "v10.0.5",
+      "excerpt": "PETATOE v10.0.5 — Mobile Startup Performance"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_5_HOTFIX.txt",
+      "line": 1,
+      "token": "v10.0.5",
+      "excerpt": "PETATOE v10.0.5 — Smart Router Cache Token Hotfix"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_5_HOTFIX.txt",
+      "line": 3,
+      "token": "v10.0.5",
+      "excerpt": "- Synchronized smart-router.js cache token with Localization Runtime v10.0.5."
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_6.txt",
+      "line": 1,
+      "token": "v10.0.6",
+      "excerpt": "PETATOE v10.0.6 — Mobile About & Update Center"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_7.txt",
+      "line": 1,
+      "token": "v10.0.7",
+      "excerpt": "PETATOE v10.0.7 — Mobile Redesign M1"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_8.txt",
+      "line": 1,
+      "token": "v10.0.8",
+      "excerpt": "PETATOE v10.0.8 — Mobile Startup Loading Gate P2.1"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_0_9.txt",
+      "line": 1,
+      "token": "v10.0.9",
+      "excerpt": "PETATOE v10.0.9 — Mobile Runtime Consolidation P2.2"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_M2.txt",
+      "line": 9,
+      "token": "10.0.0-mobile-dashboard-m2",
+      "excerpt": "- Update the PWA cache to 10.0.0-mobile-dashboard-m2"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_M3.txt",
+      "line": 9,
+      "token": "10.0.0-mobile-reports-m3",
+      "excerpt": "- Update the PWA cache to 10.0.0-mobile-reports-m3"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_M4.txt",
+      "line": 9,
+      "token": "10.0.0-mobile-management-m4",
+      "excerpt": "- Update the PWA cache to 10.0.0-mobile-management-m4"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_M5.txt",
+      "line": 11,
+      "token": "10.0.0-mobile-experience-m5",
+      "excerpt": "- Update the PWA cache to 10.0.0-mobile-experience-m5"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_S2.txt",
+      "line": 8,
+      "token": "10.0.0-passkey-biometric-first-s2",
+      "excerpt": "- Update the PWA cache to 10.0.0-passkey-biometric-first-s2"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_S3.txt",
+      "line": 9,
+      "token": "10.0.0-passkey-enrollment-recovery-s3",
+      "excerpt": "- Update the PWA cache to 10.0.0-passkey-enrollment-recovery-s3"
+    },
+    {
+      "file": "GITHUB_DESKTOP_SUMMARY_V10_S4.txt",
+      "line": 10,
+      "token": "10.0.0-passkey-state-machine-s4",
+      "excerpt": "- Update the PWA cache to 10.0.0-passkey-state-machine-s4"
+    },
+    {
+      "file": "HOTFIX_ROOT_CAUSE_AND_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Restore Enterprise Glass Header & Navigation"
+    },
+    {
+      "file": "PETATOE_MOBILE_ENTERPRISE_HEADER_GLASS_NAV_ROOT_CAUSE_REPORT.md",
+      "line": 4,
+      "token": "v10.0.25",
+      "excerpt": "- PETATOE v10.0.25"
+    },
+    {
+      "file": "PETATOE_SG4_6_10_SMART_REPORTS_ENTERPRISE_CERTIFICATION_REPORT.md",
+      "line": 54,
+      "token": "10.0.25-runtime-restoration-b3",
+      "excerpt": "- `smart-reports-core.js`: `10.0.25-runtime-restoration-b3`"
+    },
+    {
+      "file": "PETATOE_SG4_6_10_SMART_REPORTS_ENTERPRISE_CERTIFICATION_REPORT.md",
+      "line": 55,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "- `smart-router.js`: `10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1`"
+    },
+    {
+      "file": "PETATOE_SG4_6_10_SMART_REPORTS_ENTERPRISE_CERTIFICATION_REPORT.md",
+      "line": 56,
+      "token": "10.0.25-smart-reports-sr3-registration",
+      "excerpt": "- `smart-runtime-registration.js`: `10.0.25-smart-reports-sr3-registration`"
+    },
+    {
+      "file": "PETATOE_SG4_6_10_SMART_REPORTS_ENTERPRISE_CERTIFICATION_REPORT.md",
+      "line": 57,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "- `smart-reports-runtime-controller.js`: `10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1`"
+    },
+    {
+      "file": "PETATOE_SG4_6_10_SMART_REPORTS_ENTERPRISE_CERTIFICATION_REPORT.md",
+      "line": 58,
+      "token": "10.0.25-smart-reports-sr5-4-read-adapter",
+      "excerpt": "- `smart-reports-read-adapter.js`: `10.0.25-smart-reports-sr5-4-read-adapter`"
+    },
+    {
+      "file": "PETATOE_SG4_INFRASTRUCTURE_HARDENING_REPORT.md",
+      "line": 11,
+      "token": "10.0.25",
+      "excerpt": "4. `security/auth-session.js` still wrote module/session metadata as `9.0`; no strict consumer comparison was found, so aligning it to `10.0.25` does not invalidate existing sessions."
+    },
+    {
+      "file": "PETATOE_V10_0_10_MOBILE_CSS_CONSOLIDATION_P2_3_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.10",
+      "excerpt": "# PETATOE v10.0.10 — Mobile CSS Consolidation P2.3"
+    },
+    {
+      "file": "PETATOE_V10_0_10_MOBILE_CSS_CONSOLIDATION_P2_3_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.10",
+      "excerpt": "# PETATOE v10.0.10 — Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_10_MOBILE_CSS_CONSOLIDATION_P2_3_VERIFICATION_REPORT.md",
+      "line": 4,
+      "token": "v10.0.10",
+      "excerpt": "- Version: `PETATOE v10.0.10`"
+    },
+    {
+      "file": "PETATOE_V10_0_10_MOBILE_CSS_CONSOLIDATION_P2_3_VERIFICATION_REPORT.md",
+      "line": 6,
+      "token": "10.0.10-mobile-css-consolidation-p2-3",
+      "excerpt": "- Service Worker token: `10.0.10-mobile-css-consolidation-p2-3`"
+    },
+    {
+      "file": "PETATOE_V10_0_11_PWA_CACHE_STRATEGY_P2_4_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.11",
+      "excerpt": "# PETATOE v10.0.11 — PWA Cache Strategy P2.4"
+    },
+    {
+      "file": "PETATOE_V10_0_11_PWA_CACHE_STRATEGY_P2_4_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.11",
+      "excerpt": "# PETATOE v10.0.11 — Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_12_RUNTIME_OWNERSHIP_P2_5_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.12",
+      "excerpt": "# PETATOE v10.0.12 — Runtime Ownership P2.5 Root Cause Report"
+    },
+    {
+      "file": "PETATOE_V10_0_12_RUNTIME_OWNERSHIP_P2_5_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.12",
+      "excerpt": "# PETATOE v10.0.12 — Runtime Ownership P2.5 Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_13_STARTUP_REGRESSION_R1_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.13",
+      "excerpt": "# PETATOE v10.0.13 — Startup Regression R1 Root Cause Report"
+    },
+    {
+      "file": "PETATOE_V10_0_13_STARTUP_REGRESSION_R1_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.13",
+      "excerpt": "# PETATOE v10.0.13 — Startup Regression R1 Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_14_SALES_DATA_LOOP_R2_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.14",
+      "excerpt": "# PETATOE v10.0.14 — Phase R2 Root Cause Report"
+    },
+    {
+      "file": "PETATOE_V10_0_14_SALES_DATA_LOOP_R2_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.14",
+      "excerpt": "# PETATOE v10.0.14 — Phase R2 Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_15_RUNTIME_TRACE_R3_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.15",
+      "excerpt": "# PETATOE v10.0.15 — Runtime Trace Audit R3"
+    },
+    {
+      "file": "PETATOE_V10_0_15_RUNTIME_TRACE_R3_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.15",
+      "excerpt": "# Verification Report — PETATOE v10.0.15 Runtime Trace R3"
+    },
+    {
+      "file": "PETATOE_V10_0_16_STARTUP_DEPENDENCY_R4_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.16",
+      "excerpt": "# PETATOE v10.0.16 — Phase R4 Root Cause Report"
+    },
+    {
+      "file": "PETATOE_V10_0_16_STARTUP_DEPENDENCY_R4_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.16",
+      "excerpt": "# PETATOE v10.0.16 — Phase R4 Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_16_STARTUP_DEPENDENCY_R4_VERIFICATION_REPORT.md",
+      "line": 25,
+      "token": "v10.0.16",
+      "excerpt": "- Release: PETATOE v10.0.16"
+    },
+    {
+      "file": "PETATOE_V10_0_17_CORE_BOOTSTRAP_SPLIT_R5_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.17",
+      "excerpt": "# PETATOE v10.0.17 — Core Bootstrap Split R5"
+    },
+    {
+      "file": "PETATOE_V10_0_17_CORE_BOOTSTRAP_SPLIT_R5_ROOT_CAUSE_REPORT.md",
+      "line": 4,
+      "token": "v10.0.16",
+      "excerpt": "The v10.0.16 iPhone trace showed that sales loading completed once in about 3.4 seconds for 3,033 rows, while `DOMContentLoaded` did not occur until about 25.8 seconds and `load` until about 28.5 seconds. Payroll and Treasury were already r"
+    },
+    {
+      "file": "PETATOE_V10_0_17_CORE_BOOTSTRAP_SPLIT_R5_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.17",
+      "excerpt": "# PETATOE v10.0.17 — Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_17_CORE_BOOTSTRAP_SPLIT_R5_VERIFICATION_REPORT.md",
+      "line": 30,
+      "token": "v10.0.17",
+      "excerpt": "Static verification cannot measure the real iPhone improvement. After deployment, perform one cold start and copy the v10.0.17 performance trace. The expected result is that the Fleet, Movement Center, Obligations, Settings Setup, and local"
+    },
+    {
+      "file": "PETATOE_V10_0_18_DASHBOARD_RENDER_STABILIZATION_R6_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.18",
+      "excerpt": "# PETATOE v10.0.18 — Dashboard Render Stabilization R6"
+    },
+    {
+      "file": "PETATOE_V10_0_18_DASHBOARD_RENDER_STABILIZATION_R6_ROOT_CAUSE_REPORT.md",
+      "line": 4,
+      "token": "v10.0.17",
+      "excerpt": "The v10.0.17 iPhone trace showed that `DOMContentLoaded` completed at 841 ms and the sales request completed at 5,672 ms with 3,033 rows. However, no dashboard render followed the `petatoe:records-changed` event at 5,702 ms. The dashboard w"
+    },
+    {
+      "file": "PETATOE_V10_0_18_DASHBOARD_RENDER_STABILIZATION_R6_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.18",
+      "excerpt": "# PETATOE v10.0.18 — Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_19_NATIVE_BIOMETRIC_ENTRY_PARITY_N1_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.19",
+      "excerpt": "# PETATOE v10.0.19 — Native Biometric Entry Parity N1"
+    },
+    {
+      "file": "PETATOE_V10_0_19_NATIVE_BIOMETRIC_ENTRY_PARITY_N1_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.19",
+      "excerpt": "# PETATOE v10.0.19 — N1 Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_20_MOBILE_NAVIGATION_PERFORMANCE_N2_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.20",
+      "excerpt": "# PETATOE v10.0.20 — Mobile Navigation Performance N2"
+    },
+    {
+      "file": "PETATOE_V10_0_20_MOBILE_NAVIGATION_PERFORMANCE_N2_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.20",
+      "excerpt": "# PETATOE v10.0.20 — N2 Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_21_MOBILE_MAIN_MENU_REDESIGN_N3_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.21",
+      "excerpt": "# PETATOE v10.0.21 — Mobile Main Menu Redesign N3"
+    },
+    {
+      "file": "PETATOE_V10_0_21_MOBILE_MAIN_MENU_REDESIGN_N3_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.21",
+      "excerpt": "# Verification — PETATOE v10.0.21 N3"
+    },
+    {
+      "file": "PETATOE_V10_0_22_MOBILE_DASHBOARD_CONTROLS_HOTFIX_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.22",
+      "excerpt": "# PETATOE v10.0.22 — Mobile Dashboard Controls Hotfix"
+    },
+    {
+      "file": "PETATOE_V10_0_22_MOBILE_DASHBOARD_CONTROLS_HOTFIX_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.22",
+      "excerpt": "# Verification — PETATOE v10.0.22"
+    },
+    {
+      "file": "PETATOE_V10_0_23_LOCALIZATION_LOCKDOWN_CERTIFICATION_HOTFIX_REPORT.md",
+      "line": 1,
+      "token": "v10.0.23",
+      "excerpt": "# PETATOE v10.0.23 — Localization Lockdown Certification Hotfix"
+    },
+    {
+      "file": "PETATOE_V10_0_23_LOCALIZATION_LOCKDOWN_CERTIFICATION_HOTFIX_REPORT.md",
+      "line": 6,
+      "token": "10.0.23-mobile-corrective-parity-c1",
+      "excerpt": "`10.0.23-mobile-corrective-parity-c1`"
+    },
+    {
+      "file": "PETATOE_V10_0_23_LOCALIZATION_LOCKDOWN_CERTIFICATION_HOTFIX_REPORT.md",
+      "line": 10,
+      "token": "10.0.22-mobile-main-menu-redesign-n3",
+      "excerpt": "`10.0.22-mobile-main-menu-redesign-n3`"
+    },
+    {
+      "file": "PETATOE_V10_0_23_LOCALIZATION_LOCKDOWN_CERTIFICATION_HOTFIX_REPORT.md",
+      "line": 15,
+      "token": "v10.0.23",
+      "excerpt": "Updated the certification lock to the actual intentional v10.0.23 Service Worker version."
+    },
+    {
+      "file": "PETATOE_V10_0_23_MOBILE_CORRECTIVE_PARITY_C1_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.23",
+      "excerpt": "# PETATOE v10.0.23 — Mobile Corrective Parity C1"
+    },
+    {
+      "file": "PETATOE_V10_0_23_MOBILE_CORRECTIVE_PARITY_C1_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.23",
+      "excerpt": "# Verification — PETATOE v10.0.23"
+    },
+    {
+      "file": "PETATOE_V10_0_5_MOBILE_STARTUP_PERFORMANCE_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.5",
+      "excerpt": "# PETATOE v10.0.5 — Mobile Startup Performance Root Cause Report"
+    },
+    {
+      "file": "PETATOE_V10_0_5_MOBILE_STARTUP_PERFORMANCE_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.5",
+      "excerpt": "# PETATOE v10.0.5 — Mobile Startup Performance Verification"
+    },
+    {
+      "file": "PETATOE_V10_0_5_MOBILE_STARTUP_PERFORMANCE_VERIFICATION_REPORT.md",
+      "line": 9,
+      "token": "v10.0.5",
+      "excerpt": "6. Release version synchronized to `v10.0.5` in release-related files."
+    },
+    {
+      "file": "PETATOE_V10_0_5_SMART_ROUTER_CACHE_TOKEN_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.5",
+      "excerpt": "# PETATOE v10.0.5 — Smart Router Cache Token Hotfix"
+    },
+    {
+      "file": "PETATOE_V10_0_5_SMART_ROUTER_CACHE_TOKEN_ROOT_CAUSE_REPORT.md",
+      "line": 7,
+      "token": "10.0.5-mobile-startup-performance",
+      "excerpt": "`10.0.5-mobile-startup-performance`"
+    },
+    {
+      "file": "PETATOE_V10_0_5_SMART_ROUTER_CACHE_TOKEN_ROOT_CAUSE_REPORT.md",
+      "line": 11,
+      "token": "10.0.4-observability-settings-screen",
+      "excerpt": "`smart/smart-router.js?v=10.0.4-observability-settings-screen`"
+    },
+    {
+      "file": "PETATOE_V10_0_5_SMART_ROUTER_CACHE_TOKEN_ROOT_CAUSE_REPORT.md",
+      "line": 19,
+      "token": "10.0.5-mobile-startup-performance",
+      "excerpt": "`smart/smart-router.js?v=10.0.5-mobile-startup-performance`"
+    },
+    {
+      "file": "PETATOE_V10_0_5_SMART_ROUTER_CACHE_TOKEN_VERIFICATION_REPORT.md",
+      "line": 18,
+      "token": "v10.0.5",
+      "excerpt": "- Mobile behavior unchanged apart from previously delivered v10.0.5 work."
+    },
+    {
+      "file": "PETATOE_V10_0_6_MOBILE_ABOUT_UPDATE_CENTER_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.6",
+      "excerpt": "# PETATOE v10.0.6 — Mobile About & Update Center"
+    },
+    {
+      "file": "PETATOE_V10_0_6_MOBILE_ABOUT_UPDATE_CENTER_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.6",
+      "excerpt": "# PETATOE v10.0.6 — Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_6_MOBILE_ABOUT_UPDATE_CENTER_VERIFICATION_REPORT.md",
+      "line": 15,
+      "token": "v10.0.6",
+      "excerpt": "- Release metadata synchronized to v10.0.6: VERIFIED"
+    },
+    {
+      "file": "PETATOE_V10_0_7_MOBILE_REDESIGN_M1_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.7",
+      "excerpt": "# PETATOE v10.0.7 — Mobile Redesign M1 Root Cause Report"
+    },
+    {
+      "file": "PETATOE_V10_0_7_MOBILE_REDESIGN_M1_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.7",
+      "excerpt": "# PETATOE v10.0.7 — Mobile Redesign M1 Verification Report"
+    },
+    {
+      "file": "PETATOE_V10_0_7_MOBILE_REDESIGN_M1_VERIFICATION_REPORT.md",
+      "line": 20,
+      "token": "v10.0.7",
+      "excerpt": "- Release version: `PETATOE v10.0.7`."
+    },
+    {
+      "file": "PETATOE_V10_0_7_MOBILE_REDESIGN_M1_VERIFICATION_REPORT.md",
+      "line": 22,
+      "token": "10.0.7-mobile-redesign-m1",
+      "excerpt": "- PWA cache token: `10.0.7-mobile-redesign-m1`."
+    },
+    {
+      "file": "PETATOE_V10_0_8_MOBILE_STARTUP_GATE_P2_1_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.8",
+      "excerpt": "# PETATOE v10.0.8 — Mobile Startup Loading Gate P2.1"
+    },
+    {
+      "file": "PETATOE_V10_0_8_MOBILE_STARTUP_GATE_P2_1_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.8",
+      "excerpt": "# PETATOE v10.0.8 — Mobile Startup Loading Gate P2.1 Verification"
+    },
+    {
+      "file": "PETATOE_V10_0_8_MOBILE_STARTUP_GATE_P2_1_VERIFICATION_REPORT.md",
+      "line": 11,
+      "token": "v10.0.8",
+      "excerpt": "- Release metadata synchronized to v10.0.8: PASS"
+    },
+    {
+      "file": "PETATOE_V10_0_8_MOBILE_STARTUP_GATE_P2_1_VERIFICATION_REPORT.md",
+      "line": 38,
+      "token": "v10.0.8",
+      "excerpt": "The final speed measurement and real module-open timing require publishing v10.0.8 to GitHub Pages and testing from the installed mobile PWA after selecting **Update now**. Static certification cannot reproduce the phone network, Safari mai"
+    },
+    {
+      "file": "PETATOE_V10_0_9_MOBILE_RUNTIME_CONSOLIDATION_P2_2_ROOT_CAUSE_REPORT.md",
+      "line": 1,
+      "token": "v10.0.9",
+      "excerpt": "# PETATOE v10.0.9 — Mobile Runtime Consolidation P2.2"
+    },
+    {
+      "file": "PETATOE_V10_0_9_MOBILE_RUNTIME_CONSOLIDATION_P2_2_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.9",
+      "excerpt": "# Verification Report — PETATOE v10.0.9"
+    },
+    {
+      "file": "PETATOE_V10_M1_VERIFICATION_REPORT.md",
+      "line": 17,
+      "token": "10.0.0-mobile-shell-m1",
+      "excerpt": "- Service Worker cache version updated to `10.0.0-mobile-shell-m1`: PASS"
+    },
+    {
+      "file": "PETATOE_V10_M2_VERIFICATION_REPORT.md",
+      "line": 12,
+      "token": "10.0.0-mobile-dashboard-m2",
+      "excerpt": "- Cache version: `10.0.0-mobile-dashboard-m2`."
+    },
+    {
+      "file": "PETATOE_V10_M3_VERIFICATION_REPORT.md",
+      "line": 26,
+      "token": "10.0.0-mobile-reports-m3",
+      "excerpt": "`10.0.0-mobile-reports-m3`"
+    },
+    {
+      "file": "PETATOE_V10_M4_VERIFICATION_REPORT.md",
+      "line": 37,
+      "token": "10.0.0-mobile-management-m4",
+      "excerpt": "`10.0.0-mobile-management-m4`"
+    },
+    {
+      "file": "PETATOE_V10_M5_VERIFICATION_REPORT.md",
+      "line": 10,
+      "token": "10.0.0-mobile-experience-m5",
+      "excerpt": "- PWA cache version: `10.0.0-mobile-experience-m5`."
+    },
+    {
+      "file": "PETATOE_V10_S3_VERIFICATION_REPORT.md",
+      "line": 12,
+      "token": "10.0.0-passkey-enrollment-recovery-s3",
+      "excerpt": "- Service Worker version: `10.0.0-passkey-enrollment-recovery-s3`"
+    },
+    {
+      "file": "PETATOE_V10_S4_VERIFICATION_REPORT.md",
+      "line": 12,
+      "token": "10.0.0-passkey-state-machine-s4",
+      "excerpt": "- Updated PWA cache version to `10.0.0-passkey-state-machine-s4`."
+    },
+    {
+      "file": "PHASE_A1_SINGLE_STARTUP_GATE_RESTORATION_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase A1 Verification Report"
+    },
+    {
+      "file": "PHASE_A1_SINGLE_STARTUP_GATE_RESTORATION_VERIFICATION_REPORT.md",
+      "line": 23,
+      "token": "10.0.25-runtime-restoration-a1",
+      "excerpt": "4. Aligned the gate diagnostic version to `10.0.25-runtime-restoration-a1`."
+    },
+    {
+      "file": "PHASE_B1_FIRST_PAINT_MOBILE_SHELL_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase B1 Verification"
+    },
+    {
+      "file": "PHASE_B1_UNIFIED_RUNTIME_READINESS_CONTRACT_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase B1 Verification Report"
+    },
+    {
+      "file": "PHASE_B2_2_SMART_REPORTS_CONTROLLER_ACTIVATION_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase B2.2 Smart Reports Controller Activation"
+    },
+    {
+      "file": "PHASE_B2_DATA_READY_SCREEN_HYDRATION_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase B2 Verification Report"
+    },
+    {
+      "file": "PHASE_B2_DEVICE_GATED_BOOT_MANIFEST_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase B2 Verification Report"
+    },
+    {
+      "file": "PHASE_B3_SMART_REPORTS_DEPENDENCY_RECOVERY_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase B3 Smart Reports Dependency Recovery"
+    },
+    {
+      "file": "PHASE_C2_1_PWA_REPORT.md",
+      "line": 1,
+      "token": "v10.0.23",
+      "excerpt": "# PETATOE v10.0.23 — Phase C2.1-PWA"
+    },
+    {
+      "file": "PHASE_C2_1_PWA_REPORT.md",
+      "line": 19,
+      "token": "v10.0.23",
+      "excerpt": "- Bumped and synchronized release metadata to v10.0.23."
+    },
+    {
+      "file": "PHASE_C2_2_REPORT.md",
+      "line": 1,
+      "token": "v10.0.24",
+      "excerpt": "# PETATOE v10.0.24 — Phase C2.2"
+    },
+    {
+      "file": "PHASE_C2_3_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase C2.3 Navigation Performance & Runtime Isolation"
+    },
+    {
+      "file": "PHASE_C2_3_REPORT.md",
+      "line": 20,
+      "token": "v10.0.25",
+      "excerpt": "- Service Worker, cache tokens, runtime version, About screen, and certification lock synchronized to v10.0.25."
+    },
+    {
+      "file": "PHASE_C2_3_VERIFICATION_RESULTS.json",
+      "line": 3,
+      "token": "10.0.25",
+      "excerpt": "\"version\": \"10.0.25\","
+    },
+    {
+      "file": "PHASE_D3_3_VERIFICATION_REPORT.md",
+      "line": 4,
+      "token": "v10.0.25",
+      "excerpt": "PETATOE v10.0.25 — Navigation Runtime Isolation C2.3."
+    },
+    {
+      "file": "PHASE_D3_5_VERIFICATION_REPORT.md",
+      "line": 19,
+      "token": "v10.0.25",
+      "excerpt": "Release remains v10.0.25."
+    },
+    {
+      "file": "PHASE_D3_6_LOCALIZATION_CERTIFICATION_HOTFIX_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase D3.6 Localization Certification Hotfix"
+    },
+    {
+      "file": "PHASE_D3_6_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase D3.6 Verification Report"
+    },
+    {
+      "file": "PHASE_P0_1_BOOTSTRAP_INTEGRITY_HOTFIX_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase P0.1 Bootstrap Integrity Hotfix"
+    },
+    {
+      "file": "PHASE_P0_1_BOOTSTRAP_INTEGRITY_HOTFIX_VERIFICATION_REPORT.md",
+      "line": 5,
+      "token": "v10.0.25",
+      "excerpt": "- Release version unchanged: `v10.0.25`"
+    },
+    {
+      "file": "PHASE_P1_FIRST_PAINT_OPTIMIZATION_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase P1 First Paint Optimization"
+    },
+    {
+      "file": "PHASE_P1_STARTUP_BLACK_SCREEN_ELIMINATION_VERIFICATION_REPORT.md",
+      "line": 5,
+      "token": "v10.0.25",
+      "excerpt": "- Release preserved: PETATOE v10.0.25"
+    },
+    {
+      "file": "PHASE_P1_STARTUP_BLACK_SCREEN_ELIMINATION_VERIFICATION_REPORT.md",
+      "line": 6,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "- Version token preserved: 10.0.25-navigation-runtime-isolation-c2-3"
+    },
+    {
+      "file": "PHASE_P2_CRITICAL_SCRIPT_BOOT_SPLIT_VERIFICATION_REPORT.md",
+      "line": 6,
+      "token": "v10.0.25",
+      "excerpt": "- Release preserved: `PETATOE v10.0.25`"
+    },
+    {
+      "file": "PHASE_P2_CRITICAL_SCRIPT_BOOT_SPLIT_VERIFICATION_REPORT.md",
+      "line": 7,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "- Runtime token preserved: `10.0.25-navigation-runtime-isolation-c2-3`"
+    },
+    {
+      "file": "PHASE_P4_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase P4 Verification Report"
+    },
+    {
+      "file": "PHASE_P6_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase P6 Verification Report"
+    },
+    {
+      "file": "PHASE_P7.1_ROOT_CAUSE_AND_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase P7.1"
+    },
+    {
+      "file": "PHASE_P7_2_INDEPENDENT_MOBILE_SHELL_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase P7.2 Verification Report"
+    },
+    {
+      "file": "PHASE_P7_3_INDEPENDENT_MOBILE_DASHBOARD_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase P7.3 Verification"
+    },
+    {
+      "file": "PHASE_R1_DESKTOP_BOOTSTRAP_CONTRACT_RESTORATION_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase R1 Desktop Bootstrap Contract Restoration"
+    },
+    {
+      "file": "PHASE_R2_PROVIDER_REGISTRATION_AND_HYDRATION_VERIFICATION_REPORT.md",
+      "line": 6,
+      "token": "v10.0.25",
+      "excerpt": "- Release unchanged: v10.0.25."
+    },
+    {
+      "file": "PHASE_SR1_SMART_REPORTS_STATE_MACHINE_RECOVERY_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase SR1"
+    },
+    {
+      "file": "PHASE_SR3_SMART_REPORTS_RUNTIME_REGISTRATION_RECOVERY_VERIFICATION_REPORT.md",
+      "line": 4,
+      "token": "v10.0.25",
+      "excerpt": "PETATOE v10.0.25 after A1, B1, B2, B2.1, B2.2, B3, SR1 and SR2."
+    },
+    {
+      "file": "PHASE_SR4_1_REGRESSION_ROLLBACK_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase SR4.1 Regression Rollback"
+    },
+    {
+      "file": "PHASE_SR5_1_SMART_REPORTS_EVENT_OWNERSHIP_CLEANUP_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase SR5.1 Event Ownership Cleanup"
+    },
+    {
+      "file": "PHASE_SR6_1_CERTIFICATION_LOCK_HOTFIX_VERIFICATION_REPORT.md",
+      "line": 12,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "`10.0.25-navigation-runtime-isolation-c2-3`"
+    },
+    {
+      "file": "PHASE_SR6_1_CERTIFICATION_LOCK_HOTFIX_VERIFICATION_REPORT.md",
+      "line": 16,
+      "token": "10.0.25-smart-reports-sr6-1-cache-reconciliation",
+      "excerpt": "`10.0.25-smart-reports-sr6-1-cache-reconciliation`"
+    },
+    {
+      "file": "PHASE_SR6_1_SMART_REPORTS_CACHE_TOKEN_RECONCILIATION_VERIFICATION_REPORT.md",
+      "line": 12,
+      "token": "10.0.25-smart-reports-sr6-1-cache-reconciliation",
+      "excerpt": "`10.0.25-smart-reports-sr6-1-cache-reconciliation`"
+    },
+    {
+      "file": "PHASE_SR6_ENTERPRISE_RUNTIME_CERTIFICATION_REPORT.md",
+      "line": 7,
+      "token": "10.0.25",
+      "excerpt": "- Release version kept unchanged: `10.0.25`"
+    },
+    {
+      "file": "PHASE_SR6_ENTERPRISE_RUNTIME_CERTIFICATION_REPORT.md",
+      "line": 75,
+      "token": "10.0.25-smart-reports-sr3-registration",
+      "excerpt": "10.0.25-smart-reports-sr3-registration"
+    },
+    {
+      "file": "PHASE_SR6_ENTERPRISE_RUNTIME_CERTIFICATION_REPORT.md",
+      "line": 76,
+      "token": "10.0.25-runtime-restoration-b3",
+      "excerpt": "10.0.25-runtime-restoration-b3"
+    },
+    {
+      "file": "PHASE_SR6_ENTERPRISE_RUNTIME_CERTIFICATION_REPORT.md",
+      "line": 77,
+      "token": "10.0.25-smart-reports-sr5-4-read-adapter",
+      "excerpt": "10.0.25-smart-reports-sr5-4-read-adapter"
+    },
+    {
+      "file": "RELEASE_VERSION.txt",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "PETATOE v10.0.25"
+    },
+    {
+      "file": "ROOT_CAUSE_AND_VERIFICATION_REPORT.md",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "# PETATOE v10.0.25 — Phase P6.1"
+    },
+    {
+      "file": "commissions/commission-runtime-bootstrap.js",
+      "line": 9,
+      "token": "10.0.25-sg3-commission-runtime-ownership-1",
+      "excerpt": "runtime.version = '10.0.25-sg3-commission-runtime-ownership-1';"
+    },
+    {
+      "file": "components/inline-handler-adapter.js",
+      "line": 79,
+      "token": "v10.0.8-mobile-startup-gate-p2-1",
+      "excerpt": "api.version = 'v10.0.8-mobile-startup-gate-p2-1';"
+    },
+    {
+      "file": "components/tables-core.js",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 SG-4.6.1 - Tables Core Compatibility Bridge"
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 4,
+      "token": "10.0.25",
+      "excerpt": "\"releaseVersion\": \"10.0.25\","
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 5,
+      "token": "v10.0.25",
+      "excerpt": "\"releaseLabel\": \"v10.0.25\","
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 7,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "\"buildVersion\": \"10.0.25-sg4-7-6-smart-reports-consolidated-regression-1\","
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 8,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "\"cacheVersion\": \"10.0.25-sg4-7-6-smart-reports-consolidated-regression-1\","
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 10,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "\"startupGate\": \"10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1\","
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 11,
+      "token": "10.0.25-smart-reports-sr3-registration",
+      "excerpt": "\"smartReportsRegistration\": \"10.0.25-smart-reports-sr3-registration\","
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 12,
+      "token": "10.0.25-smart-reports-sr5-4-read-adapter",
+      "excerpt": "\"smartReportsReadAdapter\": \"10.0.25-smart-reports-sr5-4-read-adapter\","
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 13,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "\"navigationRuntime\": \"10.0.25-navigation-runtime-isolation-c2-3\""
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 16,
+      "token": "10.0.0",
+      "excerpt": "\"latestVersion\": \"10.0.0\","
+    },
+    {
+      "file": "config/petatoe-version.json",
+      "line": 17,
+      "token": "10.0.0",
+      "excerpt": "\"minimumSupportedVersion\": \"10.0.0\""
+    },
+    {
+      "file": "core/dashboard-critical-boot.js",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 — Critical Dashboard Boot Ownership"
+    },
+    {
+      "file": "css/i18n/bootstrap.css",
+      "line": 19,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 — Phase C1.2 Zero Black Screen First Paint"
+    },
+    {
+      "file": "css/mobile/mobile-about-app.css",
+      "line": 1,
+      "token": "v10.0.22",
+      "excerpt": "/* PETATOE v10.0.22 — Mobile About & Update Center */"
+    },
+    {
+      "file": "css/mobile/mobile-enterprise-v10-consolidated.css",
+      "line": 1,
+      "token": "v10.0.20",
+      "excerpt": "/* PETATOE v10.0.20 — Mobile CSS Consolidation P2.3"
+    },
+    {
+      "file": "css/mobile/mobile-enterprise-v10-consolidated.css",
+      "line": 1451,
+      "token": "v10.0.22",
+      "excerpt": "/* PETATOE v10.0.22 — Mobile Main Menu Redesign N3 */"
+    },
+    {
+      "file": "css/mobile/mobile-enterprise-v10-consolidated.css",
+      "line": 1522,
+      "token": "v10.0.22",
+      "excerpt": "/* PETATOE v10.0.22 — Mobile dashboard controls hotfix (phone only) */"
+    },
+    {
+      "file": "css/mobile/mobile-enterprise-v10-consolidated.css",
+      "line": 1574,
+      "token": "v10.0.24",
+      "excerpt": "/* PETATOE v10.0.24 — Unified desktop/mobile accordion navigation */"
+    },
+    {
+      "file": "css/mobile/mobile-enterprise-v10-consolidated.css",
+      "line": 2193,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 — Mobile bottom-navigation content-clearance hotfix."
+    },
+    {
+      "file": "css/mobile/mobile-first-paint.css",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 — Phase B1 first-paint mobile shell."
+    },
+    {
+      "file": "diagnostics/enterprise-observability.js",
+      "line": 4,
+      "token": "10.0.3-enterprise-performance-observability",
+      "excerpt": "var VERSION='10.0.3-enterprise-performance-observability';"
+    },
+    {
+      "file": "i18n/localization-center/application-shell-pilot.js",
+      "line": 4,
+      "token": "10.0.22-mobile-main-menu-redesign-n3",
+      "excerpt": "var VERSION='10.0.22-mobile-main-menu-redesign-n3';"
+    },
+    {
+      "file": "i18n/localization-center/runtime.js",
+      "line": 6,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "var VERSION='10.0.25-navigation-runtime-isolation-c2-3';"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 7,
+      "token": "10.0.25-d3-2-css-isolation",
+      "excerpt": "<script src=\"performance/startup-timeline-profiler.js?v=10.0.25-d3-2-css-isolation\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 12,
+      "token": "10.0.25-p7-1",
+      "excerpt": "<script>window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark(\"head-script:start\",{\"index\":2,\"label\":\"core/mobile-device-profile.js?v=10.0.25-p7-1\",\"kind\":\"external\",\"defer\":false,\"async\":false});</script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 13,
+      "token": "10.0.25-p7-1",
+      "excerpt": "<script src=\"core/mobile-device-profile.js?v=10.0.25-p7-1\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 14,
+      "token": "10.0.25-p7-1",
+      "excerpt": "<script>window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark(\"head-script:end\",{\"index\":2,\"label\":\"core/mobile-device-profile.js?v=10.0.25-p7-1\",\"kind\":\"external\",\"defer\":false,\"async\":false});</script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 280,
+      "token": "10.0.22-mobile-main-menu-redesign-n3",
+      "excerpt": "return { mobile: isMobile, version: '10.0.22-mobile-main-menu-redesign-n3', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 284,
+      "token": "10.0.22-mobile-main-menu-redesign-n3",
+      "excerpt": "version: '10.0.22-mobile-main-menu-redesign-n3',"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 300,
+      "token": "10.0.25-b3-critical-css-split",
+      "excerpt": "<script>window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark(\"head-script:start\",{\"index\":4,\"label\":\"performance/mobile-critical-css-gate.js?v=10.0.25-b3-critical-css-split\",\"kind\":\"external\",\"defer\":false,\"async\":false});</scr"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 301,
+      "token": "10.0.25-b3-critical-css-split",
+      "excerpt": "<script src=\"performance/mobile-critical-css-gate.js?v=10.0.25-b3-critical-css-split\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 302,
+      "token": "10.0.25-b3-critical-css-split",
+      "excerpt": "<script>window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark(\"head-script:end\",{\"index\":4,\"label\":\"performance/mobile-critical-css-gate.js?v=10.0.25-b3-critical-css-split\",\"kind\":\"external\",\"defer\":false,\"async\":false});</scrip"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 321,
+      "token": "10.0.25-b1-first-paint-shell",
+      "excerpt": "<link href=\"css/mobile/mobile-first-paint.css?v=10.0.25-b1-first-paint-shell\" rel=\"stylesheet\" onload=\"window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark('head-resource:load',{index:1,label:'head-resource-1',rel:'stylesheet'}"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 472,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<link href=\"css/mobile/mobile-about-app.css?v=10.0.25-navigation-runtime-isolation-c2-3\" rel=\"stylesheet\" onload=\"window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark('head-resource:load',{index:23,label:'head-resource-23',rel:"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 475,
+      "token": "10.0.25-p7-3-1-single-scroll-ownership",
+      "excerpt": "<link href=\"css/mobile/mobile-enterprise-v10-consolidated.css?v=10.0.25-p7-3-1-single-scroll-ownership\" media=\"(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)\" rel=\"stylesheet\" onload=\"window.PETATOEStartupTi"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 973,
+      "token": "10.0.25-b1-first-paint-shell",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-shell.js?v=10.0.25-b1-first-paint-shell\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 1821,
+      "token": "10.0.25-c1-9-chart-after-shell",
+      "excerpt": "<script src=\"components/runtime-libraries-guard.js?v=10.0.25-c1-9-chart-after-shell\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 1822,
+      "token": "10.0.25-b4-js-boot-slimming",
+      "excerpt": "<script src=\"inline-extracted/legacy-application-core.js?v=10.0.25-b4-js-boot-slimming\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 1823,
+      "token": "10.0.25-c1-dashboard-critical-boot",
+      "excerpt": "<script src=\"core/dashboard-critical-boot.js?v=10.0.25-c1-dashboard-critical-boot\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 1824,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"router/navigation-controller.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2137,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-router.js?v=10.0.25-navigation-runtime-isolation-c2-3',false);</script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2165,
+      "token": "10.0.25-b4-js-boot-slimming",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('printing','inline-extracted/full-page-pdf-export.js?v=10.0.25-b4-js-boot-slimming',false);</script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2334,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-core.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2335,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-filters.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2336,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-print.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2337,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-pdf.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2338,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-excel.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2339,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-engine.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2350,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script defer=\"\" src=\"components/runtime-ui-stabilization.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2351,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script defer=\"\" src=\"components/liquid-glass-ui.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2354,
+      "token": "v10.0.25",
+      "excerpt": "<script>window.PETATOE_RELEASE_VERSION='v10.0.25';window.PETATOE_RELEASE_NAME='PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3';</script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2382,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"i18n/index.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2393,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"i18n/localization-center/runtime.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2401,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"i18n/global-screen-translator.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2402,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"smart/smart-language-runtime.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2405,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('diagnostics','i18n/localization-center/application-shell-pilot.js?v=10.0.25-navigation-runtime-isolation-c2-3',false);</script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2409,
+      "token": "10.0.4-observability-settings-screen",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('diagnostics','diagnostics/enterprise-observability.js?v=10.0.4-observability-settings-screen',false);</script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2415,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"security/auth-session.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2419,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"performance/mobile-runtime-coordinator.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2420,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"navigation/navigation-schema.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2421,
+      "token": "10.0.25-p7-3-1-single-scroll-ownership",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-dashboard.js?v=10.0.25-p7-3-1-single-scroll-ownership\" defer></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2422,
+      "token": "10.0.0-m3",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-reports.js?v=10.0.0-m3\" defer></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2423,
+      "token": "10.0.0-m4",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-management.js?v=10.0.0-m4\" defer></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2424,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-experience.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index-css-control-test.html",
+      "line": 2426,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"mobile/about-app.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 7,
+      "token": "10.0.25-d3-2-css-isolation",
+      "excerpt": "<script src=\"performance/startup-timeline-profiler.js?v=10.0.25-d3-2-css-isolation\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 12,
+      "token": "10.0.25-p7-1",
+      "excerpt": "<script>window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark(\"head-script:start\",{\"index\":2,\"label\":\"core/mobile-device-profile.js?v=10.0.25-p7-1\",\"kind\":\"external\",\"defer\":false,\"async\":false});</script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 13,
+      "token": "10.0.25-p7-1",
+      "excerpt": "<script src=\"core/mobile-device-profile.js?v=10.0.25-p7-1\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 14,
+      "token": "10.0.25-p7-1",
+      "excerpt": "<script>window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark(\"head-script:end\",{\"index\":2,\"label\":\"core/mobile-device-profile.js?v=10.0.25-p7-1\",\"kind\":\"external\",\"defer\":false,\"async\":false});</script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 280,
+      "token": "10.0.22-mobile-main-menu-redesign-n3",
+      "excerpt": "return { mobile: isMobile, version: '10.0.22-mobile-main-menu-redesign-n3', registered: registered, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 284,
+      "token": "10.0.22-mobile-main-menu-redesign-n3",
+      "excerpt": "version: '10.0.22-mobile-main-menu-redesign-n3',"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 300,
+      "token": "10.0.25-b3-critical-css-split",
+      "excerpt": "<script>window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark(\"head-script:start\",{\"index\":4,\"label\":\"performance/mobile-critical-css-gate.js?v=10.0.25-b3-critical-css-split\",\"kind\":\"external\",\"defer\":false,\"async\":false});</scr"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 301,
+      "token": "10.0.25-b3-critical-css-split",
+      "excerpt": "<script src=\"performance/mobile-critical-css-gate.js?v=10.0.25-b3-critical-css-split\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 302,
+      "token": "10.0.25-b3-critical-css-split",
+      "excerpt": "<script>window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark(\"head-script:end\",{\"index\":4,\"label\":\"performance/mobile-critical-css-gate.js?v=10.0.25-b3-critical-css-split\",\"kind\":\"external\",\"defer\":false,\"async\":false});</scrip"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 321,
+      "token": "10.0.25-b1-first-paint-shell",
+      "excerpt": "<link href=\"css/mobile/mobile-first-paint.css?v=10.0.25-b1-first-paint-shell\" rel=\"stylesheet\" onload=\"window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark('head-resource:load',{index:1,label:'head-resource-1',rel:'stylesheet'}"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 422,
+      "token": "10.0.25-d3-2-fontless",
+      "excerpt": "<link href=\"css/main-fontless-test.css?v=10.0.25-d3-2-fontless\" rel=\"stylesheet\" onload=\"window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark('head-resource:load',{index:15,label:'head-resource-15',rel:'stylesheet'})\" onerror=\""
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 472,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<link href=\"css/mobile/mobile-about-app.css?v=10.0.25-navigation-runtime-isolation-c2-3\" rel=\"stylesheet\" onload=\"window.PETATOEStartupTimeline&&window.PETATOEStartupTimeline.mark('head-resource:load',{index:23,label:'head-resource-23',rel:"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 475,
+      "token": "10.0.25-p7-3-1-single-scroll-ownership",
+      "excerpt": "<link href=\"css/mobile/mobile-enterprise-v10-consolidated.css?v=10.0.25-p7-3-1-single-scroll-ownership\" media=\"(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)\" rel=\"stylesheet\" onload=\"window.PETATOEStartupTi"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 973,
+      "token": "10.0.25-b1-first-paint-shell",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-shell.js?v=10.0.25-b1-first-paint-shell\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 1821,
+      "token": "10.0.25-c1-9-chart-after-shell",
+      "excerpt": "<script src=\"components/runtime-libraries-guard.js?v=10.0.25-c1-9-chart-after-shell\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 1822,
+      "token": "10.0.25-b4-js-boot-slimming",
+      "excerpt": "<script src=\"inline-extracted/legacy-application-core.js?v=10.0.25-b4-js-boot-slimming\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 1823,
+      "token": "10.0.25-c1-dashboard-critical-boot",
+      "excerpt": "<script src=\"core/dashboard-critical-boot.js?v=10.0.25-c1-dashboard-critical-boot\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 1824,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"router/navigation-controller.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2137,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-router.js?v=10.0.25-navigation-runtime-isolation-c2-3',false);</script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2165,
+      "token": "10.0.25-b4-js-boot-slimming",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('printing','inline-extracted/full-page-pdf-export.js?v=10.0.25-b4-js-boot-slimming',false);</script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2334,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-core.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2335,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-filters.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2336,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-print.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2337,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-pdf.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2338,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-excel.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2339,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-engine.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2350,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script defer=\"\" src=\"components/runtime-ui-stabilization.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2351,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script defer=\"\" src=\"components/liquid-glass-ui.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2354,
+      "token": "v10.0.25",
+      "excerpt": "<script>window.PETATOE_RELEASE_VERSION='v10.0.25';window.PETATOE_RELEASE_NAME='PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3';</script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2382,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"i18n/index.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2393,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"i18n/localization-center/runtime.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2401,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"i18n/global-screen-translator.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2402,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"smart/smart-language-runtime.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2405,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('diagnostics','i18n/localization-center/application-shell-pilot.js?v=10.0.25-navigation-runtime-isolation-c2-3',false);</script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2409,
+      "token": "10.0.4-observability-settings-screen",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('diagnostics','diagnostics/enterprise-observability.js?v=10.0.4-observability-settings-screen',false);</script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2415,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"security/auth-session.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2419,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"performance/mobile-runtime-coordinator.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2420,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"navigation/navigation-schema.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2421,
+      "token": "10.0.25-p7-3-1-single-scroll-ownership",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-dashboard.js?v=10.0.25-p7-3-1-single-scroll-ownership\" defer></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2422,
+      "token": "10.0.0-m3",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-reports.js?v=10.0.0-m3\" defer></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2423,
+      "token": "10.0.0-m4",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-management.js?v=10.0.0-m4\" defer></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2424,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-experience.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index-css-fontless-test.html",
+      "line": 2426,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"mobile/about-app.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 9,
+      "token": "10.0.25-d3-6-earliest-bootstrap-trace",
+      "excerpt": "<script src=\"performance/earliest-bootstrap-trace.js?v=10.0.25-d3-6-earliest-bootstrap-trace\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 17,
+      "token": "10.0.25-p7-1",
+      "excerpt": "<script src=\"core/mobile-device-profile.js?v=10.0.25-p7-1\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 21,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script src=\"performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 25,
+      "token": "10.0.25-p1-1-1-startup-runtime-measurement",
+      "excerpt": "<script src=\"performance/startup-clean-profiler.js?v=10.0.25-p1-1-1-startup-runtime-measurement\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 29,
+      "token": "10.0.25-b3-critical-css-split",
+      "excerpt": "<script src=\"performance/mobile-critical-css-gate.js?v=10.0.25-b3-critical-css-split\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 47,
+      "token": "10.0.25-b1-first-paint-shell",
+      "excerpt": "<link href=\"css/mobile/mobile-first-paint.css?v=10.0.25-b1-first-paint-shell\" rel=\"stylesheet\"/>"
+    },
+    {
+      "file": "index.html",
+      "line": 75,
+      "token": "10.0.25",
+      "excerpt": "<script src=\"inline-extracted/global-small-utils.js?v=10.0.25\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 79,
+      "token": "10.0.25",
+      "excerpt": "<script src=\"inline-extracted/critical-date-number-ui-utils.js?v=10.0.25\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 80,
+      "token": "10.0.25-bootstrap-integrity-p0-1",
+      "excerpt": "<script src=\"components/inline-handler-adapter.js?v=10.0.25-bootstrap-integrity-p0-1\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 175,
+      "token": "10.0.25-d3-3-diagnostics-center",
+      "excerpt": "<link href=\"css/mobile/mobile-about-app.css?v=10.0.25-d3-3-diagnostics-center\" rel=\"stylesheet\"/>"
+    },
+    {
+      "file": "index.html",
+      "line": 177,
+      "token": "10.0.25-p7-3-1-single-scroll-ownership",
+      "excerpt": "<link href=\"css/mobile/mobile-enterprise-v10-consolidated.css?v=10.0.25-p7-3-1-single-scroll-ownership\" media=\"(max-width: 760px), (max-height: 600px) and (hover: none) and (pointer: coarse)\" rel=\"stylesheet\"/>"
+    },
+    {
+      "file": "index.html",
+      "line": 724,
+      "token": "10.0.25-b1-first-paint-shell",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-shell.js?v=10.0.25-b1-first-paint-shell\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1573,
+      "token": "10.0.25-c1-9-chart-after-shell",
+      "excerpt": "<script src=\"components/runtime-libraries-guard.js?v=10.0.25-c1-9-chart-after-shell\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1574,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script src=\"inline-extracted/legacy-application-core.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1575,
+      "token": "10.0.25-c1-dashboard-critical-boot",
+      "excerpt": "<script src=\"core/dashboard-critical-boot.js?v=10.0.25-c1-dashboard-critical-boot\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1576,
+      "token": "10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1",
+      "excerpt": "<script src=\"router/navigation-controller.js?v=10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1882,
+      "token": "10.0.25",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-performance-optimizer.js?v=10.0.25',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1884,
+      "token": "10.0.25",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','components/safe-render-helpers.js?v=10.0.25',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1885,
+      "token": "10.0.25-smart-reports-sr3-registration",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-services.js?v=10.0.25-smart-reports-sr3-registration',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1887,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-customers.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1888,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-core.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1889,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-router.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1890,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-interactions-real.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1892,
+      "token": "10.0.25",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-facade.js?v=10.0.25',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1893,
+      "token": "10.0.25",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-integration.js?v=10.0.25',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1894,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/exec-alerts-block.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1895,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','inline-extracted/bi-kpi-chart.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1896,
+      "token": "10.0.25-sg4-7-3-runtime-provider-recovery-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('customer360','inline-extracted/customer360-return.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1897,
+      "token": "10.0.25-sg4-7-3-runtime-provider-recovery-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('customer360','inline-extracted/customer360-runtime-data-binding-fix.js?v=10.0.25-sg4-7-3-runtime-provider-recovery-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1904,
+      "token": "10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('fleet','inline-extracted/fleet-inline.js?v=10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1907,
+      "token": "10.0.25-sg3-commission-runtime-ownership-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('commission','commissions/commission-runtime-bootstrap.js?v=10.0.25-sg3-commission-runtime-ownership-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1908,
+      "token": "10.0.25-sg3-commission-runtime-ownership-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('commission','inline-extracted/commission-inline.js?v=10.0.25-sg3-commission-runtime-ownership-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1910,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-tabs.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1911,
+      "token": "10.0.25-smart-reports-sr3-registration",
+      "excerpt": "<script src=\"smart/smart-runtime-registration.js?v=10.0.25-smart-reports-sr3-registration\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1912,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartReports','smart/smart-reports-runtime-controller.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1913,
+      "token": "10.0.25-smart-reports-sr5-4-read-adapter",
+      "excerpt": "<script src=\"smart/smart-reports-read-adapter.js?v=10.0.25-smart-reports-sr5-4-read-adapter\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1920,
+      "token": "10.0.25-b4-js-boot-slimming",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('printing','inline-extracted/full-page-pdf-export.js?v=10.0.25-b4-js-boot-slimming',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1922,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartSalesInvoices','sales/sales-invoice-report.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1923,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('smartSalesInvoices','sales/invoice-print-preview.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1927,
+      "token": "10.0.25",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('payroll','payroll/payroll-core.js?v=10.0.25',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1944,
+      "token": "10.0.25-sg2-runtime-validation-1",
+      "excerpt": "<script src=\"router/route-registry.js?v=10.0.25-sg2-runtime-validation-1\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1965,
+      "token": "10.0.25-smart-reports-sr2-single-controller",
+      "excerpt": "<script src=\"components/tab-render-subscribers.js?v=10.0.25-smart-reports-sr2-single-controller\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 1966,
+      "token": "10.0.25-runtime-restoration-b2",
+      "excerpt": "<script src=\"runtime/data-ready-screen-hydration.js?v=10.0.25-runtime-restoration-b2\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2003,
+      "token": "10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('children','inline-extracted/children-expenses-core.js?v=10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2027,
+      "token": "10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','operations/operations-legacy-engine.js?v=10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2028,
+      "token": "10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('operations','inline-extracted/appointments-core.js?v=10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2045,
+      "token": "10.0.25-reference-data-active-state-fix-5",
+      "excerpt": "<script src=\"navigation/navigation.js?v=10.0.25-reference-data-active-state-fix-5\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2046,
+      "token": "10.0.25-reference-data-runtime-fix-2",
+      "excerpt": "<script src=\"navigation/navigation-state.js?v=10.0.25-reference-data-runtime-fix-2\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2087,
+      "token": "10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('reportsUI','components/tables-core.js?v=10.0.25-sg4-6-7-router-owned-smart-reports-hydration-1',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2089,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-core.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2090,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-filters.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2091,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-print.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2092,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-pdf.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2093,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-excel.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2094,
+      "token": "10.0.25-c1-7-export-namespace",
+      "excerpt": "<script data-petatoe-safe-micro-batch=\"v8.0.0-GA\" defer=\"\" src=\"components/export/export-engine.js?v=10.0.25-c1-7-export-namespace\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2104,
+      "token": "10.0.25-sg2-route-group-fix-3",
+      "excerpt": "<script defer=\"\" src=\"components/filters-finalization.js?v=10.0.25-sg2-route-group-fix-3\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2105,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script defer=\"\" src=\"components/runtime-ui-stabilization.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2106,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script defer=\"\" src=\"components/liquid-glass-ui.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2109,
+      "token": "v10.0.25",
+      "excerpt": "<script>window.PETATOE_RELEASE_VERSION='v10.0.25';window.PETATOE_RELEASE_NAME='PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3';</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2137,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"i18n/index.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2141,
+      "token": "10.0.25-d3-3-diagnostics-center",
+      "excerpt": "<script src=\"i18n/localization-center/dictionary-store.js?v=10.0.25-d3-3-diagnostics-center\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2148,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"i18n/localization-center/runtime.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2156,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"i18n/global-screen-translator.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2157,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"smart/smart-language-runtime.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2160,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('diagnostics','i18n/localization-center/application-shell-pilot.js?v=10.0.25-navigation-runtime-isolation-c2-3',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2164,
+      "token": "10.0.4-observability-settings-screen",
+      "excerpt": "<script>window.PETATOEMobileStartupGate.registerOrWrite('diagnostics','diagnostics/enterprise-observability.js?v=10.0.4-observability-settings-screen',false);</script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2170,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"security/auth-session.js?v=10.0.25-navigation-runtime-isolation-c2-3\"></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2174,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"performance/mobile-runtime-coordinator.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2175,
+      "token": "10.0.25-reference-data-runtime-fix-2",
+      "excerpt": "<script src=\"navigation/navigation-schema.js?v=10.0.25-reference-data-runtime-fix-2\" defer></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2176,
+      "token": "10.0.25-p7-3-1-single-scroll-ownership",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-dashboard.js?v=10.0.25-p7-3-1-single-scroll-ownership\" defer></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2177,
+      "token": "10.0.0-m3",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-reports.js?v=10.0.0-m3\" defer></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2178,
+      "token": "10.0.0-m4",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-management.js?v=10.0.0-m4\" defer></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2179,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "<script src=\"mobile/mobile-enterprise-v10-experience.js?v=10.0.25-navigation-runtime-isolation-c2-3\" defer></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2180,
+      "token": "10.0.25-transient-url-cleanup-1",
+      "excerpt": "<script src=\"pwa/pwa-manager.js?v=10.0.25-transient-url-cleanup-1\" defer></script>"
+    },
+    {
+      "file": "index.html",
+      "line": 2181,
+      "token": "10.0.25-transient-url-cleanup-1",
+      "excerpt": "<script src=\"mobile/about-app.js?v=10.0.25-transient-url-cleanup-1\" defer></script>"
+    },
+    {
+      "file": "inline-extracted/commission-inline.js",
+      "line": 4,
+      "token": "10.0.25-commission-runtime-republish-4",
+      "excerpt": "window.__PETATOE_COMMISSION_RUNTIME_VERSION__ = '10.0.25-commission-runtime-republish-4';"
+    },
+    {
+      "file": "mobile/about-app.js",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 — Mobile About & Update Center */"
+    },
+    {
+      "file": "mobile/about-app.js",
+      "line": 32,
+      "token": "v10.0.25",
+      "excerpt": "function version(){return String(window.PETATOE_RELEASE_VERSION||'v10.0.25')}"
+    },
+    {
+      "file": "mobile/mobile-enterprise-v10-consolidated.css",
+      "line": 1,
+      "token": "v10.0.20",
+      "excerpt": "/* PETATOE v10.0.20 — Mobile CSS Consolidation P2.3"
+    },
+    {
+      "file": "mobile/mobile-enterprise-v10-consolidated.css",
+      "line": 1451,
+      "token": "v10.0.22",
+      "excerpt": "/* PETATOE v10.0.22 — Mobile Main Menu Redesign N3 */"
+    },
+    {
+      "file": "mobile/mobile-enterprise-v10-consolidated.css",
+      "line": 1522,
+      "token": "v10.0.22",
+      "excerpt": "/* PETATOE v10.0.22 — Mobile dashboard controls hotfix (phone only) */"
+    },
+    {
+      "file": "mobile/mobile-enterprise-v10-consolidated.css",
+      "line": 1574,
+      "token": "v10.0.24",
+      "excerpt": "/* PETATOE v10.0.24 — Unified desktop/mobile accordion navigation */"
+    },
+    {
+      "file": "mobile/mobile-enterprise-v10-experience.js",
+      "line": 215,
+      "token": "10.0.22-mobile-main-menu-redesign-n3",
+      "excerpt": "window.PETATOEMobileNavigationPerformance = { version: '10.0.22-mobile-main-menu-redesign-n3', history: function(){ return routeHistory.slice(); }, latest: function(){ return routeHistory.length ? Object.assign({}, routeHistory[routeHistory"
+    },
+    {
+      "file": "mobile/mobile-enterprise-v10-shell.js",
+      "line": 322,
+      "token": "10.0.24-unified-navigation-c2-2",
+      "excerpt": "window.PETATOEMobileV10={version:'10.0.24-unified-navigation-c2-2',openDrawer:openDrawer,closeDrawer:closeDrawer,openTab:openTab};"
+    },
+    {
+      "file": "native-release.json",
+      "line": 4,
+      "token": "10.0.0",
+      "excerpt": "\"latestVersion\": \"10.0.0\","
+    },
+    {
+      "file": "native-release.json",
+      "line": 5,
+      "token": "10.0.0",
+      "excerpt": "\"minimumSupportedVersion\": \"10.0.0\","
+    },
+    {
+      "file": "navigation/navigation-schema.js",
+      "line": 1,
+      "token": "v10.0.24",
+      "excerpt": "/** PETATOE v10.0.24 — Canonical desktop/mobile navigation schema */"
+    },
+    {
+      "file": "package.json",
+      "line": 3,
+      "token": "10.0.25",
+      "excerpt": "\"version\": \"10.0.25\","
+    },
+    {
+      "file": "payroll/payroll-core.js",
+      "line": 1,
+      "token": "v10.0.1",
+      "excerpt": "/* PETATOE v10.0.1 — Canonical Payroll Persistence"
+    },
+    {
+      "file": "payroll/payroll-read-facade.js",
+      "line": 1,
+      "token": "v10.0.1",
+      "excerpt": "/* PETATOE v10.0.1 — Payroll Read-Only Facade (Supabase)"
+    },
+    {
+      "file": "payroll/payroll-read-facade.js",
+      "line": 158,
+      "token": "v10.0.1-supabase-only",
+      "excerpt": "version: 'v10.0.1-supabase-only',"
+    },
+    {
+      "file": "performance/earliest-bootstrap-trace.js",
+      "line": 75,
+      "token": "10.0.25-d3-6-earliest-bootstrap-trace",
+      "excerpt": "version: '10.0.25-d3-6-earliest-bootstrap-trace',"
+    },
+    {
+      "file": "performance/earliest-bootstrap-trace.js",
+      "line": 102,
+      "token": "10.0.25-d3-6-earliest-bootstrap-trace",
+      "excerpt": "version: '10.0.25-d3-6-earliest-bootstrap-trace',"
+    },
+    {
+      "file": "performance/mobile-runtime-coordinator.js",
+      "line": 1,
+      "token": "v10.0.9",
+      "excerpt": "/** PETATOE v10.0.9 — Mobile Runtime Coordinator P2.2 */"
+    },
+    {
+      "file": "performance/mobile-runtime-coordinator.js",
+      "line": 79,
+      "token": "10.0.25-observer-timer-reduction-p6",
+      "excerpt": "version: '10.0.25-observer-timer-reduction-p6'"
+    },
+    {
+      "file": "performance/mobile-startup-loading-gate.js",
+      "line": 259,
+      "token": "10.0.25",
+      "excerpt": "payroll: 'payroll/payroll-core.js?v=10.0.25'"
+    },
+    {
+      "file": "performance/mobile-startup-loading-gate.js",
+      "line": 831,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice()"
+    },
+    {
+      "file": "performance/mobile-startup-loading-gate.js",
+      "line": 835,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "version: '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1',"
+    },
+    {
+      "file": "performance/runtime-data-trace.js",
+      "line": 1,
+      "token": "v10.0.23",
+      "excerpt": "/* PETATOE v10.0.23 — Runtime Data Trace Audit R3 (diagnostic only) */"
+    },
+    {
+      "file": "performance/startup-clean-profiler.js",
+      "line": 6,
+      "token": "10.0.25-p1-1-1-startup-runtime-measurement",
+      "excerpt": "var VERSION = '10.0.25-p1-1-1-startup-runtime-measurement';"
+    },
+    {
+      "file": "performance/startup-timeline-profiler.js",
+      "line": 6,
+      "token": "10.0.25-d3-2-css-isolation",
+      "excerpt": "var VERSION = '10.0.25-d3-2-css-isolation';"
+    },
+    {
+      "file": "runtime/data-ready-screen-hydration.js",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 — Phase B2.1: Payroll data-ready active-screen hydration."
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 7,
+      "token": "10.0.25",
+      "excerpt": "\"releaseVersion\": \"10.0.25\","
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 8,
+      "token": "v10.0.25",
+      "excerpt": "\"releaseLabel\": \"v10.0.25\","
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 10,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "\"buildVersion\": \"10.0.25-sg4-7-6-smart-reports-consolidated-regression-1\","
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 11,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "\"cacheVersion\": \"10.0.25-sg4-7-6-smart-reports-consolidated-regression-1\","
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 13,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "\"startupGate\": \"10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1\","
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 14,
+      "token": "10.0.25-smart-reports-sr3-registration",
+      "excerpt": "\"smartReportsRegistration\": \"10.0.25-smart-reports-sr3-registration\","
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 15,
+      "token": "10.0.25-smart-reports-sr5-4-read-adapter",
+      "excerpt": "\"smartReportsReadAdapter\": \"10.0.25-smart-reports-sr5-4-read-adapter\","
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 16,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "\"navigationRuntime\": \"10.0.25-navigation-runtime-isolation-c2-3\""
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 19,
+      "token": "10.0.0",
+      "excerpt": "\"latestVersion\": \"10.0.0\","
+    },
+    {
+      "file": "runtime/version-manifest.js",
+      "line": 20,
+      "token": "10.0.0",
+      "excerpt": "\"minimumSupportedVersion\": \"10.0.0\""
+    },
+    {
+      "file": "scripts/build-native-web.mjs",
+      "line": 43,
+      "token": "10.0.23-mobile-corrective-parity-c1",
+      "excerpt": "const biometricTag = '<script src=\"native/native-biometric-auth.js?v=10.0.23-mobile-corrective-parity-c1\"></script>';"
+    },
+    {
+      "file": "scripts/build-native-web.mjs",
+      "line": 44,
+      "token": "10.0.0-n3",
+      "excerpt": "const updateTag = '<script src=\"native/native-update-coordinator.js?v=10.0.0-n3\" defer></script>';"
+    },
+    {
+      "file": "scripts/mobile-enterprise-v10-certification-check.js",
+      "line": 84,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "requireCheck(worker.includes(\"const APP_VERSION = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';\"), 'Service Worker version lock', 'Unexpected Service Worker APP_VERSION; update the certification rule with an intentional release chan"
+    },
+    {
+      "file": "scripts/nav-ops-deep-cache-verification.js",
+      "line": 4,
+      "token": "10.0.25-reference-data-runtime-fix-2",
+      "excerpt": "const defaultToken = '10.0.25-reference-data-runtime-fix-2';"
+    },
+    {
+      "file": "scripts/nav-ops-deep-cache-verification.js",
+      "line": 5,
+      "token": "10.0.25-reference-data-active-state-fix-5",
+      "excerpt": "const navigationToken = '10.0.25-reference-data-active-state-fix-5';"
+    },
+    {
+      "file": "scripts/nav-ops-deep-cache-verification.js",
+      "line": 6,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "const serviceWorkerToken = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';"
+    },
+    {
+      "file": "scripts/nav-ops-deep-cache-verification.js",
+      "line": 8,
+      "token": "10.0.25-sg2-runtime-validation-1",
+      "excerpt": "const routeRegistryToken = '10.0.25-sg2-runtime-validation-1';"
+    },
+    {
+      "file": "scripts/operations-navigation-buttons-contract-check.js",
+      "line": 21,
+      "token": "10.0.25-operations-button-contract-fix-3",
+      "excerpt": "check(html.includes('10.0.25-operations-button-contract-fix-3'),'HTML loads the new navigation runtime token');"
+    },
+    {
+      "file": "scripts/operations-navigation-buttons-contract-check.js",
+      "line": 22,
+      "token": "10.0.25-operations-button-contract-fix-3",
+      "excerpt": "check(sw.includes(\"const APP_VERSION = '10.0.25-operations-button-contract-fix-3';\"),'service worker cache namespace rotated');"
+    },
+    {
+      "file": "scripts/operations-runtime-gate-contract-check.js",
+      "line": 16,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "check(index.includes('performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1'), 'HTML loads the corrected startup gate token');"
+    },
+    {
+      "file": "scripts/operations-runtime-gate-contract-check.js",
+      "line": 17,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "check(worker.includes(\"const APP_VERSION = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';\"), 'service worker namespace matches the runtime gate fix');"
+    },
+    {
+      "file": "scripts/p1-3-long-task-readiness-check.js",
+      "line": 11,
+      "token": "10.0.25-smart-reports-sr1-state-machine",
+      "excerpt": "['desktop smart reports lazy hotfix retained',gate.includes('if(!isMobile) return waitForDesktopGroup(name);')&&gate.includes(\"version: '10.0.25-smart-reports-sr1-state-machine'\")]"
+    },
+    {
+      "file": "scripts/reference-data-runtime-readiness-check.js",
+      "line": 16,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "check(index.includes('10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1'),'HTML assets use new runtime cache token');"
+    },
+    {
+      "file": "scripts/reference-data-runtime-readiness-check.js",
+      "line": 17,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "check(worker.includes(\"const APP_VERSION = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';\"),'service worker namespace rotated');"
+    },
+    {
+      "file": "scripts/sg4-3-smart-reports-single-runtime-owner-check.js",
+      "line": 20,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "['release token aligned',index.includes('10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1')]"
+    },
+    {
+      "file": "scripts/sg4-5-startup-runtime-error-attribution-check.js",
+      "line": 9,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "const version = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';"
+    },
+    {
+      "file": "scripts/sg4-6-1-smart-reports-data-render-recovery-check.js",
+      "line": 15,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "['tables core hotfix cache token registered',index.includes(\"components/tables-core.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1\")]"
+    },
+    {
+      "file": "scripts/sg4-6-12-sales-invoice-subtab-runtime-check.js",
+      "line": 16,
+      "token": "10.0.25-sg4-6-12-sales-invoice-subtab-runtime-1",
+      "excerpt": "['Modified cache tokens synchronized',['performance/mobile-startup-loading-gate.js','smart/smart-reports-core.js','smart/smart-reports-interactions-real.js'].every(f=>index.includes(f+'?v=10.0.25-sg4-6-12-sales-invoice-subtab-runtime-1'))]"
+    },
+    {
+      "file": "scripts/sg4-6-2-smart-reports-initial-data-hydration-check.js",
+      "line": 7,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "const version='10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';"
+    },
+    {
+      "file": "scripts/sg4-6-3-smart-reports-render-bridge-recovery-check.js",
+      "line": 14,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "check(index.includes('smart/smart-router.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1'),'router cache token must be rotated');"
+    },
+    {
+      "file": "scripts/sg4-6-3-smart-reports-render-bridge-recovery-check.js",
+      "line": 15,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "check(index.includes('smart/smart-reports-runtime-controller.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1'),'runtime cache token must be rotated');"
+    },
+    {
+      "file": "scripts/sg4-6-5-smart-reports-nonblocking-navigation-check.js",
+      "line": 5,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "const version = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';"
+    },
+    {
+      "file": "scripts/sg4-6-6-startup-route-hydration-recovery-check.js",
+      "line": 10,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "['release version aligned', gate.includes('10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1')]"
+    },
+    {
+      "file": "scripts/sg4-6-7-router-owned-smart-reports-hydration-check.js",
+      "line": 6,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "const version = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';"
+    },
+    {
+      "file": "scripts/sg4-7-1-smart-customer-interactions-check.js",
+      "line": 21,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "check('Modified scripts use fresh cache tokens', index.includes('legacy-application-core.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1') && index.includes('smart-customers.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regre"
+    },
+    {
+      "file": "scripts/sg4-7-1-smart-customer-interactions-check.js",
+      "line": 21,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "check('Modified scripts use fresh cache tokens', index.includes('legacy-application-core.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1') && index.includes('smart-customers.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regre"
+    },
+    {
+      "file": "scripts/sg4-7-1-smart-customer-interactions-check.js",
+      "line": 21,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "check('Modified scripts use fresh cache tokens', index.includes('legacy-application-core.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1') && index.includes('smart-customers.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regre"
+    },
+    {
+      "file": "scripts/sg4-7-2-bi-actions-root-fix-check.js",
+      "line": 13,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "['cache token updated', index.includes(\"inline-extracted/bi-kpi-chart.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1\")]"
+    },
+    {
+      "file": "scripts/sg4-7-3-runtime-provider-recovery-check.js",
+      "line": 15,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "check('Runtime provider cache tokens are fresh', index.includes('10.0.25-sg4-7-6-smart-reports-consolidated-regression-1'));"
+    },
+    {
+      "file": "scripts/sg4-7-smart-reports-interaction-consolidation-check.js",
+      "line": 21,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "ok('Touched cache tokens are updated',index.includes('mobile-startup-loading-gate.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1')&&index.includes('smart/smart-tabs.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1'"
+    },
+    {
+      "file": "scripts/sg4-7-smart-reports-interaction-consolidation-check.js",
+      "line": 21,
+      "token": "10.0.25-sg4-7-6-smart-reports-consolidated-regression-1",
+      "excerpt": "ok('Touched cache tokens are updated',index.includes('mobile-startup-loading-gate.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1')&&index.includes('smart/smart-tabs.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1'"
+    },
+    {
+      "file": "scripts/smart-reports-cache-token-reconciliation-check.js",
+      "line": 5,
+      "token": "10.0.25-smart-reports-sr6-1-cache-reconciliation",
+      "excerpt": "const token = '10.0.25-smart-reports-sr6-1-cache-reconciliation';"
+    },
+    {
+      "file": "scripts/smart-reports-cache-token-reconciliation-check.js",
+      "line": 32,
+      "token": "10.0.25-smart-reports-sr3-registration",
+      "excerpt": "'10.0.25-smart-reports-sr3-registration',"
+    },
+    {
+      "file": "scripts/smart-reports-cache-token-reconciliation-check.js",
+      "line": 33,
+      "token": "10.0.25-runtime-restoration-b3",
+      "excerpt": "'10.0.25-runtime-restoration-b3',"
+    },
+    {
+      "file": "scripts/smart-reports-cache-token-reconciliation-check.js",
+      "line": 34,
+      "token": "10.0.25-smart-reports-sr5-4-read-adapter",
+      "excerpt": "'10.0.25-smart-reports-sr5-4-read-adapter',"
+    },
+    {
+      "file": "scripts/smart-reports-cache-token-reconciliation-check.js",
+      "line": 35,
+      "token": "10.0.25-smart-reports-sr2-single-controller",
+      "excerpt": "'10.0.25-smart-reports-sr2-single-controller',"
+    },
+    {
+      "file": "scripts/smart-reports-cache-token-reconciliation-check.js",
+      "line": 36,
+      "token": "10.0.25-runtime-restoration-b2",
+      "excerpt": "'10.0.25-runtime-restoration-b2'"
+    },
+    {
+      "file": "scripts/smart-reports-enterprise-runtime-certification.js",
+      "line": 61,
+      "token": "10.0.25",
+      "excerpt": "if (sw && !sw.includes(\"APP_VERSION = '10.0.25\")) {"
+    },
+    {
+      "file": "scripts/smart-reports-enterprise-runtime-certification.js",
+      "line": 62,
+      "token": "10.0.25",
+      "excerpt": "warnings.push('Service worker APP_VERSION is not aligned with release 10.0.25.');"
+    },
+    {
+      "file": "scripts/startup-decomposition-check.js",
+      "line": 8,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "['gate cache token', index.includes('10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1')],"
+    },
+    {
+      "file": "scripts/startup-gate-single-source-check.js",
+      "line": 33,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "requireCheck(gate.includes(\"version: '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1'\"),"
+    },
+    {
+      "file": "scripts/startup-gate-stabilization-contract-check.js",
+      "line": 26,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "check(index.includes('performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1'), 'HTML uses stabilization cache token');"
+    },
+    {
+      "file": "scripts/startup-gate-stabilization-contract-check.js",
+      "line": 27,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "check(worker.includes(\"const APP_VERSION = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';\"), 'service worker cache namespace matches');"
+    },
+    {
+      "file": "scripts/startup-runtime-measurement-harness-check.js",
+      "line": 7,
+      "token": "10.0.25-p1-1-1-startup-runtime-measurement",
+      "excerpt": "['measurement profiler cache token', index.includes('performance/startup-clean-profiler.js?v=10.0.25-p1-1-1-startup-runtime-measurement')],"
+    },
+    {
+      "file": "scripts/startup-runtime-measurement-harness-check.js",
+      "line": 8,
+      "token": "10.0.25-p1-1-1-startup-runtime-measurement",
+      "excerpt": "['profiler version', profiler.includes(\"10.0.25-p1-1-1-startup-runtime-measurement\")],"
+    },
+    {
+      "file": "security/auth-session.js",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 - Auth Session Module"
+    },
+    {
+      "file": "security/auth-session.js",
+      "line": 11,
+      "token": "10.0.25",
+      "excerpt": "var VERSION = '10.0.25';"
+    },
+    {
+      "file": "service-worker.js",
+      "line": 4,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "const APP_VERSION = '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1';"
+    },
+    {
+      "file": "service-worker.js",
+      "line": 32,
+      "token": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
+      "excerpt": "'./performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1',"
+    },
+    {
+      "file": "smart/smart-language-runtime.js",
+      "line": 196,
+      "token": "10.0.25-navigation-runtime-isolation-c2-3",
+      "excerpt": "window.PETATOE_SMART_LANGUAGE_RUNTIME={apply:apply,getLanguage:language,translate:translate,version:'10.0.25-navigation-runtime-isolation-c2-3'};"
+    },
+    {
+      "file": "smart/smart-reports-data-provider.js",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 SR4 — Canonical Smart Reports data provider."
+    },
+    {
+      "file": "smart/smart-reports-data-provider.js",
+      "line": 11,
+      "token": "10.0.25-smart-reports-sr4-data-provider",
+      "excerpt": "var BUILD = '10.0.25-smart-reports-sr4-data-provider';"
+    },
+    {
+      "file": "smart/smart-reports-read-adapter.js",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 SR5.4 — Optional Smart Reports committed-data read adapter."
+    },
+    {
+      "file": "smart/smart-reports-runtime-controller.js",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 SG-4.3 — Canonical Smart Reports lifecycle controller."
+    },
+    {
+      "file": "smart/smart-runtime-registration.js",
+      "line": 1,
+      "token": "v10.0.25",
+      "excerpt": "/* PETATOE v10.0.25 SR3 — Smart Reports runtime provider registration recovery."
+    },
+    {
+      "file": "smart/smart-runtime-registration.js",
+      "line": 11,
+      "token": "10.0.25-smart-reports-sr6-1-cache-reconciliation",
+      "excerpt": "var BUILD = '10.0.25-smart-reports-sr6-1-cache-reconciliation';"
+    }
+  ]
+}

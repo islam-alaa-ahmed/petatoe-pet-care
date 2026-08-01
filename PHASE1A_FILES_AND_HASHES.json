@@ -1,0 +1,60 @@
+{
+  "phase": "Phase 1A \u2014 Version Single Source Foundation",
+  "files": [
+    {
+      "path": "audit/phase1/PETATOE_PHASE1A_SYNC_PREVIEW.txt",
+      "size": 425,
+      "sha256": "3ee30b817e130be9a27db8e0e2e3310a935ad513cdccb0881981e76c74ee0a61"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1A_VERSION_AUDIT.json",
+      "size": 116028,
+      "sha256": "597fe18601322c30ce941bb57f5441844ee622c6153c490739d6609039655a95"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1A_VERSION_SINGLE_SOURCE_REPORT.md",
+      "size": 1722,
+      "sha256": "7190216e2ac9661c78cc5c04cd15935eea8561dc1e034cbc07d8b98b3ba189f3"
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "size": 1042,
+      "sha256": "d88e93b5313c2cf880cb039878ce017303a00d8219b6b70f8570e54db3efdff1"
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "size": 1090,
+      "sha256": "03649b1ee6b48533d85b43315ac50d841370f71bbe4209f434c2c97d1c8a1739"
+    },
+    {
+      "path": "scripts/generate-version-runtime-manifest.js",
+      "size": 1143,
+      "sha256": "dc2412de194b5ddccbba6f8fe23ff274644a24aaf5e7eff041f4464b443fefec"
+    },
+    {
+      "path": "scripts/phase1a-version-single-source-foundation-check.js",
+      "size": 1962,
+      "sha256": "1a569461869cef19781a62677d2dad7bac4442efbab1135e9cb0e8a016f04fe4"
+    },
+    {
+      "path": "scripts/sync-version-manifest.js",
+      "size": 1137,
+      "sha256": "cc99265aeddbb7de397927630ae9aa30e2d2eb7f94c15d85651400212945306f"
+    },
+    {
+      "path": "scripts/version-manifest-lib.js",
+      "size": 1888,
+      "sha256": "2caa90c31b4b98b3756bf892f16ac9423a0d8d7b46214bf3dabb7ea7479c3496"
+    },
+    {
+      "path": "scripts/version-single-source-audit.js",
+      "size": 5482,
+      "sha256": "5d8292c0204a131ae2b2173f567b8ffa898b9b1ee8e945f8824cf4ce179d188e"
+    },
+    {
+      "path": "scripts/version-single-source-check.js",
+      "size": 306,
+      "sha256": "37c9efe287bd4b3653b0e3af7f0ec6351af9e8055b0f149c17a3bce28f4877eb"
+    }
+  ]
+}

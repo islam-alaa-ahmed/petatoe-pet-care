@@ -1,0 +1,6 @@
+Phase 1A synchronization preview
+service-worker APP_VERSION: 10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1 -> 10.0.25-sg4-7-6-smart-reports-consolidated-regression-1
+startup gate cache token: 10.0.25-sg4-7-6-smart-reports-consolidated-regression-1 -> 10.0.25-sg4-7-6-smart-reports-consolidated-regression-1
+release label: -> v10.0.25
+release name: -> PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3
+No files changed.
