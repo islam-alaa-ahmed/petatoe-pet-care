@@ -1,0 +1,77 @@
+{
+  "phase": "Phase 7 — Readiness Contract Hardening",
+  "files": [
+    {
+      "path": "ENTERPRISE_LOCALIZATION_CERTIFICATION_RESULTS.json",
+      "beforeSha256": "16fbb5571d9bf973dbdb416163c0487305774e93cac1d537879c3f2ba850bbf3",
+      "afterSha256": "90c3bb5f7ea6f97020e140d2f388d4c12101fa2c13ec20b965e58a95715c491e",
+      "status": "modified"
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "46d3dc9476198f5afccd6c018a24a257cb6a110351dd43d9f3f3b5b0c4ba1d3d",
+      "afterSha256": "c92091f8522c9d652cb37964a6af5a6d622f63a77275475fd14e9bbb1ca583c2",
+      "status": "modified"
+    },
+    {
+      "path": "service-worker.js",
+      "beforeSha256": "0997dde9bd1aded44f4fc58d4011cfffbb72e3b3034fd01d93b169f61d0512f7",
+      "afterSha256": "18bbfb3e8a36e087dc9a4bf86afa44091fbf4eec740963bfbb604e4177c5dbf3",
+      "status": "modified"
+    },
+    {
+      "path": "RELEASE_VERSION.txt",
+      "beforeSha256": "66209a493f7653fcbe662f1b7ad8eb2b0b9adcdfb0dbe66afca5fa9a8e4a96b0",
+      "afterSha256": "7a626fb3d4869a1bcdbfa65f05672ce147882fa65a1d2f06eeba1cba7197aab9",
+      "status": "modified"
+    },
+    {
+      "path": "performance/mobile-startup-loading-gate.js",
+      "beforeSha256": "8088a08458fb694528f9035de821019c87f9808a5c8aee7a504b5abfaab240a4",
+      "afterSha256": "31cc1add8ef4ad7c3a401ee8a65612595841ce4f3bd9d76d5ec7e36bc19f7bf4",
+      "status": "modified"
+    },
+    {
+      "path": "scripts/phase7-readiness-contract-hardening-check.js",
+      "beforeSha256": null,
+      "afterSha256": "9b4828d9cede0667782d344d3a8382c203ee46042eb11b201a10180377ff9617",
+      "status": "added"
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "beforeSha256": "39a2e92b5e4d119a9a8963968a146689063bec3c14c140007860bd6a709e5ef1",
+      "afterSha256": "56063f3bfe78d9d2082115b3e94e74fa5aa076db3d5aea6287f7b9410f83772a",
+      "status": "modified"
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "beforeSha256": "ca747011e4e066efb464f2bd4950e149587fe21d7de7f5554e76d7afd5b63c78",
+      "afterSha256": "f038cc5e84ae24dd8d1ed3e80916c515de46cf2824d5d019ef92977ec3d47e82",
+      "status": "modified"
+    },
+    {
+      "path": "core/dashboard-critical-boot.js",
+      "beforeSha256": "ad13dc81db6b2f9b716ba45b5be8e47629faa4fdce13af1db8c9c499997f9b24",
+      "afterSha256": "d98d3173c12fa6da4984f6ead0824fca343ab5b265a7412d78f7c6a3f4222ec2",
+      "status": "modified"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "beforeSha256": "48b900bf9b38337d165d250bf50492759decbe69f2e319d6e19013933c08e338",
+      "afterSha256": "68110cfa5fc4f055b7a5e0abb34bacbbcd9111d3177c846cc4cd53b60a3bd958",
+      "status": "modified"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "beforeSha256": "2ad931ce194fd866e63ecbdb4fe056653256f7aff06861e6f4ab3b852bfb5c66",
+      "afterSha256": "c0371bdf283ecf56ef42c72051b84845dd3ea8984d2bf2b48b93cd4c61e11c03",
+      "status": "modified"
+    },
+    {
+      "path": "audit/phase7/PETATOE_PHASE7_READINESS_CONTRACT_HARDENING_REPORT.md",
+      "beforeSha256": null,
+      "afterSha256": "00d440e4e044a9ef37232a9635e3de67186c8702894de2c076f86c10cf1539fd",
+      "status": "added"
+    }
+  ]
+}

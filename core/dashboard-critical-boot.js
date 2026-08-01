@@ -37,6 +37,35 @@
     window.setTimeout(function () { loader.classList.add('hidden'); }, 650);
   }
 
+  function localizationReady() {
+    try {
+      var center = window.PETATOE_LOCALIZATION_CENTER;
+      var status = center && typeof center.getStatus === 'function' ? center.getStatus() : null;
+      return !!(status && status.ready === true);
+    } catch (_) { return false; }
+  }
+
+  function waitForLocalizationFirstPaint(timeoutMs) {
+    if (localizationReady()) return Promise.resolve({ ready: true, source: 'already-ready' });
+    timeoutMs = Math.max(100, Number(timeoutMs || 900));
+    return new Promise(function (resolve) {
+      var settled = false;
+      var timer = null;
+      function finish(source) {
+        if (settled) return;
+        settled = true;
+        if (timer) window.clearTimeout(timer);
+        window.removeEventListener('petatoe:localization-ready', onReady);
+        window.removeEventListener('petatoe:localization-center-ready', onReady);
+        resolve({ ready: localizationReady(), source: source });
+      }
+      function onReady() { finish('event'); }
+      window.addEventListener('petatoe:localization-ready', onReady, { once: true });
+      window.addEventListener('petatoe:localization-center-ready', onReady, { once: true });
+      timer = window.setTimeout(function () { finish('timeout'); }, timeoutMs);
+    });
+  }
+
   async function bootDashboard() {
     mark('petatoe-dashboard-boot-start');
     emit('petatoe:dashboard-boot-start', { startedAt: startedAt });
@@ -55,6 +84,9 @@
       if (typeof populateFilters === 'function') populateFilters();
       var year = document.getElementById('fYear');
       if (year && typeof getDashboardDefaultYear === 'function') year.value = getDashboardDefaultYear();
+
+      var localization = await waitForLocalizationFirstPaint(900);
+      emit('petatoe:dashboard-localization-readiness', localization);
 
       if (records.length || window.__PETATOE_SALES_SOURCE_STATUS__) {
         if (typeof renderDashboardAll === 'function') renderDashboardAll();

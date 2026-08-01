@@ -297,10 +297,16 @@
     },
     warehouses: function(){
       return !!(window.PETATOEWarehouses && typeof window.PETATOEWarehouses.render === 'function' &&
-        window.PETATOEWarehouseUI && typeof window.PETATOEWarehouseUI.renderAll === 'function');
+        window.PETATOEWarehouseUI && typeof window.PETATOEWarehouseUI.renderAll === 'function' &&
+        window.PETATOEWarehouseReadFacade && typeof window.PETATOEWarehouseReadFacade.getItems === 'function' &&
+        window.PETATOEWarehouseComputedFacade && typeof window.PETATOEWarehouseComputedFacade.getSummary === 'function' &&
+        window.PETATOEWarehouseViewModelFacade && typeof window.PETATOEWarehouseViewModelFacade.getViewModel === 'function');
     },
     treasury: function(){
-      return !!(window.PETATOETreasury && typeof window.PETATOETreasury.render === 'function');
+      return !!(window.PETATOETreasury && typeof window.PETATOETreasury.render === 'function' &&
+        window.PETATOETreasuryReadFacade && typeof window.PETATOETreasuryReadFacade.transactions === 'function' &&
+        window.PETATOETreasuryComputedFacade && typeof window.PETATOETreasuryComputedFacade.dashboardSnapshot === 'function' &&
+        window.PETATOETreasuryViewModelFacade && typeof window.PETATOETreasuryViewModelFacade.dashboardViewModel === 'function');
     },
     children: function(){
       var children = window.PETATOEChildrenExpenses;
@@ -359,7 +365,10 @@
       return !!(window.PETATOEPayroll &&
         typeof window.PETATOEPayroll.openTab === 'function' &&
         typeof window.PETATOEPayroll.renderSalarySlip === 'function' &&
-        typeof window.PETATOEPayroll.exportCsv === 'function');
+        typeof window.PETATOEPayroll.exportCsv === 'function' &&
+        window.PETATOEPayrollReadFacade && typeof window.PETATOEPayrollReadFacade.slips === 'function' &&
+        window.PETATOEPayrollComputedFacade && typeof window.PETATOEPayrollComputedFacade.slipTotals === 'function' &&
+        window.PETATOEPayrollViewModelFacade && typeof window.PETATOEPayrollViewModelFacade.dashboard === 'function');
     },
     salesShared: function(){
       return !!(window.PETATOESalesDuplicatePolicy && typeof window.PETATOESalesDuplicatePolicy.findDuplicates === 'function');
@@ -446,6 +455,45 @@
     }
   };
 
+
+  /* Phase 7: readiness is split into three tiers. Only required contracts
+     may block the first render. Optional and deferred providers are reported
+     for diagnostics and regression checks, but never hold a route hostage. */
+  var optionalReadinessContracts = {
+    operations: function(){ return !!(window.PETATOEOperationsFacade && typeof window.PETATOEOperationsFacade.resolve === 'function'); },
+    payroll: function(){ return !!(window.PETATOEPayrollRenderBridge && typeof window.PETATOEPayrollRenderBridge.runManualCheck === 'function'); },
+    treasury: function(){ return !!(window.PETATOETreasuryRenderBridge && typeof window.PETATOETreasuryRenderBridge.runManualCheck === 'function'); },
+    warehouses: function(){ return !!(window.PETATOEWarehouseRenderSnapshotFacade && typeof window.PETATOEWarehouseRenderSnapshotFacade.getRenderSnapshot === 'function'); },
+    children: function(){ return !!(window.PETATOEChildrenExpensesFacade && typeof window.PETATOEChildrenExpensesFacade.resolve === 'function'); },
+    settingsSetup: function(){ return !!(window.PETATOEObservability && window.PETATOEObservability.__ready === true); },
+    smartReports: function(){ return !!(window.PETATOESmartReportsRenderEngine && window.PETATOESmartReportsRenderEngine.__ready === true); }
+  };
+
+  var deferredReadinessContracts = {
+    operations: function(){ return !!(window.PETATOEOperationsFinalStabilityAudit || window.PETATOEOperationsShadowHarness); },
+    payroll: function(){ return !!(window.PETATOEPayrollEventBridge && window.PETATOEPayrollParallelValidation); },
+    treasury: function(){ return !!(window.PETATOETreasuryEventBridge && window.PETATOETreasuryParallelValidation); },
+    warehouses: function(){ return !!(window.PETATOEWarehouseEventBridge && window.PETATOEWarehouseParallelValidation); },
+    children: function(){ return !!(window.PETATOEChildrenExpensesFinalStabilityAudit || window.PETATOEChildrenExpensesControlledMigration); },
+    settingsSetup: function(){ return !!window.PETATOEObservability; },
+    smartReports: function(){ return !!window.PETATOESmartReportsRuntime; }
+  };
+
+  function contractTierReady(registry, name){
+    try{
+      var contract = registry[name];
+      return typeof contract === 'function' ? contract() === true : null;
+    }catch(_){ return false; }
+  }
+
+  function readinessProfile(name){
+    return {
+      required: groupContractReady(name),
+      optional: contractTierReady(optionalReadinessContracts, name),
+      deferred: contractTierReady(deferredReadinessContracts, name)
+    };
+  }
+
   function loadDesktopProviderFallback(name){
     var src = desktopProviderFallbacks[name];
     if(!src) return Promise.resolve(false);
@@ -474,10 +522,12 @@
   }
 
   function readinessSnapshot(name){
+    var profile = readinessProfile(name);
     var services = window.PETATOESmartServices;
     var tabs = window.PETATOESmartTabs || (window.PETATOE && window.PETATOE.SmartReports);
     if(name === 'customer360'){
       return {
+        profile: profile,
         renderCustomer360Panel: typeof window.renderCustomer360Panel === 'function',
         showCustomer360: typeof window.showCustomer360 === 'function',
         openCustomer360: typeof window.openCustomer360 === 'function'
@@ -485,6 +535,7 @@
     }
     if(name === 'smartReports'){
       return {
+        profile: profile,
         renderEngine: !!(window.PETATOESmartReportsRenderEngine && window.PETATOESmartReportsRenderEngine.__ready === true && typeof window.PETATOESmartReportsRenderEngine.render === 'function'),
         smartServices: !!(services && services.__ready && typeof services.scopedData === 'function'),
         legacySmartServices: typeof window.smartServicesScopedData === 'function',
@@ -497,6 +548,7 @@
     if(name === 'operations'){
       var appointments = window.PETATOEAppointments;
       return {
+        profile: profile,
         appointmentsApi: !!appointments,
         setTab: !!(appointments && typeof appointments.setTab === 'function'),
         render: !!(appointments && typeof appointments.render === 'function'),
@@ -509,13 +561,14 @@
     }
     if(name === 'payroll'){
       return {
+        profile: profile,
         payroll: !!window.PETATOEPayroll,
         openTab: !!(window.PETATOEPayroll && typeof window.PETATOEPayroll.openTab === 'function'),
         renderSalarySlip: !!(window.PETATOEPayroll && typeof window.PETATOEPayroll.renderSalarySlip === 'function'),
         exportCsv: !!(window.PETATOEPayroll && typeof window.PETATOEPayroll.exportCsv === 'function')
       };
     }
-    return { ready: groupContractReady(name) };
+    return { ready: profile.required, profile: profile };
   }
 
   function waitForGroupContract(name, timeoutMs){
@@ -907,6 +960,7 @@
     getGroupStatus: getGroupStatus,
     invalidateGroup: invalidateGroup,
     snapshot: snapshot,
+    getReadinessProfile: function(name){ return readinessProfile(normalizeGroup(String(name || ''))); },
     getRuntimeDiagnostics: function(){ return { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }; },
     finishBoot: finishBoot,
     armBootDeadline: armBootDeadline
