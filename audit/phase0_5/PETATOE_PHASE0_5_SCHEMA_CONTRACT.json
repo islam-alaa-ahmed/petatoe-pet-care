@@ -1,0 +1,307 @@
+{
+  "generatedAt": "2026-08-01T21:05:34.241Z",
+  "mode": "read-only-static-contract-audit",
+  "limitations": [
+    "This audit does not connect to the live Supabase project.",
+    "A missing CREATE TABLE file means the repository lacks a complete migration definition; it does not prove the live table is missing.",
+    "RLS enablement and applied migrations must be verified against the live database using the generated read-only SQL."
+  ],
+  "counts": {
+    "scannedTextFiles": 437,
+    "referencedTables": 11,
+    "referencedRpcs": 15,
+    "referencedEdgeFunctions": 2,
+    "sqlDefinedTables": 10,
+    "sqlDefinedFunctions": 22,
+    "sqlPolicyTables": 8,
+    "edgeFunctionDirectories": 2
+  },
+  "frontendReferences": {
+    "tables": {
+      "payroll_employees": [
+        "core/supabase-repository.js"
+      ],
+      "system_settings": [
+        "core/supabase-repository.js"
+      ],
+      "app_users": [
+        "core/supabase-repository.js",
+        "settings/users.js"
+      ],
+      "app_user_permissions": [
+        "core/supabase-repository.js"
+      ],
+      "roles": [
+        "core/supabase-repository.js"
+      ],
+      "audit_logs": [
+        "core/supabase-repository.js"
+      ],
+      "sales_records": [
+        "data-layer.js"
+      ],
+      "translation_cache": [
+        "supabase/functions/petatoe-translate/index.ts"
+      ],
+      "warehouse_items": [
+        "warehouses/warehouse-core.js"
+      ],
+      "warehouse_transactions": [
+        "warehouses/warehouse-core.js"
+      ],
+      "warehouse_settings": [
+        "warehouses/warehouse-core.js"
+      ]
+    },
+    "rpcs": {
+      "petatoe_replace_all_sales_records": [
+        "data-layer.js"
+      ],
+      "petatoe_replace_sales_invoice": [
+        "data-layer.js"
+      ],
+      "get_fil_translation_workspace": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "save_fil_translation_batch": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "register_localization_discoveries": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "set_localization_language_enabled": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "export_localization_package": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "import_localization_package_batch": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "get_localization_dashboard": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "search_localization_entries": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "get_localization_entry": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "save_localization_draft": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "approve_localization_value": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "reject_localization_value": [
+        "i18n/localization-center/dashboard.js"
+      ],
+      "get_localization_bundle": [
+        "i18n/localization-center/loader.js"
+      ]
+    },
+    "edgeFunctions": {
+      "petatoe-translate": [
+        "i18n/service/config.js"
+      ],
+      "petatoe-security-email": [
+        "security/auth-session.js"
+      ]
+    },
+    "storageBuckets": {}
+  },
+  "repositorySqlDefinitions": {
+    "tables": {
+      "localization_languages": [
+        "petatoe_enterprise_localization_center_phase1.sql"
+      ],
+      "localization_keys": [
+        "petatoe_enterprise_localization_center_phase1.sql"
+      ],
+      "localization_values": [
+        "petatoe_enterprise_localization_center_phase1.sql"
+      ],
+      "localization_queue": [
+        "petatoe_enterprise_localization_center_phase1.sql"
+      ],
+      "localization_history": [
+        "petatoe_enterprise_localization_center_phase1.sql"
+      ],
+      "translation_cache": [
+        "petatoe_translation_service_migration.sql"
+      ],
+      "passkey_credentials": [
+        "petatoe_v10_s1_passkey_biometric_tables.sql"
+      ],
+      "passkey_challenges": [
+        "petatoe_v10_s1_passkey_biometric_tables.sql"
+      ],
+      "trusted_devices": [
+        "petatoe_v9_phase_s4_4_2_1_trusted_devices_table.sql"
+      ],
+      "user_sessions": [
+        "petatoe_v9_phase_s4_5_1_user_sessions_foundation.sql"
+      ]
+    },
+    "views": {
+      "localization_approved_values": [
+        "petatoe_enterprise_localization_center_phase1.sql"
+      ]
+    },
+    "functions": {
+      "get_localization_bundle": [
+        "petatoe_enterprise_localization_center_phase3_runtime_rpc.sql"
+      ],
+      "get_localization_dashboard": [
+        "petatoe_enterprise_localization_center_phase4a_readonly_rpc.sql",
+        "petatoe_enterprise_localization_center_phase4b_1_runtime_auth_hotfix.sql",
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql",
+        "petatoe_enterprise_localization_center_phase4b_edit_approval_rpc.sql",
+        "petatoe_v9_4_22_supabase_localization_dictionary_parity_sync.sql"
+      ],
+      "search_localization_entries": [
+        "petatoe_enterprise_localization_center_phase4a_readonly_rpc.sql",
+        "petatoe_enterprise_localization_center_phase4b_1_runtime_auth_hotfix.sql",
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql",
+        "petatoe_enterprise_localization_center_phase4b_edit_approval_rpc.sql"
+      ],
+      "petatoe_localization_actor_role": [
+        "petatoe_enterprise_localization_center_phase4b_1_runtime_auth_hotfix.sql",
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql",
+        "petatoe_enterprise_localization_center_phase4b_edit_approval_rpc.sql"
+      ],
+      "petatoe_localization_can_edit": [
+        "petatoe_enterprise_localization_center_phase4b_1_runtime_auth_hotfix.sql",
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql",
+        "petatoe_enterprise_localization_center_phase4b_edit_approval_rpc.sql"
+      ],
+      "petatoe_localization_can_approve": [
+        "petatoe_enterprise_localization_center_phase4b_1_runtime_auth_hotfix.sql",
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql",
+        "petatoe_enterprise_localization_center_phase4b_edit_approval_rpc.sql"
+      ],
+      "get_localization_entry": [
+        "petatoe_enterprise_localization_center_phase4b_1_runtime_auth_hotfix.sql",
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql",
+        "petatoe_enterprise_localization_center_phase4b_edit_approval_rpc.sql"
+      ],
+      "save_localization_draft": [
+        "petatoe_enterprise_localization_center_phase4b_1_runtime_auth_hotfix.sql",
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql",
+        "petatoe_enterprise_localization_center_phase4b_edit_approval_rpc.sql"
+      ],
+      "approve_localization_value": [
+        "petatoe_enterprise_localization_center_phase4b_1_runtime_auth_hotfix.sql",
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql",
+        "petatoe_enterprise_localization_center_phase4b_edit_approval_rpc.sql"
+      ],
+      "reject_localization_value": [
+        "petatoe_enterprise_localization_center_phase4b_1_runtime_auth_hotfix.sql",
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql",
+        "petatoe_enterprise_localization_center_phase4b_edit_approval_rpc.sql"
+      ],
+      "petatoe_localization_actor_id": [
+        "petatoe_enterprise_localization_center_phase4b_2_authorization_fix.sql"
+      ],
+      "set_localization_language_enabled": [
+        "petatoe_enterprise_localization_center_phase4c_fil_language_enablement.sql"
+      ],
+      "export_localization_package": [
+        "petatoe_enterprise_localization_center_phase4d_import_export_backup.sql"
+      ],
+      "import_localization_package_batch": [
+        "petatoe_enterprise_localization_center_phase4d_import_export_backup.sql"
+      ],
+      "register_localization_discoveries": [
+        "petatoe_enterprise_localization_center_phase4e_missing_detection.sql"
+      ],
+      "get_fil_translation_workspace": [
+        "petatoe_enterprise_localization_center_phase4f_fil_workspace.sql"
+      ],
+      "save_fil_translation_batch": [
+        "petatoe_enterprise_localization_center_phase4f_fil_workspace.sql"
+      ],
+      "touch_translation_cache_updated_at": [
+        "petatoe_translation_service_migration.sql"
+      ],
+      "petatoe_replace_sales_invoice": [
+        "petatoe_v10_commissions_phase1b2_atomic_invoice_replace.sql"
+      ],
+      "petatoe_replace_all_sales_records": [
+        "petatoe_v10_commissions_phase1b5_transactional_replace_import.sql"
+      ],
+      "petatoe_reset_user_password_legacy": [
+        "petatoe_v9_phase_s3_6_password_reset_rpc.sql"
+      ],
+      "petatoe_set_updated_at": [
+        "petatoe_v9_phase_s4_4_2_1_trusted_devices_table.sql"
+      ]
+    },
+    "policies": {
+      "localization_languages": [
+        "petatoe_enterprise_localization_center_phase1.sql"
+      ],
+      "localization_keys": [
+        "petatoe_enterprise_localization_center_phase1.sql"
+      ],
+      "localization_values": [
+        "petatoe_enterprise_localization_center_phase1.sql"
+      ],
+      "passkey_credentials": [
+        "petatoe_v10_s1_passkey_biometric_tables.sql"
+      ],
+      "passkey_challenges": [
+        "petatoe_v10_s1_passkey_biometric_tables.sql"
+      ],
+      "trusted_devices": [
+        "petatoe_v9_phase_s4_4_2_1_trusted_devices_table.sql"
+      ],
+      "user_sessions": [
+        "petatoe_v9_phase_s4_5_1_user_sessions_foundation.sql"
+      ],
+      "system_settings": [
+        "system_settings_rls_fix.sql"
+      ]
+    },
+    "triggers": {
+      "trg_translation_cache_updated_at": [
+        "petatoe_translation_service_migration.sql"
+      ],
+      "trg_trusted_devices_updated_at": [
+        "petatoe_v9_phase_s4_4_2_1_trusted_devices_table.sql"
+      ]
+    }
+  },
+  "edgeFunctionDirectories": [
+    "petatoe-security-email",
+    "petatoe-translate"
+  ],
+  "gaps": {
+    "referencedTablesWithoutRepositoryCreateDefinition": [
+      "app_user_permissions",
+      "app_users",
+      "audit_logs",
+      "payroll_employees",
+      "roles",
+      "sales_records",
+      "system_settings",
+      "warehouse_items",
+      "warehouse_settings",
+      "warehouse_transactions"
+    ],
+    "referencedRpcsWithoutRepositoryFunctionDefinition": [],
+    "referencedEdgeFunctionsWithoutDirectory": [],
+    "sqlDefinedTablesWithoutDirectFrontendFromReference": [
+      "localization_history",
+      "localization_keys",
+      "localization_languages",
+      "localization_queue",
+      "localization_values",
+      "passkey_challenges",
+      "passkey_credentials",
+      "trusted_devices",
+      "user_sessions"
+    ],
+    "edgeDirectoriesWithoutDirectFunctionsInvokeReference": []
+  }
+}
