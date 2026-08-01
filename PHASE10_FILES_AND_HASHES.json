@@ -1,0 +1,96 @@
+{
+  "phase": "Phase 10 Permission Key Integrity",
+  "files": [
+    {
+      "path": "index.html",
+      "status": "modified",
+      "beforeSha256": "87d7e46a8d19991890e1a2030bd020ca54c88a5cdf616094afd555c47da6458b",
+      "afterSha256": "fc866c1b050fe6677b05eb3e9faf1862e3fb716ddbc4679efb60758c6128e6be",
+      "bytes": 250792
+    },
+    {
+      "path": "GITHUB_DESKTOP_SUMMARY.md",
+      "status": "modified",
+      "beforeSha256": "1449eebf6b0a1a242d16f53733f880819f74395c8959e789efe27a4b7e3c83d6",
+      "afterSha256": "4e90f7ba9e49f2494c7bd62c032ee3b7d77eb4406d23a8b3b0e155ae2b3dbde3",
+      "bytes": 70
+    },
+    {
+      "path": "service-worker.js",
+      "status": "modified",
+      "beforeSha256": "4f671fdcb50f8f0482bf1bbf3154b9af2b343a5d0be3abec32de672ade845d72",
+      "afterSha256": "85ef1eca3ed3453e939df634a7fab509295f901370f512630c68f6868e7ebf60",
+      "bytes": 6829
+    },
+    {
+      "path": "RELEASE_VERSION.txt",
+      "status": "modified",
+      "beforeSha256": "623b21803a3646d0c13e130a27b99935074dcc82a6817431d01ee05a80f25a74",
+      "afterSha256": "2206aae3db4eba35b377b8036b12dbe4daef1161d17b00e803d1ca91910f99c3",
+      "bytes": 67
+    },
+    {
+      "path": "scripts/phase10-permission-key-integrity-check.js",
+      "status": "added",
+      "beforeSha256": null,
+      "afterSha256": "ba88e532c7019f35a2c4c5d3827643da780a7bea29351c6561c534396764ddd5",
+      "bytes": 2632
+    },
+    {
+      "path": "scripts/phase9-inventory-count-safety-check.js",
+      "status": "modified",
+      "beforeSha256": "f26f91a3f19bdf2f43c435d697cf22c7a49538d749564a2baf79fcdefbe8e8e6",
+      "afterSha256": "df7c3c2147c64f598d88504033be8ec9ea5b379f2564fe82e4c7ed26f38b047d",
+      "bytes": 2430
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "status": "modified",
+      "beforeSha256": "b66a49f39132e4856ecb1746ed1d1fc62249f5690629593b760c1c0d974b91f9",
+      "afterSha256": "8d50b46faec48c7c52bbf24b811c5fd81fc056fe10dce3cabd648dbdd3ba5fc6",
+      "bytes": 1258
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "status": "modified",
+      "beforeSha256": "fe62cefd6df6bf9ffffbf3c037ce493f44fbc356b6af724db09c3dd264904ce1",
+      "afterSha256": "65fbc241c54d7bccbe38b684c0040e9ac6dbfdd6efd809229dea7a8ea719adba",
+      "bytes": 1306
+    },
+    {
+      "path": "settings/permissions.js",
+      "status": "modified",
+      "beforeSha256": "96f3b93083a7ec9d76ce7eff6df46afe395dc53680f298486de4f32578c574ff",
+      "afterSha256": "dbd5ac05833489864e84307e940c5d78b9e047d3bd50beab5cc58206ee1d1c66",
+      "bytes": 46416
+    },
+    {
+      "path": "core/supabase-repository.js",
+      "status": "modified",
+      "beforeSha256": "ce96c1e236f857385a292bdb233970206e3eca49874b67de60625b61e59e9c69",
+      "afterSha256": "21061bf73cfdca60cc9e2d43358a981258c5382bf3669ad99c1ba6022367d0d7",
+      "bytes": 34124
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "status": "modified",
+      "beforeSha256": "2c6ea548bba92ec1b9f65a0ab0fd8c1c1dd81723ede087177bc54010d060aa21",
+      "afterSha256": "1e86733110e8715fc196e3bc0dd9ab7c0de964791753b8abca4ee272560a9dd8",
+      "bytes": 4119
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "status": "modified",
+      "beforeSha256": "ad458a05d76755241cbbb5b4a7e36c17496133da01959c4cfcfe729089dcee31",
+      "afterSha256": "64ca71a6b78cb6773b7df752280209cc609bb3bb3f55a199d0bf415248d6ca62",
+      "bytes": 1669
+    },
+    {
+      "path": "audit/phase10/PETATOE_PHASE10_PERMISSION_KEY_INTEGRITY_REPORT.md",
+      "status": "added",
+      "beforeSha256": null,
+      "afterSha256": "59dc99c962d9ce00694e2ae791b29aec2d6b8eb43c1276508ad07ca59a382f90",
+      "bytes": 2268
+    }
+  ]
+}

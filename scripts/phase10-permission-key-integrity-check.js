@@ -1,0 +1,30 @@
+const fs=require('fs');
+const path=require('path');
+const root=path.resolve(__dirname,'..');
+const read=p=>fs.readFileSync(path.join(root,p),'utf8');
+const permissions=read('settings/permissions.js');
+const repo=read('core/supabase-repository.js');
+const version=JSON.parse(read('config/petatoe-version.json'));
+const checks=[];
+function check(ok,label){checks.push({ok:!!ok,label});console.log(`${ok?'PASS':'FAIL'} - ${label}`)}
+check(permissions.includes('function canonicalPermissionKey('),'canonical permission key resolver exists');
+check(permissions.includes('function permissionKeyDescriptor('),'permission alias descriptor exists');
+check(permissions.includes('function deletePermissionKeysFromStore('),'case-insensitive local alias cleanup exists');
+check(permissions.includes("window.PETATOEPermissionKeyResolver=Object.freeze"),'resolver is exposed as stable runtime API');
+check(permissions.includes("ids.replacePermission(key,descriptor.aliases,perm)"),'save migrates legacy aliases to canonical key');
+check(permissions.includes("ids.deletePermissionAliases(descriptor.aliases)"),'reset deletes all aliases through repository API');
+check(!permissions.includes('var st=userPermStore();delete st[uid]'),'legacy single-key reset path removed');
+check(repo.includes('async function deleteAppUserPermissionAliases(keys)'),'repository supports bulk alias deletion');
+check(repo.includes(".delete().in('user_id',keys)"),'Supabase deletes all matching permission aliases');
+check(repo.includes('async function replaceAppUserPermission(canonicalKey,aliases,perm)'),'repository supports canonical replacement');
+check(repo.includes('replacePermission:replaceAppUserPermission'),'canonical replacement API is exported');
+check(repo.includes('deletePermissionAliases:deleteAppUserPermissionAliases'),'alias deletion API is exported');
+check(version.runtimeContracts&&version.runtimeContracts.permissionRuntime==='10.0.25-phase10-canonical-permission-key-contract-1','permission runtime contract is registered');
+// Pure model regression: all aliases must be removed regardless of key case.
+const store={u_10:{old:1},Ahmed:{old:2},'AHMED@EXAMPLE.COM':{old:3},other:{keep:1}};
+const wanted=['u_10','ahmed','ahmed@example.com'].map(x=>x.toLowerCase());
+Object.keys(store).forEach(k=>{if(wanted.includes(k.toLowerCase()))delete store[k]});
+check(Object.keys(store).length===1&&store.other.keep===1,'alias cleanup model preserves unrelated users only');
+const failed=checks.filter(x=>!x.ok);
+console.log(`\nPhase 10 Permission Key Integrity: ${checks.length-failed.length}/${checks.length} PASSED`);
+if(failed.length)process.exit(1);

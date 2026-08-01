@@ -145,6 +145,24 @@
     primaryUserKeys(u).forEach(add); loginUserKeys(u).forEach(add);
     return out;
   }
+  function canonicalPermissionKey(u){
+    var user=(u&&typeof u==='object')?u:getUserById(u);
+    if(!user)return String(u==null?'':u).trim();
+    return String(primaryUserKeys(user)[0]||loginUserKeys(user)[0]||'').trim();
+  }
+  function permissionKeyDescriptor(ref){
+    var user=(ref&&typeof ref==='object')?ref:getUserById(ref);
+    var canonical=canonicalPermissionKey(user||ref);
+    var aliases=permissionStoreKeys(user||ref);
+    if(canonical&&!aliases.some(function(k){return normalizeIdentityValue(k)===normalizeIdentityValue(canonical)}))aliases.unshift(canonical);
+    return {user:user||null,canonical:canonical,aliases:aliases};
+  }
+  function deletePermissionKeysFromStore(store,keys){
+    store=store&&typeof store==='object'?store:{};
+    var wanted=(keys||[]).map(normalizeIdentityValue).filter(Boolean);
+    Object.keys(store).forEach(function(k){if(wanted.indexOf(normalizeIdentityValue(k))>-1)delete store[k]});
+    return store;
+  }
   function findUniqueByLoginKey(us,key){
     key=normalizeIdentityValue(key); if(!key)return null;
     var matches=(us||[]).filter(function(x){
@@ -170,11 +188,11 @@
   }
   function permissionRecordFor(store,u){
     store=store||{};
-    var keys=permissionStoreKeys(u);
-    for(var i=0;i<keys.length;i++){
-      if(Object.prototype.hasOwnProperty.call(store,keys[i]))return {found:true,perm:store[keys[i]]||{}};
+    var keys=permissionStoreKeys(u), storeKeys=Object.keys(store), wanted=keys.map(normalizeIdentityValue);
+    for(var i=0;i<storeKeys.length;i++){
+      if(wanted.indexOf(normalizeIdentityValue(storeKeys[i]))>-1)return {found:true,key:storeKeys[i],perm:store[storeKeys[i]]||{}};
     }
-    return {found:false,perm:{}};
+    return {found:false,key:'',perm:{}};
   }
   function getUserPerm(uid){
     var u=getUserById(uid);
@@ -191,7 +209,26 @@
     base.vehicleScope=normalizeVehicleScope(saved.vehicleScope||base.vehicleScope);
     return base
   }
-  function saveUserPerm(uid,perm){var u=getUserById(uid);if(!u||isSuperUser(u))return Promise.resolve({ok:false,skipped:true});var key=(primaryUserKeys(u)[0]||loginUserKeys(u)[0]||uid);var store=userPermStore();store[key]=perm;try{var ids=identity(); if(ids&&typeof ids.savePermission==='function') return ids.savePermission(key,perm);}catch(e){try{console.warn('PETATOE save permission failed',e)}catch(_){}}return saveUserPermStore(store)||Promise.resolve({ok:true})}
+  async function saveUserPerm(uid,perm){
+    var u=getUserById(uid);if(!u||isSuperUser(u))return {ok:false,skipped:true};
+    var descriptor=permissionKeyDescriptor(u), key=descriptor.canonical;
+    if(!key)return {ok:false,error:'Missing canonical permission key'};
+    var store=deletePermissionKeysFromStore(userPermStore(),descriptor.aliases);store[key]=perm;
+    try{
+      var ids=identity();
+      if(ids&&typeof ids.replacePermission==='function')return await ids.replacePermission(key,descriptor.aliases,perm);
+      if(ids&&typeof ids.savePermission==='function'){
+        var saved=await ids.savePermission(key,perm);
+        if(saved&&saved.ok===false)return saved;
+        if(typeof ids.deletePermissionAliases==='function'){
+          var cleaned=await ids.deletePermissionAliases(descriptor.aliases.filter(function(x){return normalizeIdentityValue(x)!==normalizeIdentityValue(key)}));
+          if(cleaned&&cleaned.ok===false)return cleaned;
+        }
+        return saved||{ok:true};
+      }
+    }catch(e){try{console.warn('PETATOE save permission failed',e)}catch(_){}}
+    return await (saveUserPermStore(store)||Promise.resolve({ok:true}));
+  }
   function normalizeVehicleKey(v){return String(v==null?'':v).trim().toLowerCase().replace(/\s+/g,' ')}
   function addVehicleUnique(out,seen,id,name,meta){
     name=String(name||'').trim(); id=String(id||name||'').trim();
@@ -426,7 +463,27 @@
       if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions');
     });
   };
-  window.petV139ResetUserPermissions=async function(){var api=window.__PETATOE_SETTINGS_API__||{}, uid=(document.getElementById('petV139UserSelect')||{}).value||__petV139SelectedUser, u=users(api).find(function(x){return x.id===uid});if(!u)return;if(!confirm(tr('messages.confirmRestoreDefault',null,'Restore this user permissions to the default state?')))return;var st=userPermStore();delete st[uid];try{var ids=identity(); if(ids&&typeof ids.deletePermission==='function') await ids.deletePermission(uid); else await saveUserPermStore(st);}catch(e){await saveUserPermStore(st);}if(api.audit)api.audit('User Permissions Reset','Default permissions for '+(u.username||uid),'warn');toast(tr('messages.restoredDefault',null,'User permissions restored to default'));if(api.render)api.render('permissions')};
+  window.petV139ResetUserPermissions=async function(){
+    var api=window.__PETATOE_SETTINGS_API__||{}, uid=(document.getElementById('petV139UserSelect')||{}).value||__petV139SelectedUser;
+    var u=users(api).find(function(x){return String(x.id)===String(uid)})||getUserById(uid);if(!u)return;
+    if(!confirm(tr('messages.confirmRestoreDefault',null,'Restore this user permissions to the default state?')))return;
+    var descriptor=permissionKeyDescriptor(u), st=deletePermissionKeysFromStore(userPermStore(),descriptor.aliases), res=null;
+    try{
+      var ids=identity();
+      if(ids&&typeof ids.deletePermissionAliases==='function')res=await ids.deletePermissionAliases(descriptor.aliases);
+      else if(ids&&typeof ids.deletePermission==='function'){
+        for(var i=0;i<descriptor.aliases.length;i++){
+          var one=await ids.deletePermission(descriptor.aliases[i]);
+          if(one&&one.ok===false){res=one;break}
+        }
+        if(!res)res={ok:true};
+      }else res=await saveUserPermStore(st);
+    }catch(e){res={ok:false,error:String(e&&e.message||e||'')};}
+    if(res&&res.ok===false){toast(tr('messages.saveFailed',{error:(res.error||'')},'Failed to save permissions: {error}'));return}
+    if(api.audit)api.audit('User Permissions Reset','Default permissions for '+(u.username||uid),'warn');
+    try{window.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:String(u.id||uid),keys:descriptor.aliases.slice(),reset:true}}));document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:String(u.id||uid),keys:descriptor.aliases.slice(),reset:true}}));}catch(e){}
+    toast(tr('messages.restoredDefault',null,'User permissions restored to default'));if(api.render)api.render('permissions');
+  };
   window.petV139ToggleVehicleScope=function(force){var all=document.getElementById('petV139AllVehicles');var checked=typeof force==='boolean'?force:!!(all&&all.checked);document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){c.disabled=checked;c.checked=checked?true:c.checked});};
   document.addEventListener('click',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-v139-set-module]');if(!t)return;__petV139ActiveModule=t.getAttribute('data-v139-set-module')||'home';if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions');});
   window.petV139SyncBulkHeaders=function(){var section=document.querySelector('#settings [data-v139-current-module]');if(!section)return;crudActions.forEach(function(a){var inputs=[].slice.call(section.querySelectorAll('[data-v139-action="'+a[0]+'"]'));var head=section.querySelector('[data-v139-bulk-action="'+a[0]+'"]');if(head)head.checked=!!inputs.length&&inputs.every(function(x){return x.checked})})};
@@ -445,5 +502,10 @@
     trace:permissionTrace,
     __v:'phase18-single-permission-engine'
   };
-  window.PETATOEPermissions={screenPerms:screenPerms,crudActions:crudActions,specialPerms:specialPerms,userPermStore:userPermStore,saveUserPermStore:saveUserPermStore,isSuperUser:isSuperUser,fullUserPerm:fullUserPerm,defaultUserPerm:defaultUserPerm,getUserPerm:getUserPerm,saveUserPerm:saveUserPerm,can:can,canSpecial:canSpecial,canAny:canAny,decision:resolvePermissionDecision,trace:permissionTrace,getVehicleList:getVehicleList,getVehicleScope:getVehicleScope,canAccessVehicle:canAccessVehicle,applyVehicleOpsDefaultSpecials:applyVehicleOpsDefaultSpecials,renderPermissionsBody:renderPermissionsBody};
+  window.PETATOEPermissionKeyResolver=Object.freeze({
+    canonical:canonicalPermissionKey,
+    aliases:function(ref){return permissionKeyDescriptor(ref).aliases.slice()},
+    describe:function(ref){var d=permissionKeyDescriptor(ref);return {canonical:d.canonical,aliases:d.aliases.slice(),user:d.user}}
+  });
+  window.PETATOEPermissions={screenPerms:screenPerms,crudActions:crudActions,specialPerms:specialPerms,userPermStore:userPermStore,saveUserPermStore:saveUserPermStore,isSuperUser:isSuperUser,fullUserPerm:fullUserPerm,defaultUserPerm:defaultUserPerm,getUserPerm:getUserPerm,saveUserPerm:saveUserPerm,permissionKeyResolver:window.PETATOEPermissionKeyResolver,can:can,canSpecial:canSpecial,canAny:canAny,decision:resolvePermissionDecision,trace:permissionTrace,getVehicleList:getVehicleList,getVehicleScope:getVehicleScope,canAccessVehicle:canAccessVehicle,applyVehicleOpsDefaultSpecials:applyVehicleOpsDefaultSpecials,renderPermissionsBody:renderPermissionsBody};
 })();

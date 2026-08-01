@@ -597,13 +597,40 @@
     for(var i=0;i<keys.length;i++) await saveAppUserPermission(keys[i], map[keys[i]]);
     return {ok:true};
   }
+  function normalizePermissionKeys(keys){
+    var out=[],seen={};
+    (Array.isArray(keys)?keys:[keys]).forEach(function(v){
+      v=String(v==null?'':v).trim();var k=v.toLowerCase();
+      if(k&&!seen[k]){seen[k]=1;out.push(v)}
+    });
+    return out;
+  }
+  function deletePermissionKeysFromCache(keys){
+    var wanted=normalizePermissionKeys(keys).map(function(x){return x.toLowerCase()});
+    Object.keys(identityCache.permissions||{}).forEach(function(k){if(wanted.indexOf(String(k).trim().toLowerCase())>-1)delete identityCache.permissions[k]});
+  }
+  async function deleteAppUserPermissionAliases(keys){
+    keys=normalizePermissionKeys(keys);
+    if(!keys.length)return {ok:false,error:'Missing permission keys'};
+    deletePermissionKeysFromCache(keys);
+    if(!hasClient())return {ok:false,error:'Supabase client not ready'};
+    var res=await client().from('app_user_permissions').delete().in('user_id',keys);
+    if(res.error){console.warn('PETATOE Identity permission aliases delete failed', resultError(res));return {ok:false,error:resultError(res)};}
+    return {ok:true,deletedKeys:keys};
+  }
+  async function replaceAppUserPermission(canonicalKey,aliases,perm){
+    canonicalKey=String(canonicalKey||'').trim();
+    if(!canonicalKey)return {ok:false,error:'Missing canonical permission key'};
+    var saved=await saveAppUserPermission(canonicalKey,perm);
+    if(saved&&saved.ok===false)return saved;
+    var stale=normalizePermissionKeys(aliases).filter(function(k){return k.toLowerCase()!==canonicalKey.toLowerCase()});
+    if(!stale.length)return saved||{ok:true};
+    var cleaned=await deleteAppUserPermissionAliases(stale);
+    if(cleaned&&cleaned.ok===false)return cleaned;
+    return {ok:true,canonicalKey:canonicalKey,removedAliases:stale};
+  }
   async function deleteAppUserPermission(uid){
-    if(!uid) return {ok:false,error:'Missing user id'};
-    delete identityCache.permissions[String(uid)];
-    if(!hasClient()) return {ok:false,error:'Supabase client not ready'};
-    var res=await client().from('app_user_permissions').delete().eq('user_id',String(uid));
-    if(res.error){console.warn('PETATOE Identity permission delete failed', resultError(res)); return {ok:false,error:resultError(res)};}
-    return {ok:true};
+    return deleteAppUserPermissionAliases([uid]);
   }
   async function updateAppUserCredential(u){
     if(!u||typeof u!=='object') return {ok:false,error:'Invalid app user'};
@@ -656,8 +683,10 @@
     deleteUser:deleteAppUser,
     permissionsSync:appPermissionsSync,
     savePermission:saveAppUserPermission,
+    replacePermission:replaceAppUserPermission,
     savePermissions:saveAppPermissions,
     deletePermission:deleteAppUserPermission,
+    deletePermissionAliases:deleteAppUserPermissionAliases,
     appendAudit:appendAuditLog,
     updateUserCredential:updateAppUserCredential,
     _cache:identityCache,

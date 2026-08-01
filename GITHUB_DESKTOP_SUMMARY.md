@@ -1,1 +1,1 @@
-fix: prevent fabricated inventory count matches without physical count data
+fix: canonicalize permission keys across save reset and Supabase sync
