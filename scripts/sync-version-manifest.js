@@ -39,7 +39,9 @@ function synchronize(){
     'router/navigation-controller.js',
     'navigation/navigation.js',
     'navigation/navigation-state.js',
-    'navigation/navigation-schema.js'
+    'navigation/navigation-schema.js',
+    'commissions/commission-runtime-bootstrap.js',
+    'inline-extracted/commission-inline.js'
   ];
   for(const asset of governedAssets){
     const re = new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\?v=[^\\\'"&<\\s]+', 'g');

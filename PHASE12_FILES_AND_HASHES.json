@@ -1,0 +1,84 @@
+{
+  "phase": "Phase 12 \u2014 Commission Calculation UAT & Snapshot Integrity",
+  "baseline": "PETATOE cumulative state through Phase 11",
+  "files": [
+    {
+      "path": "PRODUCTION_LOCALIZATION_LOCKDOWN_RESULTS.json",
+      "before": "863a2af0ea3a0ddfdc57ff1e3ba4ca7a064d65e5542d4227a5951da7eeb04a12",
+      "after": "58f87cdd07877323fcd7064e3e7e52cd3d0666b42e15cb254a82923128ed8960",
+      "size": 258
+    },
+    {
+      "path": "ENTERPRISE_LOCALIZATION_CERTIFICATION_RESULTS.json",
+      "before": "79a2e4e8d7053d238001a937f1a24d858aeef2c802c28c14a894c9fdfbcfcb31",
+      "after": "6eb3a0ac02e55ea5db55a0fe458991faf9bb5395e49b0f07796478ff7faf37f1",
+      "size": 292
+    },
+    {
+      "path": "index.html",
+      "before": "111aea1c72e25a1cac5037f1a4b64242db17c10132436e63972d6492e36de7e7",
+      "after": "131453cee5afeb9f30d9e1a37071271684ae33a3c2b67c73c9c9519f0413a810",
+      "size": 250993
+    },
+    {
+      "path": "service-worker.js",
+      "before": "e062b560e54a1b75c3eacf2e061f4e50c08c8d5b4868201893ed3b74072ac706",
+      "after": "d9b09425c4c007198179074e89ac93cdb0e078a6d3390072d3458f065cf82560",
+      "size": 6833
+    },
+    {
+      "path": "RELEASE_VERSION.txt",
+      "before": "259724cd08816bb545c599ee7d6ca126ef414fc3f302c8cce0b775b24dfea7c9",
+      "after": "bf2b622b9dee728a4db22107c084f61c685006d438c8e312e0ca1b65700c7c1f",
+      "size": 69
+    },
+    {
+      "path": "inline-extracted/commission-inline.js",
+      "before": "2d276cd9c217e0cf890cc44616b7d85a4ae564a67d2e62498e9e901aa25ec56f",
+      "after": "e3da21a750ae081be9b35376b1148badfba1e8656456e301b3c88a80efc83c92",
+      "size": 98597
+    },
+    {
+      "path": "scripts/sync-version-manifest.js",
+      "before": "e9c0bfe66708569f534eb7ae39b516c5b6b7d3a874a58e0555b1bddf5cf90425",
+      "after": "ab57f9701c918a1472153a4618ee2af733e0fdbfee12f67b502eaea6083eb4ca",
+      "size": 4342
+    },
+    {
+      "path": "scripts/phase12-commission-calculation-uat-check.js",
+      "before": null,
+      "after": "9c4ed696175dba1c067479b32c5ad5400021117899290ae0ce00306070409e6b",
+      "size": 3868
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "before": "e1f87ec74361617293c5a464ba9a2a2e43846affec10e69b4b0e142d53bac8ea",
+      "after": "5b0bdb991f92b684a984b21229c3395001625afdfec136dd1b9339dcfcaebe20",
+      "size": 1437
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "before": "38445626fe5c3f0c302c7d3b7bea871be608065f7898882d3a2015c262447c52",
+      "after": "89fd4372c26b4adfa4fa674699f5ab3ba4f4fb3d0cdb00041a75b64ca1a68e47",
+      "size": 1485
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "before": "efa4789918109c677b0f19d62a17961e25c30914470e763efc1071dec3f002f8",
+      "after": "1500a7b074514bff442d1262f5241a89032ba71f521e5933eb9bf94a5b9d8720",
+      "size": 4330
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "before": "570a0772f36fa34f7dd5ba4f52f5cb50383e362fd8d3d627260fd1baba2d1869",
+      "after": "77e813e3a8bdda06c3a98ff3678fba9d1cc4a138bb6cec8f04e86075f7223b6b",
+      "size": 1697
+    },
+    {
+      "path": "audit/phase12/PETATOE_PHASE12_COMMISSION_CALCULATION_UAT_REPORT.md",
+      "before": null,
+      "after": "809b4626d2ec7fef603e04698f581f131a46164f205b0cf07dbcf19fd648e677",
+      "size": 2985
+    }
+  ]
+}

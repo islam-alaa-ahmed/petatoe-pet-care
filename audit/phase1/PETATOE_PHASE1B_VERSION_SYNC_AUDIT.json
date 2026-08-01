@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-08-01T23:36:21.001Z",
+  "generatedAt": "2026-08-01T23:52:19.804Z",
   "status": "PASSED",
   "manifest": {
     "schemaVersion": 1,
     "product": "PETATOE",
     "releaseVersion": "10.0.25",
     "releaseLabel": "v10.0.25",
-    "releaseName": "PETATOE_V10_0_25_PERMISSION_KEY_INTEGRITY_PHASE10",
-    "buildVersion": "10.0.25-phase10-permission-key-integrity-1",
-    "cacheVersion": "10.0.25-phase10-permission-key-integrity-1",
+    "releaseName": "PETATOE_V10_0_25_COMMISSION_CALCULATION_UAT_PHASE12",
+    "buildVersion": "10.0.25-phase12-commission-calculation-uat-1",
+    "cacheVersion": "10.0.25-phase12-commission-calculation-uat-1",
     "runtimeContracts": {
       "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
       "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -16,7 +16,9 @@
       "navigationRuntime": "10.0.25-phase6-navigation-intent-contract-1",
       "readinessRuntime": "10.0.25-phase7-required-optional-deferred-contract-1",
       "inventoryCountRuntime": "10.0.25-phase9-inventory-count-safety-contract-1",
-      "permissionRuntime": "10.0.25-phase10-canonical-permission-key-contract-1"
+      "permissionRuntime": "10.0.25-phase10-canonical-permission-key-contract-1",
+      "operationsVehiclePolicy": "10.0.25-phase11-operations-vehicle-policy-contract-1",
+      "commissionCalculation": "10.0.25-phase12-commission-calculation-uat-contract-1"
     },
     "native": {
       "latestVersion": "10.0.0",
@@ -32,38 +34,38 @@
   "checks": [
     {
       "id": "cache.serviceWorker",
-      "expected": "10.0.25-phase10-permission-key-integrity-1",
-      "actual": "10.0.25-phase10-permission-key-integrity-1",
+      "expected": "10.0.25-phase12-commission-calculation-uat-1",
+      "actual": "10.0.25-phase12-commission-calculation-uat-1",
       "pass": true
     },
     {
       "id": "cache.startupGate.index",
-      "expected": "10.0.25-phase10-permission-key-integrity-1",
-      "actual": "10.0.25-phase10-permission-key-integrity-1",
+      "expected": "10.0.25-phase12-commission-calculation-uat-1",
+      "actual": "10.0.25-phase12-commission-calculation-uat-1",
       "pass": true
     },
     {
       "id": "cache.startupGate.shell",
-      "expected": "10.0.25-phase10-permission-key-integrity-1",
-      "actual": "10.0.25-phase10-permission-key-integrity-1",
+      "expected": "10.0.25-phase12-commission-calculation-uat-1",
+      "actual": "10.0.25-phase12-commission-calculation-uat-1",
       "pass": true
     },
     {
       "id": "cache.smartRouter",
-      "expected": "10.0.25-phase10-permission-key-integrity-1",
-      "actual": "10.0.25-phase10-permission-key-integrity-1",
+      "expected": "10.0.25-phase12-commission-calculation-uat-1",
+      "actual": "10.0.25-phase12-commission-calculation-uat-1",
       "pass": true
     },
     {
       "id": "cache.smartRuntime",
-      "expected": "10.0.25-phase10-permission-key-integrity-1",
-      "actual": "10.0.25-phase10-permission-key-integrity-1",
+      "expected": "10.0.25-phase12-commission-calculation-uat-1",
+      "actual": "10.0.25-phase12-commission-calculation-uat-1",
       "pass": true
     },
     {
       "id": "cache.runtimeManifest",
-      "expected": "10.0.25-phase10-permission-key-integrity-1",
-      "actual": "10.0.25-phase10-permission-key-integrity-1",
+      "expected": "10.0.25-phase12-commission-calculation-uat-1",
+      "actual": "10.0.25-phase12-commission-calculation-uat-1",
       "pass": true
     },
     {
@@ -74,8 +76,8 @@
     },
     {
       "id": "release.name.index",
-      "expected": "PETATOE_V10_0_25_PERMISSION_KEY_INTEGRITY_PHASE10",
-      "actual": "PETATOE_V10_0_25_PERMISSION_KEY_INTEGRITY_PHASE10",
+      "expected": "PETATOE_V10_0_25_COMMISSION_CALCULATION_UAT_PHASE12",
+      "actual": "PETATOE_V10_0_25_COMMISSION_CALCULATION_UAT_PHASE12",
       "pass": true
     },
     {
@@ -105,7 +107,7 @@
     {
       "id": "runtime.generated",
       "expected": "canonical manifest payload",
-      "actual": "65fbc241c54d7bccbe38b684c0040e9ac6dbfdd6efd809229dea7a8ea719adba",
+      "actual": "89fd4372c26b4adfa4fa674699f5ab3ba4f4fb3d0cdb00041a75b64ca1a68e47",
       "pass": true
     },
     {
