@@ -32,7 +32,9 @@ function synchronize(){
   const governedAssets = [
     'performance/mobile-startup-loading-gate.js',
     'smart/smart-router.js',
-    'smart/smart-reports-runtime-controller.js'
+    'smart/smart-reports-runtime-controller.js',
+    'sales/sales-invoice-report.js',
+    'sales/invoice-print-preview.js'
   ];
   for(const asset of governedAssets){
     const re = new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\?v=[^\\\'"&<\\s]+', 'g');

@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-08-01T22:23:51.188Z",
+  "generatedAt": "2026-08-01T22:37:25.134Z",
   "status": "PASSED",
   "manifest": {
     "schemaVersion": 1,
     "product": "PETATOE",
     "releaseVersion": "10.0.25",
     "releaseLabel": "v10.0.25",
-    "releaseName": "PETATOE_V10_0_25_SMART_REPORTS_RUNTIME_EVENT_OWNERSHIP_PHASE3",
-    "buildVersion": "10.0.25-phase4-customer360-single-owner-1",
-    "cacheVersion": "10.0.25-phase4-customer360-single-owner-1",
+    "releaseName": "PETATOE_V10_0_25_SALES_RUNTIME_DECOMPOSITION_PHASE5",
+    "buildVersion": "10.0.25-phase5-sales-runtime-decomposition-1",
+    "cacheVersion": "10.0.25-phase5-sales-runtime-decomposition-1",
     "runtimeContracts": {
       "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
       "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -29,38 +29,38 @@
   "checks": [
     {
       "id": "cache.serviceWorker",
-      "expected": "10.0.25-phase4-customer360-single-owner-1",
-      "actual": "10.0.25-phase4-customer360-single-owner-1",
+      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
       "pass": true
     },
     {
       "id": "cache.startupGate.index",
-      "expected": "10.0.25-phase4-customer360-single-owner-1",
-      "actual": "10.0.25-phase4-customer360-single-owner-1",
+      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
       "pass": true
     },
     {
       "id": "cache.startupGate.shell",
-      "expected": "10.0.25-phase4-customer360-single-owner-1",
-      "actual": "10.0.25-phase4-customer360-single-owner-1",
+      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
       "pass": true
     },
     {
       "id": "cache.smartRouter",
-      "expected": "10.0.25-phase4-customer360-single-owner-1",
-      "actual": "10.0.25-phase4-customer360-single-owner-1",
+      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
       "pass": true
     },
     {
       "id": "cache.smartRuntime",
-      "expected": "10.0.25-phase4-customer360-single-owner-1",
-      "actual": "10.0.25-phase4-customer360-single-owner-1",
+      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
       "pass": true
     },
     {
       "id": "cache.runtimeManifest",
-      "expected": "10.0.25-phase4-customer360-single-owner-1",
-      "actual": "10.0.25-phase4-customer360-single-owner-1",
+      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
       "pass": true
     },
     {
@@ -71,8 +71,8 @@
     },
     {
       "id": "release.name.index",
-      "expected": "PETATOE_V10_0_25_SMART_REPORTS_RUNTIME_EVENT_OWNERSHIP_PHASE3",
-      "actual": "PETATOE_V10_0_25_SMART_REPORTS_RUNTIME_EVENT_OWNERSHIP_PHASE3",
+      "expected": "PETATOE_V10_0_25_SALES_RUNTIME_DECOMPOSITION_PHASE5",
+      "actual": "PETATOE_V10_0_25_SALES_RUNTIME_DECOMPOSITION_PHASE5",
       "pass": true
     },
     {

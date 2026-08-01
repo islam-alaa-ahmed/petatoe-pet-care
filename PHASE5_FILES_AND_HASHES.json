@@ -1,0 +1,84 @@
+{
+  "phase": "Phase 5 \u2014 Sales Runtime Decomposition",
+  "baseline": "Phase 4 cumulative state",
+  "files": [
+    {
+      "path": "RELEASE_VERSION.txt",
+      "status": "modified",
+      "beforeSha256": "689827c3861e91ce8ee9d41b6d8a1b23d4b0cdea7126748f38b956eba485407f",
+      "afterSha256": "15b1e213a995bfe473013be1bde0fb09d5a97af34e0d0c1ff8a17d70d53bda18"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "status": "modified",
+      "beforeSha256": "286d033381281967071004152039b173da61d95c3eea0b18295a896fafadc77c",
+      "afterSha256": "5ec3b4394508af8bc3df730487748efb5c1b4d8e300dbf2c741a2e92b77c7c85"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "status": "modified",
+      "beforeSha256": "dfccc57c4dd97e25b8b02fe94ba6f71b62953bd0ac7dbebda20a3f50e83531fe",
+      "afterSha256": "770a639d55fde66e75073d1a4d4b0e6cb1e4d6789f8f1967f15c5305114732ad"
+    },
+    {
+      "path": "audit/phase5/PETATOE_PHASE5_SALES_RUNTIME_DECOMPOSITION_REPORT.md",
+      "status": "added",
+      "beforeSha256": null,
+      "afterSha256": "67d2160e747f2b9e8a5801aa20133a4c03c18ebc6a66aab135f9f44ca2396311"
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "status": "modified",
+      "beforeSha256": "c6090cad01f31c5f096d9d92458a16c245564a557986f6fcae71ddfdb6e11ea4",
+      "afterSha256": "6f3c7e7d164655fa806ae0f3b72c4b14b7bb4a8190363417558de6d63483bc50"
+    },
+    {
+      "path": "index.html",
+      "status": "modified",
+      "beforeSha256": "c4a1f79372b4ac870d73ee068dbf1dc66fc29b9843ac82ba5583b807155ea6a9",
+      "afterSha256": "acc00656450eb565216699dd66b623d1995cfa45fff081b64de2eb0e77836750"
+    },
+    {
+      "path": "invoice-manual-multi-items.js",
+      "status": "modified",
+      "beforeSha256": "29737386000d82c07879a733aa22e5f72ee6d105bb5660eb5b67c2d699e728a9",
+      "afterSha256": "a65bb37f16d44363198d8d8751455179ad06348fcca052dad78c6f7c60fa135c"
+    },
+    {
+      "path": "performance/mobile-startup-loading-gate.js",
+      "status": "modified",
+      "beforeSha256": "f9eb39ae3d5c20a76b16425c8847a0dc61579f028e50c1d479b48a87ff6837dd",
+      "afterSha256": "924c552264104880d2d7c2bc28554610ffb04a75ddc9f9a7412c656bd0ee2627"
+    },
+    {
+      "path": "sales/invoice-print-preview.js",
+      "status": "modified",
+      "beforeSha256": "2ecff1cce1789b9a6f7d01b966d04d0d1a0e9093c091adecd4f7f867ee8699b2",
+      "afterSha256": "ad9aa1509e669c301e98b0487d564832b702078ae25affddf4f34ac612be0aba"
+    },
+    {
+      "path": "sales/sales-invoice-report.js",
+      "status": "modified",
+      "beforeSha256": "012c4ad83d387b989848071ede8bba4671e5d8910773fb10ca55cbf059e0219b",
+      "afterSha256": "8bf822bbebeb6585ef521094c1883ba8c20e45615884841445b656cb1a7f8baa"
+    },
+    {
+      "path": "scripts/phase5-sales-runtime-decomposition-check.js",
+      "status": "added",
+      "beforeSha256": null,
+      "afterSha256": "5f4c1a153f77ce8fdfbe43069559cfa7bf4616383852a81f7093db1e6d4aa76b"
+    },
+    {
+      "path": "scripts/sync-version-manifest.js",
+      "status": "modified",
+      "beforeSha256": "aff0822ba68864e983508925dd067504ee69a97e6c7b16e8a63217377536f107",
+      "afterSha256": "41180d755ff001094639999fffc5a309e5c623a842c2abccbcc38086b368ecf0"
+    },
+    {
+      "path": "service-worker.js",
+      "status": "modified",
+      "beforeSha256": "5e5fab52b1f20e8943ff31c074d02fb3bc1b1dc905ae0258d56cb36690e8e200",
+      "afterSha256": "5484991d67cfcb039e116c362430c948d5112ab6e7efa0ef72851501489a495d"
+    }
+  ]
+}

@@ -33,7 +33,7 @@
     }
   }
 
-  window.petatoeCloseSalesInvoicePreview = closeSalesPreviewSafe;
+  /* Public compatibility aliases are published after the adapter contract. */
 
   document.addEventListener('click', function(e){
     var btn = e.target && e.target.closest && e.target.closest('.sir-close-preview,[data-sir-close-preview]');
@@ -120,20 +120,24 @@
     return false;
   }
 
-  window.petatoePrintSalesInvoice = function(no){
-    /* Report PDF is owned by the sales invoice report core. */
-    if(no === 'report') return corePrint(no);
-
-    /* Invoice preview print: use the already-rendered invoice HTML to avoid global @media print rules that caused blank pages. */
-    var html = findInvoiceInDom();
-    if(html) return openPrintableInvoice(html, true);
-
-    return corePrint(no);
-  };
-
-  window.petatoeOpenSalesInvoice = function(no){
-    var html = findInvoiceInDom();
-    if(html) return openPrintableInvoice(html, false);
-    return coreOpen(no);
-  };
+  var adapter = Object.freeze({
+    __ready: true,
+    __owner: 'sales/invoice-print-preview.js',
+    closePreview: closeSalesPreviewSafe,
+    print: function(no){
+      if(no === 'report') return corePrint(no);
+      var html = findInvoiceInDom();
+      if(html) return openPrintableInvoice(html, true);
+      return corePrint(no);
+    },
+    open: function(no){
+      var html = findInvoiceInDom();
+      if(html) return openPrintableInvoice(html, false);
+      return coreOpen(no);
+    }
+  });
+  window.PETATOESalesInvoicePrintAdapter = adapter;
+  window.petatoeCloseSalesInvoicePreview = function(){ return adapter.closePreview(); };
+  window.petatoePrintSalesInvoice = function(no){ return adapter.print(no); };
+  window.petatoeOpenSalesInvoice = function(no){ return adapter.open(no); };
 })();

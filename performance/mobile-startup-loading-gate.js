@@ -45,7 +45,7 @@
   var desktopLazyGroups = {
     diagnostics: true, xlsx: true, settingsSetup: true, children: true,
     operations: true, warehouses: true, payroll: true, treasury: true,
-    smartReports: true, smartSalesInvoices: true, customer360: true, sales: true, commission: true, printing: true
+    smartReports: true, smartSalesInvoices: true, customer360: true, sales: true, salesShared: true, salesCrud: true, salesEntry: true, salesImport: true, salesRecords: true, salesManualItems: true, salesContracts: true, salesAnalytics: true, commission: true, printing: true
   };
 
   function shouldLazyLoad(group){
@@ -105,6 +105,7 @@
     xlsx: 'xlsx', excel: 'xlsx', diagnostics: 'diagnostics', audit: 'diagnostics', observability: 'diagnostics',
     smartReports: 'smartReports', smart: 'smartReports', analytics: 'smartReports', smartSalesInvoices: 'smartSalesInvoices', salesInvoices: 'smartSalesInvoices', customer360: 'customer360', customers: 'customer360',
     reportsUI: 'reportsUI', reports: 'reportsUI', printing: 'printing', print: 'printing', pdf: 'printing',
+    salesShared: 'salesShared', salesCrud: 'salesCrud', salesEntry: 'salesEntry', entry: 'salesEntry', salesImport: 'salesImport', import: 'salesImport', salesRecords: 'salesRecords', records: 'salesRecords', salesManualItems: 'salesManualItems', salesContracts: 'salesContracts', salesAnalytics: 'salesAnalytics',
     sales: 'sales', invoices: 'sales', commission: 'commission', commissions: 'commission'
   };
 
@@ -112,7 +113,17 @@
     smartReports: [],
     smartSalesInvoices: [],
     customer360: [],
-    sales: ['reportsUI', 'smartSalesInvoices'],
+    salesShared: [],
+    salesCrud: [],
+    salesManualItems: ['salesShared'],
+    salesEntry: ['salesShared', 'salesCrud', 'salesManualItems'],
+    salesImport: ['salesShared'],
+    salesRecords: ['salesCrud'],
+    salesContracts: [],
+    salesAnalytics: ['reportsUI'],
+    /* Compatibility aggregate only. No route should require the full sales
+       runtime after Phase 5; old callers may still request it safely. */
+    sales: ['salesEntry', 'salesImport', 'salesRecords', 'smartSalesInvoices', 'salesContracts'],
     printing: ['reportsUI']
   };
 
@@ -226,6 +237,12 @@
         var commissionRuntime = window.PETATOECommissionRuntime;
         if(tabId === 'commissions' && commissionRuntime && typeof commissionRuntime.renderSystem === 'function') commissionRuntime.renderSystem();
         else if(tabId === 'commissionStatement' && commissionRuntime && typeof commissionRuntime.renderStatement === 'function') commissionRuntime.renderStatement();
+      }else if(group === 'salesEntry' || group === 'salesManualItems'){
+        if(tabId === 'entry' && typeof window.petInvoiceManualMultiItemsBoot === 'function') window.petInvoiceManualMultiItemsBoot();
+      }else if(group === 'salesRecords'){
+        if(tabId === 'records' && typeof window.renderRecords === 'function') window.renderRecords();
+      }else if(group === 'salesAnalytics'){
+        if(tabId === 'sales' && typeof window.renderDeep === 'function') window.renderDeep();
       }else if(group === 'smartSalesInvoices'){
         if(tabId === 'smart' && typeof window.injectSalesInvoiceReport === 'function') window.injectSalesInvoiceReport('salesInvoices');
         if(tabId === 'smart' && window.PETATOESalesInvoiceReport && typeof window.PETATOESalesInvoiceReport.render === 'function') window.PETATOESalesInvoiceReport.render();
@@ -344,8 +361,40 @@
         typeof window.PETATOEPayroll.renderSalarySlip === 'function' &&
         typeof window.PETATOEPayroll.exportCsv === 'function');
     },
+    salesShared: function(){
+      return !!(window.PETATOESalesDuplicatePolicy && typeof window.PETATOESalesDuplicatePolicy.findDuplicates === 'function');
+    },
+    salesCrud: function(){
+      return window.__PETATOE_SALES_CRUD_SUPABASE_BINDING__ === true;
+    },
+    salesManualItems: function(){
+      return window.__PETATOE_INVOICE_MANUAL_MULTI_ITEMS_SINGLETON__ === true && typeof window.petInvoiceManualMultiItemsBoot === 'function';
+    },
+    salesEntry: function(){
+      return window.__PETATOE_ENTRY_REFERENCES_BINDINGS__ === '1' &&
+        window.__PETATOE_SALES_CRUD_SUPABASE_BINDING__ === true &&
+        window.__PETATOE_INVOICE_MANUAL_MULTI_ITEMS_SINGLETON__ === true &&
+        typeof window.petInvoiceManualMultiItemsBoot === 'function';
+    },
+    salesImport: function(){
+      return window.__PETATOE_SALES_IMPORT_ENGINE_SINGLETON__ === true &&
+        typeof window.processFile === 'function' && typeof window.confirmImport === 'function';
+    },
+    salesRecords: function(){
+      return window.__PETATOE_SALES_CRUD_SUPABASE_BINDING__ === true && typeof window.renderRecords === 'function';
+    },
+    salesContracts: function(){
+      return window.__PETATOE_CONTRACT_CANDIDATES_REPORT_BINDINGS__ === '1';
+    },
+    salesAnalytics: function(){
+      return typeof window.renderDeep === 'function';
+    },
     smartSalesInvoices: function(){
-      return !!(window.PETATOESalesInvoiceReport && typeof window.PETATOESalesInvoiceReport.render === 'function' && typeof window.injectSalesInvoiceReport === 'function');
+      return !!(window.PETATOESalesInvoiceReport && window.PETATOESalesInvoiceReport.__ready === true &&
+        window.PETATOESalesInvoiceReport.__owner === 'sales/sales-invoice-report.js' &&
+        typeof window.PETATOESalesInvoiceReport.render === 'function' &&
+        typeof window.injectSalesInvoiceReport === 'function' &&
+        window.PETATOESalesInvoicePrintAdapter && window.PETATOESalesInvoicePrintAdapter.__ready === true);
     },
     smartReports: function(){
       var tabs = window.PETATOESmartTabs || (window.PETATOE && window.PETATOE.SmartReports);
@@ -381,15 +430,9 @@
       );
     },
     sales: function(){
-      return !!(
-        window.PETATOESalesDuplicatePolicy &&
-        window.__PETATOE_SALES_IMPORT_ENGINE_SINGLETON__ === true &&
-        window.__PETATOE_ENTRY_REFERENCES_BINDINGS__ &&
-        window.__PETATOE_SALES_CRUD_SUPABASE_BINDING__ &&
-        window.PETATOESalesInvoiceReport && typeof window.PETATOESalesInvoiceReport.render === 'function' &&
-        window.__PETATOE_INVOICE_MANUAL_MULTI_ITEMS_SINGLETON__ === true &&
-        window.__PETATOE_CONTRACT_CANDIDATES_REPORT_BINDINGS__
-      );
+      return groupContractReady('salesEntry') && groupContractReady('salesImport') &&
+        groupContractReady('salesRecords') && groupContractReady('smartSalesInvoices') &&
+        groupContractReady('salesContracts');
     },
     printing: function(){
       return !!(
@@ -565,14 +608,14 @@
     if(existing && existing.promise && existing.status !== 'not-ready' && existing.status !== 'failed') return existing.promise;
 
     var queue = (groups[name] || []).slice();
-    if(!queue.length) return Promise.resolve(false);
+    var dependencyQueue = (dependencies[name] || []).slice();
+    if(!queue.length && !dependencyQueue.length) return Promise.resolve(false);
     var state = states[name] = existing || {};
     state.status = state.scriptsLoaded ? 'waiting-provider-contract' : 'loading';
     state.startedAt = Date.now();
     state.finishedAt = 0;
     state.error = '';
     state.attempts = (state.attempts || 0) + 1;
-    var dependencyQueue = (dependencies[name] || []).slice();
     var optionalDependencyQueue = (optionalDependencies[name] || []).slice();
     optionalDependencyQueue.forEach(function(dependency){
       ensureGroup(dependency).catch(function(error){
@@ -633,7 +676,8 @@
     childrenExpenses:'children', commission:'commission', commissions:'commission', commissionSystem:'commission',
     settings:'settingsSetup', setup:'settingsSetup', users:'settingsSetup', permissions:'settingsSetup', backup:'settingsSetup',
     diagnostics:'diagnostics', observability:'diagnostics', performanceMonitoring:'diagnostics',
-    smart:'smartReports', smartReports:'smartReports', smartSalesInvoices:'smartSalesInvoices', salesInvoices:'smartSalesInvoices', customer360:'customer360', customers:'customer360', salesInvoice:'sales', sales:'sales',
+    smart:'smartReports', smartReports:'smartReports', smartSalesInvoices:'smartSalesInvoices', salesInvoices:'smartSalesInvoices', salesInvoice:'smartSalesInvoices', customer360:'customer360', customers:'customer360',
+    entry:'salesEntry', import:'salesImport', records:'salesRecords', sales:'salesAnalytics', salesContracts:'salesContracts',
     fleet:'fleet', obligations:'obligations', movementCenter:'movement'
   };
 
@@ -671,7 +715,7 @@
     if(/print|pdf|طباعة|تصدير الصفحة/.test(text)) return 'printing';
     if(/customer360/.test(text)) return 'customer360';
     if(/smartreport|smart-report/.test(text)) return 'smartReports';
-    if(/salesinvoice|sales-invoice/.test(text)) return 'sales';
+    if(/salesinvoice|sales-invoice/.test(text)) return 'smartSalesInvoices';
     if(/audit|diagnostic|observability/.test(text)) return 'diagnostics';
     return '';
   }
@@ -692,7 +736,11 @@
     if(/settings|setup|permissions|users|backup/.test(marker)) return 'settingsSetup';
     if(/customer360/.test(marker)) return 'customer360';
     if(/smartreport/.test(marker)) return 'smartReports';
-    if(/salesinvoice|sales-invoice|invoice/.test(marker)) return 'sales';
+    if(/salesinvoice|sales-invoice/.test(marker)) return 'smartSalesInvoices';
+    if(/(^|\s)entry(\s|$)/.test(marker)) return 'salesEntry';
+    if(/(^|\s)import(\s|$)/.test(marker)) return 'salesImport';
+    if(/(^|\s)records(\s|$)/.test(marker)) return 'salesRecords';
+    if(/(^|\s)sales(\s|$)/.test(marker)) return 'salesAnalytics';
     if(/observability|diagnostic|audit/.test(marker)) return 'diagnostics';
     if(/fleet/.test(marker)) return 'fleet';
     if(/obligation/.test(marker)) return 'obligations';

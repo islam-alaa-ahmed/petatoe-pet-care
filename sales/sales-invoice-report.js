@@ -235,6 +235,8 @@ function block_6337_safeRender(target, markup, reason){var el=(typeof target==='
   function openPrintable(no){ return printInvoiceOnly(no); }
   var api={
     __v31137:true,
+    __ready:true,
+    __owner:'sales/sales-invoice-report.js',
     render:renderSalesInvoiceReport,
     getFilteredData:getFilteredInvoiceData,
     getFilteredRows:getFilteredInvoiceRows,
@@ -254,7 +256,14 @@ function block_6337_safeRender(target, markup, reason){var el=(typeof target==='
 
   function injectSalesInvoiceReport(preferred){
     var area=document.getElementById('salesInvoiceReportArea');
-    if(!area) return false;
+    if(!area){
+      var sectionMount=document.querySelector('[data-smart-section="salesInvoices"]');
+      if(!sectionMount) return false;
+      area=document.createElement('div');
+      area.id='salesInvoiceReportArea';
+      area.setAttribute('data-pet-runtime-owner','sales/sales-invoice-report.js');
+      sectionMount.appendChild(area);
+    }
     var section=area.closest('[data-smart-section="salesInvoices"]');
     var active=preferred==='salesInvoices' || (section && section.classList.contains('active'));
     if(active) renderSalesInvoiceReport();
