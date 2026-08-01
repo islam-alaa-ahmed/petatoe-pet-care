@@ -1,0 +1,61 @@
+{
+  "phase": "Phase 8 — Filter & Export Parity",
+  "generatedAt": "2026-08-01T23:14:39.084900Z",
+  "files": [
+    {
+      "path": "index.html",
+      "sha256": "942ef96b0253b98614e8494dfad26d045d36ada497b6ab51b5f08e4c2ca06e48",
+      "size": 250514
+    },
+    {
+      "path": "service-worker.js",
+      "sha256": "d5811286d3659c5862c744ed0c2f414a8483eaa4e4ffedbddb31bf5ce418c38f",
+      "size": 6819
+    },
+    {
+      "path": "RELEASE_VERSION.txt",
+      "sha256": "f0ad45fcbc50ef8edb0f08794126a963202174394659ff510c0f2b2c97afbdcc",
+      "size": 62
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "sha256": "0eb0e84811864307f8d6704482bed653736cf6f374ad4637fd982dd489128aa4",
+      "size": 1082
+    },
+    {
+      "path": "treasury/treasury-core.js",
+      "sha256": "2d0da14fd4823635aa1388bd9486978da4410dde653069548300b3008c7cff4f",
+      "size": 65737
+    },
+    {
+      "path": "warehouses/warehouse-core.js",
+      "sha256": "ca92c955848c542507452c504287f054289e6b716fff164c4e079e50361d45c4",
+      "size": 100043
+    },
+    {
+      "path": "obligations/obligations-core.js",
+      "sha256": "0df6a0761fab3f0df558fbbfdf859c3688b45e7cc5d67a6353ee65a16344baad",
+      "size": 30491
+    },
+    {
+      "path": "scripts/phase8-filter-export-parity-check.js",
+      "sha256": "932339596f4a4ee881216d434ffdf5449a92de588baa09c559a7c8d618656ff9",
+      "size": 1778
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "sha256": "2d5c0910863452d0553c338e04c1e90bed7179c229f5a2ee42e10d5af9fc7fec",
+      "size": 3869
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "sha256": "b64232d5facf72c2fc3f40f7acb704bde347e4a907e32f4820bb4fb645b10f3c",
+      "size": 1599
+    },
+    {
+      "path": "audit/phase8/PETATOE_PHASE8_FILTER_EXPORT_PARITY_REPORT.md",
+      "sha256": "ecd170d914ddf5447feb1ef8174c53f628a2e1e90fe9e09ae911e918c027c436",
+      "size": 2317
+    }
+  ]
+}

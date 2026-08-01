@@ -4,14 +4,14 @@ Status: **PASSED**
 
 | Check | Expected | Actual | Result |
 |---|---|---|---|
-| cache.serviceWorker | 10.0.25-phase7-readiness-contract-hardening-1 | 10.0.25-phase7-readiness-contract-hardening-1 | PASS |
-| cache.startupGate.index | 10.0.25-phase7-readiness-contract-hardening-1 | 10.0.25-phase7-readiness-contract-hardening-1 | PASS |
-| cache.startupGate.shell | 10.0.25-phase7-readiness-contract-hardening-1 | 10.0.25-phase7-readiness-contract-hardening-1 | PASS |
-| cache.smartRouter | 10.0.25-phase7-readiness-contract-hardening-1 | 10.0.25-phase7-readiness-contract-hardening-1 | PASS |
-| cache.smartRuntime | 10.0.25-phase7-readiness-contract-hardening-1 | 10.0.25-phase7-readiness-contract-hardening-1 | PASS |
-| cache.runtimeManifest | 10.0.25-phase7-readiness-contract-hardening-1 | 10.0.25-phase7-readiness-contract-hardening-1 | PASS |
+| cache.serviceWorker | 10.0.25-phase8-filter-export-parity-1 | 10.0.25-phase8-filter-export-parity-1 | PASS |
+| cache.startupGate.index | 10.0.25-phase8-filter-export-parity-1 | 10.0.25-phase8-filter-export-parity-1 | PASS |
+| cache.startupGate.shell | 10.0.25-phase8-filter-export-parity-1 | 10.0.25-phase8-filter-export-parity-1 | PASS |
+| cache.smartRouter | 10.0.25-phase8-filter-export-parity-1 | 10.0.25-phase8-filter-export-parity-1 | PASS |
+| cache.smartRuntime | 10.0.25-phase8-filter-export-parity-1 | 10.0.25-phase8-filter-export-parity-1 | PASS |
+| cache.runtimeManifest | 10.0.25-phase8-filter-export-parity-1 | 10.0.25-phase8-filter-export-parity-1 | PASS |
 | release.index | v10.0.25 | v10.0.25 | PASS |
-| release.name.index | PETATOE_V10_0_25_READINESS_CONTRACT_HARDENING_PHASE7 | PETATOE_V10_0_25_READINESS_CONTRACT_HARDENING_PHASE7 | PASS |
+| release.name.index | PETATOE_V10_0_25_FILTER_EXPORT_PARITY_PHASE8 | PETATOE_V10_0_25_FILTER_EXPORT_PARITY_PHASE8 | PASS |
 | release.file | PETATOE v10.0.25 | PETATOE v10.0.25 | PASS |
 | native.latest | 10.0.0 | 10.0.0 | PASS |
 | native.minimum | 10.0.0 | 10.0.0 | PASS |

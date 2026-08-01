@@ -397,11 +397,19 @@
   }
   function typeLabel(t){return t==='cash'?'تحصيل كاش':(t==='expense'?'صرف / تحويل':'تسليم كاش')}
   function typeClass(t){return t==='cash'?'cash':(t==='expense'?'expense':'handover')}
+  function filteredMovementRows(){
+    var q=clean((byId('trSearch')||{}).value).toLowerCase();
+    var fv=clean((byId('trFilterVehicle')||{}).value);
+    var ft=clean((byId('trFilterType')||{}).value)||'all';
+    return allMovements().filter(function(x){
+      var txt=[x.vehicle,x.person,x.from,x.to,x.ref,x.notes,typeLabel(x.type)].join(' ').toLowerCase();
+      return (!fv||x.vehicle===fv)&&(ft==='all'||x.type===ft)&&(!q||txt.indexOf(q)>-1);
+    });
+  }
   function renderTable(){
     var body=byId('treasuryMovementBody'); if(!body)return;
     var table=body.closest('table'); if(table&&table.tHead&&table.tHead.rows[0]){var hr=table.tHead.rows[0]; if(hr.children.length<11){var th=document.createElement('th'); th.textContent='إجراءات'; hr.appendChild(th);}}
-    var q=clean((byId('trSearch')||{}).value).toLowerCase(); var fv=clean((byId('trFilterVehicle')||{}).value); var ft=clean((byId('trFilterType')||{}).value)||'all';
-    var rows=allMovements().filter(function(x){var txt=[x.vehicle,x.person,x.from,x.to,x.ref,x.notes,typeLabel(x.type)].join(' ').toLowerCase();return (!fv||x.vehicle===fv)&&(ft==='all'||x.type===ft)&&(!q||txt.indexOf(q)>-1)}).slice(0,500);
+    var rows=filteredMovementRows().slice(0,500);
     treasurySafeHtml(body,rows.length?rows.map(function(x,i){var actions=x.locked?'<span style="color:var(--muted);font-weight:900">فاتورة</span>':'<div class="tr-move-actions"><button type="button" class="tr-mini-btn real-edit" data-tr-edit="'+esc(x.id)+'">تعديل</button><button type="button" class="tr-mini-btn real-delete danger" data-tr-delete="'+esc(x.id)+'">حذف</button></div>';return '<tr><td>'+(i+1)+'</td><td>'+esc(x.time?new Date(x.time).toLocaleString('ar-EG'):(x.date||'-'))+'</td><td><span class="tr-badge '+typeClass(x.type)+'">'+typeLabel(x.type)+'</span></td><td>'+esc(x.vehicle)+'</td><td>'+esc(x.from)+'</td><td>'+esc(x.to)+'</td><td style="direction:ltr;font-weight:950">'+fmt(x.amount)+'</td><td>'+esc(x.person)+'</td><td>'+esc(x.ref)+'</td><td>'+esc(x.notes)+'</td><td class="tr-actions-cell">'+actions+'</td></tr>'}).join(''):'<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:22px">لا توجد حركات مطابقة.</td></tr>','treasury movement log');
   }
   function statementRows(src){
@@ -413,14 +421,23 @@
     var bal=0; rows.forEach(function(r){bal+=num(r.inAmt)-num(r.outAmt); if(Math.abs(bal)<0.005)bal=0; r.balance=bal<0?0:bal;});
     return rows.reverse();
   }
+  function filteredStatementRows(src){
+    var from=clean((byId('trStatementFrom')||{}).value);
+    var to=clean((byId('trStatementTo')||{}).value);
+    var q=clean((byId('trStatementSearch')||{}).value).toLowerCase();
+    return statementRows(src).filter(function(r){
+      var iso=clean(r.time).slice(0,10);
+      var txt=[r.kind,r.from,r.to,r.person,r.ref,r.notes].join(' ').toLowerCase();
+      return (!from||iso>=from)&&(!to||iso<=to)&&(!q||txt.indexOf(q)>-1);
+    });
+  }
   function renderStatement(){
     var body=byId('trStatementBody'),title=byId('trStatementTitle'),sub=byId('trStatementSub'),kpis=byId('trStatementKpis'); if(!body)return;
     var src=activeStatementVault||clean((byId('trStatementVaultSelectV82')||{}).value);
     if(!src){treasurySafeHtml(body,'<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:22px">اختر الخزنة لعرض كشف الحساب.</td></tr>','treasury statement empty'); if(kpis)treasurySafeHtml(kpis,'','treasury statement kpis clear'); return;}
     if(!canAccessVault(src)){treasurySafeHtml(body,'<tr><td colspan="11" style="text-align:center;color:var(--danger);padding:22px">غير متاح للصلاحية الحالية.</td></tr>','treasury statement denied'); if(kpis)treasurySafeHtml(kpis,'','treasury statement kpis denied'); return;}
     if(title)title.textContent='📒 كشف حساب: '+src; if(sub)sub.textContent='حركات تفصيلية للوارد والمنصرف والرصيد بعد كل حركة.';
-    var from=clean((byId('trStatementFrom')||{}).value),to=clean((byId('trStatementTo')||{}).value),q=clean((byId('trStatementSearch')||{}).value).toLowerCase();
-    var rows=statementRows(src).filter(function(r){var iso=clean(r.time).slice(0,10),txt=[r.kind,r.from,r.to,r.person,r.ref,r.notes].join(' ').toLowerCase();return (!from||iso>=from)&&(!to||iso<=to)&&(!q||txt.indexOf(q)>-1)});
+    var rows=filteredStatementRows(src);
     var tin=rows.reduce(function(s,r){return s+num(r.inAmt)},0),tout=rows.reduce(function(s,r){return s+num(r.outAmt)},0);
     if(kpis)treasurySafeHtml(kpis,'<div class="tr-statement-kpi"><span>عدد الحركات</span><b>'+rows.length+'</b></div><div class="tr-statement-kpi"><span>إجمالي الوارد</span><b>'+fmt(tin)+'</b></div><div class="tr-statement-kpi"><span>إجمالي المنصرف</span><b>'+fmt(tout)+'</b></div><div class="tr-statement-kpi"><span>الرصيد الحالي</span><b>'+fmtAvail(vaultBalance(src))+'</b></div>','treasury statement kpis');
     treasurySafeHtml(body,rows.length?rows.map(function(r,i){return '<tr><td>'+(i+1)+'</td><td>'+esc(r.time?new Date(r.time).toLocaleString('ar-EG'):'-')+'</td><td>'+esc(r.kind)+'</td><td>'+esc(r.from)+'</td><td>'+esc(r.to)+'</td><td class="tr-in">'+(r.inAmt?fmt(r.inAmt):'-')+'</td><td class="tr-out">'+(r.outAmt?fmt(r.outAmt):'-')+'</td><td style="direction:ltr;font-weight:950">'+fmtAvail(r.balance)+'</td><td>'+esc(r.person)+'</td><td>'+esc(r.ref)+'</td><td>'+esc(r.notes)+'</td></tr>'}).join(''):'<tr><td colspan="11" style="text-align:center;color:var(--muted);padding:22px">لا توجد حركات مطابقة لكشف الحساب.</td></tr>','treasury statement rows');
@@ -453,8 +470,8 @@
     var before=Object.assign({},h.tx); t.amount=amt;t.updatedAt=now(); var saved=await saveTxToSupabase(t); if(!saved.ok)return alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل تحديث حركة الخزينة في Supabase: '):'فشل تحديث حركة الخزينة في Supabase: '+(saved.error||'')); h.arr[h.index]=t; setTx(h.arr); addAudit('تعديل حركة خزينة',before,t,reason); renderAll(); toastMsg('تم تعديل الحركة');
   }
   async function deleteTx(id){var h=findTx(id); if(!h)return alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لم يتم العثور على الحركة'):'لم يتم العثور على الحركة'); if(h.tx.type!=='handover'&&h.tx.type!=='expense')return alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('هذه حركة فاتورة ولا يتم حذفها من الخزينة'):'هذه حركة فاتورة ولا يتم حذفها من الخزينة'); var reason=prompt(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('سبب الحذف'):'سبب الحذف'); if(reason===null)return; reason=clean(reason); if(!reason)return alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('سبب الحذف مطلوب'):'سبب الحذف مطلوب'); if(!confirm(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تأكيد حذف الحركة؟'):'تأكيد حذف الحركة؟'))return; var removed=await deleteTxFromSupabase(id); if(!removed.ok)return alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل حذف حركة الخزينة من Supabase: '):'فشل حذف حركة الخزينة من Supabase: '+(removed.error||'')); var before=Object.assign({},h.tx); h.arr.splice(h.index,1); setTx(h.arr); addAudit('حذف حركة خزينة',before,null,reason); renderAll(); toastMsg('تم حذف الحركة');}
-  function exportCsv(){var rows=allMovements(),header=['التاريخ','النوع','السيارة/الخزنة','من','إلى','المبلغ','المسؤول','المرجع','ملاحظات'];var lines=[header.join(',')].concat(rows.map(function(x){return [x.time||x.date,typeLabel(x.type),x.vehicle,x.from,x.to,x.amount,x.person,x.ref,x.notes].map(function(v){return '"'+clean(v).replace(/"/g,'""')+'"'}).join(',')}));var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Treasury_Movements.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
-  function exportStatementCsv(){var src=activeStatementVault||clean((byId('trStatementVaultSelectV82')||{}).value); if(!src)return alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('افتح كشف حساب أولاً'):'افتح كشف حساب أولاً'); var rows=statementRows(src),header=['الخزنة','التاريخ','نوع الحركة','من','إلى','وارد','منصرف','الرصيد','المسؤول','المرجع','ملاحظات'];var lines=[header.join(',')].concat(rows.map(function(r){return [src,r.time,r.kind,r.from,r.to,r.inAmt,r.outAmt,r.balance,r.person,r.ref,r.notes].map(function(v){return '"'+clean(v).replace(/"/g,'""')+'"'}).join(',')}));var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Treasury_Statement_'+src.replace(/[\\/:*?"<>|]/g,'_')+'.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
+  function exportCsv(){var rows=filteredMovementRows(),header=['التاريخ','النوع','السيارة/الخزنة','من','إلى','المبلغ','المسؤول','المرجع','ملاحظات'];var lines=[header.join(',')].concat(rows.map(function(x){return [x.time||x.date,typeLabel(x.type),x.vehicle,x.from,x.to,x.amount,x.person,x.ref,x.notes].map(function(v){return '"'+clean(v).replace(/"/g,'""')+'"'}).join(',')}));var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Treasury_Movements.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
+  function exportStatementCsv(){var src=activeStatementVault||clean((byId('trStatementVaultSelectV82')||{}).value); if(!src)return alert(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('افتح كشف حساب أولاً'):'افتح كشف حساب أولاً'); var rows=filteredStatementRows(src),header=['الخزنة','التاريخ','نوع الحركة','من','إلى','وارد','منصرف','الرصيد','المسؤول','المرجع','ملاحظات'];var lines=[header.join(',')].concat(rows.map(function(r){return [src,r.time,r.kind,r.from,r.to,r.inAmt,r.outAmt,r.balance,r.person,r.ref,r.notes].map(function(v){return '"'+clean(v).replace(/"/g,'""')+'"'}).join(',')}));var blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='PETATOE_Treasury_Statement_'+src.replace(/[\\/:*?"<>|]/g,'_')+'.csv';a.click();setTimeout(function(){URL.revokeObjectURL(a.href)},1000)}
   function printStatement(){window.print()}
 
 
