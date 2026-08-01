@@ -62,6 +62,12 @@
   }
   function runtimeRows(){
     try{
+      if(window.PETATOERecordsReadFacade&&typeof window.PETATOERecordsReadFacade.readRows==='function'){
+        var canonicalRows=window.PETATOERecordsReadFacade.readRows();
+        if(Array.isArray(canonicalRows)) return canonicalRows;
+      }
+    }catch(_e){}
+    try{
       if(window.PETATOESmartReportsReadAdapter&&typeof window.PETATOESmartReportsReadAdapter.readRows==='function'){
         var adaptedRows=window.PETATOESmartReportsReadAdapter.readRows();
         if(Array.isArray(adaptedRows)) return adaptedRows;
@@ -79,7 +85,7 @@
         if(Array.isArray(sourceRows)) return sourceRows;
       }
     }catch(_e){}
-    return Array.isArray(window.records)?window.records:[];
+    return [];
   }
   function commitRuntimeRows(reason){
     try{

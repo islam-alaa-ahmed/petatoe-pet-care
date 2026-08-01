@@ -88,15 +88,12 @@
 
   function invoiceRows(){
     try{
-      if(typeof window.petatoeSmartReportsRows === 'function') return window.petatoeSmartReportsRows();
-    }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-router.js', e, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-    try{
-      if(window.PETATOEDataSource && typeof window.PETATOEDataSource.getRecordsSync === 'function'){
-        var rows = window.PETATOEDataSource.getRecordsSync();
+      if(window.PETATOERecordsReadFacade && typeof window.PETATOERecordsReadFacade.readRows === 'function'){
+        var rows = window.PETATOERecordsReadFacade.readRows();
         return Array.isArray(rows) ? rows : [];
       }
-    }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-router.js', e, {phase:'v6.4.209-final'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-    return Array.isArray(window.records) ? window.records : [];
+    }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-router.js', e, {phase:'phase2-canonical-data'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
+    return [];
   }
 
   function routeSmartReport(tab){

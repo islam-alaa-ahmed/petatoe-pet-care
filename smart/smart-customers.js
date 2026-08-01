@@ -96,7 +96,7 @@
 
   function renderSmartCustomers(records){
     var start = perfNow();
-    records = arr(records && records.length ? records : (window.PETATOEDataSource && window.PETATOEDataSource.getRecordsSync ? window.PETATOEDataSource.getRecordsSync() : window.records));
+    records = arr(records && records.length ? records : (window.PETATOERecordsReadFacade && window.PETATOERecordsReadFacade.readRows ? window.PETATOERecordsReadFacade.readRows() : []));
     var model = buildCustomerFastModel(records);
     var customers = model.customers;
     var now = new Date();
@@ -186,12 +186,12 @@
       }
     }catch(e){ reportSmartCustomersSilentCatch('getLocalInvoiceRows.legacyRows', e); }
     try{
-      if(window.PETATOEDataSource && typeof window.PETATOEDataSource.getRecordsSync === 'function'){
-        var r1 = window.PETATOEDataSource.getRecordsSync();
+      if(window.PETATOERecordsReadFacade && typeof window.PETATOERecordsReadFacade.readRows === 'function'){
+        var r1 = window.PETATOERecordsReadFacade.readRows();
         return Array.isArray(r1) ? r1 : [];
       }
-    }catch(e){ reportSmartCustomersSilentCatch('getLocalInvoiceRows.dataSource', e); }
-    return Array.isArray(window.records) ? window.records : [];
+    }catch(e){ reportSmartCustomersSilentCatch('getLocalInvoiceRows.readFacade', e); }
+    return [];
   }
 
 

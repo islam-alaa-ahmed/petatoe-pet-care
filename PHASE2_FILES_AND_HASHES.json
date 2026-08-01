@@ -1,0 +1,47 @@
+[
+  {
+    "path": "index.html",
+    "sha256": "6ce117c1b31bf7776e5944cc975c21ae24e0f766b70880867c2b8edda6e3caba",
+    "size": 250512
+  },
+  {
+    "path": "data/records-read-facade.js",
+    "sha256": "b92c0b2ce694d7199b79afb351162eb534e3dfa573de1c19c4e24ff91799b155",
+    "size": 1203
+  },
+  {
+    "path": "smart/smart-reports-read-adapter.js",
+    "sha256": "b69f8b97983e9e5f94ca1cc997de00ad11163129f03b3a98fd55352cd559bc09",
+    "size": 2307
+  },
+  {
+    "path": "smart/smart-reports-runtime-controller.js",
+    "sha256": "7e3a9a46036b854ac88f9e09507a059f1eb3a6cbfb29765299cbd1300d0bc6a3",
+    "size": 14834
+  },
+  {
+    "path": "smart/smart-router.js",
+    "sha256": "ebc53889593ecdbabc0f996cd075a310e47523e8733cb820ff4cfb2d260fae3c",
+    "size": 7334
+  },
+  {
+    "path": "smart/smart-customers.js",
+    "sha256": "1fb7938dd349f2a4f2155a1482f6159f9307de6ec83de15ee01b9f13b1b2cf7a",
+    "size": 37179
+  },
+  {
+    "path": "scripts/phase2-canonical-data-ownership-check.js",
+    "sha256": "177f131911da01a2992dc02b8f6708a6112b239f58fc927ef2ee11b5f4124009",
+    "size": 1449
+  },
+  {
+    "path": "scripts/smart-reports-read-adapter-isolation-check.js",
+    "sha256": "4773a7c87efd5c3bb1e546240971a579f9821dbc440af7e524aece9ffc6709c3",
+    "size": 1751
+  },
+  {
+    "path": "audit/phase2/PETATOE_PHASE2_CANONICAL_DATA_OWNERSHIP_REPORT.md",
+    "sha256": "02880076cbb49fb5c70ac98bcb8c107f80dc5f12e24e7333f1718752bba10c2a",
+    "size": 624
+  }
+]

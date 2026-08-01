@@ -13,7 +13,11 @@
 
   function clean(value){ return String(value==null?'':value).trim(); }
   function committedRows(){
-    return Array.isArray(window.records)?window.records:[];
+    if(window.PETATOERecordsReadFacade&&typeof window.PETATOERecordsReadFacade.readRowsUnsafe==='function'){
+      var rows=window.PETATOERecordsReadFacade.readRowsUnsafe();
+      if(Array.isArray(rows)) return rows;
+    }
+    return [];
   }
   function capture(detail){
     var state=window.__PETATOE_SALES_REPORTS_COMMIT_STATE__||{};
