@@ -55,6 +55,7 @@
     import:{title:'Excel Upload',subtitle:'نظام رفع متعدد المصادر مع منع التكرار وفحص الخلايا قبل الاعتماد',downloadTemplate:'⬇️ تحميل التمبلت',fullTitle:'📘 رفع تقرير تفصيلي شامل',fullDesc:'كل بيانات الفواتير والبنود وطريقة الدفع مرة واحدة.',itemsTitle:'🧾 مبيعات البنود حسب التصنيف',itemsDesc:'بيانات البنود التفصيلية بدون طريقة الدفع.',paymentsTitle:'💳 تحديد طريقة المدفوعات',paymentsDesc:'ربط طريقة الدفع برقم الفاتورة للبيانات المرفوعة.',workflowNote:'اختر طريقة الرفع ثم ارفع ملف Excel. سيتم منع الرفع عند وجود تكرار أو بيانات ناقصة.',dropTitle:'اسحب ملف التقرير التفصيلي الشامل هنا أو اضغط للاختيار',dropDesc:'يدعم نفس ترتيب ملف البيانات الأساسية — xlsx / xls / csv',previewTitle:'معاينة أول 30 سجل',append:'✅ إضافة للبيانات الحالية',replace:'♻️ استبدال البيانات'},
     records:{title:'Records',subtitle:'إدارة السجلات مع تعديل وحذف وتصدير',exportAll:'⬇️ Excel الكل',exportFiltered:'⬇️ Excel المصفّى',print:'🖨️ طباعة',deleteAll:'🗑️ حذف الكل',searchPlaceholder:'بحث في السجلات...',previous:'السابق',next:'التالي'},
     charts:{bar:'Bar',line:'Line'},
+    warehouseSource:{'inventoryCountUnavailable':'لا توجد جلسة جرد فعلية معتمدة؛ لذلك لن يعرض النظام رصيدًا فعليًا أو فرقًا وهميًا.','notCounted':'لم يتم الجرد','inventoryStatus':'حالة الجرد'},
     runtimePhrases:{
       'h91c1970e':'ليس لديك صلاحية لتنفيذ هذا الإجراء',
       'hb3e58e38':'لا توجد بيانات للتصدير',

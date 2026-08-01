@@ -1,0 +1,84 @@
+{
+  "changed": [
+    "PRODUCTION_LOCALIZATION_LOCKDOWN_RESULTS.json",
+    "ENTERPRISE_LOCALIZATION_CERTIFICATION_RESULTS.json",
+    "index.html",
+    "service-worker.js",
+    "RELEASE_VERSION.txt",
+    "i18n/ar.js",
+    "i18n/en.js",
+    "config/petatoe-version.json",
+    "runtime/version-manifest.js",
+    "warehouses/warehouse-core.js",
+    "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+    "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+    "i18n/localization-center/dictionary-store.js"
+  ],
+  "added": [
+    "scripts/phase9-inventory-count-safety-check.js",
+    "audit/phase9/PETATOE_PHASE9_INVENTORY_COUNT_SAFETY_REPORT.md"
+  ],
+  "deleted": [],
+  "hashes": {
+    "PRODUCTION_LOCALIZATION_LOCKDOWN_RESULTS.json": {
+      "after": "863a2af0ea3a0ddfdc57ff1e3ba4ca7a064d65e5542d4227a5951da7eeb04a12",
+      "before": "7f5e9442325ee9f8c11c1156fed208a5ecf1bb041022c56520b42b11836a416b"
+    },
+    "ENTERPRISE_LOCALIZATION_CERTIFICATION_RESULTS.json": {
+      "after": "79a2e4e8d7053d238001a937f1a24d858aeef2c802c28c14a894c9fdfbcfcb31",
+      "before": "90c3bb5f7ea6f97020e140d2f388d4c12101fa2c13ec20b965e58a95715c491e"
+    },
+    "index.html": {
+      "after": "87d7e46a8d19991890e1a2030bd020ca54c88a5cdf616094afd555c47da6458b",
+      "before": "942ef96b0253b98614e8494dfad26d045d36ada497b6ab51b5f08e4c2ca06e48"
+    },
+    "service-worker.js": {
+      "after": "4f671fdcb50f8f0482bf1bbf3154b9af2b343a5d0be3abec32de672ade845d72",
+      "before": "d5811286d3659c5862c744ed0c2f414a8483eaa4e4ffedbddb31bf5ce418c38f"
+    },
+    "RELEASE_VERSION.txt": {
+      "after": "623b21803a3646d0c13e130a27b99935074dcc82a6817431d01ee05a80f25a74",
+      "before": "f0ad45fcbc50ef8edb0f08794126a963202174394659ff510c0f2b2c97afbdcc"
+    },
+    "i18n/ar.js": {
+      "after": "3445354713668ff42539c73f8a4100d32c2b0b600baf02e6f5cbdd0ac43a9f6a",
+      "before": "8a571db8095878851f88cbaec10a4a39046d29b423269624c302a786306b9a42"
+    },
+    "i18n/en.js": {
+      "after": "b0b307685bea353f2b9cecaa46f5787b9598afc3bbfbb1b5184c23204f568991",
+      "before": "592a63bed353fca0283a8336189fc4ed8c0a3666726d9aa0879468fe4d7dad88"
+    },
+    "config/petatoe-version.json": {
+      "after": "b66a49f39132e4856ecb1746ed1d1fc62249f5690629593b760c1c0d974b91f9",
+      "before": "0eb0e84811864307f8d6704482bed653736cf6f374ad4637fd982dd489128aa4"
+    },
+    "runtime/version-manifest.js": {
+      "after": "fe62cefd6df6bf9ffffbf3c037ce493f44fbc356b6af724db09c3dd264904ce1",
+      "before": "f038cc5e84ae24dd8d1ed3e80916c515de46cf2824d5d019ef92977ec3d47e82"
+    },
+    "warehouses/warehouse-core.js": {
+      "after": "6c5215ae91212943fa9c7b27ff30731ed2ff7ead27815bf8e282bda0699e5331",
+      "before": "ca92c955848c542507452c504287f054289e6b716fff164c4e079e50361d45c4"
+    },
+    "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json": {
+      "after": "2c6ea548bba92ec1b9f65a0ab0fd8c1c1dd81723ede087177bc54010d060aa21",
+      "before": "3d692eaea0617eb87467c222c950211fc141efebe0baaa51db04258647033606"
+    },
+    "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md": {
+      "after": "ad458a05d76755241cbbb5b4a7e36c17496133da01959c4cfcfe729089dcee31",
+      "before": "b64232d5facf72c2fc3f40f7acb704bde347e4a907e32f4820bb4fb645b10f3c"
+    },
+    "i18n/localization-center/dictionary-store.js": {
+      "after": "9c616fdeeb20574cdc2d00918658afe2df74e8eadd078192baa7fcac02374695",
+      "before": "13c2443c45dece560f635aa56b31f0bdd437ac9684ac8011d3d3e5255a158130"
+    },
+    "scripts/phase9-inventory-count-safety-check.js": {
+      "after": "f26f91a3f19bdf2f43c435d697cf22c7a49538d749564a2baf79fcdefbe8e8e6",
+      "before": null
+    },
+    "audit/phase9/PETATOE_PHASE9_INVENTORY_COUNT_SAFETY_REPORT.md": {
+      "after": "75d5543e19a41fa5f935072539a054a4fb997c16f6f7e4a9093d9cb9f0166210",
+      "before": null
+    }
+  }
+}
