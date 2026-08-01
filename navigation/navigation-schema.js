@@ -81,7 +81,7 @@
         var settingsAction=data['data-settings-action']||'';
         try{window.__PETATOE_SETTINGS_MAIN__=settingsMain;window.__PETATOE_SETTINGS_SUB__=settingsSub;}catch(_e){}
         if(window.PETATOERouter&&typeof window.PETATOERouter.openTab==='function'){
-          window.PETATOERouter.openTab('settings','',{source:'navigation-schema-mobile'});
+          window.PETATOERouter.openTab('settings','',{navigationScreen:data['data-pet-nav-screen']||settingsMain||'settings',source:'navigation-schema-mobile'});
         }else if(typeof window.tab==='function'){
           window.tab('settings');
         }else return false;
@@ -100,7 +100,10 @@
       var tab=data['data-tab']||'';
       if(tab){
         var smartOpen=data['data-smart-open']||'';
-        var routeIntent={source:'navigation-schema-mobile'};
+        var routeIntent={
+          navigationScreen:data['data-pet-nav-screen']||data['data-pet-permission-screen']||tab,
+          source:'navigation-schema-mobile'
+        };
         if(tab==='appointments') routeIntent.appointmentsSubTab=data['data-appointments-subtab']||'add';
         if(window.PETATOERouter&&typeof window.PETATOERouter.openTab==='function'){
           window.PETATOERouter.openTab(tab,smartOpen,routeIntent);

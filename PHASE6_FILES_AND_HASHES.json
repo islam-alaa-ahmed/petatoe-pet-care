@@ -1,0 +1,97 @@
+{
+  "phase": "Phase 6 - Navigation & Lazy Route Integrity",
+  "baseline": "Cumulative through Phase 5",
+  "fileCount": 15,
+  "files": [
+    {
+      "path": "RELEASE_VERSION.txt",
+      "beforeSha256": "15b1e213a995bfe473013be1bde0fb09d5a97af34e0d0c1ff8a17d70d53bda18",
+      "afterSha256": "66209a493f7653fcbe662f1b7ad8eb2b0b9adcdfb0dbe66afca5fa9a8e4a96b0",
+      "status": "modified"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "beforeSha256": "5ec3b4394508af8bc3df730487748efb5c1b4d8e300dbf2c741a2e92b77c7c85",
+      "afterSha256": "48b900bf9b38337d165d250bf50492759decbe69f2e319d6e19013933c08e338",
+      "status": "modified"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "beforeSha256": "770a639d55fde66e75073d1a4d4b0e6cb1e4d6789f8f1967f15c5305114732ad",
+      "afterSha256": "2ad931ce194fd866e63ecbdb4fe056653256f7aff06861e6f4ab3b852bfb5c66",
+      "status": "modified"
+    },
+    {
+      "path": "audit/phase6/PETATOE_PHASE6_NAVIGATION_LAZY_ROUTE_INTEGRITY_REPORT.md",
+      "beforeSha256": null,
+      "afterSha256": "e2116a9818dbcbefdd9e283cc2b4562e5f11cce0b0639b06453d0b41e16a9c9a",
+      "status": "added"
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "beforeSha256": "6f3c7e7d164655fa806ae0f3b72c4b14b7bb4a8190363417558de6d63483bc50",
+      "afterSha256": "39a2e92b5e4d119a9a8963968a146689063bec3c14c140007860bd6a709e5ef1",
+      "status": "modified"
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "acc00656450eb565216699dd66b623d1995cfa45fff081b64de2eb0e77836750",
+      "afterSha256": "46d3dc9476198f5afccd6c018a24a257cb6a110351dd43d9f3f3b5b0c4ba1d3d",
+      "status": "modified"
+    },
+    {
+      "path": "navigation/navigation-schema.js",
+      "beforeSha256": "0a2f59e85a1335a78932dd682ba3f1fbf9e4e0ba84f9d4a2a3699e8e8aa3caef",
+      "afterSha256": "0d613139190e1a02a213be90f907fc61c54f783b22d781e85293f2524bc77e32",
+      "status": "modified"
+    },
+    {
+      "path": "navigation/navigation-state.js",
+      "beforeSha256": "4a1eee4f3d132047449f9716092c21ffe13775d52678e4a1643b4fb58b360329",
+      "afterSha256": "d4ff004f912b2a37c57d9f98c9d9128cf5e63cdeb4306862261b9b15b61c8410",
+      "status": "modified"
+    },
+    {
+      "path": "navigation/navigation.js",
+      "beforeSha256": "ce93bd0385f01881131696fa04e133cd0781a0e11ab0da827c1a76e061768bc5",
+      "afterSha256": "b9de3487050656fefdc36372b6fcd07dc6aa6b6fad063babd8a000a0ab3e4d8d",
+      "status": "modified"
+    },
+    {
+      "path": "performance/mobile-startup-loading-gate.js",
+      "beforeSha256": "924c552264104880d2d7c2bc28554610ffb04a75ddc9f9a7412c656bd0ee2627",
+      "afterSha256": "8088a08458fb694528f9035de821019c87f9808a5c8aee7a504b5abfaab240a4",
+      "status": "modified"
+    },
+    {
+      "path": "router/navigation-controller.js",
+      "beforeSha256": "93260603446a311514e83f3ad7c62ea20c091696f0ecc08e0c1fe6c27b02f290",
+      "afterSha256": "07007b0d1884ea4e0f868afe76b76331284a9fa8021e61f579e98b6572228398",
+      "status": "modified"
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "beforeSha256": "03649b1ee6b48533d85b43315ac50d841370f71bbe4209f434c2c97d1c8a1739",
+      "afterSha256": "ca747011e4e066efb464f2bd4950e149587fe21d7de7f5554e76d7afd5b63c78",
+      "status": "modified"
+    },
+    {
+      "path": "scripts/phase6-navigation-lazy-route-integrity-check.js",
+      "beforeSha256": null,
+      "afterSha256": "16195af9550d8d66d80ef5079a33d2ee75315089eac52fcf44c19537579ac75e",
+      "status": "added"
+    },
+    {
+      "path": "scripts/sync-version-manifest.js",
+      "beforeSha256": "41180d755ff001094639999fffc5a309e5c623a842c2abccbcc38086b368ecf0",
+      "afterSha256": "b59185b069bf7d1267a0535cd5c2fabfab1efc31f99006f158c4163ce176e587",
+      "status": "modified"
+    },
+    {
+      "path": "service-worker.js",
+      "beforeSha256": "5484991d67cfcb039e116c362430c948d5112ab6e7efa0ef72851501489a495d",
+      "afterSha256": "0997dde9bd1aded44f4fc58d4011cfffbb72e3b3034fd01d93b169f61d0512f7",
+      "status": "modified"
+    }
+  ]
+}

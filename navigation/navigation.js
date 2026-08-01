@@ -47,12 +47,12 @@
     try{document.body.classList.remove('sidebar-open')}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
     setTimeout(markActive,50);
   }
-  function openSettings(main,sub,action){
+  function openSettings(main,sub,action,navigationScreen){
     main=main||'system'; sub=sub||'';
     try{window.__PETATOE_SETTINGS_MAIN__=main;window.__PETATOE_SETTINGS_SUB__=sub||'';}catch(e){}
     // PETATOE v6.1.205 Phase 2: navigation only opens the section and broadcasts intent.
     // It must not call settings render functions directly; settings.js/settings-render-fix own rendering.
-    petatoeSidebarOpenTab('settings');
+    petatoeSidebarOpenTab('settings','',{navigationScreen:navigationScreen||main||'settings',source:'canonical-navigation'});
     try{document.dispatchEvent(new CustomEvent('petatoe:settingsnavigate',{detail:{main:main,sub:sub,action:action||''}}));}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}
     if(action==='restore'){
       setTimeout(function(){try{ if(typeof window.petV110PickRestore==='function') window.petV110PickRestore(); else if(typeof window.petatoeRestorePicker==='function') window.petatoeRestorePicker(); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("navigation/navigation.js",e);}},180);
@@ -229,7 +229,7 @@
       var b=e.target.closest&&e.target.closest('button'); if(!b||!nav.contains(b)) return;
       var sm=b.getAttribute('data-settings-main');
       if(window.PETATOENavigationPermissions&&window.PETATOENavigationPermissions.guardClick&&!window.PETATOENavigationPermissions.guardClick(b)){e.preventDefault(); e.stopPropagation(); return false;}
-      if(sm){e.preventDefault(); e.stopPropagation(); openSettings(sm,b.getAttribute('data-settings-sub')||'',b.getAttribute('data-settings-action')||''); return false;}
+      if(sm){e.preventDefault(); e.stopPropagation(); openSettings(sm,b.getAttribute('data-settings-sub')||'',b.getAttribute('data-settings-action')||'',b.getAttribute('data-pet-nav-screen')||sm); return false;}
       var tab=b.getAttribute('data-tab');
       if(tab){
         e.preventDefault(); e.stopPropagation();
@@ -240,6 +240,7 @@
         }
         petatoeSidebarOpenTab(tab,b.getAttribute('data-smart-open')||'',{
           appointmentsSubTab:appointmentsSubTab,
+          navigationScreen:b.getAttribute('data-pet-nav-screen')||b.getAttribute('data-pet-permission-screen')||tab,
           source:'canonical-navigation'
         });
         if(tab==='appointments') applyAppointmentsNavigationIntent();

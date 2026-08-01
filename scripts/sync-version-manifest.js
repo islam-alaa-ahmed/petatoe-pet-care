@@ -34,7 +34,11 @@ function synchronize(){
     'smart/smart-router.js',
     'smart/smart-reports-runtime-controller.js',
     'sales/sales-invoice-report.js',
-    'sales/invoice-print-preview.js'
+    'sales/invoice-print-preview.js',
+    'router/navigation-controller.js',
+    'navigation/navigation.js',
+    'navigation/navigation-state.js',
+    'navigation/navigation-schema.js'
   ];
   for(const asset of governedAssets){
     const re = new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\?v=[^\\\'"&<\\s]+', 'g');

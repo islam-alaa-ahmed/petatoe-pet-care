@@ -11,8 +11,12 @@
   function markNav(tabId,smartOpen,routeIntent){
     routeIntent=routeIntent&&typeof routeIntent==='object'?routeIntent:{};
     var requestedAppointmentsSubTab=tabId==='appointments'?String(routeIntent.appointmentsSubTab||'add').trim()||'add':'';
+    var requestedScreen=String(routeIntent.navigationScreen||'').trim();
     qsa('#nav button[data-tab], #nav .pet-nav-direct[data-tab]').forEach(function(b){
-      var match=b.getAttribute('data-tab')===tabId && (!smartOpen || b.getAttribute('data-smart-open')===smartOpen);
+      var buttonScreen=String(b.getAttribute('data-pet-nav-screen')||b.getAttribute('data-pet-permission-screen')||b.getAttribute('data-tab')||'').trim();
+      var buttonSmart=String(b.getAttribute('data-smart-open')||'');
+      var match=b.getAttribute('data-tab')===tabId && (tabId==='smart' ? buttonSmart===smartOpen : (!smartOpen || buttonSmart===smartOpen));
+      if(match&&requestedScreen) match=buttonScreen===requestedScreen;
       if(match&&tabId==='appointments'){
         var buttonSubTab=String(b.getAttribute('data-appointments-subtab')||'add').trim()||'add';
         match=buttonSubTab===requestedAppointmentsSubTab;
@@ -36,7 +40,7 @@
   function normalizeRouteIntent(tabId,routeIntent){
     routeIntent=routeIntent&&typeof routeIntent==='object'?routeIntent:{};
     var appointmentsSubTab='';
-    var navigationScreen=String(routeIntent.navigationScreen||'').trim();
+    var navigationScreen=String(routeIntent.navigationScreen||tabId||'').trim();
     if(tabId==='appointments'){
       appointmentsSubTab=String(routeIntent.appointmentsSubTab||(navigationScreen==='appointmentsMaster'?'master':'add')).trim()||'add';
       if(appointmentsSubTab==='master'&&!navigationScreen) navigationScreen='appointmentsMaster';
@@ -59,30 +63,34 @@
       }
     }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('router/navigation-controller.js',e);}
   }
-  function routeAllowed(tabId){
+  function routeAllowed(tabId,routeIntent){
     if(!tabId || tabId==='dashboard') return true;
+    var intent=normalizeRouteIntent(tabId,routeIntent);
+    var permissionScreen=intent.navigationScreen||tabId;
     try{
       var perms=window.PETATOENavigationPermissions;
-      if(perms && typeof perms.canOpen==='function') return !!perms.canOpen(tabId);
+      if(perms && typeof perms.canOpen==='function') return !!perms.canOpen(permissionScreen);
     }catch(e){
-      reportRouteBlocked(tabId,'permission-check-error');
+      reportRouteBlocked(permissionScreen,'permission-check-error');
       return false;
     }
     return true;
   }
-  function hydrateRouteRuntime(tabId){
-    if(tabId !== 'smart') return;
+  function hydrateRouteRuntime(tabId,routeIntent){
     try{
       var gate = window.PETATOEMobileStartupGate;
-      if(gate && typeof gate.ensureGroup === 'function'){
-        gate.ensureGroup('smartReports').catch(function(error){
-          if(window.console && console.warn) console.warn('[PETATOE Router] Smart Reports route hydration failed', error);
-        });
-      }
+      if(!gate) return;
+      var intent=normalizeRouteIntent(tabId,routeIntent);
+      var ensure = typeof gate.ensureRoute === 'function'
+        ? gate.ensureRoute(tabId,intent.navigationScreen)
+        : (tabId==='smart' && typeof gate.ensureGroup==='function' ? gate.ensureGroup('smartReports') : null);
+      if(ensure && typeof ensure.catch==='function') ensure.catch(function(error){
+        if(window.console && console.warn) console.warn('[PETATOE Router] route hydration failed', tabId, intent.navigationScreen, error);
+      });
     }catch(error){
       try{
         if(window.PETATOEDiagnostics && typeof window.PETATOEDiagnostics.capture === 'function'){
-          window.PETATOEDiagnostics.capture('warn','router.smartReports.hydration',{message:String(error && error.message || error)});
+          window.PETATOEDiagnostics.capture('warn','router.route.hydration',{route:tabId||'',message:String(error && error.message || error)});
         }
       }catch(_e){}
     }
@@ -97,12 +105,13 @@
        This is intentionally non-blocking: navigation remains responsive while the
        canonical Startup Gate loads providers. It also covers restored/programmatic
        routes that never emit pointerdown/click before openTab(). */
-    hydrateRouteRuntime(tabId);
-    if(!routeAllowed(tabId)){
-      reportRouteBlocked(tabId,'permission-denied');
+    if(!routeAllowed(tabId,routeIntent)){
+      reportRouteBlocked(normalizeRouteIntent(tabId,routeIntent).navigationScreen||tabId,'permission-denied');
       tabId='dashboard';
       smartOpen='';
+      routeIntent={navigationScreen:'dashboard',source:'permission-fallback'};
     }
+    hydrateRouteRuntime(tabId,routeIntent);
     var previous=window.PETATOERouter&&window.PETATOERouter.current||currentTab();
     var previousSmart=window.PETATOERouter&&window.PETATOERouter.currentSmart||'';
     var target=byIdSafe(tabId);

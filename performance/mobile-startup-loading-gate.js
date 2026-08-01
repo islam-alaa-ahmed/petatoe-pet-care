@@ -678,6 +678,7 @@
     diagnostics:'diagnostics', observability:'diagnostics', performanceMonitoring:'diagnostics',
     smart:'smartReports', smartReports:'smartReports', smartSalesInvoices:'smartSalesInvoices', salesInvoices:'smartSalesInvoices', salesInvoice:'smartSalesInvoices', customer360:'customer360', customers:'customer360',
     entry:'salesEntry', import:'salesImport', records:'salesRecords', sales:'salesAnalytics', salesContracts:'salesContracts',
+    executive:'smartReports', vans:'reportsUI', services:'reportsUI',
     fleet:'fleet', obligations:'obligations', movementCenter:'movement'
   };
 
@@ -749,6 +750,22 @@
     return '';
   }
 
+  function groupForRoute(routeId,navigationScreen){
+    var screen=String(navigationScreen||'').replace(/^#/,'');
+    var route=String(routeId||'').replace(/^#/,'');
+    if(screenGroupMap[screen]) return screenGroupMap[screen];
+    if(screenGroupMap[route]) return screenGroupMap[route];
+    var panel=document.getElementById(route);
+    return groupForPanel(panel);
+  }
+
+  function ensureRoute(routeId,navigationScreen){
+    var group=groupForRoute(routeId,navigationScreen);
+    if(!group) return Promise.resolve(true);
+    if(!startupInteractive){ rememberPendingStartupGroup(group); return Promise.resolve(true); }
+    return ensureGroup(group);
+  }
+
   function installTriggers(){
     if(window.__PETATOE_MOBILE_STARTUP_GATE_TRIGGERS__) return;
     window.__PETATOE_MOBILE_STARTUP_GATE_TRIGGERS__ = true;
@@ -794,16 +811,10 @@
     }, true);
 
     document.addEventListener('petatoe:tabchange', function(event){
-      var id = event && event.detail && event.detail.tabId;
+      var detail = event && event.detail || {};
+      var id = detail.tabId;
       if(!id) return;
-      var panel = document.getElementById(id);
-      var group = groupForPanel(panel);
-      if(!group) return;
-      if(!startupInteractive){
-        rememberPendingStartupGroup(group);
-        return;
-      }
-      ensureGroup(group).catch(function(){});
+      ensureRoute(id,detail.navigationScreen).catch(function(){});
     }, true);
 
     /* Phase P6: canonical pointerdown and petatoe:tabchange signals own lazy hydration.
@@ -890,6 +901,8 @@
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
+    groupForRoute: groupForRoute,
+    ensureRoute: ensureRoute,
     normalizeGroup: normalizeGroup,
     getGroupStatus: getGroupStatus,
     invalidateGroup: invalidateGroup,

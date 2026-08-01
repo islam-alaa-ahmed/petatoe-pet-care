@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-08-01T22:37:25.134Z",
+  "generatedAt": "2026-08-01T22:50:14.169Z",
   "status": "PASSED",
   "manifest": {
     "schemaVersion": 1,
     "product": "PETATOE",
     "releaseVersion": "10.0.25",
     "releaseLabel": "v10.0.25",
-    "releaseName": "PETATOE_V10_0_25_SALES_RUNTIME_DECOMPOSITION_PHASE5",
-    "buildVersion": "10.0.25-phase5-sales-runtime-decomposition-1",
-    "cacheVersion": "10.0.25-phase5-sales-runtime-decomposition-1",
+    "releaseName": "PETATOE_V10_0_25_NAVIGATION_LAZY_ROUTE_INTEGRITY_PHASE6",
+    "buildVersion": "10.0.25-phase6-navigation-lazy-route-integrity-1",
+    "cacheVersion": "10.0.25-phase6-navigation-lazy-route-integrity-1",
     "runtimeContracts": {
       "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
       "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
       "smartReportsReadAdapter": "10.0.25-smart-reports-sr5-4-read-adapter",
-      "navigationRuntime": "10.0.25-navigation-runtime-isolation-c2-3"
+      "navigationRuntime": "10.0.25-phase6-navigation-intent-contract-1"
     },
     "native": {
       "latestVersion": "10.0.0",
@@ -29,38 +29,38 @@
   "checks": [
     {
       "id": "cache.serviceWorker",
-      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
-      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "expected": "10.0.25-phase6-navigation-lazy-route-integrity-1",
+      "actual": "10.0.25-phase6-navigation-lazy-route-integrity-1",
       "pass": true
     },
     {
       "id": "cache.startupGate.index",
-      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
-      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "expected": "10.0.25-phase6-navigation-lazy-route-integrity-1",
+      "actual": "10.0.25-phase6-navigation-lazy-route-integrity-1",
       "pass": true
     },
     {
       "id": "cache.startupGate.shell",
-      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
-      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "expected": "10.0.25-phase6-navigation-lazy-route-integrity-1",
+      "actual": "10.0.25-phase6-navigation-lazy-route-integrity-1",
       "pass": true
     },
     {
       "id": "cache.smartRouter",
-      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
-      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "expected": "10.0.25-phase6-navigation-lazy-route-integrity-1",
+      "actual": "10.0.25-phase6-navigation-lazy-route-integrity-1",
       "pass": true
     },
     {
       "id": "cache.smartRuntime",
-      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
-      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "expected": "10.0.25-phase6-navigation-lazy-route-integrity-1",
+      "actual": "10.0.25-phase6-navigation-lazy-route-integrity-1",
       "pass": true
     },
     {
       "id": "cache.runtimeManifest",
-      "expected": "10.0.25-phase5-sales-runtime-decomposition-1",
-      "actual": "10.0.25-phase5-sales-runtime-decomposition-1",
+      "expected": "10.0.25-phase6-navigation-lazy-route-integrity-1",
+      "actual": "10.0.25-phase6-navigation-lazy-route-integrity-1",
       "pass": true
     },
     {
@@ -71,8 +71,8 @@
     },
     {
       "id": "release.name.index",
-      "expected": "PETATOE_V10_0_25_SALES_RUNTIME_DECOMPOSITION_PHASE5",
-      "actual": "PETATOE_V10_0_25_SALES_RUNTIME_DECOMPOSITION_PHASE5",
+      "expected": "PETATOE_V10_0_25_NAVIGATION_LAZY_ROUTE_INTEGRITY_PHASE6",
+      "actual": "PETATOE_V10_0_25_NAVIGATION_LAZY_ROUTE_INTEGRITY_PHASE6",
       "pass": true
     },
     {
@@ -102,7 +102,7 @@
     {
       "id": "runtime.generated",
       "expected": "canonical manifest payload",
-      "actual": "03649b1ee6b48533d85b43315ac50d841370f71bbe4209f434c2c97d1c8a1739",
+      "actual": "ca747011e4e066efb464f2bd4950e149587fe21d7de7f5554e76d7afd5b63c78",
       "pass": true
     },
     {

@@ -77,6 +77,7 @@
       savedAt: Date.now(),
       userKey: userKey(),
       panel: clean(panel),
+      navigationScreen: screenForPanel(panel, activeAttr('#appointments [data-appointment-tab].active','data-appointment-tab')),
       smartOpen: clean(window.PETATOERouter && window.PETATOERouter.currentSmart),
       settingsMain: clean(window.__PETATOE_SETTINGS_MAIN__ || activeAttr('#settings [data-pet-v110-main].active','data-pet-v110-main')),
       settingsSub: clean(window.__PETATOE_SETTINGS_SUB__ || activeAttr('#settings [data-pet-v110-sub].active','data-pet-v110-sub')),
@@ -142,7 +143,7 @@
 
   function openSettingsState(s){
     try{ window.__PETATOE_SETTINGS_MAIN__ = s.settingsMain || 'system'; window.__PETATOE_SETTINGS_SUB__ = s.settingsSub || ''; }catch(_e){}
-    try{ if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function') window.PETATOERouter.openTab('settings'); }catch(_e){}
+    try{ if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function') window.PETATOERouter.openTab('settings','',{navigationScreen:s.navigationScreen||s.settingsMain||'settings',source:'navigation-state-restore'}); }catch(_e){}
     setTimeout(function(){
       try{ document.dispatchEvent(new CustomEvent('petatoe:settingsnavigate', {detail:{main:s.settingsMain || 'system', sub:s.settingsSub || '', source:'navigation-state-restore'}})); }catch(_e){}
     }, 180);
@@ -177,8 +178,8 @@
     RESTORE_FLAG = true;
     try{
       if(s.panel === 'settings') openSettingsState(s);
-      else if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function') window.PETATOERouter.openTab(s.panel, s.smartOpen || '', {appointmentsSubTab:s.panel==='appointments'?(s.appointmentsTab||'add'):'', source:'navigation-state-restore'});
-      else if(window.tab) window.tab(s.panel, s.smartOpen || '', {appointmentsSubTab:s.panel==='appointments'?(s.appointmentsTab||'add'):'', source:'navigation-state-restore'});
+      else if(window.PETATOERouter && typeof window.PETATOERouter.openTab === 'function') window.PETATOERouter.openTab(s.panel, s.smartOpen || '', {appointmentsSubTab:s.panel==='appointments'?(s.appointmentsTab||'add'):'', navigationScreen:s.navigationScreen||screenForPanel(s.panel,s.appointmentsTab), source:'navigation-state-restore'});
+      else if(window.tab) window.tab(s.panel, s.smartOpen || '', {appointmentsSubTab:s.panel==='appointments'?(s.appointmentsTab||'add'):'', navigationScreen:s.navigationScreen||screenForPanel(s.panel,s.appointmentsTab), source:'navigation-state-restore'});
       restoreInnerState(s);
     }catch(e){
       RESTORE_DONE = false;
