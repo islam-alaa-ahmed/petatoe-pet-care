@@ -1,0 +1,68 @@
+[
+  {
+    "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+    "beforeSha256": "24b70b538155becc67cdbc988c9cbf3e985f00de32ae63beb51b99b24ddbaa32",
+    "afterSha256": "286d033381281967071004152039b173da61d95c3eea0b18295a896fafadc77c",
+    "size": 3892
+  },
+  {
+    "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+    "beforeSha256": "298329a5dc28432a5e621aaa604bcfa6a0366cede269451af0e1f7c85c3f9f32",
+    "afterSha256": "dfccc57c4dd97e25b8b02fe94ba6f71b62953bd0ac7dbebda20a3f50e83531fe",
+    "size": 1681
+  },
+  {
+    "path": "audit/phase4/PETATOE_PHASE4_CUSTOMER360_SINGLE_OWNER_REPORT.md",
+    "beforeSha256": null,
+    "afterSha256": "e8402b74c126ff88ac8f812e704dc259a470418d60d0fd1b3347ecc38fa668b3",
+    "size": 1903
+  },
+  {
+    "path": "config/petatoe-version.json",
+    "beforeSha256": "2a76b18660b78cac17d88900682dac4577912424114420c9390f0f444c76ac0d",
+    "afterSha256": "c6090cad01f31c5f096d9d92458a16c245564a557986f6fcae71ddfdb6e11ea4",
+    "size": 1025
+  },
+  {
+    "path": "index.html",
+    "beforeSha256": "5864b3df3e1a97a6f2043280deb52f227a264c2a903db97660848ceebd261a60",
+    "afterSha256": "c4a1f79372b4ac870d73ee068dbf1dc66fc29b9843ac82ba5583b807155ea6a9",
+    "size": 250449
+  },
+  {
+    "path": "inline-extracted/customer360-return.js",
+    "beforeSha256": "6a1a69e0fd433eb76b49c3511deb8dc5fb011754561483a33aafaee4f7e598dc",
+    "afterSha256": "60f8dbd28535d44187814767d5962b790e9e99eb9531ec85f9cb4fc98bec57f6",
+    "size": 5981
+  },
+  {
+    "path": "inline-extracted/customer360-runtime-data-binding-fix.js",
+    "beforeSha256": "b7c2b2ed43f917043d2f1335202fcfb36f44ba088d4b82fb47c0ea4653b6e9d9",
+    "afterSha256": "624a56635b5addb7eb2b09175fc59398335cbc6b636de032e40995abc8b83d56",
+    "size": 18332
+  },
+  {
+    "path": "inline-extracted/exec-alerts-block.js",
+    "beforeSha256": "eaaf2e561db101abc0b4f989c3d47ef13826ad0403637063f9c251bc7142018e",
+    "afterSha256": "bd3dc88136f6d18058162458ad0a2be3c04d40329fa3ee2b9f129cbe11e153c8",
+    "size": 34782
+  },
+  {
+    "path": "performance/mobile-startup-loading-gate.js",
+    "beforeSha256": "5036d91280d61e8d41356bf0c48e47c204d3b58270e8c1b971f45ab09d85c3ca",
+    "afterSha256": "f9eb39ae3d5c20a76b16425c8847a0dc61579f028e50c1d479b48a87ff6837dd",
+    "size": 40940
+  },
+  {
+    "path": "scripts/phase4-customer360-single-owner-check.js",
+    "beforeSha256": null,
+    "afterSha256": "746aff9d59bd403adbf2cdfe16b0751a5391cf47cb2d3758d5cfc3f74fccf43f",
+    "size": 2877
+  },
+  {
+    "path": "service-worker.js",
+    "beforeSha256": "46c097f7a60324e1150a28a97c416e154f060bb5a60a17aa418f5cd24f297b08",
+    "afterSha256": "5e5fab52b1f20e8943ff31c074d02fb3bc1b1dc905ae0258d56cb36690e8e200",
+    "size": 6827
+  }
+]

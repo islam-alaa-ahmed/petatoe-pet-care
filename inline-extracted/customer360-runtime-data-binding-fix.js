@@ -3,6 +3,7 @@
    Scope: Customer 360 only. No visual/layout changes. */
 (function(window, document){
   'use strict';
+  if(window.PETATOECustomer360Runtime && window.PETATOECustomer360Runtime.__ready === true) return;
   if(window.__PETATOE_CUSTOMER360_RUNTIME_FIX_V7018__) return;
   window.__PETATOE_CUSTOMER360_RUNTIME_FIX_V7018__ = true;
 
@@ -67,11 +68,16 @@
   }
   function getRuntimeRows(){
     var rows=[];
-    try{ if(window.PETATOEDataSource && typeof window.PETATOEDataSource.getRecordsSync === 'function') rows=window.PETATOEDataSource.getRecordsSync(); }catch(e){ warn('customer360 datasource read failed', e); }
+    try{
+      if(window.PETATOERecordsReadFacade && typeof window.PETATOERecordsReadFacade.readRows === 'function'){
+        rows=window.PETATOERecordsReadFacade.readRows({ consumer:'customer360' });
+      }
+    }catch(e){ warn('customer360 canonical facade read failed', e); }
     rows=candidateRows(rows).filter(function(r){ return r && typeof r === 'object'; });
     if(rows.length) return rows;
-    try{ if(Array.isArray(window.records)) return window.records.filter(function(r){ return r && typeof r === 'object'; }); }catch(e){ warn('customer360 window.records read failed', e); }
-    return [];
+    try{ if(window.PETATOEDataSource && typeof window.PETATOEDataSource.getRecordsSync === 'function') rows=window.PETATOEDataSource.getRecordsSync(); }catch(e){ warn('customer360 datasource compatibility read failed', e); }
+    rows=candidateRows(rows).filter(function(r){ return r && typeof r === 'object'; });
+    return rows;
   }
   function groupCustomers(rows){
     var map = Object.create(null);
@@ -187,13 +193,67 @@
     window.addEventListener('petatoe:language-changed', function(){ var tab=byId('customer360'); if(tab && tab.classList.contains('active')) renderPanel(); });
   }
 
-  window.renderCustomer360Panel = renderPanel;
-  window.showCustomer360 = renderDetail;
-  window.exportCustomer360Excel = exportExcel;
-  window.openCustomer360 = function(name){
-    try{ if(typeof window.showTab === 'function') window.showTab('customer360'); }catch(e){ warn('customer360 showTab failed', e); }
-    setTimeout(function(){ renderPanel(name || ''); if(name){ var inp=byId('customer360Search'); if(inp) inp.value=name; renderDetail(name); } }, 120);
+  function returnContext(){ return window.PETATOECustomer360ReturnContext || null; }
+  function open(name){
+    var ctxApi=returnContext();
+    try{
+      if(ctxApi && typeof ctxApi.capture==='function'){
+        var ctx=ctxApi.capture();
+        if(ctx && typeof ctxApi.set==='function') ctxApi.set(ctx);
+      }
+    }catch(e){ warn('customer360 return context capture failed',e); }
+    try{ if(typeof window.closePetDrillModal==='function') window.closePetDrillModal(); }catch(e){ warn('customer360 drill close failed',e); }
+    if(window.PETATOERouter && typeof window.PETATOERouter.openTab==='function') window.PETATOERouter.openTab('customer360');
+    else if(typeof window.showTab==='function') window.showTab('customer360');
+    setTimeout(function(){
+      var inp=byId('customer360Search');
+      if(inp) inp.value=name||'';
+      renderPanel(name||'');
+      if(name) renderDetail(name);
+      try{ if(ctxApi&&typeof ctxApi.scheduleControls==='function') ctxApi.scheduleControls(20,true); }catch(e){ warn('customer360 back controls failed',e); }
+    },80);
+    return true;
+  }
+  function back(){
+    var ctxApi=returnContext();
+    var ctx=ctxApi&&typeof ctxApi.get==='function'?ctxApi.get():null;
+    if(!ctx){
+      if(window.PETATOERouter) window.PETATOERouter.openTab('smart','business');
+      return false;
+    }
+    if(ctx.panel==='smart'){
+      if(window.PETATOERouter) window.PETATOERouter.openTab('smart');
+      setTimeout(function(){
+        try{ if(ctx.smart && window.PETATOESmartTabs && typeof window.PETATOESmartTabs.setSmartTab==='function') window.PETATOESmartTabs.setSmartTab(ctx.smart); }
+        catch(e){ warn('customer360 smart return failed',e); }
+      },160);
+    }else if(window.PETATOERouter){
+      window.PETATOERouter.openTab(ctx.panel);
+    }
+    setTimeout(function(){ try{ window.scrollTo({top:ctx.y||0,behavior:'smooth'}); }catch(e){ window.scrollTo(0,ctx.y||0); } },260);
+    if(ctxApi&&typeof ctxApi.clear==='function') ctxApi.clear();
+    return true;
+  }
+  var runtime={
+    __ready:true,
+    __owner:'inline-extracted/customer360-runtime-data-binding-fix.js',
+    version:'phase4-customer360-single-owner-1',
+    readRows:getRuntimeRows,
+    render:renderPanel,
+    show:renderDetail,
+    exportExcel:exportExcel,
+    open:open,
+    back:back,
+    bind:bind
   };
+  window.PETATOECustomer360Runtime=Object.freeze(runtime);
+  // Compatibility delegates. The runtime above remains the only implementation owner.
+  window.renderCustomer360Panel=function(query,attempt){ return runtime.render(query,attempt); };
+  window.showCustomer360=function(name){ return runtime.show(name); };
+  window.exportCustomer360Excel=function(){ return runtime.exportExcel(); };
+  window.openCustomer360=function(name){ return runtime.open(name); };
+  window.openPetClient360=function(name){ return runtime.open(name); };
+  window.petBackFromCustomer360=function(){ return runtime.back(); };
   bind();
   if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function(){ renderPanel(); });
   else setTimeout(function(){ renderPanel(); }, 60);

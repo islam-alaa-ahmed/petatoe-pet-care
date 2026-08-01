@@ -232,8 +232,9 @@
       }else if(group === 'smartReports'){
         var smartRuntime = window.PETATOESmartReportsRuntime;
         if(tabId === 'smart' && smartRuntime && smartRuntime.__ready && typeof smartRuntime.render === 'function') smartRuntime.render('', 'lazy-hydration');
-      }else if(group === 'customer360' && typeof window.renderCustomer360Panel === 'function'){
-        window.renderCustomer360Panel();
+      }else if(group === 'customer360'){
+        var customer360Runtime = window.PETATOECustomer360Runtime;
+        if(customer360Runtime && customer360Runtime.__ready === true && typeof customer360Runtime.render === 'function') customer360Runtime.render();
       }else if(group === 'children' && window.PETATOEChildrenExpenses && typeof window.PETATOEChildrenExpenses.render === 'function'){
         window.PETATOEChildrenExpenses.render();
       }else if(group === 'warehouses'){
@@ -303,9 +304,14 @@
         document.getElementById('commissionStatement'));
     },
     customer360: function(){
-      return typeof window.renderCustomer360Panel === 'function' &&
-        typeof window.showCustomer360 === 'function' &&
-        typeof window.openCustomer360 === 'function';
+      var runtime=window.PETATOECustomer360Runtime;
+      return !!(runtime && runtime.__ready === true &&
+        runtime.__owner === 'inline-extracted/customer360-runtime-data-binding-fix.js' &&
+        typeof runtime.render === 'function' &&
+        typeof runtime.show === 'function' &&
+        typeof runtime.open === 'function' &&
+        typeof runtime.back === 'function' &&
+        typeof runtime.exportExcel === 'function');
     },
     settingsSetup: function(){
       return !!(

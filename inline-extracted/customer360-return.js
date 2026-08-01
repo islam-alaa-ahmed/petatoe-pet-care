@@ -83,45 +83,33 @@
     if(txt&&visible){clearNode(txt);txt.appendChild(document.createTextNode('أنت فتحت Customer 360 من '));var b=document.createElement('b');b.textContent=String(ctx.label||'التقرير السابق');txt.appendChild(b);txt.appendChild(document.createTextNode(' — تقدر ترجع لنفس المكان بنفس التبويب.'));}
   }
 
+  var api = {
+    __ready: true,
+    __owner: 'inline-extracted/customer360-return.js',
+    capture: captureContext,
+    set: setContext,
+    get: getContext,
+    clear: clearContext,
+    ensureControls: ensureBackControls,
+    refreshControls: refreshBackControls,
+    scheduleControls: scheduleBackControls
+  };
+  window.PETATOECustomer360ReturnContext = Object.freeze(api);
+
   if(!document.__petatoeCust360BackDelegationBound){
     document.__petatoeCust360BackDelegationBound=true;
     document.addEventListener('click',function(e){
       var b=e.target&&e.target.closest&&e.target.closest('[data-cust360-back="1"]');
       if(!b)return;
       e.preventDefault();
-      window.petBackFromCustomer360();
+      var runtime=window.PETATOECustomer360Runtime;
+      if(runtime&&typeof runtime.back==='function') runtime.back();
     });
   }
-  window.petBackFromCustomer360=function(){
-    var ctx=getContext();
-    if(!ctx){ if(window.PETATOERouter)PETATOERouter.openTab('smart','business'); return; }
-    if(ctx.panel==='smart'){
-      if(window.PETATOERouter)PETATOERouter.openTab('smart');
-      setTimeout(function(){try{if(ctx.smart && typeof setSmartTab==='function')setSmartTab(ctx.smart)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/customer360-return.js",e);}},160);
-    }else{
-      if(window.PETATOERouter)PETATOERouter.openTab(ctx.panel);
-    }
-    setTimeout(function(){try{window.scrollTo({top:ctx.y||0,behavior:'smooth'})}catch(e){window.scrollTo(0,ctx.y||0)}},260);
-    clearContext();
-  };
-  window.openPetClient360=function(name){
-    var ctx=captureContext();
-    if(ctx)setContext(ctx);
-    try{if(typeof closePetDrillModal==='function')closePetDrillModal()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("inline-extracted/customer360-return.js",e);}
-    if(typeof window.PETATOEOpenPetClient360Core==='function'){
-      window.PETATOEOpenPetClient360Core(name);
-    }else{
-      if(window.PETATOERouter)PETATOERouter.openTab('customer360');
-      setTimeout(function(){
-        var s=document.getElementById('customer360Search');
-        if(s)s.value=name||'';
-        if(typeof renderCustomer360Panel==='function')renderCustomer360Panel(name||'');
-        if(typeof showCustomer360==='function')showCustomer360(name||'');
-      },50);
-    }
-    scheduleBackControls(120,true);
-  };
-  document.addEventListener('petatoe:tabchange',function(e){var name=e.detail&&e.detail.tabId;scheduleBackControls(80,name==='customer360')});
+  document.addEventListener('petatoe:tabchange',function(e){
+    var name=e.detail&&e.detail.tabId;
+    scheduleBackControls(80,name==='customer360');
+  });
   document.addEventListener('DOMContentLoaded',ensureBackControls);
   scheduleBackControls(900,true);
 })();
