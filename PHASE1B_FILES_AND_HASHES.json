@@ -1,0 +1,66 @@
+{
+  "phase": "Phase 1B \u2014 Automated Version Synchronization",
+  "generatedAt": "2026-08-01T20:38:01.744022+00:00",
+  "files": [
+    {
+      "path": "index.html",
+      "beforeSha256": "09b29d20c91e38da5d9612645960fb425c662c11d2c5259cfd8a4f2ce103a145",
+      "afterSha256": "e7688a339d3b29c2807ad0795db55b79241113c3ffbd58bd6960e66c56a0fd08",
+      "sizeBytes": 250402
+    },
+    {
+      "path": "service-worker.js",
+      "beforeSha256": "ff5ea15ae338cd69f8a82ba58ecb39e0d4dbb7a271cfbe7e220565db3fdd1b3c",
+      "afterSha256": "3025c10e2043501c0f380bfe3e478e9d4c7ed5fa19668f56047b3a2c08c92291",
+      "sizeBytes": 6855
+    },
+    {
+      "path": ".github/workflows/localization-lockdown.yml",
+      "beforeSha256": "c3dbda5a720cc9653747494304abb93a320867b846f6252a5dafe00783dc9fa7",
+      "afterSha256": "918d41c0fcd8824fac39a29f9167dbe6b9f35f9c5f0bf7755e5d873698da3215",
+      "sizeBytes": 2168
+    },
+    {
+      "path": "scripts/sync-version-manifest.js",
+      "beforeSha256": "cc99265aeddbb7de397927630ae9aa30e2d2eb7f94c15d85651400212945306f",
+      "afterSha256": "aff0822ba68864e983508925dd067504ee69a97e6c7b16e8a63217377536f107",
+      "sizeBytes": 3976
+    },
+    {
+      "path": "scripts/version-single-source-audit.js",
+      "beforeSha256": "5d8292c0204a131ae2b2173f567b8ffa898b9b1ee8e945f8824cf4ce179d188e",
+      "afterSha256": "22f5c07a781696e2c54e805f10000cf12e902b4f22fd499b1c583e25157780bf",
+      "sizeBytes": 4345
+    },
+    {
+      "path": "scripts/startup-gate-single-source-check.js",
+      "beforeSha256": "54d98e83f6568421a45544e4407df05e80197a6728ef1a599496245708abf34c",
+      "afterSha256": "dec4f38904e429c5f162f9d962fab811821163e4aec9d16b7a8028ffae2a51ca",
+      "sizeBytes": 2978
+    },
+    {
+      "path": "scripts/mobile-enterprise-v10-certification-check.js",
+      "beforeSha256": "7246039e5450f4a053cc04f82fe452566731ef3ff643136414813ff490e0412e",
+      "afterSha256": "d4f7da1ab109e5e7e5cdfd637fa34c7bc81b112be1f544e8ccc0f65774b1601a",
+      "sizeBytes": 7274
+    },
+    {
+      "path": "scripts/phase1b-automated-version-synchronization-check.js",
+      "beforeSha256": null,
+      "afterSha256": "2d54b35d43019e7973620c84a3767d6ba8136227924c8cb487823e320f29d12d",
+      "sizeBytes": 2535
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "beforeSha256": null,
+      "afterSha256": "2ec54c109ec9a0259ac018985eecd97540738458bf2d5e0de5cd17d48702d700",
+      "sizeBytes": 4055
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "beforeSha256": null,
+      "afterSha256": "1ff103e2b35be3fa4d92465d1b2a575c8f03638df419e344264d6355667f9455",
+      "sizeBytes": 1827
+    }
+  ]
+}

@@ -14,6 +14,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+      - name: Version single-source certification
+        run: node scripts/version-single-source-check.js
       - name: Enterprise localization certification
         run: node scripts/enterprise-localization-certification-check.js
       - name: Production localization lockdown
