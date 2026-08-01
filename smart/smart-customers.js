@@ -348,127 +348,13 @@
   window.petatoeSmartCustomersHandleLocalFilter = petatoeSmartCustomersHandleLocalFilter;
   window.petatoeSmartNewCustomerFilterClick = function(el, ev){ return petatoeSmartCustomersHandleLocalFilter(el, ev); };
 
-  // Capture phase + inline onclick: both route to the same handler. stopImmediatePropagation
-  // prevents the old v6.4.153 full-render delegated handler from taking over afterward.
-  if(!window.__petatoeSmartCustomersFilterCaptureBoundV157){
-    window.__petatoeSmartCustomersFilterCaptureBoundV157 = true;
-    document.addEventListener('click', function(ev){
-      var el = ev.target && ev.target.closest ? ev.target.closest('[data-smart-action="new-customer-year"],[data-smart-action="new-customer-period"],[data-smart-action="new-customer-more"]') : null;
-      if(el){ petatoeSmartCustomersHandleLocalFilter(el, ev); }
-    }, true);
-  }
-
+  // Event ownership is consolidated below by SG-Phase3. Inline compatibility calls
+  // continue to delegate to petatoeSmartCustomersHandleLocalFilter().
   window.renderSmartCustomers = renderSmartCustomers;
 })();
 
-/* PETATOE v6.4.159 - Smart Customers full filter binding fix
-   Root cause: after v6.4.154 customers moved to fast local render, several customer
-   report buttons still depended on renderSmartReports(). A4 routes that call to the
-   fast customer renderer, which only redraws charts, so table filters/more/sort looked
-   inactive. This binding handles every Customer Analytics table/filter action as one
-   module and uses the stable legacy customer render only for those customer panes. */
-(function(){
-  'use strict';
-  if(window.__PETATOE_SMART_CUSTOMERS_ALL_FILTERS_V159__) return;
-  window.__PETATOE_SMART_CUSTOMERS_ALL_FILTERS_V159__ = true;
-
-  var CUSTOMER_ACTIONS = {
-    'customer-insight-more': true,
-    'inactive-recovery-more': true,
-    'inactive-sort': true,
-    'inactive-more': true
-  };
-
-  function activateSmartCustomersPane(subtab){
-    try{
-      document.querySelectorAll('#smartTabs .smart-pill,[data-smart-tab]').forEach(function(btn){
-        var t = btn.dataset ? (btn.dataset.smartTab || btn.getAttribute('data-smart-tab')) : btn.getAttribute('data-smart-tab');
-        if(t) btn.classList.toggle('active', t === 'customers');
-      });
-      document.querySelectorAll('[data-smart-section]').forEach(function(sec){
-        var s = sec.dataset ? (sec.dataset.smartSection || sec.getAttribute('data-smart-section')) : sec.getAttribute('data-smart-section');
-        sec.classList.toggle('active', s === 'customers');
-      });
-      if(subtab) window.customerAnalysisSubTab = subtab;
-      if(typeof window.setCustomerAnalysisTab === 'function'){
-        window.setCustomerAnalysisTab(window.customerAnalysisSubTab || subtab || 'overview');
-      }
-    }catch(e){
-      if(window.console && console.warn) console.warn('[PETATOE Smart Customers] activate pane skipped', e);
-    }
-  }
-
-  function stableCustomerRender(subtab){
-    var ok = false;
-    try{
-      if(typeof window.__petatoeLegacyRenderSmartReports === 'function'){
-        window.__petatoeLegacyRenderSmartReports();
-        ok = true;
-      }else if(typeof window.renderSmartReports === 'function'){
-        // Last fallback only. In normal v6.4.159 runtime this should not be used
-        // because A4 router may local-route and skip table rebuilds.
-        window.renderSmartReports('customers');
-        ok = true;
-      }
-    }catch(e){
-      console.error('[PETATOE Smart Customers] stable customer render failed', e);
-      ok = false;
-    }
-    activateSmartCustomersPane(subtab || window.customerAnalysisSubTab || 'overview');
-    try{
-      if(window.PETATOESmartTabs && typeof window.PETATOESmartTabs.clearCaches === 'function'){
-        // Do not clear invoice cache; only mark customer local charts to resize/update after DOM refresh.
-      }
-      setTimeout(function(){
-        try{ Object.values(window.charts||{}).forEach(function(c){ try{ c.resize(); c.update('none'); }catch(_e){ reportSmartCustomersSilentCatch('chartResize.single', _e); } }); }catch(_e){ reportSmartCustomersSilentCatch('chartResize.batch', _e); }
-      },60);
-    }catch(e){ reportSmartCustomersSilentCatch('stableCustomerRender.resizeSchedule', e); }
-    return ok;
-  }
-
-  function handleCustomerAction(el, ev){
-    if(!el || !el.dataset) return true;
-    var action = el.dataset.smartAction || '';
-    if(!CUSTOMER_ACTIONS[action]) return true;
-
-    if(ev){
-      try{ ev.preventDefault(); }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-customers.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-      try{ ev.stopPropagation(); }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-customers.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-      try{ ev.stopImmediatePropagation(); }catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-customers.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }
-    }
-
-    var subtab = 'overview';
-    if(action === 'customer-insight-more'){
-      window.customerInsightTableLimit = Number(el.dataset.limit || 10) || 10;
-      subtab = 'overview';
-    }else if(action === 'inactive-recovery-more'){
-      window.inactiveRecoveryTableLimit = Number(el.dataset.limit || 15) || 15;
-      subtab = 'ai';
-    }else if(action === 'inactive-sort'){
-      window.inactiveCustomerSort = el.dataset.sort || 'spend';
-      window.inactiveCustTableLimit = 15;
-      subtab = 'ai';
-    }else if(action === 'inactive-more'){
-      window.inactiveCustTableLimit = Number(el.dataset.limit || 15) || 15;
-      subtab = 'ai';
-    }
-
-    stableCustomerRender(subtab);
-    return false;
-  }
-
-  window.petatoeSmartCustomersHandleAllFilterActions = handleCustomerAction;
-
-  document.addEventListener('click', function(ev){
-    var el = ev.target && ev.target.closest ? ev.target.closest([
-      '[data-smart-action="customer-insight-more"]',
-      '[data-smart-action="inactive-recovery-more"]',
-      '[data-smart-action="inactive-sort"]',
-      '[data-smart-action="inactive-more"]'
-    ].join(',')) : null;
-    if(el) handleCustomerAction(el, ev);
-  }, true);
-})();
+/* PETATOE Phase 3: legacy v6.4.159 customer-action owner removed.
+   All customer interactions are owned by the consolidated controller below. */
 
 /* PETATOE SG-4.7.1 — Customer Reports Interaction Ownership Consolidation
    Customer comparison and inactive-customer controls must rebuild the customer
@@ -510,6 +396,13 @@
   function handleClick(el, ev){
     if(!el || !el.dataset) return false;
     var action = el.dataset.smartAction || '';
+
+    if(action === 'new-customer-year' || action === 'new-customer-period' || action === 'new-customer-more'){
+      stopEvent(ev);
+      return window.petatoeSmartCustomersHandleLocalFilter
+        ? window.petatoeSmartCustomersHandleLocalFilter(el, null) === false
+        : false;
+    }
 
     if(action === 'customer-compare-tax'){
       stopEvent(ev);
@@ -573,6 +466,9 @@
 
   document.addEventListener('click', function(ev){
     var el = ev.target && ev.target.closest ? ev.target.closest([
+      '[data-smart-action="new-customer-year"]',
+      '[data-smart-action="new-customer-period"]',
+      '[data-smart-action="new-customer-more"]',
       '[data-smart-action="customer-compare-tax"]',
       '[data-smart-action="customer-compare-more"]',
       '[data-smart-action="customer-compare-export"]',
@@ -594,6 +490,14 @@
       window.customerCompareSetFilter(field, el.value);
     }
   }, true);
+
+  window.petatoeSmartCustomersHandleAction = handleClick;
+  window.PETATOESmartCustomerInteractions = Object.freeze({
+    __ready: true,
+    __owner: 'smart/smart-customers.js#phase3',
+    handleAction: handleClick,
+    handleLocalFilter: window.petatoeSmartCustomersHandleLocalFilter
+  });
 
   window.PETATOESmartCustomerInteractionAudit = function(){
     var selectors = {

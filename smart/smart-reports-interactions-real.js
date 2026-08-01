@@ -324,6 +324,18 @@ function petatoeSmartHandleAction(el, ev){
   if(!el || !el.dataset) return false;
   const action=el.dataset.smartAction;
   if(!action) return false;
+
+  // Phase 3 ownership contract: all customer-report controls are delegated to
+  // smart/smart-customers.js. This module must never mutate customer filter state.
+  const customerOwnedActions={
+    'new-customer-more':1,'new-customer-year':1,'new-customer-period':1,
+    'customer-insight-more':1,'customer-compare-tax':1,'customer-compare-more':1,
+    'customer-compare-export':1,'customer-compare-lost-details':1,
+    'inactive-recovery-more':1,'inactive-sort':1,'inactive-more':1
+  };
+  if(customerOwnedActions[action]){
+    return !!(window.petatoeSmartCustomersHandleAction && window.petatoeSmartCustomersHandleAction(el,ev));
+  }
   switch(action){
     case 'export-page-pdf': if(window.petatoeExportActivePagePdf) window.petatoeExportActivePagePdf(); return true;
     case 'export-excel': if(window.exportExcel) window.exportExcel(); return true;
@@ -331,18 +343,8 @@ function petatoeSmartHandleAction(el, ev){
     case 'vehicle-efficiency-reset': resetSmartVehicleEfficiencyFilters(); return true;
     case 'overview-year': window.smartOverviewCardsYear=el.dataset.year==='all'?'all':Number(el.dataset.year); renderSmartReports(); setSmartTab('overview'); return true;
     case 'open-customer360': if(window.openCustomer360) window.openCustomer360(el.dataset.name||''); return true;
-    case 'new-customer-more': if(window.petatoeSmartCustomersHandleLocalFilter) return window.petatoeSmartCustomersHandleLocalFilter(el,ev)!==false; window.smartNewCustomerTableLimit=Number(el.dataset.limit||10); renderSmartReports(); setSmartTab('customers'); return true;
-    case 'new-customer-year': if(window.petatoeSmartCustomersHandleLocalFilter) return window.petatoeSmartCustomersHandleLocalFilter(el,ev)!==false; window.smartNewCustomerManualSelection=true; window.smartNewCustomerYear=el.dataset.year||'all'; window.smartNewCustomerPeriod=''; window.smartNewCustomerTableLimit=10; renderSmartReports(); setSmartTab('customers'); return true;
-    case 'new-customer-period': if(window.petatoeSmartCustomersHandleLocalFilter) return window.petatoeSmartCustomersHandleLocalFilter(el,ev)!==false; window.smartNewCustomerManualSelection=true; window.smartNewCustomerPeriod=el.dataset.period||''; window.smartNewCustomerTableLimit=10; renderSmartReports(); setSmartTab('customers'); return true;
     case 'target-year': selectSmartTargetYear(Number(el.dataset.year)); return true;
     case 'target-period': selectSmartTargetPeriod(el.dataset.period||''); return true;
-    case 'customer-insight-more': window.customerInsightTableLimit=Number(el.dataset.limit||10); renderSmartReports(); setSmartTab('customers'); return true;
-    case 'customer-compare-tax': customerCompareSetFilter('tax',el.dataset.tax||'gross'); return true;
-    case 'customer-compare-more': customerCompareShowMore(el.dataset.key||''); return true;
-    case 'customer-compare-export': exportCustomerCompareSection(el.dataset.kind||''); return true;
-    case 'inactive-recovery-more': window.inactiveRecoveryTableLimit=Number(el.dataset.limit||15); renderSmartReports(); setSmartTab('customers'); return true;
-    case 'inactive-sort': window.inactiveCustomerSort=el.dataset.sort||'spend'; window.inactiveCustTableLimit=15; renderSmartReports(); setSmartTab('customers'); return true;
-    case 'inactive-more': window.inactiveCustTableLimit=Number(el.dataset.limit||15); renderSmartReports(); setSmartTab('customers'); return true;
     case 'customer-activity-export': petatoeExportCustomerActivityFollowup(el.dataset.kind||''); return true;
     case 'contract-reason': if(window.petatoeShowContractCandidateReason) window.petatoeShowContractCandidateReason(Number(el.dataset.index||0)); return true;
     case 'customer-analysis-tab': setCustomerAnalysisTab(el.dataset.tab||'overview'); return true;
@@ -389,8 +391,7 @@ function petatoeSmartHandleAction(el, ev){
 function petatoeSmartHandleChange(el){
   if(!el || !el.dataset) return false;
   if(el.dataset.smartAction==='customer-compare-filter'){
-    customerCompareSetFilter(el.dataset.customerCompareFilter||'', el.value);
-    return true;
+    return !!(window.petatoeSmartCustomersHandleAction && window.petatoeSmartCustomersHandleAction(el,null));
   }
   if(el.dataset.smartAction==='vehicle-efficiency-filter'){
     setSmartVehicleEfficiencyFilter(el.dataset.smartKey, el.value);

@@ -54,7 +54,8 @@
 
   function records(){
     try{
-      var rows = window.PETATOEDataSource && typeof window.PETATOEDataSource.getRecordsSync === 'function' ? window.PETATOEDataSource.getRecordsSync() : [];
+      var facade=window.PETATOERecordsReadFacade;
+      var rows = facade && typeof facade.readRows === 'function' ? facade.readRows({consumer:'smart-tabs'}) : [];
       var stamp = recordsSignature(rows);
       if(stamp !== perfState.recordsStamp){ perfState.recordsStamp = stamp; perfState.recordsCache = Array.isArray(rows) ? rows : []; }
       return perfState.recordsCache;

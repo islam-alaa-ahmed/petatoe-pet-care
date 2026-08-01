@@ -1,7 +1,7 @@
 /* PETATOE PWA Enterprise Service Worker — V10-P1 Update Engine */
 'use strict';
 
-const APP_VERSION = '10.0.25-sg4-7-6-smart-reports-consolidated-regression-1';
+const APP_VERSION = '10.0.25-phase3-smart-reports-runtime-event-ownership-1';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;
@@ -29,7 +29,7 @@ const APP_SHELL = [
   './mobile/mobile-enterprise-v10-experience.js',
   './pwa/mobile-runtime-layout-m1-2.js',
   './pwa/pwa-manager.js',
-  './performance/mobile-startup-loading-gate.js?v=10.0.25-sg4-7-6-smart-reports-consolidated-regression-1',
+  './performance/mobile-startup-loading-gate.js?v=10.0.25-phase3-smart-reports-runtime-event-ownership-1',
   './performance/mobile-runtime-coordinator.js',
   './components/inline-handler-adapter.js'
 ];

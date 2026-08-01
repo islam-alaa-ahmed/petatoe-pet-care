@@ -97,65 +97,23 @@
     patchedChart = true;
   }
 
-  function makeWrappedSetSmartTab(originalSetSmartTab){
-    var wrapped = function petatoePerfSetSmartTab(tab){
-      var result = originalSetSmartTab.apply(this, arguments);
-      idle(flushVisible, 220);
-      setTimeout(flushVisible, 80);
-      return result;
-    };
-    wrapped.__petatoeSmartPerfWrapped = true;
-    return wrapped;
-  }
-
-  function patchSetSmartTab(){
+  // Phase 3 ownership contract: the optimizer observes the canonical tab event
+  // and never wraps or replaces window.setSmartTab / PETATOESmartTabs.setSmartTab.
+  function bindSmartTabObserver(){
     if(patchedTab) return;
-    var current = window.setSmartTab;
-    if(typeof current !== 'function') return;
-    if(current.__petatoeSmartPerfWrapped){ patchedTab = true; return; }
-
-    var descriptor = null;
-    try{ descriptor = Object.getOwnPropertyDescriptor(window, 'setSmartTab'); }catch(e){ descriptor = null; }
-
-    /* PETATOE Phase2 Root Fix 2026-06-29:
-       setSmartTab may be exposed as a read-only compatibility bridge. Never assign
-       to window.setSmartTab when the property is non-writable or non-configurable. */
-    if(!descriptor || descriptor.writable || descriptor.configurable){
-      try{
-        window.setSmartTab = makeWrappedSetSmartTab(current);
-        patchedTab = true;
-        return;
-      }catch(e){
-        /* Protected global setSmartTab; skip silently. */
-      }
-    }
-
-    /* Final polish: PETATOESmartTabs.setSmartTab can also be exposed as a
-       read-only compatibility bridge. Detect that case and skip silently; this
-       optimizer only defers chart rendering and must never create console noise
-       or override protected APIs. */
-    try{
-      if(window.PETATOESmartTabs && typeof window.PETATOESmartTabs.setSmartTab === 'function' && !window.PETATOESmartTabs.setSmartTab.__petatoeSmartPerfWrapped){
-        var smartTabsDescriptor = null;
-        try{ smartTabsDescriptor = Object.getOwnPropertyDescriptor(window.PETATOESmartTabs, 'setSmartTab'); }catch(_d){ smartTabsDescriptor = null; }
-        if(!smartTabsDescriptor || smartTabsDescriptor.writable || smartTabsDescriptor.configurable){
-          try{
-            window.PETATOESmartTabs.setSmartTab = makeWrappedSetSmartTab(window.PETATOESmartTabs.setSmartTab);
-          }catch(_assignErr){
-            /* Protected by design; leave original function untouched. */
-          }
-        }
-      }
-    }catch(_e){
-      /* Non-critical optimizer fallback; do not log warnings for protected APIs. */
-    }
-    patchedTab = true;
+    if(window.__PETATOE_SMART_PERF_TAB_OBSERVER__) { patchedTab=true; return; }
+    window.__PETATOE_SMART_PERF_TAB_OBSERVER__=true;
+    window.addEventListener('petatoe:smart-tab-rendered',function(){
+      idle(flushVisible,220);
+      setTimeout(flushVisible,80);
+    });
+    patchedTab=true;
   }
 
   patchChart();
   var patchTimer = setInterval(function(){
     patchChart();
-    patchSetSmartTab();
+    bindSmartTabObserver();
     if(patchedChart && patchedTab) clearInterval(patchTimer);
   }, 120);
   setTimeout(function(){try{clearInterval(patchTimer);}catch(e){ try{ if(window.PETATOECaptureSilentCatch) window.PETATOECaptureSilentCatch('smart/smart-reports-performance-optimizer.js', e, {phase:'v6.4.209'}); }catch(__petatoeDiagErr){ if(window.console&&console.warn) console.warn('[PETATOE] silent catch diagnostics failed', __petatoeDiagErr); } }}, 6000);

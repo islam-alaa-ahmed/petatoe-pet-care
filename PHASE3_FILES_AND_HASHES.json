@@ -1,0 +1,65 @@
+{
+  "phase": "Phase 3 — Smart Reports Runtime & Event Ownership",
+  "files": [
+    {
+      "path": "RELEASE_VERSION.txt",
+      "sha256": "689827c3861e91ce8ee9d41b6d8a1b23d4b0cdea7126748f38b956eba485407f",
+      "bytes": 79
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "sha256": "24b70b538155becc67cdbc988c9cbf3e985f00de32ae63beb51b99b24ddbaa32",
+      "bytes": 4074
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "sha256": "298329a5dc28432a5e621aaa604bcfa6a0366cede269451af0e1f7c85c3f9f32",
+      "bytes": 1837
+    },
+    {
+      "path": "audit/phase3/PETATOE_PHASE3_SMART_REPORTS_RUNTIME_EVENT_OWNERSHIP_REPORT.md",
+      "sha256": "06db06c5d81e528a047d4601ae8d13014d1a3bbeb026d1fe26af0e020aa7b655",
+      "bytes": 2357
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "sha256": "2a76b18660b78cac17d88900682dac4577912424114420c9390f0f444c76ac0d",
+      "bytes": 1051
+    },
+    {
+      "path": "index.html",
+      "sha256": "5864b3df3e1a97a6f2043280deb52f227a264c2a903db97660848ceebd261a60",
+      "bytes": 250519
+    },
+    {
+      "path": "scripts/phase3-smart-reports-runtime-event-ownership-check.js",
+      "sha256": "425bc5be108070db8998547aeab9bda7011f0796a68bd83c0c6b0c8d3c6d500f",
+      "bytes": 2600
+    },
+    {
+      "path": "service-worker.js",
+      "sha256": "46c097f7a60324e1150a28a97c416e154f060bb5a60a17aa418f5cd24f297b08",
+      "bytes": 6853
+    },
+    {
+      "path": "smart/smart-customers.js",
+      "sha256": "fc714b982871f2ae84ff21d3e9bcdcf72b45251c523bae94d447da303619f9e8",
+      "bytes": 32101
+    },
+    {
+      "path": "smart/smart-reports-interactions-real.js",
+      "sha256": "9630ed885a883aa2bd69657f36e242dbb3f47eeffa2d7654d960c023f08e8cba",
+      "bytes": 26880
+    },
+    {
+      "path": "smart/smart-reports-performance-optimizer.js",
+      "sha256": "024ebca1f4454075c0796f162964e8dab748e988a7e8a4a461851c705159e9a2",
+      "bytes": 5940
+    },
+    {
+      "path": "smart/smart-tabs.js",
+      "sha256": "4171863046b156091b7ca09787443f2fdd62f8ce3d395a90ae7595a8434bafea",
+      "bytes": 9731
+    }
+  ]
+}
