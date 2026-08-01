@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "baseline": "petatoe-pet-care-main (34).zip",
+  "policy": "Every functional phase must execute all critical checks and all checks belonging to the changed dependency scope.",
+  "checks": [
+    {"id":"AUTH-01","priority":"critical","area":"auth","check":"Login, session restoration, logout and forced password change remain functional."},
+    {"id":"NAV-01","priority":"critical","area":"navigation","check":"Displayed screen, active menu, title, route identity and sub-tab remain aligned."},
+    {"id":"OPS-01","priority":"critical","area":"operations","check":"Appointments, reference data, vehicles, reports, KPIs, payments and history open and re-open."},
+    {"id":"SMART-01","priority":"critical","area":"smartReports","check":"Dashboard and every Smart Reports tab render data on cold and warm cache."},
+    {"id":"SMART-02","priority":"critical","area":"smartReports","check":"Filters, tax modes, show-more, details, sorting and customer actions each have one owner and update the DOM."},
+    {"id":"SMART-03","priority":"critical","area":"smartReports","check":"Sales invoice report loads, renders, opens, prints and re-opens without readiness errors."},
+    {"id":"C360-01","priority":"critical","area":"customer360","check":"Customer 360 opens from every source and returns to the originating screen."},
+    {"id":"DATA-01","priority":"critical","area":"data","check":"Screen rows, filtered rows, KPIs and exports use the same committed revision."},
+    {"id":"SALES-01","priority":"critical","area":"sales","check":"Entry, import, records, invoice actions and duplicate policy remain functional."},
+    {"id":"COMM-01","priority":"critical","area":"commissions","check":"Commission system and statement open; lock/snapshot behavior remains valid."},
+    {"id":"PAY-01","priority":"critical","area":"payroll","check":"Payroll workflow, calculations, deletion restrictions and exports remain valid."},
+    {"id":"TREAS-01","priority":"high","area":"treasury","check":"Filters and export parity, manual deletion and invoice movement protection."},
+    {"id":"WARE-01","priority":"critical","area":"warehouses","check":"Inventory reports never claim matched without an actual count source."},
+    {"id":"OBL-01","priority":"high","area":"obligations","check":"Filter/export parity, soft delete, restore and permanent-delete authorization."},
+    {"id":"PERM-01","priority":"critical","area":"permissions","check":"Save, apply, reset, reload and auto-refresh use the same canonical user key."},
+    {"id":"I18N-01","priority":"critical","area":"localization","check":"Arabic/English parity, runtime fallback and first-paint labels remain valid."},
+    {"id":"VIS-01","priority":"high","area":"visual","check":"Buttons, labels, filters and tables remain readable on desktop/mobile and dark/light."},
+    {"id":"PWA-01","priority":"critical","area":"pwa","check":"Service worker, cache tokens, cold cache, warm cache and offline critical shell remain aligned."},
+    {"id":"SEC-01","priority":"critical","area":"security","check":"RLS-dependent operations, OTP, sessions, audit and trusted devices remain valid."},
+    {"id":"CONSOLE-01","priority":"critical","area":"runtime","check":"No uncaught errors, readiness failures or duplicate provider registrations."}
+  ]
+}
