@@ -290,6 +290,9 @@
         typeof appointments.render === 'function' &&
         window.__PETATOEAppointmentsLegacyEngine &&
         window.__PETATOEAppointmentsLegacyEngine.__legacyEngine === true &&
+        window.PETATOEOperationsVehiclePolicy &&
+        window.PETATOEOperationsVehiclePolicy.__ready === true &&
+        window.PETATOEOperationsVehiclePolicy.__owner === 'operations/operations-vehicle-policy.js' &&
         window.PETATOEOperationsVehicles &&
         window.PETATOEOperationsReports &&
         window.PETATOEOperationsStatus &&

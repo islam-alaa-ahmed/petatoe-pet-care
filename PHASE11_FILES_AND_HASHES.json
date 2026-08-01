@@ -1,0 +1,65 @@
+{
+  "phase": "Phase 11 \u2014 Operations Data Policy",
+  "files": [
+    {
+      "path": "RELEASE_VERSION.txt",
+      "sha256": "259724cd08816bb545c599ee7d6ca126ef414fc3f302c8cce0b775b24dfea7c9",
+      "bytes": 65
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "sha256": "e1f87ec74361617293c5a464ba9a2a2e43846affec10e69b4b0e142d53bac8ea",
+      "bytes": 1339
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "sha256": "38445626fe5c3f0c302c7d3b7bea871be608065f7898882d3a2015c262447c52",
+      "bytes": 1387
+    },
+    {
+      "path": "index.html",
+      "sha256": "111aea1c72e25a1cac5037f1a4b64242db17c10132436e63972d6492e36de7e7",
+      "bytes": 250941
+    },
+    {
+      "path": "service-worker.js",
+      "sha256": "e062b560e54a1b75c3eacf2e061f4e50c08c8d5b4868201893ed3b74072ac706",
+      "bytes": 6825
+    },
+    {
+      "path": "performance/mobile-startup-loading-gate.js",
+      "sha256": "bda91bf57463e26c72096d51b84b17f22d4fad131a1c5cc01a45433cb1311755",
+      "bytes": 48861
+    },
+    {
+      "path": "operations/operations-vehicle-policy.js",
+      "sha256": "99fc68367872c1c6790c7d162c99cb2ee9a4b7db90e17084a308e898f490e1f6",
+      "bytes": 4911
+    },
+    {
+      "path": "operations/operations-legacy-engine.js",
+      "sha256": "92e64620da267e7c1e2058d7786bad0d2a3ec68311572a18c7ab0e76e463e195",
+      "bytes": 278480
+    },
+    {
+      "path": "scripts/sync-version-manifest.js",
+      "sha256": "e9c0bfe66708569f534eb7ae39b516c5b6b7d3a874a58e0555b1bddf5cf90425",
+      "bytes": 4246
+    },
+    {
+      "path": "scripts/phase11-operations-data-policy-check.js",
+      "sha256": "f26448cb21dea51d8c7dcf3394f80721cd42aa6510a8d54374bfed963197fd4a",
+      "bytes": 3015
+    },
+    {
+      "path": "audit/phase11/PETATOE_PHASE11_OPERATIONS_DATA_POLICY_REPORT.md",
+      "sha256": "dfa0bec6613f6b328acba97d2007c8cd4ec61f63efa5e87cf077a3da4219c269",
+      "bytes": 2420
+    },
+    {
+      "path": "GITHUB_DESKTOP_SUMMARY.md",
+      "sha256": "62246c89bda24bf515b07dae02b78193c8fcdf8ea5b4c5d8cf5653750403d4e8",
+      "bytes": 76
+    }
+  ]
+}

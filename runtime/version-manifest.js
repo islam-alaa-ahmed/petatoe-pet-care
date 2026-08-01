@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_PERMISSION_KEY_INTEGRITY_PHASE10",
-  "buildVersion": "10.0.25-phase10-permission-key-integrity-1",
-  "cacheVersion": "10.0.25-phase10-permission-key-integrity-1",
+  "releaseName": "PETATOE_V10_0_25_OPERATIONS_DATA_POLICY_PHASE11",
+  "buildVersion": "10.0.25-phase11-operations-data-policy-1",
+  "cacheVersion": "10.0.25-phase11-operations-data-policy-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -16,7 +16,8 @@
     "navigationRuntime": "10.0.25-phase6-navigation-intent-contract-1",
     "readinessRuntime": "10.0.25-phase7-required-optional-deferred-contract-1",
     "inventoryCountRuntime": "10.0.25-phase9-inventory-count-safety-contract-1",
-    "permissionRuntime": "10.0.25-phase10-canonical-permission-key-contract-1"
+    "permissionRuntime": "10.0.25-phase10-canonical-permission-key-contract-1",
+    "operationsVehiclePolicy": "10.0.25-phase11-operations-vehicle-policy-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

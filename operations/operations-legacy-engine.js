@@ -806,7 +806,8 @@
   }
   function renderVehicleAssignments(){
     var master=readMasterData();
-    var cars=normalizeNamedList((master.vehicles||[]).concat(setupVehicleNamesForAppointments()));
+    var vehiclePolicy=window.PETATOEOperationsVehiclePolicy;
+    var cars=vehiclePolicy&&typeof vehiclePolicy.administrativeVehicleNames==='function'?vehiclePolicy.administrativeVehicleNames():normalizeNamedList((master.vehicles||[]).concat(setupVehicleNamesForAppointments()));
     var groomers=normalizeNamedList((master.groomers||[]).concat(payrollEmployeeNamesByJob('groomer')));
     var drivers=normalizeNamedList((master.drivers||[]).concat(payrollEmployeeNamesByJob('driver')));
     var v=byId('appointmentMasterVehicle'), g=byId('appointmentMasterGroomer'), d=byId('appointmentMasterDriver');
@@ -845,10 +846,11 @@
     return uniqueSorted(rows.filter(function(e){return e&&['stopped','resigned','deleted'].indexOf(String(e.status||'active'))===-1}).map(function(e){return e.name||e.fullName||e.employeeName||e.username||e.code||''}))
   }
   function vehicleNames(){
+    var policy=window.PETATOEOperationsVehiclePolicy;
+    if(policy&&typeof policy.currentVehicleNames==='function')return policy.currentVehicleNames();
     var names=[];
     var fleet=readKey('fleet',{});
-    if(fleet&&Array.isArray(fleet.vehicles)){fleet.vehicles.forEach(function(v){names.push(v.name||v.plate||'')})}
-    try{if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.getRecordsSync==='function'){(window.PETATOEDataSource.getRecordsSync()||[]).forEach(function(r){names.push(r.van||r.car||r.vehicle||'')})}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-legacy-engine.js",e);}
+    if(fleet&&Array.isArray(fleet.vehicles)){fleet.vehicles.forEach(function(v){if(!v.status||String(v.status).toLowerCase()==='active')names.push(v.name||v.plate||'')})}
     return uniqueSorted(names)
   }
   function optionList(items,placeholder,selected){
@@ -2271,14 +2273,17 @@
   }
   function renderVehicleOptions(){
     var sel=byId('vehicleOpsVehicleFilter'); if(!sel) return;
-    var old=sel.value||'all';
-    var names=vehicleScopeFilterNames(uniqueSorted(read().map(function(r){return r.vehicle||''}).concat(vehicleNames()).filter(Boolean)));
+    var old=sel.value||'all', policy=window.PETATOEOperationsVehiclePolicy;
+    var names=policy&&typeof policy.currentVehicleNames==='function'?policy.currentVehicleNames():vehicleNames();
+    names=vehicleScopeFilterNames(uniqueSorted(names.filter(Boolean)));
     if(old&&old!=='all'&&names.indexOf(old)===-1){old='all';sel.value='all'}
     safeHtml(sel, '<option value="all">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope render');
   }
   function vehicleOpsRows(){
-    var day=vehicleOpsDate(), car=val('vehicleOpsVehicleFilter')||'all';
-    return vehicleScopeFilterRows(read().map(function(r){return calcFinancials(r)})).filter(function(r){return String(r.date||'')===String(day)&&(!car||car==='all'||String(r.vehicle||'')===String(car))}).sort(function(a,b){return String(a.vehicle||'').localeCompare(String(b.vehicle||''),'ar')||String(a.start||'').localeCompare(String(b.start||''))||String(a.client||'').localeCompare(String(b.client||''),'ar')});
+    var day=vehicleOpsDate(), car=val('vehicleOpsVehicleFilter')||'all', policy=window.PETATOEOperationsVehiclePolicy;
+    var rows=read().map(function(r){return calcFinancials(r)});
+    if(policy&&typeof policy.filterCurrentRows==='function')rows=policy.filterCurrentRows(rows);
+    return vehicleScopeFilterRows(rows).filter(function(r){return String(r.date||'')===String(day)&&(!car||car==='all'||String(r.vehicle||'')===String(car))}).sort(function(a,b){return String(a.vehicle||'').localeCompare(String(b.vehicle||''),'ar')||String(a.start||'').localeCompare(String(b.start||''))||String(a.client||'').localeCompare(String(b.client||''),'ar')});
   }
   function currentUserId(){
     try{if(window.__PETATOE_SETTINGS_API__&&typeof window.__PETATOE_SETTINGS_API__.currentUser==='function'){var u=window.__PETATOE_SETTINGS_API__.currentUser();if(u)return String(u.id||u.userId||u.username||u.email||'')}}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-legacy-engine.js",e);}
@@ -2716,8 +2721,11 @@
   function vehicleOpsReportDate(id,fallback){var d=val(id);if(!d){d=fallback||today();setVal(id,d)}return d}
   function renderVehicleReportOptions(){
     var sel=byId('vehicleOpsReportVehicleFilter'); if(!sel) return;
-    var old=sel.value||'all';
-    var names=vehicleScopeFilterNames(uniqueSorted(read().map(function(r){return r.vehicle||''}).concat(vehicleNames()).filter(Boolean)));
+    var old=sel.value||'all', from=vehicleOpsReportDate('vehicleOpsReportFrom',today()), to=vehicleOpsReportDate('vehicleOpsReportTo',from);
+    if(to<from){var swap=from;from=to;to=swap;}
+    var policy=window.PETATOEOperationsVehiclePolicy;
+    var names=policy&&typeof policy.historicalVehicleNames==='function'?policy.historicalVehicleNames(read(),{from:from,to:to}):uniqueSorted(read().filter(function(r){var d=String(r.date||'');return d>=from&&d<=to}).map(function(r){return r.vehicle||''}).filter(Boolean));
+    names=vehicleScopeFilterNames(names);
     if(old&&old!=='all'&&names.indexOf(old)===-1){old='all';sel.value='all'}
     safeHtml(sel, '<option value="all">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope report render');
   }
@@ -2795,8 +2803,11 @@
   function operationsKpiDate(id,fallback){var el=byId(id);if(!el)return fallback||today();if(!el.value)el.value=fallback||today();return el.value}
   function renderOperationsKpiVehicleOptions(){
     var sel=byId('operationsKpiVehicleFilter'); if(!sel) return;
-    var old=sel.value||'all';
-    var names=vehicleScopeFilterNames(uniqueSorted(read().map(function(r){return r.vehicle||''}).concat(vehicleNames()).filter(Boolean)));
+    var old=sel.value||'all', from=operationsKpiDate('operationsKpiFrom',today()), to=operationsKpiDate('operationsKpiTo',from);
+    if(to<from){var swap=from;from=to;to=swap;}
+    var policy=window.PETATOEOperationsVehiclePolicy;
+    var names=policy&&typeof policy.historicalVehicleNames==='function'?policy.historicalVehicleNames(read(),{from:from,to:to}):uniqueSorted(read().filter(function(r){var d=String(r.date||'');return d>=from&&d<=to}).map(function(r){return r.vehicle||''}).filter(Boolean));
+    names=vehicleScopeFilterNames(names);
     if(old&&old!=='all'&&names.indexOf(old)===-1){old='all';sel.value='all'}
     safeHtml(sel, '<option value="all">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope kpi render');
   }

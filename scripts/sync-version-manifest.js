@@ -31,6 +31,7 @@ function synchronize(){
   }
   const governedAssets = [
     'performance/mobile-startup-loading-gate.js',
+    'operations/operations-vehicle-policy.js',
     'smart/smart-router.js',
     'smart/smart-reports-runtime-controller.js',
     'sales/sales-invoice-report.js',

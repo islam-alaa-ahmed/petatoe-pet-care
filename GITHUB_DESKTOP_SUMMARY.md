@@ -1,1 +1,1 @@
-fix: canonicalize permission keys across save reset and Supabase sync
+refactor: enforce active and historical vehicle data policies in operations
