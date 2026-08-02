@@ -1,0 +1,4 @@
+The following repository files must be deleted:
+index-css-control-test.html
+index-css-fontless-test.html
+maintenance/navigation-permissions.js
