@@ -855,7 +855,7 @@
   var nonBlockingBusinessGroups = {
     operations:true, fleet:true, children:true, warehouses:true, treasury:true,
     payroll:true, commission:true, obligations:true, customer360:true,
-    salesEntry:true, salesImport:true, salesRecords:true, salesAnalytics:true,
+    salesEntry:true, salesImport:true, salesAnalytics:true,
     smartSalesInvoices:true, salesContracts:true, smartReports:true
   };
 
@@ -868,6 +868,10 @@
   }
 
   function shouldHydrateRouteInBackground(el, group){
+    /* Phase D2.1: the Records screen owns its first render inside the lazy
+       salesRecords runtime. It must use the guarded replay path after hydration;
+       opening it optimistically can leave the already-visible previous panel in place. */
+    if(group === 'salesRecords') return false;
     return !!(nonBlockingBusinessGroups[group] && isRouteNavigationElement(el));
   }
 
@@ -1040,7 +1044,6 @@
     ensureRoute: ensureRoute,
     groupForRoute: groupForRoute,
     registryLoadGroup: registryLoadGroup,
-    ensureRoute: ensureRoute,
     normalizeGroup: normalizeGroup,
     getGroupStatus: getGroupStatus,
     invalidateGroup: invalidateGroup,

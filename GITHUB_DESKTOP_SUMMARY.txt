@@ -1,1 +1,1 @@
-feat: route business modules through canonical non-blocking lazy hydration
+fix: restore guarded records route replay after business module loading
