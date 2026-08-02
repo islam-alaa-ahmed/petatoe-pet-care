@@ -822,9 +822,23 @@
     return '';
   }
 
+  function registryLoadGroup(routeId){
+    try{
+      var registry = window.PETATOERouteRegistry;
+      if(!registry || typeof registry.get !== 'function') return '';
+      var meta = registry.get(String(routeId || '').replace(/^#/,''));
+      return meta && meta.loadGroup ? normalizeGroup(meta.loadGroup) : '';
+    }catch(_){ return ''; }
+  }
+
   function groupForRoute(routeId,navigationScreen){
     var screen=String(navigationScreen||'').replace(/^#/,'');
     var route=String(routeId||'').replace(/^#/,'');
+    /* Phase D2: route-registry metadata is the canonical owner of business
+       module hydration. The legacy screen map remains a compatibility fallback
+       for routes not yet registered. */
+    var registryGroup = registryLoadGroup(screen) || registryLoadGroup(route);
+    if(registryGroup) return registryGroup;
     if(screenGroupMap[screen]) return screenGroupMap[screen];
     if(screenGroupMap[route]) return screenGroupMap[route];
     var panel=document.getElementById(route);
@@ -836,6 +850,25 @@
     if(!group) return Promise.resolve(true);
     if(!startupInteractive){ rememberPendingStartupGroup(group); return Promise.resolve(true); }
     return ensureGroup(group);
+  }
+
+  var nonBlockingBusinessGroups = {
+    operations:true, fleet:true, children:true, warehouses:true, treasury:true,
+    payroll:true, commission:true, obligations:true, customer360:true,
+    salesEntry:true, salesImport:true, salesRecords:true, salesAnalytics:true,
+    smartSalesInvoices:true, salesContracts:true, smartReports:true
+  };
+
+  function isRouteNavigationElement(el){
+    if(!el || !el.getAttribute) return false;
+    if(el.getAttribute('data-pet-lazy-blocking') === 'true') return false;
+    var route = el.getAttribute('data-pet-nav-screen') || el.getAttribute('data-tab') || '';
+    if(!route) return false;
+    return !!(registryLoadGroup(route) || screenGroupMap[String(route).replace(/^#/,'')]);
+  }
+
+  function shouldHydrateRouteInBackground(el, group){
+    return !!(nonBlockingBusinessGroups[group] && isRouteNavigationElement(el));
   }
 
   function installTriggers(){
@@ -860,7 +893,11 @@
          Start hydration in parallel and allow the canonical Router / inline handler to
          open the screen immediately. A failed or delayed optional dependency must not
          turn the Reports buttons into dead controls. */
-      if(group === 'smartReports' || group === 'salesRecords'){
+      /* Phase D2: navigation into a business screen must stay responsive.
+         The route opens immediately while its canonical loadGroup hydrates in
+         the background. Non-navigation actions remain blocking, so import,
+         export, save, and report actions cannot run before dependencies exist. */
+      if(shouldHydrateRouteInBackground(el, group)){
         ensureGroup(group).catch(function(error){
           if(window.console && console.warn) console.warn('[PETATOE Mobile Gate] background route hydration failed', group, error);
         });
@@ -1000,7 +1037,9 @@
     isMobile: isMobile,
     registerOrWrite: registerOrWrite,
     ensureGroup: ensureGroup,
+    ensureRoute: ensureRoute,
     groupForRoute: groupForRoute,
+    registryLoadGroup: registryLoadGroup,
     ensureRoute: ensureRoute,
     normalizeGroup: normalizeGroup,
     getGroupStatus: getGroupStatus,
