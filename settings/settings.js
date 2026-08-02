@@ -200,7 +200,24 @@
     var settingsHtml='<div class="pet-v110-wrap"><div class="pet-v110-hero"><div><h3>⚙️ مركز الإعدادات والصلاحيات</h3><p>القائمة الرئيسية: النظام، الإعدادات، الصلاحيات، المستخدمين — بدون التأثير على التقارير القديمة.</p></div></div>'+mainTabs(main)+(main==='permissions'?'':kpis(q))+body+'</div>';
     (window.PETATOESecurity||{setInnerHTML:function(el,h){el.replaceChildren(document.createRange().createContextualFragment(String(h==null?'':h)));}}).setInnerHTML(el, localizeSettingsHtml(settingsHtml));
     if(main==='localization'&&window.PETATOELocalizationDashboard&&typeof window.PETATOELocalizationDashboard.mount==='function'){window.PETATOELocalizationDashboard.mount(byId('petatoeLocalizationDashboardMount'));}
-    if(main==='observability'&&window.PETATOEObservability&&typeof window.PETATOEObservability.renderInto==='function'){window.PETATOEObservability.renderInto(byId('petatoeObservabilitySettingsMount'));}
+    if(main==='observability'){
+      var observabilityMount=byId('petatoeObservabilitySettingsMount');
+      var mountObservability=function(){
+        if(!observabilityMount||!observabilityMount.isConnected)return false;
+        if(window.PETATOEObservability&&typeof window.PETATOEObservability.renderInto==='function')return window.PETATOEObservability.renderInto(observabilityMount);
+        return false;
+      };
+      if(!mountObservability()){
+        var observabilityGate=window.PETATOEMobileStartupGate;
+        if(observabilityGate&&typeof observabilityGate.ensureGroup==='function'){
+          observabilityGate.ensureGroup('diagnostics').then(function(ready){
+            if(ready===true&&getText(MAIN_KEY,'system')==='observability')mountObservability();
+          }).catch(function(error){
+            window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('settings/settings.js',error);
+          });
+        }
+      }
+    }
     if(main==='about'&&window.PETATOEAboutApp&&typeof window.PETATOEAboutApp.renderInto==='function'){window.PETATOEAboutApp.renderInto(byId('petatoeAboutAppMount'));}
     if(main==='settings' && sub==='security') setTimeout(function(){ if(typeof window.petV9LoadTrustedDevices==='function') window.petV9LoadTrustedDevices(); if(typeof window.petV9LoadActiveSessions==='function') window.petV9LoadActiveSessions(); if(typeof window.petV9LoadSecurityActivity==='function') window.petV9LoadSecurityActivity(); }, 120);
   }
