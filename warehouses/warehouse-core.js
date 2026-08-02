@@ -16,10 +16,21 @@
       try{
         if(window.PETATOESafeRender && typeof window.PETATOESafeRender.htmlTrusted === 'function'){
           window.PETATOESafeRender.htmlTrusted(el, html, reason || 'warehouse-core trusted legacy template');
-        }else{
-          window.PETATOESafeRender.htmlTrusted(el, html, reason || 'warehouse-core trusted legacy template');
+          return;
         }
-      }catch(e){warn(e); try{window.PETATOESafeRender.htmlTrusted(el, html, reason || 'warehouse-core trusted legacy template');}catch(e2){warn(e2);} }
+        if(window.PETATOESafeRender && typeof window.PETATOESafeRender.htmlSanitized === 'function'){
+          window.PETATOESafeRender.htmlSanitized(el, html, reason || 'warehouse-core sanitized fallback');
+          return;
+        }
+        el.textContent = '';
+        el.insertAdjacentHTML('beforeend', String(html == null ? '' : html));
+      }catch(e){
+        warn(e);
+        try{
+          el.textContent = '';
+          el.insertAdjacentHTML('beforeend', String(html == null ? '' : html));
+        }catch(e2){warn(e2);}
+      }
     }
   };
 }());

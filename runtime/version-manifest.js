@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_DATA_PIPELINE_C3",
-  "buildVersion": "10.0.25-phase-c3-data-pipeline-audit-1",
-  "cacheVersion": "10.0.25-phase-c3-data-pipeline-audit-1",
+  "releaseName": "PETATOE_V10_0_25_WAREHOUSE_SAFE_RENDER_C3_1",
+  "buildVersion": "10.0.25-phase-c3-1-warehouse-safe-render-hotfix-1",
+  "cacheVersion": "10.0.25-phase-c3-1-warehouse-safe-render-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -25,7 +25,8 @@
     "testContracts": "10.0.25-phase16-active-ci-contract-1",
     "observability": "10.0.25-phase-b-observability-contract-1",
     "startupBootstrap": "10.0.25-phase-c1-critical-dashboard-bootstrap-contract-1",
-    "dataPipeline": "10.0.25-phase-c3-coalesced-read-pipeline-contract-1"
+    "dataPipeline": "10.0.25-phase-c3-coalesced-read-pipeline-contract-1",
+    "warehouseSafeRender": "10.0.25-phase-c3-1-warehouse-safe-render-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
