@@ -220,27 +220,45 @@
     return clone(def||{});
   }
 
+  var __singletonReadPromises={};
+  var __singletonReadCache={};
+  var __systemSettingReadPromises={};
+  var __systemSettingReadCache={};
+  function __cacheFresh(entry,ttl){return !!(entry&&Date.now()-entry.at<ttl);}
+  function __cloneCached(entry,def){return entry?clone(entry.value):clone(def||{});}
+
   async function getSingleton(table, id, def){
     if(!hasClient()) return clone(def||{});
-    var key=String(id||'');
-    var rowId=singletonRowId(table, key);
-    var res=await client().from(table).select('*').eq('id', rowId).limit(1);
-    if(res.error){ console.warn('PETATOESupabaseRepository getSingleton failed', table, resultError(res)); return clone(def||{}); }
-    var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
-    if(!row && isSingletonTable(table)){
-      try{
-        var fallback=await client().from(table).select('*').limit(1000);
-        if(fallback && !fallback.error){
-          var rows=Array.isArray(fallback.data)?fallback.data:[];
-          row=rows.filter(function(r){return rowMatchesSingletonKey(r,key);})[0]||null;
-        }
-      }catch(_e){}
-    }
-    return singletonValueFromRow(row, def);
+    var key=String(id||''), cacheKey=String(table||'')+'::'+key;
+    if(__cacheFresh(__singletonReadCache[cacheKey],1500)) return __cloneCached(__singletonReadCache[cacheKey],def);
+    if(__singletonReadPromises[cacheKey]) return clone(await __singletonReadPromises[cacheKey]);
+    __singletonReadPromises[cacheKey]=(async function(){
+      var rowId=singletonRowId(table, key);
+      var res=await client().from(table).select('*').eq('id', rowId).limit(1);
+      if(res.error){ console.warn('PETATOESupabaseRepository getSingleton failed', table, resultError(res)); return clone(def||{}); }
+      var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
+      if(!row && isSingletonTable(table)){
+        try{
+          var fallback=await client().from(table).select('*').limit(1000);
+          if(fallback && !fallback.error){
+            var rows=Array.isArray(fallback.data)?fallback.data:[];
+            row=rows.filter(function(r){return rowMatchesSingletonKey(r,key);})[0]||null;
+          }
+        }catch(_e){}
+      }
+      var value=singletonValueFromRow(row, def);
+      __singletonReadCache[cacheKey]={at:Date.now(),value:clone(value)};
+      return value;
+    })();
+    try{return clone(await __singletonReadPromises[cacheKey]);}finally{delete __singletonReadPromises[cacheKey];}
   }
 
   async function saveSingleton(table, id, data){
-    return upsertJsonRow(table, id, data&&typeof data==='object'?data:{}, {});
+    var cacheKey=String(table||'')+'::'+String(id||'');
+    delete __singletonReadCache[cacheKey];
+    var result=await upsertJsonRow(table, id, data&&typeof data==='object'?data:{}, {});
+    if(result&&result.ok)__singletonReadCache[cacheKey]={at:Date.now(),value:clone(data&&typeof data==='object'?data:{})};
+    return result;
   }
 
   function makeJsonTable(table, opts){
@@ -383,27 +401,31 @@
   async function getSystemSetting(id, def){
     if(!id) return clone(def||{});
     if(!hasClient()) return clone(def||{});
-    var c=client();
-    try{
-      // System settings are stored as a key/data JSONB row.
-      // Do not query legacy id-based columns because older Supabase schemas may have uuid id columns or no id column at all.
-      var res=await c.from('system_settings').select('key,data,value,updated_at').eq('key', String(id)).limit(1);
-      if(res && !res.error){
-        var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
-        if(row){
-          if(row.data && typeof row.data==='object') return clone(row.data);
-          if(row.value && typeof row.value==='object') return clone(row.value);
-          if(typeof row.value==='string'){try{return JSON.parse(row.value)}catch(_e){}}
-        }
-      }else if(res && res.error){
-        console.warn('PETATOESupabaseRepository getSystemSetting failed', resultError(res));
-      }
-    }catch(e){console.warn('PETATOESupabaseRepository getSystemSetting crashed', e)}
-    return clone(def||{});
+    var key=String(id);
+    if(__cacheFresh(__systemSettingReadCache[key],1500)) return __cloneCached(__systemSettingReadCache[key],def);
+    if(__systemSettingReadPromises[key]) return clone(await __systemSettingReadPromises[key]);
+    __systemSettingReadPromises[key]=(async function(){
+      var c=client(), value=clone(def||{});
+      try{
+        var res=await c.from('system_settings').select('key,data,value,updated_at').eq('key', key).limit(1);
+        if(res && !res.error){
+          var row=Array.isArray(res.data)&&res.data.length?res.data[0]:null;
+          if(row){
+            if(row.data && typeof row.data==='object') value=clone(row.data);
+            else if(row.value && typeof row.value==='object') value=clone(row.value);
+            else if(typeof row.value==='string'){try{value=JSON.parse(row.value)}catch(_e){}}
+          }
+        }else if(res && res.error){console.warn('PETATOESupabaseRepository getSystemSetting failed', resultError(res));}
+      }catch(e){console.warn('PETATOESupabaseRepository getSystemSetting crashed', e)}
+      __systemSettingReadCache[key]={at:Date.now(),value:clone(value)};
+      return value;
+    })();
+    try{return clone(await __systemSettingReadPromises[key]);}finally{delete __systemSettingReadPromises[key];}
   }
 
   async function saveSystemSetting(id, data){
     if(!id) return {ok:false,error:'Missing system setting id'};
+    delete __systemSettingReadCache[String(id)];
     var payloadData=data&&typeof data==='object'?clone(data):{};
     if(!hasClient()){
       return {ok:false,error:'Supabase client not ready'};

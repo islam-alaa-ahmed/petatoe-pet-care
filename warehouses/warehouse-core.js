@@ -806,6 +806,8 @@
   var DEFAULT_LIMIT=5;
   var STORES=['المخزن الرئيسي','VAN A - AXB 2558','VAN B - SXB 6066'];
   var ALLOWED={'المخزن الرئيسي':1,'VAN A - AXB 2558':1,'VAN B - SXB 6066':1};
+  function whT(k,p){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('warehouseSource.'+k,p,{fallback:k}):k;}
+  function whLocale(){var c=window.PETATOE_LOCALIZATION_CENTER,l=c&&c.getLanguage?c.getLanguage():(document.documentElement.lang||'ar');return l==='en'?'en-GB':'ar-EG';}
   /* v3.11.10: using global byId */
   function petatoe_v380_warehouse_alerts_clean_fina_esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
   function whWarehouseTextNorm(v){return String(v==null?'':v).replace(/\s+/g,' ').trim()}
