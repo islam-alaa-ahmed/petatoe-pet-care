@@ -25,7 +25,7 @@ check('startup gate covers programmatic route gaps', ['executive:\'smartReports\
 check('tabchange hydration uses route identity', gate.includes('ensureRoute(id,detail.navigationScreen)'));
 const governed=['router/navigation-controller.js','navigation/navigation.js','navigation/navigation-state.js','navigation/navigation-schema.js'];
 check('modified navigation assets use canonical cache version', governed.every(asset=>index.includes(`${asset}?v=${version.cacheVersion}`)));
-check('navigation runtime contract recorded', version.runtimeContracts && version.runtimeContracts.navigationRuntime==='10.0.25-phase6-navigation-intent-contract-1');
+check('navigation runtime contract recorded', version.runtimeContracts && ['10.0.25-phase6-navigation-intent-contract-1','10.0.25-phase-e1-smart-active-state-contract-1'].includes(version.runtimeContracts.navigationRuntime));
 const passed=checks.filter(x=>x.ok).length;
 console.log(`Phase 6 Navigation & Lazy Route Integrity: ${passed}/${checks.length} PASSED`);
 if(passed!==checks.length) process.exit(1);

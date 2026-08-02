@@ -272,6 +272,11 @@
         }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('navigation/navigation.js',e);}
         if(appointmentsActiveTab==='master') activeBtn=firstVisibleButton('button[data-pet-nav-screen="appointmentsMaster"]',nav)||firstVisibleButton('button[data-tab="appointments"][data-appointments-subtab="master"]',nav);
       }
+      if(!activeBtn && active==='smart') {
+        var currentSmart='';
+        try{ currentSmart=String(window.PETATOERouter&&window.PETATOERouter.currentSmart||''); }catch(e){ currentSmart=''; }
+        activeBtn=firstVisibleButton('button[data-tab="smart"][data-smart-open="'+currentSmart.replace(/"/g,'\\"')+'"]',nav);
+      }
       if(!activeBtn) activeBtn=firstVisibleButton('button[data-tab="'+active+'"]',nav);
       var grp=activeBtn&&activeBtn.closest('.pet-v142-group'); groupId=grp?grp.getAttribute('data-group'):'';
     }
