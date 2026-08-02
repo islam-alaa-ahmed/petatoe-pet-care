@@ -1,6 +1,24 @@
 $ErrorActionPreference = 'Stop'
 
-$repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$candidates = @(
+    $scriptDir,
+    (Split-Path -Parent $scriptDir),
+    (Get-Location).Path
+) | Select-Object -Unique
+
+$repoRoot = $null
+foreach ($candidate in $candidates) {
+    if (Test-Path -LiteralPath (Join-Path $candidate 'index.html')) {
+        $repoRoot = $candidate
+        break
+    }
+}
+
+if (-not $repoRoot) {
+    throw 'PETATOE repository root was not found. Place this folder inside the project or copy its contents beside index.html.'
+}
+
 $targets = @(
     'index-css-control-test.html',
     'index-css-fontless-test.html',
@@ -20,9 +38,17 @@ foreach ($relativePath in $targets) {
     }
 }
 
-$checker = Join-Path $repoRoot 'scripts/phase16-production-contract-check.js'
-if (-not (Test-Path -LiteralPath $checker)) {
-    throw 'scripts/phase16-production-contract-check.js was not found. Apply Phase 16 first.'
+$repoChecker = Join-Path $repoRoot 'scripts/phase16-production-contract-check.js'
+$bundledChecker = Join-Path $scriptDir 'scripts/phase16-production-contract-check.js'
+
+if (-not (Test-Path -LiteralPath $repoChecker)) {
+    if (-not (Test-Path -LiteralPath $bundledChecker)) {
+        throw 'Phase 16 production contract checker is missing from both the repository and this package.'
+    }
+    $repoScripts = Join-Path $repoRoot 'scripts'
+    New-Item -ItemType Directory -Path $repoScripts -Force | Out-Null
+    Copy-Item -LiteralPath $bundledChecker -Destination $repoChecker -Force
+    Write-Host 'Restored: scripts/phase16-production-contract-check.js' -ForegroundColor Green
 }
 
 Write-Host 'Running Phase 16 production contract check...' -ForegroundColor Cyan
@@ -37,4 +63,4 @@ try {
 }
 
 Write-Host 'Phase 16.1 cleanup completed successfully.' -ForegroundColor Green
-Write-Host 'Open GitHub Desktop, confirm the three deletions, then commit and push.' -ForegroundColor Yellow
+Write-Host 'Open GitHub Desktop, confirm the deletions, then commit and push.' -ForegroundColor Yellow
