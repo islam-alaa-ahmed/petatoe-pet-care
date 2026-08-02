@@ -880,6 +880,15 @@
   }
 
   window.addEventListener('petatoe:language-changed',function(){try{var payrollPanel=byId('payroll'),salaryPanel=byId('salarySlip');if(payrollPanel&&payrollPanel.classList.contains('active')&&byId('payrollArea'))render();if(salaryPanel&&salaryPanel.classList.contains('active')&&byId('salarySlipArea'))renderSalarySlip()}catch(e){console.warn('PETATOEPayroll language rerender failed',e)}});
+  window.PETATOEPayrollEnterpriseUAT={
+    version:'1.0.0',
+    owner:'payroll/payroll-core.js',
+    calculate:function(slip){return calcSlip(cloneVal(slip||{}));},
+    archiveRows:function(){return cloneVal(archiveFilteredSlips());},
+    monthlyReport:function(){return cloneVal(monthlyReportModel());},
+    canDeleteSlip:function(slip){return ['draft','pending_board'].indexOf(String(slip&&slip.status||'draft'))!==-1;},
+    allowedTransition:function(from,to){var map={draft:['pending_board'],pending_board:['board_approved','rejected'],board_approved:['employee_approved','employee_objection','pending_board'],employee_objection:['board_approved'],employee_approved:['accounts_approved','board_approved'],accounts_approved:['paid','employee_approved'],paid:['accounts_approved'],rejected:['pending_board']};return (map[String(from||'')]||[]).indexOf(String(to||''))!==-1;}
+  };
   window.PETATOEPayroll={
     openTab:function(t){state.tab=t||'employees';render()},render:render,renderSalarySlip:renderSalarySlip,selectMySalarySlip:function(id){var s=slips().find(function(x){return String(x.id)===String(id)});if(!s||!canEmployeeSee(s)){toastMsg(payrollT('workflow.cannotOpenOthers','لا يمكنك فتح كشف غير خاص بك'));return}state.salarySlipId=id;renderSalarySlip()},
     setArchiveFilter:function(year,month,payment){if(year!==null&&year!==undefined){state.archiveYear=String(year||'');state.archiveMonth=''}if(month!==null&&month!==undefined){state.archiveMonth=String(month||'')}if(payment!==null&&payment!==undefined){state.archivePayment=String(payment||'')}render()},
@@ -988,10 +997,8 @@
     document.addEventListener('click',function(e){var wrap=byId('peStatusSelect');if(!wrap)return;if(!wrap.contains(e.target))PETATOEPayroll.toggleEmployeeStatusMenu(false)});
     document.addEventListener('petatoe:tabchange',function(e){var t=(e.detail||{}).tabId;if(t==='payroll')setTimeout(render,0);if(t==='salarySlip')setTimeout(renderSalarySlip,0)});
     window.addEventListener('petatoe:identity-ready',function(){refreshPayrollViews()});
-    document.addEventListener('petatoe:identity-ready',function(){refreshPayrollViews()});
     window.addEventListener('petatoe:permissionschanged',function(){refreshPayrollViews()});
     window.addEventListener('petatoe:payroll-read-facade-refreshed',function(){if(state.tab==='config'&&state.configTab==='employees')render();});
-    document.addEventListener('petatoe:permissionschanged',function(){refreshPayrollViews()});
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){if(byId('payrollArea'))render();},200)});else setTimeout(function(){if(byId('payrollArea'))render();},200);
   }
   setTimeout(loadPayrollFromSupabase,0);

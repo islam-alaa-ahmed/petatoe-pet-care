@@ -1,0 +1,65 @@
+{
+  "phase": "Phase 13 — Payroll, Treasury & Obligations Enterprise UAT",
+  "files": [
+    {
+      "path": "RELEASE_VERSION.txt",
+      "beforeSha256": "bf2b622b9dee728a4db22107c084f61c685006d438c8e312e0ca1b65700c7c1f",
+      "afterSha256": "00ab36c43456aeae0b5d5c74e040a7efbae58c9d453fc700677ea09499865c90",
+      "bytes": 75
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "beforeSha256": "5b0bdb991f92b684a984b21229c3395001625afdfec136dd1b9339dcfcaebe20",
+      "afterSha256": "120a15b3360b3417ea8e385f162fedff5ce26e5e653f327092e1d845a2af1cda",
+      "bytes": 1540
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "131453cee5afeb9f30d9e1a37071271684ae33a3c2b67c73c9c9519f0413a810",
+      "afterSha256": "8414755b201e71009da326398d3055770d40f6830bae94bbf8f31964cb5ba4d2",
+      "bytes": 251077
+    },
+    {
+      "path": "service-worker.js",
+      "beforeSha256": "d9b09425c4c007198179074e89ac93cdb0e078a6d3390072d3458f065cf82560",
+      "afterSha256": "fda1f549ecb1e8ab562776b4aa6cc1da52df0b25193d405a04050cf6f6bf2abd",
+      "bytes": 6845
+    },
+    {
+      "path": "payroll/payroll-core.js",
+      "beforeSha256": "69a1a0900985ea8a94badf3a84273bffd18ea1c6916e55ca5d33082f9ff10073",
+      "afterSha256": "d092072c8630c29f6096934672f754cb2b83b0c359daf45b7e4eb83a82430cc9",
+      "bytes": 126747
+    },
+    {
+      "path": "treasury/treasury-core.js",
+      "beforeSha256": "2d0da14fd4823635aa1388bd9486978da4410dde653069548300b3008c7cff4f",
+      "afterSha256": "b024e0b5c7ba99b5d1c5a1afc6e3c985d302536d4e2b450304a38c72b61f6a93",
+      "bytes": 66648
+    },
+    {
+      "path": "obligations/obligations-core.js",
+      "beforeSha256": "0df6a0761fab3f0df558fbbfdf859c3688b45e7cc5d67a6353ee65a16344baad",
+      "afterSha256": "e43380e791e2ec2ff1c15c9a8fce6bd3dfd2e4fc6f961b535a8bc798105640be",
+      "bytes": 34882
+    },
+    {
+      "path": "scripts/phase13-payroll-treasury-obligations-uat-check.js",
+      "beforeSha256": null,
+      "afterSha256": "220fd42ca60386d1565f2cf9ecf17e8050e2e1d66682785bdafefdf556b0ab8a",
+      "bytes": 2653
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "beforeSha256": "1500a7b074514bff442d1262f5241a89032ba71f521e5933eb9bf94a5b9d8720",
+      "afterSha256": "76f8c8812edadb2d053551c891aec88de135fda7a65100d2d8f51565a9e856e0",
+      "bytes": 4519
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "beforeSha256": "77e813e3a8bdda06c3a98ff3678fba9d1cc4a138bb6cec8f04e86075f7223b6b",
+      "afterSha256": "7da131bb6f4b741e8819133c367bd068525074f751ce9713221c99e0406b86b5",
+      "bytes": 1781
+    }
+  ]
+}
