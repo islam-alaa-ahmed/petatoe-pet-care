@@ -855,7 +855,7 @@
   var nonBlockingBusinessGroups = {
     operations:true, fleet:true, children:true, warehouses:true, treasury:true,
     payroll:true, commission:true, obligations:true, customer360:true,
-    salesEntry:true, salesImport:true, salesAnalytics:true,
+    salesEntry:true, salesImport:true, salesRecords:true, salesAnalytics:true,
     smartSalesInvoices:true, salesContracts:true, smartReports:true
   };
 
@@ -868,10 +868,11 @@
   }
 
   function shouldHydrateRouteInBackground(el, group){
-    /* Phase D2.1: the Records screen owns its first render inside the lazy
-       salesRecords runtime. It must use the guarded replay path after hydration;
-       opening it optimistically can leave the already-visible previous panel in place. */
-    if(group === 'salesRecords') return false;
+    /* Phase D2.2: Records panel activation is router-owned and its base renderer
+       is already available from the eager legacy application core. The optional
+       sales CRUD binding hydrates in the background, then refreshActiveModule()
+       redraws the active records panel. Blocking the click until the provider
+       contract resolves caused the canonical navigation click to be swallowed. */
     return !!(nonBlockingBusinessGroups[group] && isRouteNavigationElement(el));
   }
 

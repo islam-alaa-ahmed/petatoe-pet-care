@@ -11,8 +11,8 @@ function check(ok,label){ if(ok){passed++;console.log('PASS - '+label);}else{fai
 check(gate.includes('function registryLoadGroup(routeId)'),'loader resolves route ownership from canonical registry');
 check(gate.includes("var registryGroup = registryLoadGroup(screen) || registryLoadGroup(route)"),'route registry precedes legacy screen-map fallback');
 check(gate.includes('var nonBlockingBusinessGroups = {'),'business navigation has an explicit non-blocking policy');
-['operations','fleet','children','warehouses','treasury','payroll','commission','obligations','customer360','salesEntry','salesImport','salesAnalytics','smartSalesInvoices','smartReports'].forEach(group=>check(gate.includes(group+':true'),group+' navigation hydrates in background'));
-check(gate.includes("if(group === 'salesRecords') return false;"),'records route retains guarded replay semantics');
+['operations','fleet','children','warehouses','treasury','payroll','commission','obligations','customer360','salesEntry','salesImport','salesRecords','salesAnalytics','smartSalesInvoices','smartReports'].forEach(group=>check(gate.includes(group+':true'),group+' navigation hydrates in background'));
+check(!gate.includes("if(group === 'salesRecords') return false;"),'records route uses non-blocking canonical panel activation');
 check(gate.includes("el.getAttribute('data-pet-lazy-blocking') === 'true'"),'actions may explicitly retain blocking dependency safety');
 check(gate.includes('shouldHydrateRouteInBackground(el, group)'),'click interception distinguishes route navigation from business actions');
 check(gate.includes('ensureRoute: ensureRoute'),'route hydration API is public');
