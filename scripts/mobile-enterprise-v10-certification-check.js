@@ -92,7 +92,7 @@ requireCheck(pwaManager.includes("updateViaCache: 'none'"), 'PWA update bypass',
 requireCheck(pwaManager.includes('registration.update()'), 'PWA active update checks', 'PWA Manager must actively request Service Worker update checks.');
 requireCheck(pwaManager.includes('visibilitychange'), 'PWA foreground update check', 'PWA Manager must check for updates when the installed app returns to the foreground.');
 requireCheck(index.includes('viewport-fit=cover'), 'iOS Safe Area viewport', 'viewport-fit=cover is required for installed iPhone PWA mode.');
-requireCheck(workflow.includes('node scripts/mobile-enterprise-v10-certification-check.js'), 'GitHub Actions mobile certification gate', 'The mobile certification script is not wired into GitHub Actions.');
+requireCheck(workflow.includes('node scripts/mobile-enterprise-v10-certification-check.js') || workflow.includes('node scripts/run-active-contracts.js'), 'GitHub Actions mobile certification gate', 'The mobile certification script is not wired into GitHub Actions.');
 requireCheck(index.indexOf('mobile-enterprise-v10-shell.js') < index.indexOf('mobile-enterprise-v10-dashboard.js') &&
   index.indexOf('mobile-enterprise-v10-dashboard.js') < index.indexOf('mobile-enterprise-v10-reports.js') &&
   index.indexOf('mobile-enterprise-v10-reports.js') < index.indexOf('mobile-enterprise-v10-management.js') &&

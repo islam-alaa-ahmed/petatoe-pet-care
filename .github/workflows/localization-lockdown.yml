@@ -14,34 +14,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Version single-source certification
-        run: node scripts/version-single-source-check.js
-      - name: Enterprise localization certification
-        run: node scripts/enterprise-localization-certification-check.js
-      - name: Production localization lockdown
-        run: node scripts/localization-production-lockdown-check.js
-      - name: Runtime translation completion
-        run: node scripts/runtime-translation-completion-check.js
-      - name: Smart Reports fast runtime
-        run: node scripts/smart-reports-render-performance-check.js
-      - name: Smart Reports fast readiness path
-        run: node scripts/smart-reports-data-readiness-recovery-check.js
-      - name: Smart Reports public API
-        run: node scripts/smart-reports-public-api-check.js
-      - name: Smart Reports translation stability
-        run: node scripts/smart-reports-translation-stability-check.js
-      - name: Mobile Enterprise UI v10 certification
-        run: node scripts/mobile-enterprise-v10-certification-check.js
-      - name: Startup Gate single-source certification
-        run: node scripts/startup-gate-single-source-check.js
-      - name: Runtime readiness contract certification
-        run: node scripts/runtime-readiness-contract-check.js
-      - name: Data-ready screen hydration certification
-        run: node scripts/data-ready-screen-hydration-contract-check.js
-      - name: Smart Reports single-controller certification
-        run: node scripts/smart-reports-single-controller-check.js
-      - name: Smart Reports event ownership certification
-        run: node scripts/smart-reports-event-ownership-check.js
+      - name: Active enterprise contract suite
+        run: node scripts/run-active-contracts.js
       - name: JavaScript syntax validation
         shell: bash
         run: |

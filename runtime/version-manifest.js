@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_SECURITY_OFFLINE_VERIFICATION_PHASE15",
-  "buildVersion": "10.0.25-phase15-security-offline-verification-1",
-  "cacheVersion": "10.0.25-phase15-security-offline-verification-1",
+  "releaseName": "PETATOE_V10_0_25_TEST_CONTRACT_CONSOLIDATION_PHASE16",
+  "buildVersion": "10.0.25-phase16-test-contract-consolidation-1",
+  "cacheVersion": "10.0.25-phase16-test-contract-consolidation-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -21,7 +21,8 @@
     "commissionCalculation": "10.0.25-phase12-commission-calculation-uat-contract-1",
     "financialOperationsUAT": "10.0.25-phase13-financial-operations-uat-contract-1",
     "visualInteraction": "10.0.25-phase14-interaction-visual-contract-1",
-    "securityOffline": "10.0.25-phase15-security-offline-contract-1"
+    "securityOffline": "10.0.25-phase15-security-offline-contract-1",
+    "testContracts": "10.0.25-phase16-active-ci-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

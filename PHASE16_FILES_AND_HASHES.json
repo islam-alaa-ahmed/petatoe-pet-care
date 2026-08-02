@@ -1,0 +1,85 @@
+{
+  "phase": "16",
+  "files": [
+    {
+      "path": ".github/workflows/localization-lockdown.yml",
+      "sha256": "15a3b5ab416e56f4e685a20c56922550ec6f88f8462dd480398c9d19ec8a05cb",
+      "bytes": 621
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "sha256": "1a7a84327a8c0bcf97795d17717c558ce6d58038f638c5a839f1abba98a1da94",
+      "bytes": 1730
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "sha256": "d90ac8ee6fa1dd21e71072309ba9c3873097c3110600e51b8cb7901937c1ec63",
+      "bytes": 1778
+    },
+    {
+      "path": "index.html",
+      "sha256": "66b0a30f59de49f6dee4e2813049cef1293308221b28f76614e5a0ee0a5060f1",
+      "bytes": 247943
+    },
+    {
+      "path": "service-worker.js",
+      "sha256": "e13717ee5a0ebfe2a02bed853527f201d90e1a52c7dbbacf482c7e65070cb96d",
+      "bytes": 7887
+    },
+    {
+      "path": "RELEASE_VERSION.txt",
+      "sha256": "f547e010a1e2ddb23a4e0faa27ecd0de5740d9a6867c223c4a89102779ccf5d6",
+      "bytes": 70
+    },
+    {
+      "path": "scripts/test-contracts.json",
+      "sha256": "a2cdeb7dc77d7f0e27d6653fa5c40c7ad45687f591c8b86290f8e9d5becc7f65",
+      "bytes": 1852
+    },
+    {
+      "path": "scripts/run-active-contracts.js",
+      "sha256": "603c0f14f54c86ccbe49760885b1e4ce79021c5ca9f0512993b6c0855ed58022",
+      "bytes": 684
+    },
+    {
+      "path": "scripts/phase16-production-contract-check.js",
+      "sha256": "31ae084a95efbcb9581abf2255d24f7892a6784ce0b3da1e13e6d99675b09622",
+      "bytes": 1965
+    },
+    {
+      "path": "scripts/sync-version-manifest.js",
+      "sha256": "fd51f3f25c4a957990354257313327b7e7a0b1db3863f0a6cd50a0861e410d1c",
+      "bytes": 4945
+    },
+    {
+      "path": "scripts/version-single-source-audit.js",
+      "sha256": "ef6dbbcbe8237c18cc6a8e9f3102c8950844d8edb9241aa9ff785da1bae52f27",
+      "bytes": 4458
+    },
+    {
+      "path": "scripts/startup-gate-single-source-check.js",
+      "sha256": "be5fd32cca04d7b5ac64b1c11f993bc898c0180a8872c8a031ce562aa1891c21",
+      "bytes": 3039
+    },
+    {
+      "path": "scripts/mobile-enterprise-v10-certification-check.js",
+      "sha256": "772a5aee25a34d9235949c5d2edb96751e52e1342ed237d6376bdcbbd7fa0a79",
+      "bytes": 7335
+    },
+    {
+      "path": "audit/phase16/PETATOE_PHASE16_TEST_CONTRACT_CONSOLIDATION_REPORT.md",
+      "sha256": "cf9d0e25d7cb3be75ca75b8fa6ba6fcc24d39ec08250aacaceff622d14045cc6",
+      "bytes": 1819
+    },
+    {
+      "path": "PHASE16_DELETIONS.txt",
+      "sha256": "e9b556638c861f83992c54582abe3b0a3253c7cad027f64dd636f2dbd480ef85",
+      "bytes": 149
+    }
+  ],
+  "deleted": [
+    "index-css-control-test.html",
+    "index-css-fontless-test.html",
+    "maintenance/navigation-permissions.js"
+  ]
+}

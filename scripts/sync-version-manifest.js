@@ -66,9 +66,14 @@ function synchronize(){
   index = releaseNext;
 
   let worker = read('service-worker.js');
-  const workerNext = worker
+  let workerNext = worker
     .replace(/const APP_VERSION = '[^']+';/, `const APP_VERSION = '${manifest.cacheVersion}';`)
     .replace(/\.\/performance\/mobile-startup-loading-gate\.js\?v=[^']+/, `./performance/mobile-startup-loading-gate.js?v=${manifest.cacheVersion}`);
+  for(const asset of governedAssets){
+    const escaped = asset.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const re = new RegExp('\\./' + escaped + '\\?v=[^\'\"]+', 'g');
+    workerNext = workerNext.replace(re, `./${asset}?v=${manifest.cacheVersion}`);
+  }
   if(workerNext !== worker) changes.push('service-worker.js: cache namespace and startup gate URL');
   worker = workerNext;
 

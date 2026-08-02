@@ -33,7 +33,7 @@ const checks = [
   {id:'runtime.generated',expected:'canonical manifest payload',actual:sha256(runtimeSource),pass:runtimeSource.includes('Generated from config/petatoe-version.json')},
   {id:'cert.mobile.dynamic',expected:'manifest.cacheVersion',actual:mobileCert.includes('versionManifest.cacheVersion')?'dynamic':'literal',pass:mobileCert.includes('versionManifest.cacheVersion')},
   {id:'cert.gate.dynamic',expected:'runtimeContracts.startupGate',actual:gateCert.includes('versionManifest.runtimeContracts.startupGate')?'dynamic':'literal',pass:gateCert.includes('versionManifest.runtimeContracts.startupGate')},
-  {id:'workflow.versionGate',expected:'version-single-source-check.js',actual:workflow.includes('node scripts/version-single-source-check.js')?'wired':'missing',pass:workflow.includes('node scripts/version-single-source-check.js')}
+  {id:'workflow.versionGate',expected:'active contract suite',actual:(workflow.includes('node scripts/version-single-source-check.js')||workflow.includes('node scripts/run-active-contracts.js'))?'wired':'missing',pass:(workflow.includes('node scripts/version-single-source-check.js')||workflow.includes('node scripts/run-active-contracts.js'))}
 ];
 for(const c of checks){ if(c.pass !== true) c.pass = c.actual === c.expected; }
 const failures = checks.filter(c=>!c.pass);

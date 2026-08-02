@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "active": [
+    "version-single-source-check.js",
+    "enterprise-localization-certification-check.js",
+    "localization-production-lockdown-check.js",
+    "runtime-translation-completion-check.js",
+    "startup-gate-single-source-check.js",
+    "runtime-readiness-contract-check.js",
+    "data-ready-screen-hydration-contract-check.js",
+    "smart-reports-render-performance-check.js",
+    "smart-reports-data-readiness-recovery-check.js",
+    "smart-reports-public-api-check.js",
+    "smart-reports-translation-stability-check.js",
+    "smart-reports-single-controller-check.js",
+    "smart-reports-event-ownership-check.js",
+    "smart-reports-read-adapter-isolation-check.js",
+    "smart-reports-refresh-deduplication-check.js",
+    "mobile-enterprise-v10-certification-check.js",
+    "phase2-canonical-data-ownership-check.js",
+    "phase3-smart-reports-runtime-event-ownership-check.js",
+    "phase4-customer360-single-owner-check.js",
+    "phase5-sales-runtime-decomposition-check.js",
+    "phase6-navigation-lazy-route-integrity-check.js",
+    "phase7-readiness-contract-hardening-check.js",
+    "phase8-filter-export-parity-check.js",
+    "phase9-inventory-count-safety-check.js",
+    "phase10-permission-key-integrity-check.js",
+    "phase11-operations-data-policy-check.js",
+    "phase12-commission-calculation-uat-check.js",
+    "phase13-payroll-treasury-obligations-uat-check.js",
+    "phase14-css-ownership-visual-regression-check.js",
+    "phase15-security-offline-verification-check.js",
+    "phase16-production-contract-check.js"
+  ],
+  "historicalPatterns": ["v9_", "phase_sr", "phase_p", "sg4-6-", "source-migration", "pack"],
+  "policy": {
+    "ciRunsActiveOnly": true,
+    "historicalTestsAreNonBlocking": true,
+    "hardcodedWorkspacePathsForbidden": true,
+    "productionTestHtmlForbidden": true
+  }
+}

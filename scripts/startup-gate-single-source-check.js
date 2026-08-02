@@ -41,7 +41,7 @@ requireCheck(gate.includes('getGroupStatus: getGroupStatus') && gate.includes('i
   'Startup gate must expose detailed status and recovery APIs.');
 requireCheck(gate.includes('if(ready !== true || !el || !el.isConnected) return;'),
   'Lazy route replay must not run after a false readiness result.');
-requireCheck(workflow.includes('node scripts/startup-gate-single-source-check.js'),
+requireCheck(workflow.includes('node scripts/startup-gate-single-source-check.js') || workflow.includes('node scripts/run-active-contracts.js'),
   'Startup-gate single-source check is not wired into GitHub Actions.');
 
 if (failures.length) {

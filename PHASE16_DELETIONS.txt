@@ -1,0 +1,4 @@
+Delete these repository files when applying Phase 16:
+index-css-control-test.html
+index-css-fontless-test.html
+maintenance/navigation-permissions.js
