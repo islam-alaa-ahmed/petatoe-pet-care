@@ -31,9 +31,17 @@
     "phase13-payroll-treasury-obligations-uat-check.js",
     "phase14-css-ownership-visual-regression-check.js",
     "phase15-security-offline-verification-check.js",
-    "phase16-production-contract-check.js"
+    "phase16-production-contract-check.js",
+    "phase-b-enterprise-observability-check.js"
   ],
-  "historicalPatterns": ["v9_", "phase_sr", "phase_p", "sg4-6-", "source-migration", "pack"],
+  "historicalPatterns": [
+    "v9_",
+    "phase_sr",
+    "phase_p",
+    "sg4-6-",
+    "source-migration",
+    "pack"
+  ],
   "policy": {
     "ciRunsActiveOnly": true,
     "historicalTestsAreNonBlocking": true,

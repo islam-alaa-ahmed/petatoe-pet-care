@@ -50,7 +50,9 @@ function synchronize(){
     'security/security-offline-contract.js',
     'data/data-source.js',
     'data/records-read-facade.js',
-    'css/components/interaction-ownership.css'
+    'css/components/interaction-ownership.css',
+    'runtime/version-manifest.js',
+    'diagnostics/enterprise-observability.js'
   ];
   for(const asset of governedAssets){
     const re = new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\?v=[^\\\'"&<\\s]+', 'g');

@@ -1,0 +1,46 @@
+{
+  "index.html": {
+    "sha256": "189e6c73c4c2221600bc8f5fa3d55f0e5112c43f0ef32774991b4d6846d552d2",
+    "bytes": 247880
+  },
+  "service-worker.js": {
+    "sha256": "990ab2696fb3e0c9587f28aca7a29c93024a82e8b2666436ec160d323eeecc92",
+    "bytes": 7851
+  },
+  "RELEASE_VERSION.txt": {
+    "sha256": "23c27b832b3065f46a4e3b96e3bcd3a8e6caa7e3f7673d55912167a8ec4fb7f1",
+    "bytes": 67
+  },
+  "config/petatoe-version.json": {
+    "sha256": "1d6b8fa6297c48de61666fcc4779027ade70cb950754969c95b17aadcd3b60e2",
+    "bytes": 1786
+  },
+  "runtime/version-manifest.js": {
+    "sha256": "41c3ba70e8b046c0b45a3431425bfe002100c4a565f158d4288ba4956956f147",
+    "bytes": 1834
+  },
+  "diagnostics/enterprise-observability.js": {
+    "sha256": "03725a03df2217af1652aa90256d2c25002231d512c482a3eac70e4aba7fd9b8",
+    "bytes": 16551
+  },
+  "i18n/localization-center/dictionary-store.js": {
+    "sha256": "aaa6faa9b3362518040be3816c1123c4b14e97a1dc9e0c18bcbf870aa9fcab81",
+    "bytes": 391946
+  },
+  "scripts/sync-version-manifest.js": {
+    "sha256": "781d6bab107a120c8b55f0300956d55ff5bddf9c658121a4e1c1e145c9d928b4",
+    "bytes": 5027
+  },
+  "scripts/test-contracts.json": {
+    "sha256": "f9df700e071d78f0d3d70b60b0af3f2aa3f922a31118592488a106e095753d34",
+    "bytes": 1929
+  },
+  "scripts/phase-b-enterprise-observability-check.js": {
+    "sha256": "3dc739985741b025ead1b29dadc698689365b07e3d937975d8c16ce8a5cb44c9",
+    "bytes": 1824
+  },
+  "audit/phaseB/PETATOE_PHASE_B_ENTERPRISE_OBSERVABILITY_REPORT.md": {
+    "sha256": "b889f3fb16905bfbce307d62700eba437332a65c16c0b42b36c3609e094b5b45",
+    "bytes": 1159
+  }
+}
