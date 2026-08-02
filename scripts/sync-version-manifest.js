@@ -37,6 +37,7 @@ function synchronize(){
     'sales/sales-invoice-report.js',
     'sales/invoice-print-preview.js',
     'router/navigation-controller.js',
+    'router/route-registry.js',
     'navigation/navigation.js',
     'navigation/navigation-state.js',
     'navigation/navigation-schema.js',

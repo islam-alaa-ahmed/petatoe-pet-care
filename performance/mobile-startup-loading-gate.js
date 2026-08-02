@@ -8,6 +8,12 @@
   var groups = Object.create(null);
   var states = Object.create(null);
   var runtimeDiagnostics = { sequence: 0, active: null, history: [] };
+  var registrationOwners = Object.create(null);
+  var registrationConflicts = [];
+
+  function canonicalScriptSource(src){
+    return String(src || '').split('#')[0].split('?')[0].replace(/^\.\//,'');
+  }
 
   function diagnosticSourceMatches(filename, src){
     filename = String(filename || '').split('#')[0];
@@ -152,13 +158,23 @@
   function registerOrWrite(group, src, defer){
     group = normalizeGroup(String(group || 'misc'));
     src = safeSrc(src);
+    var canonical = canonicalScriptSource(src);
+    var owner = registrationOwners[canonical];
+    if(owner){
+      if(owner.group !== group){
+        registrationConflicts.push({src:canonical,firstGroup:owner.group,duplicateGroup:group,at:Date.now()});
+      }
+      return owner;
+    }
     if(!groups[group]) groups[group] = [];
     var lazy = shouldLazyLoad(group);
-    groups[group].push({ src: src, defer: !!defer, desktopWritten: !lazy });
+    var item = { src: src, canonicalSrc: canonical, defer: !!defer, desktopWritten: !lazy };
+    groups[group].push(item);
+    registrationOwners[canonical] = { group: group, src: src, defer: !!defer, desktopWritten: !lazy };
     if(!lazy){
       writeDesktopScript(src, !!defer);
-      return;
     }
+    return registrationOwners[canonical];
   }
 
   function attributedError(message, attribution){
@@ -946,10 +962,37 @@
     });
   }
 
+  function registryAudit(){
+    var missingDependencies = [];
+    var cycles = [];
+    var visiting = Object.create(null);
+    var visited = Object.create(null);
+    function walk(group, trail){
+      if(visiting[group]){ cycles.push(trail.concat(group)); return; }
+      if(visited[group]) return;
+      visiting[group] = true;
+      (dependencies[group] || []).forEach(function(dependency){
+        if(!groups[dependency] && !dependencies[dependency] && !groupContractReady(dependency)){
+          missingDependencies.push({group:group,dependency:dependency});
+        }
+        walk(dependency, trail.concat(group));
+      });
+      visiting[group] = false;
+      visited[group] = true;
+    }
+    Object.keys(groups).concat(Object.keys(dependencies)).forEach(function(group){ walk(group, []); });
+    return {
+      valid: registrationConflicts.length === 0 && missingDependencies.length === 0 && cycles.length === 0,
+      registrationConflicts: registrationConflicts.slice(),
+      missingDependencies: missingDependencies,
+      dependencyCycles: cycles
+    };
+  }
+
   function snapshot(){
     var registered = {};
-    Object.keys(groups).forEach(function(k){ registered[k] = groups[k].length; });
-    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1', registered: registered, diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
+    Object.keys(groups).forEach(function(k){ registered[k] = groups[k].map(function(item){ return item.src; }); });
+    return { mobile: isMobile, desktopDecomposition: !isMobile, version: '10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1', registered: registered, registryAudit: registryAudit(), diagnostics: { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }, states: JSON.parse(JSON.stringify(states, function(key,value){ return key === 'promise' ? undefined : value; })) };
   }
 
   window.PETATOEMobileStartupGate = {
@@ -963,6 +1006,8 @@
     getGroupStatus: getGroupStatus,
     invalidateGroup: invalidateGroup,
     snapshot: snapshot,
+    registryAudit: registryAudit,
+    resolveGroupForScreen: function(screen){ return screenGroupMap[String(screen || '')] || ''; },
     getReadinessProfile: function(name){ return readinessProfile(normalizeGroup(String(name || ''))); },
     getRuntimeDiagnostics: function(){ return { active: runtimeDiagnostics.active, history: runtimeDiagnostics.history.slice() }; },
     finishBoot: finishBoot,

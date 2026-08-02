@@ -35,7 +35,8 @@
     "phase-b-enterprise-observability-check.js",
     "phase-c1-startup-bootstrap-audit-check.js",
     "phase-c3-data-pipeline-audit-check.js",
-    "phase-c3-1-warehouse-safe-render-check.js"
+    "phase-c3-1-warehouse-safe-render-check.js",
+    "phase-d1-loader-registry-audit-check.js"
   ],
   "historicalPatterns": [
     "v9_",

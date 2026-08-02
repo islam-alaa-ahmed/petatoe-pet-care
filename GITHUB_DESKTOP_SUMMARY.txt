@@ -1,1 +1,1 @@
-perf: coalesce data reads, parallelize payroll hydration, and fix warehouse translation scope
+feat: add canonical loader registry ownership and dependency audit
