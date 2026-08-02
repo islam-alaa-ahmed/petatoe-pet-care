@@ -10,14 +10,27 @@
   function resultError(res){ return res && res.error ? (res.error.message || JSON.stringify(res.error)) : ''; }
   function clone(obj){ try{return JSON.parse(JSON.stringify(obj));}catch(_e){return obj;} }
 
+  var __listReadPromises={};
+  var __listReadCache={};
+  function listReadKey(table,opts){opts=opts||{};return String(table||'')+'::'+JSON.stringify({columns:opts.columns||'*',order:opts.order||'',ascending:opts.ascending!==false});}
+  function invalidateTableReadCaches(table){
+    var prefix=String(table||'')+'::';
+    Object.keys(__listReadCache).forEach(function(k){if(k.indexOf(prefix)===0)delete __listReadCache[k]});
+  }
+
   async function listJsonRows(table, opts){
     opts=opts||{};
     if(!hasClient()) return [];
+    var readKey=listReadKey(table,opts);
+    var cached=__listReadCache[readKey];
+    if(cached&&Date.now()-cached.at<2500)return clone(cached.value);
+    if(__listReadPromises[readKey])return clone(await __listReadPromises[readKey]);
+    __listReadPromises[readKey]=(async function(){
     var q=client().from(table).select(opts.columns||'*');
     if(opts.order) q=q.order(opts.order, { ascending: opts.ascending !== false });
     var res=await q;
     if(res.error){ console.warn('PETATOESupabaseRepository list failed', table, resultError(res)); return []; }
-    return (Array.isArray(res.data)?res.data:[]).map(function(row){
+    var mapped=(Array.isArray(res.data)?res.data:[]).map(function(row){
       row=row||{};
       var data={};
       if(row.data && typeof row.data==='object') data=clone(row.data);
@@ -34,6 +47,10 @@
       }
       return data;
     });
+    __listReadCache[readKey]={at:Date.now(),value:clone(mapped)};
+    return mapped;
+    })();
+    try{return clone(await __listReadPromises[readKey]);}finally{delete __listReadPromises[readKey];}
   }
 
   function missingColumn(err, col){
@@ -135,6 +152,7 @@
   }
 
   async function upsertJsonRow(table, id, data, extra){
+    invalidateTableReadCaches(table);
     if(!id) throw new Error('Supabase row id is required for '+table);
     if(!hasClient()) return { ok:false, error:'Supabase client not ready' };
     data=data&&typeof data==='object'?clone(data):{};
@@ -189,6 +207,7 @@
   }
 
   async function deleteById(table, id){
+    invalidateTableReadCaches(table);
     if(!id) return { ok:false, error:'Missing id' };
     if(!hasClient()) return { ok:false, error:'Supabase client not ready' };
     var rowId=String(id);
@@ -254,6 +273,7 @@
   }
 
   async function saveSingleton(table, id, data){
+    invalidateTableReadCaches(table);
     var cacheKey=String(table||'')+'::'+String(id||'');
     delete __singletonReadCache[cacheKey];
     var result=await upsertJsonRow(table, id, data&&typeof data==='object'?data:{}, {});

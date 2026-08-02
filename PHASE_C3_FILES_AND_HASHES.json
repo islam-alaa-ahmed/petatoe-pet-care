@@ -1,0 +1,70 @@
+{
+  "phase": "C3",
+  "files": [
+    {
+      "path": "RELEASE_VERSION.txt",
+      "sha256": "dd6db4b3391ce76d4407833fc3f34bbf3dcedc206862eb9ace4f821d6a419fa0",
+      "bytes": 51
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "sha256": "638d24c682ce6c3c924a2fe856cea5016afc8ce5513d8284bce984783c9b95df",
+      "bytes": 1921
+    },
+    {
+      "path": "core/supabase-repository.js",
+      "sha256": "8325a43e88e7c3137f48e7d668b98e1a759cb9e4c65552fd09a419fa24fb7ab4",
+      "bytes": 36632
+    },
+    {
+      "path": "index.html",
+      "sha256": "4e270549a8a53816e7d9d8b2dd6124b3c8b24706eecb2ed166243cca770ea4ba",
+      "bytes": 247874
+    },
+    {
+      "path": "payroll/payroll-core.js",
+      "sha256": "68f0ef33cd8bbe594af5a12e9990deaecdacd69937ab89ac7a4cfe855f287368",
+      "bytes": 126831
+    },
+    {
+      "path": "payroll/payroll-read-facade.js",
+      "sha256": "51247bdab3c9956351bfae605309976dbb2d66146880fc5849f3bc7ac5f597b9",
+      "bytes": 8552
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "sha256": "f44737cefabb8099c6a9f59ea1b25410782d46f416b0f074e8731335bbac977e",
+      "bytes": 1969
+    },
+    {
+      "path": "scripts/phase-c3-data-pipeline-audit-check.js",
+      "sha256": "780d38f015f555276b2fd38bdbfc5121a60c23d75e8c5cc336f35e0b5213278e",
+      "bytes": 1789
+    },
+    {
+      "path": "scripts/phase9-inventory-count-safety-check.js",
+      "sha256": "668bd73ecce596b2577208fdd41037bfb84635ddcb209c04d80b05a54d705d9d",
+      "bytes": 2403
+    },
+    {
+      "path": "scripts/sync-version-manifest.js",
+      "sha256": "8c3c4eb7be9c4021354424cac512bde6e74a316c1f8cde5de1b61e7675bd8058",
+      "bytes": 5167
+    },
+    {
+      "path": "scripts/test-contracts.json",
+      "sha256": "56aeea97f1298cd7f6485f17df1ca2281e95f2531ebf4c523c1572ad45e409ef",
+      "bytes": 2023
+    },
+    {
+      "path": "service-worker.js",
+      "sha256": "be0589758a34a4b6b7687f5e9fb067f6571b362f5f17f13223287897167af6bc",
+      "bytes": 7827
+    },
+    {
+      "path": "warehouses/warehouse-core.js",
+      "sha256": "001013b386326bc6b56fd74d53ca3678dac02386ddade53775d323d6a8ea6dc8",
+      "bytes": 101156
+    }
+  ]
+}

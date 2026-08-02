@@ -168,10 +168,13 @@
         payrollLoadPromise=null;payrollLoadStarted=false;
         return loadPayrollFromSupabase();
       }
-      var emps=typeof R.listPayrollEmployees==='function'?await R.listPayrollEmployees():await R.listJsonRows('payroll_employees',{order:'created_at'});
-      var slipsRows=await R.listJsonRows('payroll_slips',{order:'created_at'});
-      var master=await R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{});
-      var canonicalSnapshots=await R.getSingleton('payroll_master_data',COMMISSION_SNAPSHOT_ROW_ID,{});
+      var loadResults=await Promise.all([
+        typeof R.listPayrollEmployees==='function'?R.listPayrollEmployees():R.listJsonRows('payroll_employees',{order:'created_at'}),
+        R.listJsonRows('payroll_slips',{order:'created_at'}),
+        R.getSingleton('payroll_master_data',PAYROLL_MASTER_ROW_ID,{}),
+        R.getSingleton('payroll_master_data',COMMISSION_SNAPSHOT_ROW_ID,{})
+      ]);
+      var emps=loadResults[0],slipsRows=loadResults[1],master=loadResults[2],canonicalSnapshots=loadResults[3];
       if((!canonicalSnapshots||typeof canonicalSnapshots!=='object'||Array.isArray(canonicalSnapshots)||!Object.keys(canonicalSnapshots).length)&&master.commissionSnapshots&&typeof master.commissionSnapshots==='object'&&!Array.isArray(master.commissionSnapshots)&&Object.keys(master.commissionSnapshots).length){
         canonicalSnapshots=cloneVal(master.commissionSnapshots);
         await R.saveSingleton('payroll_master_data',COMMISSION_SNAPSHOT_ROW_ID,canonicalSnapshots);

@@ -52,7 +52,11 @@ function synchronize(){
     'data/records-read-facade.js',
     'css/components/interaction-ownership.css',
     'runtime/version-manifest.js',
-    'diagnostics/enterprise-observability.js'
+    'diagnostics/enterprise-observability.js',
+    'core/supabase-repository.js',
+    'payroll/payroll-read-facade.js',
+    'payroll/payroll-core.js',
+    'warehouses/warehouse-core.js'
   ];
   for(const asset of governedAssets){
     const re = new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\?v=[^\\\'"&<\\s]+', 'g');

@@ -358,6 +358,8 @@
   function num(v){return window.PETATOENumber?PETATOENumber.num(v):(parseFloat(String(v==null?'':v).replace(/,/g,''))||0)}
   function fmtQty(n){return window.PETATOENumber?PETATOENumber.qty(n):(function(x){x=num(x); if(Math.abs(x)<0.000001)x=0; return x.toLocaleString('en-US',{minimumFractionDigits:0,maximumFractionDigits:2})})(n)}
   function toast(m){try{if(typeof window.toast==='function')window.toast(m);else alert(m)}catch(e){alert(m)}}
+  function whT(k,p){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('warehouseSource.'+k,p,{fallback:k}):k;}
+  function whLocale(){try{var c=window.PETATOE_LOCALIZATION_CENTER,l=c&&c.getLanguage?c.getLanguage():(document.documentElement.lang||'ar');return l==='en'?'en-US':'ar-SA'}catch(_e){return 'ar-SA'}}
   function petBlock6857_getTx(){try{var a=warehouseDataReadArray(TX_KEY,[]);return Array.isArray(a)?a:[]}catch(e){return[]}}
   function warehouseUiGetItems(){return window.PETATOEWarehouseItems.getAll()}
   function warehouseUiSetItems(a){return window.PETATOEWarehouseItems.setAll(a)}

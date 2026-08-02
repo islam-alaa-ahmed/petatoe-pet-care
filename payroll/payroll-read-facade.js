@@ -19,7 +19,8 @@
     commissionReferenceData: {employees:{groomers:[],drivers:[],sales:[]}},
     loaded: false,
     loading: false,
-    lastError: ''
+    lastError: '',
+    loadingPromise: null
   };
 
   function clone(value, fallback){
@@ -75,19 +76,23 @@
     return Object.keys(byId).map(function(id){ return byId[id]; });
   }
   async function refresh(){
-    if(cache.loading) return snapshot();
+    if(cache.loadingPromise) return cache.loadingPromise;
     var R = repo();
     if(!R || !R.hasClient || !R.hasClient()){
       cache.lastError = 'Supabase repository/client not ready';
       return snapshot();
     }
     cache.loading = true;
+    cache.loadingPromise=(async function(){
     try{
-      var emps = R.listPayrollEmployees ? await R.listPayrollEmployees() : [];
-      var slips = R.listJsonRows ? await R.listJsonRows('payroll_slips',{order:'created_at'}) : [];
-      var master = R.getSingleton ? await R.getSingleton('payroll_master_data', MASTER_ROW_ID, {}) : {};
-      var canonicalSnapshots = R.getSingleton ? await R.getSingleton('payroll_master_data', COMMISSION_SNAPSHOT_ROW_ID, {}) : {};
-      var commissionReferenceData = R.getSingleton ? await R.getSingleton('payroll_master_data', COMMISSION_REFERENCE_ROW_ID, {}) : {};
+      var results = await Promise.all([
+        R.listPayrollEmployees ? R.listPayrollEmployees() : Promise.resolve([]),
+        R.listJsonRows ? R.listJsonRows('payroll_slips',{order:'created_at'}) : Promise.resolve([]),
+        R.getSingleton ? R.getSingleton('payroll_master_data', MASTER_ROW_ID, {}) : Promise.resolve({}),
+        R.getSingleton ? R.getSingleton('payroll_master_data', COMMISSION_SNAPSHOT_ROW_ID, {}) : Promise.resolve({}),
+        R.getSingleton ? R.getSingleton('payroll_master_data', COMMISSION_REFERENCE_ROW_ID, {}) : Promise.resolve({})
+      ]);
+      var emps=results[0], slips=results[1], master=results[2], canonicalSnapshots=results[3], commissionReferenceData=results[4];
       if((!canonicalSnapshots || typeof canonicalSnapshots !== 'object' || Array.isArray(canonicalSnapshots) || !Object.keys(canonicalSnapshots).length) && master && master.commissionSnapshots && typeof master.commissionSnapshots === 'object' && !Array.isArray(master.commissionSnapshots) && Object.keys(master.commissionSnapshots).length){
         canonicalSnapshots = clone(master.commissionSnapshots, {});
         if(R.saveSingleton) await R.saveSingleton('payroll_master_data', COMMISSION_SNAPSHOT_ROW_ID, canonicalSnapshots);
@@ -107,6 +112,8 @@
       cache.loading = false;
     }
     return snapshot();
+    })();
+    try{return await cache.loadingPromise;}finally{cache.loadingPromise=null;}
   }
 
   function employees(){ return cache.employees.map(function(emp){ return clone(emp,{}); }); }

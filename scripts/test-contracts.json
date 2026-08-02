@@ -33,7 +33,8 @@
     "phase15-security-offline-verification-check.js",
     "phase16-production-contract-check.js",
     "phase-b-enterprise-observability-check.js",
-    "phase-c1-startup-bootstrap-audit-check.js"
+    "phase-c1-startup-bootstrap-audit-check.js",
+    "phase-c3-data-pipeline-audit-check.js"
   ],
   "historicalPatterns": [
     "v9_",
