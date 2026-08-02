@@ -11,7 +11,7 @@
     treasury:'treasury', warehouses:'vehicles', warehouse:'vehicles', obligations:'obligations', expenses:'expenses',
     commissions:'commissions', commissionStatement:'commissionStatement', fleet:'vehicles', vehicles:'vehicles',
     payroll:'payroll', salarySlip:'salarySlip', childrenExpenses:'childrenExpenses',
-    appointments:'appointments', 'appointments-master':'setup', appointmentsMaster:'setup',
+    appointments:'appointments', 'appointments-master':'appointments', appointmentsMaster:'appointments',
     vehicleOperations:'vehicleOperations', vehicleOperationsReports:'vehicleOperationsReports', operationKpis:'operationKpis',
     settings:'settings', system:'settings', setup:'setup', permissions:'permissions', users:'users', audit:'audit'
   };
@@ -162,7 +162,7 @@
       appointments:'appointments', vehicleOperations:'vehicleOperations', vehicleOperationsReports:'vehicleOperationsReports', operationKpis:'operationKpis',
       smart:'reports', executive:'reports', records:'reports', logs:'audit', entry:'sales', import:'sales', sales:'sales',
       customer360:'customers', services:'services', vans:'vehicles', warehouses:'vehicles', fleet:'vehicles',
-      treasury:'treasury', obligations:'obligations', payroll:'payroll', salarySlip:'salarySlip', commissionStatement:'commissionStatement',
+      treasury:'treasury', obligations:'obligations', payroll:'payroll', salarySlip:'salarySlip', commissions:'commissions', commissionStatement:'commissionStatement',
       childrenExpenses:'childrenExpenses', settings:'settings'
     };
     return normalizeScreen(map[panelId]||panelId);
