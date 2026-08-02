@@ -1,0 +1,169 @@
+{
+  "phase": "Phase 15 — Security & Offline Verification",
+  "generatedAt": "2026-08-02T00:21:11.288Z",
+  "cacheVersion": "10.0.25-phase15-security-offline-verification-1",
+  "runtimeContract": "10.0.25-phase15-security-offline-contract-1",
+  "status": "PASSED",
+  "checks": [
+    {
+      "name": "central cache version matches service worker",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "security offline runtime contract is loaded",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "service worker ignores cross-origin requests",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "service worker never caches non-GET requests",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./runtime/version-manifest.js?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./css/main.css",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./css/components/interaction-ownership.css?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./security/session-timeout.js?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./components/security-hardening.js?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./security/enterprise-security-hardening.js?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./security/security-offline-contract.js?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./security/password-security.js?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./security/auth-session.js?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./data/data-source.js?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "critical offline shell: ./data/records-read-facade.js?v=10.0.25-phase15-security-offline-verification-1",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "security SQL source exists: system_settings_rls_fix.sql",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "security SQL source exists: petatoe_v9_phase_s3_6_password_reset_rpc.sql",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "security SQL source exists: petatoe_v9_phase_s4_4_2_1_trusted_devices_table.sql",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "security SQL source exists: petatoe_v9_phase_s4_5_1_user_sessions_foundation.sql",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "security SQL source exists: petatoe_v9_phase_s4_5_7_security_audit_trail.sql",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "security SQL source exists: petatoe_v10_s1_passkey_biometric_tables.sql",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "edge function source exists: supabase/functions/petatoe-security-email/index.ts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "edge function source exists: supabase/functions/petatoe-translate/index.ts",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "auth session uses sessionStorage primary record",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "persisted auth user shape excludes password fields",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "remote enterprise session validation exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "trusted device and active session APIs exist",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "WebAuthn uses Credentials API",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "offline font fallback exists",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "client code contains no service role literal",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "all local APP_SHELL assets exist",
+      "ok": true,
+      "detail": ""
+    }
+  ],
+  "warnings": [
+    "Live Supabase RLS and migration state require the read-only Phase 0.5 SQL verification against the deployed project.",
+    "Chart.js, XLSX and QR generation remain online-only external capabilities; they are not required for secure authentication or base offline shell.",
+    "Google Cairo is optional online enhancement; system-ui/Arial fallback is the supported offline font path."
+  ]
+}

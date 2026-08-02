@@ -41,7 +41,16 @@ function synchronize(){
     'navigation/navigation-state.js',
     'navigation/navigation-schema.js',
     'commissions/commission-runtime-bootstrap.js',
-    'inline-extracted/commission-inline.js'
+    'inline-extracted/commission-inline.js',
+    'security/auth-session.js',
+    'security/password-security.js',
+    'security/session-timeout.js',
+    'components/security-hardening.js',
+    'security/enterprise-security-hardening.js',
+    'security/security-offline-contract.js',
+    'data/data-source.js',
+    'data/records-read-facade.js',
+    'css/components/interaction-ownership.css'
   ];
   for(const asset of governedAssets){
     const re = new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\?v=[^\\\'"&<\\s]+', 'g');

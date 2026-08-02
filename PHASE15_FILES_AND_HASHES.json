@@ -1,0 +1,95 @@
+{
+  "phase": "Phase 15 \u2014 Security & Offline Verification",
+  "files": [
+    {
+      "path": "ENTERPRISE_LOCALIZATION_CERTIFICATION_RESULTS.json",
+      "beforeSha256": "6eb3a0ac02e55ea5db55a0fe458991faf9bb5395e49b0f07796478ff7faf37f1",
+      "afterSha256": "2b5e4163734791e166577a1c81d540e870647b73212f16c6689ea810d9a0d21e",
+      "size": 292
+    },
+    {
+      "path": "PRODUCTION_LOCALIZATION_LOCKDOWN_RESULTS.json",
+      "beforeSha256": "58f87cdd07877323fcd7064e3e7e52cd3d0666b42e15cb254a82923128ed8960",
+      "afterSha256": "64529f350ec1e6a90fd1f70c29fdb307054acaa67c2bd59c4b0bd32378e603f6",
+      "size": 258
+    },
+    {
+      "path": "RELEASE_VERSION.txt",
+      "beforeSha256": "23c1b2a1514f679389dead5c02bedd63db37aa7d9e0314c22ab4b85aaff68300",
+      "afterSha256": "73085d2f8a733da1a700375c322607693a2a2d5048d5a24604aa081c6f3bc894",
+      "size": 72
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "beforeSha256": "d304180b8b6997070e9fd64e1ead49b08938c6939966b9787e6737a39e066df9",
+      "afterSha256": "41a07039771539781b5f576ca6ed834f2409e826c84a43dfa807e612f2ee23ba",
+      "size": 4616
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "beforeSha256": "3dee4774737b28edd6cc5f19a029c42bd9dc1312eaaba61addce0b11cfdb5533",
+      "afterSha256": "683176d75a7cb44b1f9887f0405b8f7b15c638461f27a976bb6f798e4b68f39b",
+      "size": 1739
+    },
+    {
+      "path": "audit/phase15/PETATOE_PHASE15_SECURITY_OFFLINE_AUDIT.json",
+      "beforeSha256": null,
+      "afterSha256": "8a223c6fcd0dd86489ad8ae231f4346510f05c8c4628e157d9958484595073e7",
+      "size": 4981
+    },
+    {
+      "path": "audit/phase15/PETATOE_PHASE15_SECURITY_OFFLINE_VERIFICATION_REPORT.md",
+      "beforeSha256": null,
+      "afterSha256": "f9ff02672344d83c55596344cb8a27f295a720b25baf1ab0cce27cfc73baecbe",
+      "size": 4112
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "beforeSha256": "c130831776643891d186c12bd2ff294184e49a33832a94521da529eef660b058",
+      "afterSha256": "fd448f1df0d39c9ea9f22939a4a08852dbc38f5e4cf5ea3ed0d078869d8e5812",
+      "size": 1675
+    },
+    {
+      "path": "index.html",
+      "beforeSha256": "b3b8a60b592e49b91591c763ec13574ad03413e1a2f6fd6aade24087606e7d09",
+      "afterSha256": "a21bc4962cc47d873b8cd6cd56d0d1901d0c9a0a952dd0dfa0b25d35c81358bb",
+      "size": 247989
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "beforeSha256": "11b42b7a832aff27449b895cbd31bd2414005e3d50e1b35b72109172fc66575c",
+      "afterSha256": "4942d2f5705a966721635fcb00cd1237db400b293605af0523738ba79d3bf38e",
+      "size": 1723
+    },
+    {
+      "path": "scripts/phase15-security-offline-verification-check.js",
+      "beforeSha256": null,
+      "afterSha256": "117ff644a159e0c856b40b8123dad99c786b21f0d8012457d79e1295e24877c8",
+      "size": 816
+    },
+    {
+      "path": "scripts/phase15-security-offline-verification.js",
+      "beforeSha256": null,
+      "afterSha256": "2bd95017e06cd8db26ccd639e3789eb9cbdfe3240dff55e9e301f7e7b27f3b5c",
+      "size": 5891
+    },
+    {
+      "path": "scripts/sync-version-manifest.js",
+      "beforeSha256": "ab57f9701c918a1472153a4618ee2af733e0fdbfee12f67b502eaea6083eb4ca",
+      "afterSha256": "4017f2adc978045f87c717fa54e77d46d74af82bc56705a6090a19dd96da89a1",
+      "size": 4690
+    },
+    {
+      "path": "security/security-offline-contract.js",
+      "beforeSha256": null,
+      "afterSha256": "6f91fa687f5b12e7b42688dc6420ca670476018ff06896d166ebd6f83a6cfd15",
+      "size": 1927
+    },
+    {
+      "path": "service-worker.js",
+      "beforeSha256": "c311aa0442a008b038d8601107562f4f4e30b5445954cec4b562cf2e384de88a",
+      "afterSha256": "f3e391f34381b007183468ea5a2a03f82da7614c8ae0bb69b1cbb6c5fc087166",
+      "size": 7911
+    }
+  ]
+}

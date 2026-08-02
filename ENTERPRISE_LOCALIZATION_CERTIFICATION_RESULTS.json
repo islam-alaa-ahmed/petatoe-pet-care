@@ -1,11 +1,11 @@
 {
   "status": "PASSED",
   "stats": {
-    "files": 411,
-    "js": 406,
+    "files": 416,
+    "js": 411,
     "html": 5,
     "legacyCalls": 0,
-    "staticUiCandidates": 625,
+    "staticUiCandidates": 627,
     "missingStoredTexts": 0,
     "missingCounterparts": 0,
     "arabicEntries": 3567,

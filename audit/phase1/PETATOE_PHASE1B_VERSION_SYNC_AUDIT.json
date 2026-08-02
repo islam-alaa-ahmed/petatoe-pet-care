@@ -1,14 +1,14 @@
 {
-  "generatedAt": "2026-08-02T00:10:51.909Z",
+  "generatedAt": "2026-08-02T00:21:26.922Z",
   "status": "PASSED",
   "manifest": {
     "schemaVersion": 1,
     "product": "PETATOE",
     "releaseVersion": "10.0.25",
     "releaseLabel": "v10.0.25",
-    "releaseName": "PETATOE_V10_0_25_CSS_OWNERSHIP_VISUAL_REGRESSION_PHASE14",
-    "buildVersion": "10.0.25-phase14-css-ownership-visual-regression-1",
-    "cacheVersion": "10.0.25-phase14-css-ownership-visual-regression-1",
+    "releaseName": "PETATOE_V10_0_25_SECURITY_OFFLINE_VERIFICATION_PHASE15",
+    "buildVersion": "10.0.25-phase15-security-offline-verification-1",
+    "cacheVersion": "10.0.25-phase15-security-offline-verification-1",
     "runtimeContracts": {
       "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
       "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -20,7 +20,8 @@
       "operationsVehiclePolicy": "10.0.25-phase11-operations-vehicle-policy-contract-1",
       "commissionCalculation": "10.0.25-phase12-commission-calculation-uat-contract-1",
       "financialOperationsUAT": "10.0.25-phase13-financial-operations-uat-contract-1",
-      "visualInteraction": "10.0.25-phase14-interaction-visual-contract-1"
+      "visualInteraction": "10.0.25-phase14-interaction-visual-contract-1",
+      "securityOffline": "10.0.25-phase15-security-offline-contract-1"
     },
     "native": {
       "latestVersion": "10.0.0",
@@ -36,38 +37,38 @@
   "checks": [
     {
       "id": "cache.serviceWorker",
-      "expected": "10.0.25-phase14-css-ownership-visual-regression-1",
-      "actual": "10.0.25-phase14-css-ownership-visual-regression-1",
+      "expected": "10.0.25-phase15-security-offline-verification-1",
+      "actual": "10.0.25-phase15-security-offline-verification-1",
       "pass": true
     },
     {
       "id": "cache.startupGate.index",
-      "expected": "10.0.25-phase14-css-ownership-visual-regression-1",
-      "actual": "10.0.25-phase14-css-ownership-visual-regression-1",
+      "expected": "10.0.25-phase15-security-offline-verification-1",
+      "actual": "10.0.25-phase15-security-offline-verification-1",
       "pass": true
     },
     {
       "id": "cache.startupGate.shell",
-      "expected": "10.0.25-phase14-css-ownership-visual-regression-1",
-      "actual": "10.0.25-phase14-css-ownership-visual-regression-1",
+      "expected": "10.0.25-phase15-security-offline-verification-1",
+      "actual": "10.0.25-phase15-security-offline-verification-1",
       "pass": true
     },
     {
       "id": "cache.smartRouter",
-      "expected": "10.0.25-phase14-css-ownership-visual-regression-1",
-      "actual": "10.0.25-phase14-css-ownership-visual-regression-1",
+      "expected": "10.0.25-phase15-security-offline-verification-1",
+      "actual": "10.0.25-phase15-security-offline-verification-1",
       "pass": true
     },
     {
       "id": "cache.smartRuntime",
-      "expected": "10.0.25-phase14-css-ownership-visual-regression-1",
-      "actual": "10.0.25-phase14-css-ownership-visual-regression-1",
+      "expected": "10.0.25-phase15-security-offline-verification-1",
+      "actual": "10.0.25-phase15-security-offline-verification-1",
       "pass": true
     },
     {
       "id": "cache.runtimeManifest",
-      "expected": "10.0.25-phase14-css-ownership-visual-regression-1",
-      "actual": "10.0.25-phase14-css-ownership-visual-regression-1",
+      "expected": "10.0.25-phase15-security-offline-verification-1",
+      "actual": "10.0.25-phase15-security-offline-verification-1",
       "pass": true
     },
     {
@@ -78,8 +79,8 @@
     },
     {
       "id": "release.name.index",
-      "expected": "PETATOE_V10_0_25_CSS_OWNERSHIP_VISUAL_REGRESSION_PHASE14",
-      "actual": "PETATOE_V10_0_25_CSS_OWNERSHIP_VISUAL_REGRESSION_PHASE14",
+      "expected": "PETATOE_V10_0_25_SECURITY_OFFLINE_VERIFICATION_PHASE15",
+      "actual": "PETATOE_V10_0_25_SECURITY_OFFLINE_VERIFICATION_PHASE15",
       "pass": true
     },
     {
@@ -109,7 +110,7 @@
     {
       "id": "runtime.generated",
       "expected": "canonical manifest payload",
-      "actual": "11b42b7a832aff27449b895cbd31bd2414005e3d50e1b35b72109172fc66575c",
+      "actual": "4942d2f5705a966721635fcb00cd1237db400b293605af0523738ba79d3bf38e",
       "pass": true
     },
     {
