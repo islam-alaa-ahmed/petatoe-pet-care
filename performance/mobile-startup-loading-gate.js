@@ -860,9 +860,9 @@
          Start hydration in parallel and allow the canonical Router / inline handler to
          open the screen immediately. A failed or delayed optional dependency must not
          turn the Reports buttons into dead controls. */
-      if(group === 'smartReports'){
+      if(group === 'smartReports' || group === 'salesRecords'){
         ensureGroup(group).catch(function(error){
-          if(window.console && console.warn) console.warn('[PETATOE Mobile Gate] Smart Reports background hydration failed', error);
+          if(window.console && console.warn) console.warn('[PETATOE Mobile Gate] background route hydration failed', group, error);
         });
         return;
       }

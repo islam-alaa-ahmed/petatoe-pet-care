@@ -1,1 +1,1 @@
-feat: add canonical loader registry ownership and dependency audit
+fix: keep records navigation responsive during lazy runtime hydration
