@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_COMMISSION_CALCULATION_UAT_PHASE12",
-  "buildVersion": "10.0.25-phase12-commission-calculation-uat-1",
-  "cacheVersion": "10.0.25-phase12-commission-calculation-uat-1",
+  "releaseName": "PETATOE_V10_0_25_CSS_OWNERSHIP_VISUAL_REGRESSION_PHASE14",
+  "buildVersion": "10.0.25-phase14-css-ownership-visual-regression-1",
+  "cacheVersion": "10.0.25-phase14-css-ownership-visual-regression-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -18,7 +18,9 @@
     "inventoryCountRuntime": "10.0.25-phase9-inventory-count-safety-contract-1",
     "permissionRuntime": "10.0.25-phase10-canonical-permission-key-contract-1",
     "operationsVehiclePolicy": "10.0.25-phase11-operations-vehicle-policy-contract-1",
-    "commissionCalculation": "10.0.25-phase12-commission-calculation-uat-contract-1"
+    "commissionCalculation": "10.0.25-phase12-commission-calculation-uat-contract-1",
+    "financialOperationsUAT": "10.0.25-phase13-financial-operations-uat-contract-1",
+    "visualInteraction": "10.0.25-phase14-interaction-visual-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

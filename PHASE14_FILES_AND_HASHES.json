@@ -1,0 +1,65 @@
+{
+  "phase": "Phase 14 CSS Ownership & Visual Regression",
+  "changes": [
+    {
+      "path": "RELEASE_VERSION.txt",
+      "before": "00ab36c43456aeae0b5d5c74e040a7efbae58c9d453fc700677ea09499865c90",
+      "after": "23c1b2a1514f679389dead5c02bedd63db37aa7d9e0314c22ab4b85aaff68300",
+      "status": "modified"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_AUDIT.json",
+      "before": "76f8c8812edadb2d053551c891aec88de135fda7a65100d2d8f51565a9e856e0",
+      "after": "d304180b8b6997070e9fd64e1ead49b08938c6939966b9787e6737a39e066df9",
+      "status": "modified"
+    },
+    {
+      "path": "audit/phase1/PETATOE_PHASE1B_VERSION_SYNC_REPORT.md",
+      "before": "7da131bb6f4b741e8819133c367bd068525074f751ce9713221c99e0406b86b5",
+      "after": "3dee4774737b28edd6cc5f19a029c42bd9dc1312eaaba61addce0b11cfdb5533",
+      "status": "modified"
+    },
+    {
+      "path": "audit/phase14/PETATOE_PHASE14_CSS_OWNERSHIP_VISUAL_REGRESSION_REPORT.md",
+      "before": null,
+      "after": "dce7a5ca62fe26aef6e83d9491fe1add8cfc98836eda28284f5468ba4c454277",
+      "status": "added"
+    },
+    {
+      "path": "config/petatoe-version.json",
+      "before": "120a15b3360b3417ea8e385f162fedff5ce26e5e653f327092e1d845a2af1cda",
+      "after": "c130831776643891d186c12bd2ff294184e49a33832a94521da529eef660b058",
+      "status": "modified"
+    },
+    {
+      "path": "css/components/interaction-ownership.css",
+      "before": null,
+      "after": "cce055e7d710702512ceb38468eb1a88210659bb7d858175fac92a5a797fbb8a",
+      "status": "added"
+    },
+    {
+      "path": "index.html",
+      "before": "8414755b201e71009da326398d3055770d40f6830bae94bbf8f31964cb5ba4d2",
+      "after": "b3b8a60b592e49b91591c763ec13574ad03413e1a2f6fd6aade24087606e7d09",
+      "status": "modified"
+    },
+    {
+      "path": "runtime/version-manifest.js",
+      "before": "89fd4372c26b4adfa4fa674699f5ab3ba4f4fb3d0cdb00041a75b64ca1a68e47",
+      "after": "11b42b7a832aff27449b895cbd31bd2414005e3d50e1b35b72109172fc66575c",
+      "status": "modified"
+    },
+    {
+      "path": "scripts/phase14-css-ownership-visual-regression-check.js",
+      "before": null,
+      "after": "6910c483ec5626d41bbfc243039ca65bbbc5bdc37cd94a43a3147e6e36c81a1d",
+      "status": "added"
+    },
+    {
+      "path": "service-worker.js",
+      "before": "fda1f549ecb1e8ab562776b4aa6cc1da52df0b25193d405a04050cf6f6bf2abd",
+      "after": "c311aa0442a008b038d8601107562f4f4e30b5445954cec4b562cf2e384de88a",
+      "status": "modified"
+    }
+  ]
+}
