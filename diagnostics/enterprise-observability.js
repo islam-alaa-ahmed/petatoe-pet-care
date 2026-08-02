@@ -1,12 +1,55 @@
 (function(){
 'use strict';
 if(window.PETATOEObservability&&window.PETATOEObservability.__ready)return;
-var VERSION='10.1.0-phase-b-enterprise-observability-1';
+var VERSION='10.1.0-phase-c1-startup-bootstrap-audit-1';
 var MAX=120,SLOW_REQUEST=1200,SLOW_ROUTE=800,LONG_TASK=50;
-var state={version:VERSION,startedAt:new Date().toISOString(),marks:{scriptStart:performance.now()},requests:[],screens:[],routes:[],errors:[],memory:[],longTasks:[],vitals:{fcp:0,lcp:0,cls:0,inp:0,eventLoopLag:0},counters:{requests:0,failedRequests:0,duplicateRequests:0,slowRequests:0,longTasks:0,slowRoutes:0},activeScreen:'',lastScreenAt:performance.now(),pendingRoute:null};
+var state={version:VERSION,startedAt:new Date(performance.timeOrigin||Date.now()).toISOString(),marks:{navigationStart:0,scriptLoadedAt:performance.now()},measurementSources:{},requests:[],screens:[],routes:[],errors:[],memory:[],longTasks:[],vitals:{fcp:0,lcp:0,cls:0,inp:0,eventLoopLag:0},counters:{requests:0,failedRequests:0,duplicateRequests:0,slowRequests:0,longTasks:0,slowRoutes:0},activeScreen:'',lastScreenAt:performance.now(),pendingRoute:null};
 var seen=new Map(),nativeFetch=window.fetch,observer=null,lagTimer=0,lagExpected=0;
 function push(a,v){a.push(v);if(a.length>MAX)a.shift();}
 function now(){return Math.round(performance.now()*10)/10;}
+function markOnce(name,value,source){
+  value=Number(value);
+  if(!isFinite(value)||value<0||state.marks[name]>0)return false;
+  state.marks[name]=Math.round(value*10)/10;
+  if(source)state.measurementSources[name]=String(source);
+  return true;
+}
+function firstPerformanceMark(names){
+  if(!window.performance||typeof performance.getEntriesByName!=='function')return null;
+  for(var i=0;i<names.length;i++){
+    var entries=performance.getEntriesByName(names[i]);
+    if(entries&&entries.length)return entries[0];
+  }
+  return null;
+}
+function hydrateHistoricalStartupMarks(){
+  try{
+    var nav=(performance.getEntriesByType&&performance.getEntriesByType('navigation')[0])||null;
+    if(nav){
+      markOnce('domReady',nav.domContentLoadedEventEnd,'navigation-timing');
+      markOnce('windowLoad',nav.loadEventEnd||nav.loadEventStart,'navigation-timing');
+    }else if(performance.timing){
+      var origin=performance.timing.navigationStart||0;
+      if(origin){
+        markOnce('domReady',(performance.timing.domContentLoadedEventEnd||0)-origin,'legacy-navigation-timing');
+        markOnce('windowLoad',(performance.timing.loadEventEnd||performance.timing.loadEventStart||0)-origin,'legacy-navigation-timing');
+      }
+    }
+    var dashboard=firstPerformanceMark(['petatoe-dashboard-first-render','petatoe:dashboard-first-render']);
+    if(dashboard)markOnce('dashboardInteractive',dashboard.startTime,'performance-mark');
+    var shell=firstPerformanceMark(['petatoe-mobile-boot-ready','petatoe:mobile-boot-ready']);
+    if(shell)markOnce('shellReady',shell.startTime,'performance-mark');
+    var settled=Math.max(Number(state.marks.windowLoad||0),Number(state.marks.dashboardInteractive||0),Number(state.marks.shellReady||0));
+    if(settled>0)markOnce('startupSettled',settled,'derived-critical-readiness');
+  }catch(e){recordError('historical-startup-marks',e);}
+}
+function captureDashboardReady(source){
+  var value=now();
+  if(markOnce('dashboardInteractive',value,source||'dashboard-event')){
+    var settled=Math.max(Number(state.marks.windowLoad||0),Number(state.marks.shellReady||0),value);
+    if(settled>0&&!state.marks.startupSettled)markOnce('startupSettled',settled,'derived-critical-readiness');
+  }
+}
 function user(){try{return (window.PETATOEAuth&&window.PETATOEAuth.currentUser&&window.PETATOEAuth.currentUser())||window.__PETATOE_ACTIVE_USER__||window.currentUser||null;}catch(_e){return null;}}
 function isAdmin(){var u=user()||{};var s=[u.role,u.role_id,u.roleName,u.jobTitle,u.username].filter(Boolean).join(' ').toLowerCase();return /admin|administrator|chairman|owner|super|مدير|رئيس/.test(s);}
 function cleanUrl(input){try{var u=new URL(typeof input==='string'?input:(input&&input.url)||'',location.href);return u.origin+u.pathname;}catch(_e){return String(input||'');}}
@@ -24,11 +67,14 @@ document.addEventListener('petatoe:smart-tab-rendered',function(e){if(state.pend
 function installPerformanceObservers(){if(!window.PerformanceObserver)return;try{var types=PerformanceObserver.supportedEntryTypes||[];if(types.indexOf('paint')>=0)new PerformanceObserver(function(list){list.getEntries().forEach(function(e){if(e.name==='first-contentful-paint')state.vitals.fcp=Math.round(e.startTime);});}).observe({type:'paint',buffered:true});if(types.indexOf('largest-contentful-paint')>=0)new PerformanceObserver(function(list){var a=list.getEntries();if(a.length)state.vitals.lcp=Math.round(a[a.length-1].startTime);}).observe({type:'largest-contentful-paint',buffered:true});if(types.indexOf('layout-shift')>=0)new PerformanceObserver(function(list){list.getEntries().forEach(function(e){if(!e.hadRecentInput)state.vitals.cls=Math.round((state.vitals.cls+e.value)*10000)/10000;});}).observe({type:'layout-shift',buffered:true});if(types.indexOf('event')>=0)new PerformanceObserver(function(list){list.getEntries().forEach(function(e){if(e.duration>state.vitals.inp)state.vitals.inp=Math.round(e.duration);});}).observe({type:'event',durationThreshold:40});if(types.indexOf('longtask')>=0)new PerformanceObserver(function(list){list.getEntries().forEach(function(e){state.counters.longTasks++;push(state.longTasks,{at:new Date().toISOString(),startTimeMs:Math.round(e.startTime),durationMs:Math.round(e.duration),name:String(e.name||'longtask')});});}).observe({type:'longtask',buffered:true});}catch(e){recordError('performance-observer',e);}}
 function startEventLoopLag(){lagExpected=performance.now()+1000;lagTimer=setInterval(function(){var current=performance.now(),lag=Math.max(0,current-lagExpected);state.vitals.eventLoopLag=Math.round(lag);lagExpected=current+1000;},1000);}
 function sampleMemory(){var m=performance.memory;if(m)push(state.memory,{at:new Date().toISOString(),usedMB:Math.round(m.usedJSHeapSize/104857.6)/10,totalMB:Math.round(m.totalJSHeapSize/104857.6)/10,limitMB:Math.round(m.jsHeapSizeLimit/104857.6)/10});}
-function start(){try{observer=new MutationObserver(function(){clearTimeout(observer._t);observer._t=setTimeout(function(){sampleScreen('mutation');},60);});observer.observe(document.body,{attributes:true,subtree:true,attributeFilter:['class','aria-current','hidden']});}catch(_e){}sampleScreen('startup');state.marks.domReady=now();requestAnimationFrame(function(){state.marks.firstFrame=now();});setTimeout(function(){state.marks.startupSettled=now();},1500);installPerformanceObservers();startEventLoopLag();sampleMemory();setInterval(sampleMemory,30000);}
+function start(){try{observer=new MutationObserver(function(){clearTimeout(observer._t);observer._t=setTimeout(function(){sampleScreen('mutation');},60);});observer.observe(document.body,{attributes:true,subtree:true,attributeFilter:['class','aria-current','hidden']});}catch(_e){}sampleScreen('startup');hydrateHistoricalStartupMarks();if(!state.marks.domReady)markOnce('domReady',now(),'observability-dom-ready');requestAnimationFrame(function(){markOnce('firstFrame',now(),'observability-first-frame');});installPerformanceObservers();startEventLoopLag();sampleMemory();setInterval(sampleMemory,30000);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
-document.addEventListener('petatoe:userchanged',function(e){if(e&&e.detail&&e.detail.user){state.marks.userReady=now();requestAnimationFrame(function(){state.marks.dashboardInteractive=now();});}});
-function runtimeHealth(){return {startupGate:!!(window.PETATOEMobileStartupGate&&window.PETATOEMobileStartupGate.__ready),router:!!(window.PETATOERouter&&typeof window.PETATOERouter.openTab==='function'),dataFacade:!!(window.PETATOERecordsReadFacade&&typeof window.PETATOERecordsReadFacade.readRows==='function'),smartReports:!!(window.PETATOESmartReportsRuntime&&window.PETATOESmartReportsRuntime.__ready),serviceWorker:!!(navigator.serviceWorker&&navigator.serviceWorker.controller),online:navigator.onLine!==false};}
-function snapshot(){var req=state.requests.slice(),avg=req.length?Math.round(req.reduce(function(a,x){return a+x.durationMs;},0)/req.length):0,u=user();return {version:VERSION,appVersion:(window.PETATOEVersionManifest&&window.PETATOEVersionManifest.cacheVersion)||document.documentElement.getAttribute('data-app-version')||'',startedAt:state.startedAt,uptimeMs:Math.round(performance.now()),marks:Object.assign({},state.marks),vitals:Object.assign({},state.vitals),runtimeHealth:runtimeHealth(),currentUser:u&&{id:u.id||'',username:u.username||'',role:u.role||u.role_id||''},activeScreen:state.activeScreen,counters:Object.assign({},state.counters,{averageRequestMs:avg}),slowestRequests:req.slice().sort(function(a,b){return b.durationMs-a.durationMs;}).slice(0,10),slowestRoutes:state.routes.slice().sort(function(a,b){return b.durationMs-a.durationMs;}).slice(0,10),recentLongTasks:state.longTasks.slice(-10),recentErrors:state.errors.slice(-10),memory:state.memory.slice(-10),screenHistory:state.screens.slice(-10)};}
+document.addEventListener('petatoe:userchanged',function(e){if(e&&e.detail&&e.detail.user)markOnce('userReady',now(),'first-userchanged');});
+document.addEventListener('petatoe:dashboard-first-render',function(){captureDashboardReady('dashboard-first-render-event');});
+window.addEventListener('petatoe:dashboard-rendered',function(){captureDashboardReady('dashboard-rendered-event');});
+window.addEventListener('petatoe:mobile-boot-ready',function(){if(markOnce('shellReady',now(),'mobile-boot-ready-event')&&!state.marks.startupSettled){var settled=Math.max(Number(state.marks.windowLoad||0),Number(state.marks.dashboardInteractive||0),Number(state.marks.shellReady||0));if(settled>0)markOnce('startupSettled',settled,'derived-critical-readiness');}});
+function runtimeHealth(){var gate=window.PETATOEMobileStartupGate;return {startupGate:!!(gate&&typeof gate.ensureGroup==='function'&&typeof gate.ensureRoute==='function'),router:!!(window.PETATOERouter&&typeof window.PETATOERouter.openTab==='function'),dataFacade:!!(window.PETATOERecordsReadFacade&&typeof window.PETATOERecordsReadFacade.readRows==='function'),smartReports:!!(window.PETATOESmartReportsRuntime&&window.PETATOESmartReportsRuntime.__ready),serviceWorker:!!(navigator.serviceWorker&&navigator.serviceWorker.controller),online:navigator.onLine!==false};}
+function snapshot(){var req=state.requests.slice(),avg=req.length?Math.round(req.reduce(function(a,x){return a+x.durationMs;},0)/req.length):0,u=user();return {version:VERSION,appVersion:(window.PETATOEVersionManifest&&window.PETATOEVersionManifest.cacheVersion)||document.documentElement.getAttribute('data-app-version')||'',startedAt:state.startedAt,uptimeMs:Math.round(performance.now()),marks:Object.assign({},state.marks),measurementSources:Object.assign({},state.measurementSources),vitals:Object.assign({},state.vitals),runtimeHealth:runtimeHealth(),currentUser:u&&{id:u.id||'',username:u.username||'',role:u.role||u.role_id||''},activeScreen:state.activeScreen,counters:Object.assign({},state.counters,{averageRequestMs:avg}),slowestRequests:req.slice().sort(function(a,b){return b.durationMs-a.durationMs;}).slice(0,10),slowestRoutes:state.routes.slice().sort(function(a,b){return b.durationMs-a.durationMs;}).slice(0,10),recentLongTasks:state.longTasks.slice(-10),recentErrors:state.errors.slice(-10),memory:state.memory.slice(-10),screenHistory:state.screens.slice(-10)};}
 function t(key,fallback){try{return window.PETATOE_LOCALIZATION_CENTER&&typeof window.PETATOE_LOCALIZATION_CENTER.t==='function'?window.PETATOE_LOCALIZATION_CENTER.t(key,{}, {fallback:fallback,allowKeyFallback:true}):fallback;}catch(_e){return fallback;}}
 function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 function exportJson(){var blob=new Blob([JSON.stringify(snapshot(),null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='petatoe-observability-'+Date.now()+'.json';a.click();setTimeout(function(){URL.revokeObjectURL(a.href);},500);}

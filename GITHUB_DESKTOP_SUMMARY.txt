@@ -1,1 +1,1 @@
-chore: remove obsolete production test artifacts and stale navigation mapping
+perf: defer deep reports from dashboard boot and correct startup readiness telemetry

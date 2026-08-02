@@ -32,7 +32,8 @@
     "phase14-css-ownership-visual-regression-check.js",
     "phase15-security-offline-verification-check.js",
     "phase16-production-contract-check.js",
-    "phase-b-enterprise-observability-check.js"
+    "phase-b-enterprise-observability-check.js",
+    "phase-c1-startup-bootstrap-audit-check.js"
   ],
   "historicalPatterns": [
     "v9_",

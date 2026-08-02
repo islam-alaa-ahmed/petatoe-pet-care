@@ -89,8 +89,11 @@
       emit('petatoe:dashboard-localization-readiness', localization);
 
       if (records.length || window.__PETATOE_SALES_SOURCE_STATUS__) {
+        /* Phase C1: the critical home boot owns only the visible dashboard.
+           Deep sales / vehicle / service reports are route-scoped and must not
+           execute during first paint. renderDashboardAll() already delegates to
+           renderDeep() when one of those panels is actually active. */
         if (typeof renderDashboardAll === 'function') renderDashboardAll();
-        if (typeof renderDeep === 'function') renderDeep();
       }
 
       var finishedAt = (window.performance && performance.now) ? performance.now() : Date.now();

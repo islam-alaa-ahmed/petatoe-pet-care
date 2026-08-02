@@ -1,0 +1,52 @@
+[
+  {
+    "path": "GITHUB_DESKTOP_SUMMARY.txt",
+    "sha256": "d06f7d2ef3f7856e8ab54d4b6fbaeac93b0fdad9350ffed1ed8381258343123f",
+    "bytes": 85
+  },
+  {
+    "path": "RELEASE_VERSION.txt",
+    "sha256": "0401ade9f8117f54408a0690302e8e66c1665a667602bc30fb7b5d4911c75faf",
+    "bytes": 55
+  },
+  {
+    "path": "config/petatoe-version.json",
+    "sha256": "f8c6b1c6f56c4f781782ce07d371d68958f696113b21594bad1f66bc4a123e6a",
+    "bytes": 1858
+  },
+  {
+    "path": "core/dashboard-critical-boot.js",
+    "sha256": "33d6b58322d34a0bfd25d4c2acbfa14a11b2e9636c04dd504a84d5b7bb69701e",
+    "bytes": 4751
+  },
+  {
+    "path": "diagnostics/enterprise-observability.js",
+    "sha256": "f7b67d60e2d67f0936fec83330856bb02f869dee942e1b8e456bfc7da9bcd327",
+    "bytes": 19569
+  },
+  {
+    "path": "index.html",
+    "sha256": "560499251d2b07d4cf0e702699584b173a2aae58adaa5c7cea272e9b3ee4bd25",
+    "bytes": 247875
+  },
+  {
+    "path": "runtime/version-manifest.js",
+    "sha256": "41c3ba70e8b046c0b45a3431425bfe002100c4a565f158d4288ba4956956f147",
+    "bytes": 1834
+  },
+  {
+    "path": "scripts/phase-c1-startup-bootstrap-audit-check.js",
+    "sha256": "1083db78fa510289601d2cf3670451a1bbf075c84ddb6ebc9a64948b78bb3c65",
+    "bytes": 1941
+  },
+  {
+    "path": "scripts/test-contracts.json",
+    "sha256": "87f1c7e4c3ca7109a57cb3c90da6997bd3f9d5df5cec06ac8080c3c7e34dab37",
+    "bytes": 1978
+  },
+  {
+    "path": "service-worker.js",
+    "sha256": "c9d361f2cabebdb72c94e22a9e0855806f61abfc73afe33cc2ec70d97cd377a2",
+    "bytes": 7851
+  }
+]
