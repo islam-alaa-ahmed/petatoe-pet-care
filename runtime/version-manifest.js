@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_SUPABASE_REST_QUERY_COMPATIBILITY_HOTFIX_E5_2_8",
-  "buildVersion": "10.0.25-phase-e5-2-8-supabase-rest-query-compatibility-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-8-supabase-rest-query-compatibility-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_VEHICLE_SOURCE_OWNERSHIP_CI_ALIGNMENT_E5_2_8_1",
+  "buildVersion": "10.0.25-phase-e5-2-8-1-vehicle-source-ownership-ci-alignment-1",
+  "cacheVersion": "10.0.25-phase-e5-2-8-1-vehicle-source-ownership-ci-alignment-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -41,11 +41,18 @@
     "vehicleAssignmentConfirmedWrite": "10.0.25-phase-e5-2-4-master-readiness-confirmed-write-contract-1",
     "appointmentRouteOwnershipGuard": "10.0.25-phase-e5-2-5-appointments-route-ownership-guard-contract-1",
     "identityRequestControl": "10.0.25-phase-e5-2-6-identity-singleflight-cooldown-contract-1",
-    "operationsSupabaseCompatibility": "10.0.25-phase-e5-2-8-rest-client-single-row-contract-1"
+    "operationsSupabaseCompatibility": "10.0.25-phase-e5-2-8-rest-client-single-row-contract-1",
+    "operationsVehicleSourceOwnership": "10.0.25-phase-e5-2-8-1-vehicle-source-ownership-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
     "minimumSupportedVersion": "10.0.0"
+  },
+  "policy": {
+    "releaseVersionPurpose": "User-visible product release.",
+    "cacheVersionPurpose": "Browser and service-worker cache invalidation.",
+    "runtimeContractPurpose": "Compatibility contract; changes only when the contract changes.",
+    "manualVersionLiteralsAllowed": false
   }
 };
   try{ Object.freeze(manifest.runtimeContracts); Object.freeze(manifest.native); Object.freeze(manifest); }catch(_e){}

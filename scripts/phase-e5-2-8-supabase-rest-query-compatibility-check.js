@@ -11,7 +11,7 @@ check(storage.includes('async function selectCanonicalMasterRow(c)'),'operations
 check(storage.includes(".eq('id', CANONICAL_MASTER_ID)\n      .limit(1)"),'canonical row reader is filtered and limited');
 check(!storage.includes('.maybeSingle()'),'operations storage does not call unsupported maybeSingle');
 check(storage.includes('var currentRow = await selectCanonicalMasterRow(c);'),'confirmed update uses compatible canonical read');
-check(storage.includes('var latestRow = await selectCanonicalMasterRow(c);'),'conflict recovery uses compatible canonical read');
+check(storage.includes('verifiedRow = await selectCanonicalMasterRow(c);'),'post-update verification uses compatible canonical read');
 check(storage.includes('var racedRow = await selectCanonicalMasterRow(c);'),'insert-race recovery uses compatible canonical read');
 check(config.runtimeContracts&&config.runtimeContracts.operationsSupabaseCompatibility==='10.0.25-phase-e5-2-8-rest-client-single-row-contract-1','runtime compatibility contract is registered');
 console.log(`Phase E5.2.8 Supabase REST query compatibility: ${passed}/${passed+failed} PASSED`);if(failed)process.exit(1);
