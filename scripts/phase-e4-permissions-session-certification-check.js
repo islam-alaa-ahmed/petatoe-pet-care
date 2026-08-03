@@ -18,6 +18,9 @@ check(auth.includes('rawSet(AUTH_KEY, serialized);')&&auth.includes('restore();'
 check(!auth.includes("if(ev && ev.key === PWA_SESSION_KEY && sessionUser()) logout"), 'cross-tab synchronization avoids duplicate remote session termination');
 check(index.includes('security/auth-session.js?v='+token), 'index loads certified auth runtime token');
 check(sw.includes("const APP_VERSION = '"+token+"';"), 'service worker cache namespace synchronized');
-check(config.runtimeContracts.sessionRuntime==='10.0.25-phase-e4-multitab-auth-session-sync-contract-1', 'session runtime contract recorded');
+check(auth.includes('var authSessionInvalidationEpoch = 0;'), 'session invalidation epoch is declared');
+check(auth.includes('markAuthSessionInvalidated();')&&auth.includes('validationEpoch !== authSessionInvalidationEpoch'), 'in-flight session validation cannot republish a logged-out session');
+check(auth.includes('createdAt <= authSessionInvalidatedAt'), 'stale cross-tab session payloads are rejected after logout');
+check(config.runtimeContracts.sessionRuntime==='10.0.25-phase-e4-1-session-invalidation-epoch-contract-1', 'session runtime contract recorded');
 if(failures){console.error('Phase E4 Permissions & Session Certification: FAILED ('+failures+')');process.exit(1);}
-console.log('Phase E4 Permissions & Session Certification: PASSED — 10/10');
+console.log('Phase E4 Permissions & Session Certification: PASSED — 13/13');

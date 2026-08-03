@@ -12,6 +12,13 @@
   var AUTH_KEY = 'petatoe_auth_session_v668';
   var PWA_SESSION_KEY = 'petatoe_pwa_session_v1';
   var PWA_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+  var authSessionInvalidationEpoch = 0;
+  var authSessionInvalidatedAt = 0;
+  function markAuthSessionInvalidated(){
+    authSessionInvalidationEpoch += 1;
+    authSessionInvalidatedAt = Date.now();
+    return authSessionInvalidationEpoch;
+  }
   // Bootstrap credential only — first login must force password change via mustChangePassword.
   var DEFAULT_ADMIN_PASSWORD = 'admin';
   var DEFAULT_ADMIN_USERNAME = 'Admin';
@@ -214,6 +221,7 @@
     try{ document.documentElement.classList.remove('pet-mobile-booting'); }catch(_e){}
   }
   async function validateSessionUser(reason){
+    var validationEpoch=authSessionInvalidationEpoch;
     var su=sessionUser();
     if(!su||!su.id)return {ok:false,reason:'no-session'};
     var remote, list;
@@ -242,6 +250,9 @@
       return {ok:false,reason:'invalid'};
     }
     var merged=Object.assign({},su,fresh,{loginAt:su.loginAt||now()});
+    if(validationEpoch !== authSessionInvalidationEpoch || !sessionUser()){
+      return {ok:false,reason:'session-invalidated'};
+    }
     writeAuthSession({user:merged, createdAt:now(), version:VERSION, source:reason||'session-validated'});
     writeCurrentUser(merged);
     updateHeader(merged);
@@ -637,6 +648,7 @@
     }, {passive:true}); }catch(_e){}
   });
   function applyCrossTabSessionRemoval(reason){
+    markAuthSessionInvalidated();
     if(!sessionUser()) return;
     stopIdleTimeout();
     rawRemove(AUTH_KEY);
@@ -651,6 +663,7 @@
       var parsed=JSON.parse(serialized);
       var createdAt=Date.parse(parsed&&parsed.createdAt||'');
       if(!parsed||!parsed.user||!createdAt||(Date.now()-createdAt)>PWA_SESSION_TTL_MS) return;
+      if(createdAt <= authSessionInvalidatedAt) return;
       rawSet(AUTH_KEY, serialized);
       restore();
     }catch(_e){}
@@ -1408,6 +1421,7 @@
   }
   function logout(reason){
     var user = sessionUser();
+    markAuthSessionInvalidated();
     stopIdleTimeout();
     endRemoteSession(user, reason || 'manual');
     clearAuthSession();

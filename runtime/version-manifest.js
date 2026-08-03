@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_PERMISSIONS_SESSION_CERTIFICATION_E4",
-  "buildVersion": "10.0.25-phase-e4-permissions-session-certification-1",
-  "cacheVersion": "10.0.25-phase-e4-permissions-session-certification-1",
+  "releaseName": "PETATOE_V10_0_25_SESSION_LOGOUT_RACE_HOTFIX_E4_1",
+  "buildVersion": "10.0.25-phase-e4-1-session-logout-race-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e4-1-session-logout-race-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -32,7 +32,7 @@
     "businessModuleLoading": "10.0.25-phase-d2-route-owned-business-hydration-contract-1",
     "navigationGuardRuntime": "10.0.25-phase-e2-permission-ready-route-replay-contract-1",
     "navigationLifecycle": "10.0.25-phase-e3-previous-route-lifecycle-contract-1",
-    "sessionRuntime": "10.0.25-phase-e4-multitab-auth-session-sync-contract-1"
+    "sessionRuntime": "10.0.25-phase-e4-1-session-invalidation-epoch-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
