@@ -5,7 +5,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const ops = read('operations/operations-legacy-engine.js');
 const version = JSON.parse(read('config/petatoe-version.json'));
 const checks = [
-  ['appointment tab initializes base controls before render', /function setTab\(tab\)\{[\s\S]{0,180}initBase\(\)/.test(ops)],
+  ['appointment tab initializes base controls before render', /function setTab\(tab\)\{[\s\S]{0,900}initBase\(\)/.test(ops)],
   ['empty appointment form creates first animal row', /appointmentAnimalsRows'[\s\S]{0,120}renderAppointmentAnimalsRows\(\[\{\}\]\)/.test(ops)],
   ['empty appointment form creates first service row', /appointmentServicesRows'[\s\S]{0,120}renderAppointmentServicesRows\(\[\{\}\]\)/.test(ops)],
   ['appointment form hydrates payroll runtime', /ensureAppointmentFormSources[\s\S]{0,700}ensureGroup\('payroll'\)/.test(ops)],

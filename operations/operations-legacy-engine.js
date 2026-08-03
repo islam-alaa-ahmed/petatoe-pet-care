@@ -1347,8 +1347,24 @@
     setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerSnapshot.id||customerKey(r));setVal('appointmentClient',customerName);setVal('appointmentPhone',customerPhone);setVal('appointmentCustomerSearch',[customerName,customerPhone].filter(Boolean).join(' — '));setNewCustomerMode(false);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentStart',r.start);setVal('appointmentEnd',r.end);setHistoricalSelectValue(byId('appointmentGroomer'),groomerName);setHistoricalSelectValue(byId('appointmentDriver'),driverName);setHistoricalSelectValue(byId('appointmentVehicle'),vehicleName);preserveSelectSnapshot(byId('appointmentGroomer'),r.groomerId||namedSnapshotId('groomer',groomerName),groomerName);preserveSelectSnapshot(byId('appointmentDriver'),r.driverId||namedSnapshotId('driver',driverName),driverName);preserveSelectSnapshot(byId('appointmentVehicle'),r.vehicleId||namedSnapshotId('vehicle',vehicleName),vehicleName);setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',customerAddress);setVal('appointmentGoogleMapUrl',customerMap);setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
     var t=byId('appointmentFormTitle');if(t)t.textContent=opT('editAppointmentTitle');
   }
+  function routerOwnedAppointmentsSubTab(){
+    try{
+      var router=window.PETATOERouter||{};
+      if(router.current!=='appointments')return '';
+      var intent=router.currentIntent||{};
+      var subTab=String(intent.appointmentsSubTab||(intent.navigationScreen==='appointmentsMaster'?'master':'')).trim();
+      return subTab==='master'||intent.navigationScreen==='appointmentsMaster'?'master':(subTab==='add'||intent.navigationScreen==='appointments'?'add':'');
+    }catch(_e){return ''}
+  }
   function setTab(tab){
-    currentTab=tab||'add';
+    tab=String(tab||'add').trim()||'add';
+    // E5.2.5: the canonical Router owns the external appointments sub-route.
+    // Reject delayed/default resets to "add" while the active route is explicitly
+    // appointmentsMaster. A later explicit sidebar navigation to appointments/add
+    // updates currentIntent first and remains fully allowed.
+    var routerOwnedTab=routerOwnedAppointmentsSubTab();
+    if(routerOwnedTab==='master'&&tab!=='master')tab='master';
+    currentTab=tab;
     initBase();
     // PETATOE v6.4.90: when opening appointments master data directly, keep the screen clean
     // by hiding the appointments dashboard header, KPI cards, and internal quick tabs only.
