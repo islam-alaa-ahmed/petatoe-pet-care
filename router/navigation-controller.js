@@ -63,17 +63,38 @@
       }
     }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('router/navigation-controller.js',e);}
   }
+  var pendingGuardedRoute=null;
+  function permissionRuntimeReady(){
+    var perms=window.PETATOENavigationPermissions;
+    return !!(perms&&typeof perms.canOpen==='function');
+  }
   function routeAllowed(tabId,routeIntent){
     if(!tabId || tabId==='dashboard') return true;
     var intent=normalizeRouteIntent(tabId,routeIntent);
     var permissionScreen=intent.navigationScreen||tabId;
     try{
       var perms=window.PETATOENavigationPermissions;
-      if(perms && typeof perms.canOpen==='function') return !!perms.canOpen(permissionScreen);
+      if(!perms || typeof perms.canOpen!=='function'){
+        reportRouteBlocked(permissionScreen,'permission-runtime-not-ready');
+        return false;
+      }
+      return !!perms.canOpen(permissionScreen);
     }catch(e){
       reportRouteBlocked(permissionScreen,'permission-check-error');
       return false;
     }
+  }
+  function queueGuardedRoute(tabId,smartOpen,routeIntent){
+    pendingGuardedRoute={tabId:tabId,smartOpen:smartOpen||'',routeIntent:normalizeRouteIntent(tabId,routeIntent)};
+  }
+  function replayGuardedRoute(){
+    if(!pendingGuardedRoute||!permissionRuntimeReady()) return false;
+    var request=pendingGuardedRoute;
+    var perms=window.PETATOENavigationPermissions;
+    var permissionScreen=request.routeIntent.navigationScreen||request.tabId;
+    if(!perms.canOpen(permissionScreen)) return false;
+    pendingGuardedRoute=null;
+    openTab(request.tabId,request.smartOpen,request.routeIntent);
     return true;
   }
   function hydrateRouteRuntime(tabId,routeIntent){
@@ -106,7 +127,8 @@
        canonical Startup Gate loads providers. It also covers restored/programmatic
        routes that never emit pointerdown/click before openTab(). */
     if(!routeAllowed(tabId,routeIntent)){
-      reportRouteBlocked(normalizeRouteIntent(tabId,routeIntent).navigationScreen||tabId,'permission-denied');
+      if(!permissionRuntimeReady()) queueGuardedRoute(tabId,smartOpen,routeIntent);
+      else reportRouteBlocked(normalizeRouteIntent(tabId,routeIntent).navigationScreen||tabId,'permission-denied');
       tabId='dashboard';
       smartOpen='';
       routeIntent={navigationScreen:'dashboard',source:'permission-fallback'};
@@ -158,4 +180,6 @@
   // Re-bind only when the canonical navigation module reports that #nav was rebuilt.
   document.addEventListener('petatoe:navbuilt',bindWhenReady);
   window.addEventListener('load',bindWhenReady,{once:true});
+  document.addEventListener('petatoe:navigationpermissionsapplied',replayGuardedRoute);
+  window.addEventListener('petatoe:identity-ready',replayGuardedRoute);
 })();
