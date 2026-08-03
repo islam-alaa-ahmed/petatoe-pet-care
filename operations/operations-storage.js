@@ -36,7 +36,6 @@
   var appointmentsServerState = Object.create(null);
   var masterDataRevision = 0;
   var masterServerStamp = null;
-  var masterServerFingerprint = null;
   var masterServerRevision = 0;
   var writeQueue = Promise.resolve();
   var lastWriteError = null;
@@ -284,11 +283,6 @@
     return safeText(row && (row.updated_at || row.created_at));
   }
 
-  function masterFingerprint(data){
-    try{ return stableSerialize(normalizeMasterData(data || cloneDefaultMaster())); }
-    catch(e){ try{ return JSON.stringify(normalizeMasterData(data || cloneDefaultMaster())); }catch(ignore){ return ''; } }
-  }
-
   function newestMasterRow(rows){
     rows = Array.isArray(rows) ? rows : [];
     var newest = null;
@@ -319,79 +313,70 @@
     if(del && del.error) throw del.error;
   }
 
+  async function selectCanonicalMasterRow(c){
+    var result = await c.from(TABLE_MASTER)
+      .select('id,data,updated_at,created_at')
+      .eq('id', CANONICAL_MASTER_ID)
+      .limit(1);
+    if(result && result.error) throw result.error;
+    var rows = Array.isArray(result && result.data) ? result.data : [];
+    return rows.length ? rows[0] : null;
+  }
+
   function acceptRemoteMasterRow(row){
     if(!row || !row.data) return;
     masterDataCache = normalizeMasterData(row.data);
     masterServerStamp = rowStamp(row) || null;
-    masterServerFingerprint = masterFingerprint(row.data);
     masterServerRevision += 1;
     emitChange('masterData');
   }
 
   async function replaceMasterSupabase(data, options){
-    if(!isClientReady()) throw new Error('OPERATIONS_SUPABASE_NOT_READY');
+    if(!isClientReady()) return false;
     options = options || {};
     var c = client();
     var normalized = normalizeMasterData(data);
-    var desiredFingerprint = masterFingerprint(normalized);
-    var expectedFingerprint = options.expectedFingerprint == null ? masterServerFingerprint : options.expectedFingerprint;
+    var expectedStamp = options.expectedStamp == null ? masterServerStamp : options.expectedStamp;
+    var nextStamp = new Date().toISOString();
 
-    var current = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').eq('id', CANONICAL_MASTER_ID).maybeSingle();
-    if(current && current.error) throw current.error;
-    var currentRow = current && current.data;
+    var currentRow = await selectCanonicalMasterRow(c);
 
     if(currentRow){
-      var currentFingerprint = masterFingerprint(currentRow.data);
-      if(expectedFingerprint && currentFingerprint !== expectedFingerprint){
+      var currentStamp = rowStamp(currentRow);
+      if(!expectedStamp || currentStamp !== expectedStamp){
         acceptRemoteMasterRow(currentRow);
         throw masterConflictError(currentRow);
       }
 
       var update = await c.from(TABLE_MASTER)
-        .update({ data: normalized })
+        .update({ data: normalized, updated_at: nextStamp })
         .eq('id', CANONICAL_MASTER_ID)
+        .eq('updated_at', expectedStamp)
         .select('id,data,updated_at,created_at');
       if(update && update.error) throw update.error;
       var updatedRows = Array.isArray(update && update.data) ? update.data : [];
-      var verifiedRow = updatedRows[0] || null;
-      if(!verifiedRow){
-        var verify = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').eq('id', CANONICAL_MASTER_ID).maybeSingle();
-        if(verify && verify.error) throw verify.error;
-        verifiedRow = verify && verify.data;
+      if(updatedRows.length !== 1){
+        var latestRow = await selectCanonicalMasterRow(c);
+        acceptRemoteMasterRow(latestRow);
+        throw masterConflictError(latestRow);
       }
-      if(!verifiedRow || masterFingerprint(verifiedRow.data) !== desiredFingerprint){
-        if(verifiedRow) acceptRemoteMasterRow(verifiedRow);
-        var verifyError = new Error('OPERATIONS_MASTER_DATA_WRITE_NOT_VERIFIED');
-        verifyError.code = 'OPERATIONS_MASTER_DATA_WRITE_NOT_VERIFIED';
-        throw verifyError;
-      }
-      acceptRemoteMasterRow(verifiedRow);
+      masterServerStamp = rowStamp(updatedRows[0]) || nextStamp;
     }else{
-      if(expectedFingerprint){
+      if(expectedStamp){
         throw masterConflictError(null);
       }
       var insert = await c.from(TABLE_MASTER).insert([{
         id: CANONICAL_MASTER_ID,
-        data: normalized
+        data: normalized,
+        updated_at: nextStamp
       }]).select('id,data,updated_at,created_at');
       if(insert && insert.error){
-        var raced = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').eq('id', CANONICAL_MASTER_ID).maybeSingle();
-        if(raced && !raced.error && raced.data) acceptRemoteMasterRow(raced.data);
+        var racedRow = await selectCanonicalMasterRow(c);
+        if(racedRow) acceptRemoteMasterRow(racedRow);
         throw insert.error;
       }
       var insertedRows = Array.isArray(insert && insert.data) ? insert.data : [];
-      var insertedRow = insertedRows[0] || null;
-      if(!insertedRow){
-        var insertedVerify = await c.from(TABLE_MASTER).select('id,data,updated_at,created_at').eq('id', CANONICAL_MASTER_ID).maybeSingle();
-        if(insertedVerify && insertedVerify.error) throw insertedVerify.error;
-        insertedRow = insertedVerify && insertedVerify.data;
-      }
-      if(!insertedRow || masterFingerprint(insertedRow.data) !== desiredFingerprint){
-        var insertVerifyError = new Error('OPERATIONS_MASTER_DATA_INSERT_NOT_VERIFIED');
-        insertVerifyError.code = 'OPERATIONS_MASTER_DATA_INSERT_NOT_VERIFIED';
-        throw insertVerifyError;
-      }
-      acceptRemoteMasterRow(insertedRow);
+      masterServerStamp = insertedRows.length ? (rowStamp(insertedRows[0]) || nextStamp) : nextStamp;
     }
 
     try{ await cleanupLegacyMasterRows(c); }catch(cleanupError){ warn(cleanupError); }
@@ -415,7 +400,6 @@
     var selected = canonical || newestMasterRow(rows);
     if(!selected || !selected.data){
       masterServerStamp = null;
-      masterServerFingerprint = null;
       return null;
     }
 
@@ -432,7 +416,6 @@
     }
 
     masterServerStamp = rowStamp(selected) || null;
-    masterServerFingerprint = masterFingerprint(selected.data);
     if(rows.length > 1 || !canonical){
       try{ await cleanupLegacyMasterRows(c); }catch(cleanupError){ warn(cleanupError); }
     }
@@ -514,8 +497,8 @@
       masterDataCache = normalizeMasterData(value);
       masterDataRevision += 1;
       var snapshotMaster = cloneJSON(masterDataCache);
-      var expectedFingerprint = masterServerFingerprint;
-      queueWrite(function(){ return replaceMasterSupabase(snapshotMaster, { expectedFingerprint: expectedFingerprint }); });
+      var expectedStamp = masterServerStamp;
+      queueWrite(function(){ return replaceMasterSupabase(snapshotMaster, { expectedStamp: expectedStamp }); });
       emitChange('masterData');
       return true;
     }
@@ -545,11 +528,11 @@
     var run = writeQueue.then(function(){
       return ensureMasterReady().then(function(){
         var snapshotMaster = cloneJSON(requestedMaster);
-        var expectedFingerprint = masterServerFingerprint;
+        var expectedStamp = masterServerStamp;
         masterDataCache = cloneJSON(snapshotMaster);
         masterDataRevision += 1;
         emitChange('masterData');
-        return replaceMasterSupabase(snapshotMaster, { expectedFingerprint: expectedFingerprint });
+        return replaceMasterSupabase(snapshotMaster, { expectedStamp: expectedStamp });
       });
     });
     writeQueue = run.then(function(){
