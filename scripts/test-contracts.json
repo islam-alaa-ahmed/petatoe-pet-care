@@ -40,7 +40,8 @@
     "phase-d1-1-records-route-hydration-check.js",
     "phase-d2-business-module-loading-check.js",
     "phase-d2-1-records-route-replay-check.js",
-    "phase-e3-navigation-runtime-lifecycle-check.js"
+    "phase-e3-navigation-runtime-lifecycle-check.js",
+    "phase-e4-permissions-session-certification-check.js"
   ],
   "historicalPatterns": [
     "v9_",

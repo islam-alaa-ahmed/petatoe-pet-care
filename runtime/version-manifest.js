@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_NAVIGATION_RUNTIME_LIFECYCLE_CERTIFICATION_E3",
-  "buildVersion": "10.0.25-phase-e3-navigation-runtime-lifecycle-1",
-  "cacheVersion": "10.0.25-phase-e3-navigation-runtime-lifecycle-1",
+  "releaseName": "PETATOE_V10_0_25_PERMISSIONS_SESSION_CERTIFICATION_E4",
+  "buildVersion": "10.0.25-phase-e4-permissions-session-certification-1",
+  "cacheVersion": "10.0.25-phase-e4-permissions-session-certification-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -31,11 +31,18 @@
     "recordsRouteHydration": "10.0.25-phase-d2-2-records-nonblocking-route-contract-1",
     "businessModuleLoading": "10.0.25-phase-d2-route-owned-business-hydration-contract-1",
     "navigationGuardRuntime": "10.0.25-phase-e2-permission-ready-route-replay-contract-1",
-    "navigationLifecycle": "10.0.25-phase-e3-previous-route-lifecycle-contract-1"
+    "navigationLifecycle": "10.0.25-phase-e3-previous-route-lifecycle-contract-1",
+    "sessionRuntime": "10.0.25-phase-e4-multitab-auth-session-sync-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
     "minimumSupportedVersion": "10.0.0"
+  },
+  "policy": {
+    "releaseVersionPurpose": "User-visible product release.",
+    "cacheVersionPurpose": "Browser and service-worker cache invalidation.",
+    "runtimeContractPurpose": "Compatibility contract; changes only when the contract changes.",
+    "manualVersionLiteralsAllowed": false
   }
 };
   try{ Object.freeze(manifest.runtimeContracts); Object.freeze(manifest.native); Object.freeze(manifest); }catch(_e){}

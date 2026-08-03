@@ -636,10 +636,33 @@
       idleTouchTimer = setTimeout(function(){ idleTouchTimer = null; recordUserActivity(evt); }, 750);
     }, {passive:true}); }catch(_e){}
   });
+  function applyCrossTabSessionRemoval(reason){
+    if(!sessionUser()) return;
+    stopIdleTimeout();
+    rawRemove(AUTH_KEY);
+    clearCurrentUser();
+    setLoggedInClass(false);
+    try{ document.dispatchEvent(new CustomEvent('petatoe:userchanged', {detail:{user:null, source:reason || 'auth-multitab-logout'}})); }catch(_e){}
+    renderLogin('تم تسجيل الخروج بنجاح');
+  }
+  function applyCrossTabSessionUpdate(serialized){
+    if(!serialized) return;
+    try{
+      var parsed=JSON.parse(serialized);
+      var createdAt=Date.parse(parsed&&parsed.createdAt||'');
+      if(!parsed||!parsed.user||!createdAt||(Date.now()-createdAt)>PWA_SESSION_TTL_MS) return;
+      rawSet(AUTH_KEY, serialized);
+      restore();
+    }catch(_e){}
+  }
   try{
     window.addEventListener('storage', function(ev){
       if(ev && ev.key === IDLE_ACTIVITY_KEY && sessionUser()) scheduleIdleTimers();
       if(ev && ev.key === IDLE_LOGOUT_KEY && sessionUser()) logout('idle_timeout_multitab');
+      if(ev && ev.key === PWA_SESSION_KEY){
+        if(!ev.newValue) applyCrossTabSessionRemoval('auth-multitab-logout');
+        else applyCrossTabSessionUpdate(ev.newValue);
+      }
     });
   }catch(_e){}
 
