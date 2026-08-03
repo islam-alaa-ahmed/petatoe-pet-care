@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_SESSION_LOGOUT_RACE_HOTFIX_E4_1",
-  "buildVersion": "10.0.25-phase-e4-1-session-logout-race-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e4-1-session-logout-race-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_ENTERPRISE_PRODUCTION_CERTIFICATION_E5",
+  "buildVersion": "10.0.25-phase-e5-enterprise-production-certification-1",
+  "cacheVersion": "10.0.25-phase-e5-enterprise-production-certification-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -32,17 +32,12 @@
     "businessModuleLoading": "10.0.25-phase-d2-route-owned-business-hydration-contract-1",
     "navigationGuardRuntime": "10.0.25-phase-e2-permission-ready-route-replay-contract-1",
     "navigationLifecycle": "10.0.25-phase-e3-previous-route-lifecycle-contract-1",
-    "sessionRuntime": "10.0.25-phase-e4-1-session-invalidation-epoch-contract-1"
+    "sessionRuntime": "10.0.25-phase-e4-1-session-invalidation-epoch-contract-1",
+    "finalProductionCertification": "10.0.25-phase-e5-production-baseline-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
     "minimumSupportedVersion": "10.0.0"
-  },
-  "policy": {
-    "releaseVersionPurpose": "User-visible product release.",
-    "cacheVersionPurpose": "Browser and service-worker cache invalidation.",
-    "runtimeContractPurpose": "Compatibility contract; changes only when the contract changes.",
-    "manualVersionLiteralsAllowed": false
   }
 };
   try{ Object.freeze(manifest.runtimeContracts); Object.freeze(manifest.native); Object.freeze(manifest); }catch(_e){}

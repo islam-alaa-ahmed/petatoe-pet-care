@@ -30,7 +30,7 @@
   function t(key,fallback){try{var c=center();return c&&typeof c.t==='function'?c.t('aboutApp.'+key,{}, {fallback:fallback,allowKeyFallback:true}):fallback}catch(_){return fallback}}
   function esc(value){return String(value==null?'':value).replace(/[&<>\"']/g,function(ch){return {'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch]})}
   function version(){return String(window.PETATOE_RELEASE_VERSION||'v10.0.25')}
-  function releaseName(){return String(window.PETATOE_RELEASE_NAME||'PETATOE_V10_0_25_NAVIGATION_RUNTIME_ISOLATION_C2_3')}
+  function releaseName(){return String(window.PETATOE_RELEASE_NAME||((window.PETATOEVersionManifest&&window.PETATOEVersionManifest.releaseName)||'PETATOE_V10_0_25_ENTERPRISE_PRODUCTION_CERTIFICATION_E5'))}
   function formatDate(value){
     if(!value)return t('never','لم يتم الفحص بعد');
     try{return new Intl.DateTimeFormat(document.documentElement.lang&&document.documentElement.lang.indexOf('en')===0?'en-US':'ar-EG',{dateStyle:'medium',timeStyle:'short',calendar:'gregory'}).format(value)}catch(_){return value.toLocaleString()}

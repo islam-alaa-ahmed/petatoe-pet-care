@@ -1,7 +1,7 @@
 /* PETATOE PWA Enterprise Service Worker — V10-P1 Update Engine */
 'use strict';
 
-const APP_VERSION = '10.0.25-phase-e4-1-session-logout-race-hotfix-1';
+const APP_VERSION = '10.0.25-phase-e5-enterprise-production-certification-1';
 const CACHE_PREFIX = 'petatoe-pwa-';
 const STATIC_CACHE = `${CACHE_PREFIX}static-${APP_VERSION}`;
 const RUNTIME_CACHE = `${CACHE_PREFIX}runtime-${APP_VERSION}`;
@@ -29,22 +29,22 @@ const APP_SHELL = [
   './mobile/mobile-enterprise-v10-experience.js',
   './pwa/mobile-runtime-layout-m1-2.js',
   './pwa/pwa-manager.js',
-  './performance/mobile-startup-loading-gate.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
+  './performance/mobile-startup-loading-gate.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
   './performance/mobile-runtime-coordinator.js',
-  './runtime/version-manifest.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
+  './runtime/version-manifest.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
   './css/main.css',
-  './css/components/interaction-ownership.css?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
-  './security/session-timeout.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
-  './components/security-hardening.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
-  './security/enterprise-security-hardening.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
-  './security/security-offline-contract.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
-  './security/password-security.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
-  './security/auth-session.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
-  './data/data-source.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
-  './data/records-read-facade.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
+  './css/components/interaction-ownership.css?v=10.0.25-phase-e5-enterprise-production-certification-1',
+  './security/session-timeout.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
+  './components/security-hardening.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
+  './security/enterprise-security-hardening.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
+  './security/security-offline-contract.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
+  './security/password-security.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
+  './security/auth-session.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
+  './data/data-source.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
+  './data/records-read-facade.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
   './supabase-config.js?v=8.0.2-client1',
   './supabase-client.js?v=8.0.2-client1',
-  './core/supabase-repository.js?v=10.0.25-phase-e4-1-session-logout-race-hotfix-1',
+  './core/supabase-repository.js?v=10.0.25-phase-e5-enterprise-production-certification-1',
   './data-layer.js?v=8.0.2-dl1',
   './components/inline-handler-adapter.js'
 ];
