@@ -491,7 +491,14 @@
 
   /* PETATOE Identity Store — Supabase-backed app users, permissions, roles and audit logs. */
   function defaultAppUser(){return {id:'u_admin',username:'Admin',fullName:'Admin',full_name:'Admin',job:'Super Admin',phone:'',email:'',role:'superadmin',role_code:'superadmin',status:'active',createdAt:new Date().toISOString()};}
-  var identityCache={users:[defaultAppUser()], permissions:{}, roles:null, audit:[], loaded:false, loading:null};
+  var identityRuntime=window.__PETATOE_IDENTITY_RUNTIME__||(window.__PETATOE_IDENTITY_RUNTIME__={
+    cache:{users:[defaultAppUser()], permissions:{}, roles:null, audit:[], loaded:false, loading:null},
+    lastAttemptAt:0,
+    lastFailureAt:0,
+    consecutiveFailures:0
+  });
+  var identityCache=identityRuntime.cache;
+  var IDENTITY_RETRY_COOLDOWN_MS=15000;
   function normalizeAppUserRow(row){
     row=row||{};
     var d=(row.data&&typeof row.data==='object')?clone(row.data):{};
@@ -526,19 +533,25 @@
       passwordEncrypted:d.passwordEncrypted||''
     };
   }
-  async function loadIdentityStore(){
+  async function loadIdentityStore(options){
+    options=options||{};
     if(identityCache.loading) return identityCache.loading;
+    var nowMs=Date.now();
+    if(!options.force && identityRuntime.lastFailureAt && (nowMs-identityRuntime.lastFailureAt)<IDENTITY_RETRY_COOLDOWN_MS){
+      return identityCache;
+    }
+    identityRuntime.lastAttemptAt=nowMs;
     identityCache.loading=(async function(){
       if(!hasClient()){identityCache.loaded=true;return identityCache;}
-      var c=client();
+      var c=client(), hadFailure=false;
       try{
         var ur=await c.from('app_users').select('*').order('created_at',{ascending:true});
         if(!ur.error){
           var list=(Array.isArray(ur.data)?ur.data:[]).map(normalizeAppUserRow).filter(function(u){return u&&u.username;});
           if(!list.length) list=[defaultAppUser()];
           identityCache.users=list;
-        }else console.warn('PETATOE Identity users load failed', resultError(ur));
-      }catch(e){console.warn('PETATOE Identity users load crashed', e)}
+        }else{hadFailure=true;console.warn('PETATOE Identity users load failed', resultError(ur));}
+      }catch(e){hadFailure=true;console.warn('PETATOE Identity users load crashed', e)}
       try{
         var pr=await c.from('app_user_permissions').select('*');
         if(!pr.error){
@@ -552,21 +565,23 @@
             if(key==='full'||data.screens||data.special||data.vehicleScope) map[uid]=data;
           });
           identityCache.permissions=map;
-        }else console.warn('PETATOE Identity permissions load failed', resultError(pr));
-      }catch(e){console.warn('PETATOE Identity permissions load crashed', e)}
+        }else{hadFailure=true;console.warn('PETATOE Identity permissions load failed', resultError(pr));}
+      }catch(e){hadFailure=true;console.warn('PETATOE Identity permissions load crashed', e)}
       try{
         var rr=await c.from('roles').select('*').order('level',{ascending:true});
         if(!rr.error){
           var roles={};
           (Array.isArray(rr.data)?rr.data:[]).forEach(function(r){ if(r&&r.code) roles[String(r.code)]=String(r.name_en||r.name_ar||r.code); });
           identityCache.roles=Object.keys(roles).length?roles:null;
-        }
-      }catch(e){console.warn('PETATOE Identity roles load crashed', e)}
+        }else{hadFailure=true;console.warn('PETATOE Identity roles load failed', resultError(rr));}
+      }catch(e){hadFailure=true;console.warn('PETATOE Identity roles load crashed', e)}
       identityCache.loaded=true;
+      if(hadFailure){identityRuntime.lastFailureAt=Date.now();identityRuntime.consecutiveFailures+=1;}else{identityRuntime.lastFailureAt=0;identityRuntime.consecutiveFailures=0;}
       try{window.dispatchEvent(new CustomEvent('petatoe:identity-ready',{detail:{users:identityCache.users.length}}));}catch(_e){}
       return identityCache;
     })();
-    return identityCache.loading;
+    var activeLoad=identityCache.loading;
+    try{return await activeLoad;}finally{if(identityCache.loading===activeLoad)identityCache.loading=null;}
   }
   function appUsersSync(){ if(!identityCache.loaded) loadIdentityStore(); return clone(identityCache.users||[defaultAppUser()]); }
   async function findAppUserRowId(u){
@@ -732,6 +747,7 @@
     appendAudit:appendAuditLog,
     updateUserCredential:updateAppUserCredential,
     _cache:identityCache,
+    _runtime:identityRuntime,
     __ready:true
   };
   setTimeout(loadIdentityStore,0);

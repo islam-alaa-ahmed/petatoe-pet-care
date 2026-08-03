@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_APPOINTMENTS_ROUTE_OWNERSHIP_GUARD_HOTFIX_E5_2_5",
-  "buildVersion": "10.0.25-phase-e5-2-5-appointments-route-ownership-guard-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-5-appointments-route-ownership-guard-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_IDENTITY_REQUEST_STORM_HOTFIX_E5_2_6",
+  "buildVersion": "10.0.25-phase-e5-2-6-identity-request-storm-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e5-2-6-identity-request-storm-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -38,17 +38,13 @@
     "appointmentScreenCertification": "10.0.25-phase-e5-2-appointment-readiness-contract-1",
     "appointmentPermissionIsolation": "10.0.25-phase-e5-2-2-confirmed-vehicle-assignment-persistence-contract-1",
     "appointmentRouteOwnership": "10.0.25-phase-e5-2-3-router-owned-appointments-subroute-contract-1",
-    "appointmentRouteOwnershipGuard": "10.0.25-phase-e5-2-5-appointments-route-ownership-guard-contract-1"
+    "vehicleAssignmentConfirmedWrite": "10.0.25-phase-e5-2-4-master-readiness-confirmed-write-contract-1",
+    "appointmentRouteOwnershipGuard": "10.0.25-phase-e5-2-5-appointments-route-ownership-guard-contract-1",
+    "identityRequestControl": "10.0.25-phase-e5-2-6-identity-singleflight-cooldown-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
     "minimumSupportedVersion": "10.0.0"
-  },
-  "policy": {
-    "releaseVersionPurpose": "User-visible product release.",
-    "cacheVersionPurpose": "Browser and service-worker cache invalidation.",
-    "runtimeContractPurpose": "Compatibility contract; changes only when the contract changes.",
-    "manualVersionLiteralsAllowed": false
   }
 };
   try{ Object.freeze(manifest.runtimeContracts); Object.freeze(manifest.native); Object.freeze(manifest); }catch(_e){}

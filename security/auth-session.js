@@ -14,6 +14,9 @@
   var PWA_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
   var authSessionInvalidationEpoch = 0;
   var authSessionInvalidatedAt = 0;
+  var sessionValidationPromise = null;
+  var sessionValidationLastStartedAt = 0;
+  var SESSION_VALIDATION_MIN_INTERVAL_MS = 5000;
   function markAuthSessionInvalidated(){
     authSessionInvalidationEpoch += 1;
     authSessionInvalidatedAt = Date.now();
@@ -183,8 +186,7 @@
   }
   async function loadFreshUsers(){
     var ids=identityStore();
-    try{ if(ids && ids._cache) ids._cache.loading=null; }catch(_e){}
-    try{ if(ids && typeof ids.load==='function') await ids.load(); }catch(_e){}
+    try{ if(ids && typeof ids.load==='function') await ids.load({force:true}); }catch(_e){}
     try{ if(ids && typeof ids.usersSync==='function') return ids.usersSync()||[]; }catch(_e){}
     return getUsers();
   }
@@ -221,6 +223,14 @@
     try{ document.documentElement.classList.remove('pet-mobile-booting'); }catch(_e){}
   }
   async function validateSessionUser(reason){
+    if(sessionValidationPromise) return sessionValidationPromise;
+    var nowMs=Date.now();
+    if(reason!=='auth-restore' && (nowMs-sessionValidationLastStartedAt)<SESSION_VALIDATION_MIN_INTERVAL_MS){
+      var existing=sessionUser();
+      return existing?{ok:true,user:existing,coalesced:true}:{ok:false,reason:'no-session'};
+    }
+    sessionValidationLastStartedAt=nowMs;
+    sessionValidationPromise=(async function(){
     var validationEpoch=authSessionInvalidationEpoch;
     var su=sessionUser();
     if(!su||!su.id)return {ok:false,reason:'no-session'};
@@ -258,6 +268,9 @@
     updateHeader(merged);
     try{ if(window.PETATOENavigationPermissions && window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(); }catch(_e){}
     return {ok:true,user:merged};
+    })();
+    var activeValidation=sessionValidationPromise;
+    try{return await activeValidation;}finally{if(sessionValidationPromise===activeValidation)sessionValidationPromise=null;}
   }
 
   function clearLegacyUserRefs(){
