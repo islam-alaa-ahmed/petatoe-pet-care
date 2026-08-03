@@ -3036,6 +3036,18 @@
   function initBase(){if(!byId('appointmentDate'))return false; refreshLookupSelects(); if(!byId('appointmentCustomerId')){var hid=document.createElement('input');hid.type='hidden';hid.id='appointmentCustomerId';var formId=byId('appointmentId');if(formId&&formId.parentNode)formId.parentNode.insertBefore(hid,formId.nextSibling)} if(!val('appointmentDate'))setVal('appointmentDate',today()); if(byId('appointmentAnimalsRows')&&!byId('appointmentAnimalsRows').querySelector('.appointment-animal-row'))renderAppointmentAnimalsRows([{}]); if(byId('appointmentServicesRows')&&!byId('appointmentServicesRows').querySelector('.appointment-service-row'))renderAppointmentServicesRows([{}]); if(byId('appointmentCalendarDate')&&!val('appointmentCalendarDate'))setVal('appointmentCalendarDate',today()); if(byId('appointmentDispatchDate')&&!val('appointmentDispatchDate'))setVal('appointmentDispatchDate',today()); if(byId('appointmentDailyOpsDate')&&!val('appointmentDailyOpsDate'))setVal('appointmentDailyOpsDate',today()); if(byId('vehicleOpsDate')&&!val('vehicleOpsDate'))setVal('vehicleOpsDate',today()); if(byId('vehicleOpsReportFrom')&&!val('vehicleOpsReportFrom'))setVal('vehicleOpsReportFrom',today()); if(byId('vehicleOpsReportTo')&&!val('vehicleOpsReportTo'))setVal('vehicleOpsReportTo',today()); if(byId('operationsKpiFrom')&&!val('operationsKpiFrom'))setVal('operationsKpiFrom',today()); if(byId('operationsKpiTo')&&!val('operationsKpiTo'))setVal('operationsKpiTo',today()); return true;}
   function init(panel){if(!initBase())return; renderForPanel(panel||activeTopPanel()||'appointments');}
   document.addEventListener('DOMContentLoaded',function(){init(activeTopPanel()||'appointments')});
+  document.addEventListener('petatoe:routehydrated',function(e){
+    var d=e&&e.detail||{};
+    if(d.tabId!=='appointments')return;
+    var router=window.PETATOERouter||{};
+    if(router.current!=='appointments'||router.currentRouteSequence!==d.routeSequence)return;
+    var requested=String(d.appointmentsSubTab||(d.navigationScreen==='appointmentsMaster'?'master':'add')).trim()||'add';
+    if(requested==='master'||d.navigationScreen==='appointmentsMaster')requested='master';
+    else requested='add';
+    window.__PETATOE_APPOINTMENTS_NAV_INTENT__=requested;
+    setTab(requested);
+    window.__PETATOE_APPOINTMENTS_NAV_APPLIED__=requested;
+  });
   document.addEventListener('petatoe:tabchange',function(e){
     var d=e&&e.detail||{}, tab=d.tabId||'';
     if(tab==='appointments'){

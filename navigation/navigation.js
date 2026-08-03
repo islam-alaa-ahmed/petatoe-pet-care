@@ -203,8 +203,15 @@
     return null;
   }
   function applyAppointmentsNavigationIntent(){
-    if(!window.__PETATOE_APPOINTMENTS_NAV_INTENT__) return false;
-    var requested=normalizeAppointmentsSubTab(window.__PETATOE_APPOINTMENTS_NAV_INTENT__);
+    var routerIntent='';
+    try{
+      if(window.PETATOERouter&&window.PETATOERouter.current==='appointments'&&window.PETATOERouter.currentIntent){
+        routerIntent=window.PETATOERouter.currentIntent.appointmentsSubTab||'';
+      }
+    }catch(_e){}
+    var requested=normalizeAppointmentsSubTab(routerIntent||window.__PETATOE_APPOINTMENTS_NAV_INTENT__);
+    if(!requested) return false;
+    window.__PETATOE_APPOINTMENTS_NAV_INTENT__=requested;
     var api=appointmentsRuntimeApi();
     if(!api) return false;
     api.setTab(requested);

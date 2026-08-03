@@ -43,7 +43,15 @@
     var navigationScreen=String(routeIntent.navigationScreen||tabId||'').trim();
     if(tabId==='appointments'){
       appointmentsSubTab=String(routeIntent.appointmentsSubTab||(navigationScreen==='appointmentsMaster'?'master':'add')).trim()||'add';
-      if(appointmentsSubTab==='master'&&!navigationScreen) navigationScreen='appointmentsMaster';
+      // E5.2.3: appointments sub-route and permission-screen identity are one canonical contract.
+      // A delayed loader must never be able to combine master with appointments/add identity.
+      if(appointmentsSubTab==='master'||navigationScreen==='appointmentsMaster'){
+        appointmentsSubTab='master';
+        navigationScreen='appointmentsMaster';
+      }else{
+        appointmentsSubTab='add';
+        navigationScreen='appointments';
+      }
     }
     return {appointmentsSubTab:appointmentsSubTab,navigationScreen:navigationScreen,source:String(routeIntent.source||'').trim()};
   }
@@ -97,7 +105,8 @@
     openTab(request.tabId,request.smartOpen,request.routeIntent);
     return true;
   }
-  function hydrateRouteRuntime(tabId,routeIntent){
+  var routeIntentSequence=0;
+  function hydrateRouteRuntime(tabId,routeIntent,sequence){
     try{
       var gate = window.PETATOEMobileStartupGate;
       if(!gate) return;
@@ -105,7 +114,12 @@
       var ensure = typeof gate.ensureRoute === 'function'
         ? gate.ensureRoute(tabId,intent.navigationScreen)
         : (tabId==='smart' && typeof gate.ensureGroup==='function' ? gate.ensureGroup('smartReports') : null);
-      if(ensure && typeof ensure.catch==='function') ensure.catch(function(error){
+      if(ensure && typeof ensure.then==='function') ensure.then(function(ready){
+        if(ready===false) return;
+        var router=window.PETATOERouter||{};
+        if(router.current!==tabId||router.currentRouteSequence!==sequence) return;
+        document.dispatchEvent(new CustomEvent('petatoe:routehydrated',{detail:{tabId:tabId,appointmentsSubTab:intent.appointmentsSubTab,navigationScreen:intent.navigationScreen,source:'router-hydration-replay',routeSequence:sequence}}));
+      }).catch(function(error){
         if(window.console && console.warn) console.warn('[PETATOE Router] route hydration failed', tabId, intent.navigationScreen, error);
       });
     }catch(error){
@@ -133,13 +147,18 @@
       smartOpen='';
       routeIntent={navigationScreen:'dashboard',source:'permission-fallback'};
     }
-    hydrateRouteRuntime(tabId,routeIntent);
+    var canonicalIntent=normalizeRouteIntent(tabId,routeIntent);
+    routeIntent=canonicalIntent;
+    var routeSequence=++routeIntentSequence;
     var previous=window.PETATOERouter&&window.PETATOERouter.current||currentTab();
     var previousSmart=window.PETATOERouter&&window.PETATOERouter.currentSmart||'';
     var target=byIdSafe(tabId);
     var sameActive=target&&target.classList&&target.classList.contains('active')&&previous===tabId&&previousSmart===smartOpen;
     window.PETATOERouter.current=tabId;
     window.PETATOERouter.currentSmart=smartOpen;
+    window.PETATOERouter.currentIntent=canonicalIntent;
+    window.PETATOERouter.currentRouteSequence=routeSequence;
+    hydrateRouteRuntime(tabId,canonicalIntent,routeSequence);
     if(sameActive){
       markNav(tabId,smartOpen,normalizeRouteIntent(tabId,routeIntent));
       try{ if(typeof closeSidebar==='function') closeSidebar(); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}

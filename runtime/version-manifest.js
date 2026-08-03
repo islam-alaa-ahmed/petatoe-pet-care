@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_VEHICLE_ASSIGNMENT_PERSISTENCE_HOTFIX_E5_2_2",
-  "buildVersion": "10.0.25-phase-e5-2-2-vehicle-assignment-persistence-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-2-vehicle-assignment-persistence-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_APPOINTMENTS_SUBROUTE_OWNERSHIP_HOTFIX_E5_2_3",
+  "buildVersion": "10.0.25-phase-e5-2-3-appointments-subroute-ownership-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e5-2-3-appointments-subroute-ownership-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -36,11 +36,18 @@
     "finalProductionCertification": "10.0.25-phase-e5-production-baseline-contract-1",
     "vehicleStaffReadiness": "10.0.25-phase-e5-1-vehicle-staff-readiness-contract-1",
     "appointmentScreenCertification": "10.0.25-phase-e5-2-appointment-readiness-contract-1",
-    "appointmentPermissionIsolation": "10.0.25-phase-e5-2-2-confirmed-vehicle-assignment-persistence-contract-1"
+    "appointmentPermissionIsolation": "10.0.25-phase-e5-2-2-confirmed-vehicle-assignment-persistence-contract-1",
+    "appointmentRouteOwnership": "10.0.25-phase-e5-2-3-router-owned-appointments-subroute-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
     "minimumSupportedVersion": "10.0.0"
+  },
+  "policy": {
+    "releaseVersionPurpose": "User-visible product release.",
+    "cacheVersionPurpose": "Browser and service-worker cache invalidation.",
+    "runtimeContractPurpose": "Compatibility contract; changes only when the contract changes.",
+    "manualVersionLiteralsAllowed": false
   }
 };
   try{ Object.freeze(manifest.runtimeContracts); Object.freeze(manifest.native); Object.freeze(manifest); }catch(_e){}
