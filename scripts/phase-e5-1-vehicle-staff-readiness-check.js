@@ -5,7 +5,7 @@ const read=p=>fs.readFileSync(path.join(root,p),'utf8'); let p=0,f=0;
 function c(ok,l){if(ok){p++;console.log('PASS: '+l)}else{f++;console.error('FAIL: '+l)}}
 const ops=read('operations/operations-legacy-engine.js'); const setup=read('settings/setup.js');
 c(ops.includes("ensureGroup('payroll')"),'vehicle staff hydrates payroll dependency');
-c(ops.includes("ensureGroup('settingsSetup')"),'vehicle staff hydrates settings setup dependency');
+c(ops.includes('ensureSetupReferenceSource()'),'vehicle staff hydrates isolated setup reference dependency');
 c(ops.includes("facade.refresh()"),'vehicle staff refreshes payroll facade');
 c(ops.includes("petatoe:localization-center-ready"),'vehicle staff rerenders when localization center is ready');
 c(setup.includes("notifyReferenceRegistryUpdated('setup-remote-load'"),'remote setup load publishes reference update');

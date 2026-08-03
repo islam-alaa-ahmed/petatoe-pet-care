@@ -44,7 +44,8 @@
     "phase-e4-permissions-session-certification-check.js",
     "phase-e5-enterprise-production-certification-check.js",
     "phase-e5-1-vehicle-staff-readiness-check.js",
-    "phase-e5-2-appointment-screen-certification-check.js"
+    "phase-e5-2-appointment-screen-certification-check.js",
+    "phase-e5-2-1-appointment-permission-isolation-check.js"
   ],
   "historicalPatterns": [
     "v9_",

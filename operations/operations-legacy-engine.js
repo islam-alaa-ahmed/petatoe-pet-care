@@ -40,6 +40,7 @@
   var financeReportVisibleLimit=10;
   var vehicleStaffSourcesPromise=null;
   var appointmentFormSourcesPromise=null;
+  var setupReferenceSourcePromise=null;
   var STATUS_FLOW=['مجدول','في الطريق','وصل العميل','بدأت الجلسة','تمت الجلسة','تم التحصيل','مغلق','مؤكد','غير مكتملة','مؤجل','ملغي'];
   var LEGACY_STATUS_MAP={'تم':'تمت الجلسة'};
   function opsCtx(){return window.PETATOEOperationsContext||null}
@@ -502,6 +503,27 @@
     var root=byId('appointments');
     if(root)localizeOperationsSubtree(root);
   }
+  function ensureSetupReferenceSource(){
+    if(window.PETATOESetup&&typeof window.PETATOESetup.getVehicles==='function')return Promise.resolve(true);
+    if(setupReferenceSourcePromise)return setupReferenceSourcePromise;
+    setupReferenceSourcePromise=new Promise(function(resolve){
+      var existing=document.querySelector('script[data-petatoe-reference-source="settings-setup"]');
+      if(existing){
+        if(window.PETATOESetup)return resolve(true);
+        existing.addEventListener('load',function(){resolve(!!window.PETATOESetup)},{once:true});
+        existing.addEventListener('error',function(){resolve(false)},{once:true});
+        return;
+      }
+      var script=document.createElement('script');
+      script.src='settings/setup.js?v='+(window.PETATOE_BUILD_VERSION||'10.0.25');
+      script.async=true;
+      script.setAttribute('data-petatoe-reference-source','settings-setup');
+      script.onload=function(){resolve(!!window.PETATOESetup)};
+      script.onerror=function(){resolve(false)};
+      (document.head||document.documentElement).appendChild(script);
+    }).finally(function(){setupReferenceSourcePromise=null;});
+    return setupReferenceSourcePromise;
+  }
   function ensureVehicleStaffSources(){
     if(!vehicleStaffScreenActive())return Promise.resolve(false);
     if(vehicleStaffSourcesPromise)return vehicleStaffSourcesPromise;
@@ -509,7 +531,7 @@
     var jobs=[];
     if(gate&&typeof gate.ensureGroup==='function'){
       jobs.push(gate.ensureGroup('payroll'));
-      jobs.push(gate.ensureGroup('settingsSetup'));
+      jobs.push(ensureSetupReferenceSource());
     }
     vehicleStaffSourcesPromise=Promise.all(jobs.map(function(job){return Promise.resolve(job).catch(function(){return false})})).then(function(){
       var facade=window.PETATOEPayrollReadFacade;
@@ -1269,7 +1291,7 @@
     var jobs=[];
     if(gate&&typeof gate.ensureGroup==='function'){
       jobs.push(gate.ensureGroup('payroll'));
-      jobs.push(gate.ensureGroup('settingsSetup'));
+      jobs.push(ensureSetupReferenceSource());
     }
     appointmentFormSourcesPromise=Promise.all(jobs.map(function(job){return Promise.resolve(job).catch(function(){return false})})).then(function(){
       var facade=window.PETATOEPayrollReadFacade;

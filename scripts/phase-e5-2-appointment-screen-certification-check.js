@@ -9,7 +9,7 @@ const checks = [
   ['empty appointment form creates first animal row', /appointmentAnimalsRows'[\s\S]{0,120}renderAppointmentAnimalsRows\(\[\{\}\]\)/.test(ops)],
   ['empty appointment form creates first service row', /appointmentServicesRows'[\s\S]{0,120}renderAppointmentServicesRows\(\[\{\}\]\)/.test(ops)],
   ['appointment form hydrates payroll runtime', /ensureAppointmentFormSources[\s\S]{0,700}ensureGroup\('payroll'\)/.test(ops)],
-  ['appointment form hydrates settings setup runtime', /ensureAppointmentFormSources[\s\S]{0,700}ensureGroup\('settingsSetup'\)/.test(ops)],
+  ['appointment form hydrates isolated setup reference runtime', /ensureAppointmentFormSources[\s\S]{0,700}ensureSetupReferenceSource\(\)/.test(ops)],
   ['appointment controls refresh after payroll data', /payroll-read-facade-refreshed[\s\S]{0,180}refreshAppointmentFormScreen/.test(ops)],
   ['appointment controls refresh after reference data', /reference-registry-updated[\s\S]{0,180}refreshAppointmentFormScreen/.test(ops)],
   ['appointment controls refresh after localization', /localization-center-ready[\s\S]{0,180}refreshAppointmentFormScreen/.test(ops)],
