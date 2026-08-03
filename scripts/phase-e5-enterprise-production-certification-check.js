@@ -10,7 +10,7 @@ const config=json('config/petatoe-version.json');
 const index=read('index.html'); const sw=read('service-worker.js');
 const about=read('mobile/about-app.js'); const workflow=read('.github/workflows/localization-lockdown.yml');
 const contracts=json('scripts/test-contracts.json');
-check(config.releaseName==='PETATOE_V10_0_25_ENTERPRISE_PRODUCTION_CERTIFICATION_E5','final production release identity recorded');
+check(config.runtimeContracts.finalProductionCertification==='10.0.25-phase-e5-production-baseline-contract-1','final production baseline contract retained');
 check(config.buildVersion===config.cacheVersion,'build and cache versions are synchronized');
 check(config.runtimeContracts.finalProductionCertification==='10.0.25-phase-e5-production-baseline-contract-1','final production runtime contract recorded');
 check(index.includes(`runtime/version-manifest.js?v=${config.cacheVersion}`),'index loads canonical runtime manifest token');

@@ -21,7 +21,7 @@
     var r=repo();
     if(r&&typeof r.getSystemSetting==='function'&&!__supabaseSetupLoading[k]){
       __supabaseSetupLoading[k]=true;
-      r.getSystemSetting(setupKey(k),d).then(function(v){__supabaseSetupCache[k]=clone(v,d);__supabaseSetupLoading[k]=false;scheduleSetupRender();}).catch(function(e){__supabaseSetupLoading[k]=false;console.warn('PETATOESetup Supabase read failed',k,e);});
+      r.getSystemSetting(setupKey(k),d).then(function(v){__supabaseSetupCache[k]=clone(v,d);__supabaseSetupLoading[k]=false;scheduleSetupRender();if(k===INIT_KEY)notifyReferenceRegistryUpdated('setup-remote-load',((v&&v.cars)||[]).length);}).catch(function(e){__supabaseSetupLoading[k]=false;console.warn('PETATOESetup Supabase read failed',k,e);});
     }
     return clone(d,d);
   }

@@ -38,6 +38,7 @@
   var appointmentLocalReportVisibleLimits={};
   var financeReportFilters=null;
   var financeReportVisibleLimit=10;
+  var vehicleStaffSourcesPromise=null;
   var STATUS_FLOW=['مجدول','في الطريق','وصل العميل','بدأت الجلسة','تمت الجلسة','تم التحصيل','مغلق','مؤكد','غير مكتملة','مؤجل','ملغي'];
   var LEGACY_STATUS_MAP={'تم':'تمت الجلسة'};
   function opsCtx(){return window.PETATOEOperationsContext||null}
@@ -493,11 +494,35 @@
     list=uniqueSorted(list||[]);
     return list.length?list.map(function(x){return '<span class="appointments-master-pill"><b>'+esc(x)+'</b><button type="button" data-op-click="editMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">'+esc(opT('edit'))+'</button><button type="button" data-op-click="removeMasterItem" data-op-arg1="'+esc(type)+'" data-op-arg2="'+esc(x)+'" data-op-arg3="'+esc(animalType||'')+'">'+esc(opT('delete'))+'</button></span>'}).join(''):'<div class="appointments-empty appointments-master-empty">'+esc(opCustomerT('empty.noData',null,'لا توجد بيانات'))+'</div>';
   }
+  function vehicleStaffScreenActive(){return currentTab==='master'&&appointmentMasterSectionValue()==='vehicleStaff'}
+  function refreshVehicleStaffScreen(){
+    if(!vehicleStaffScreenActive())return;
+    renderMasterData();
+    var root=byId('appointments');
+    if(root)localizeOperationsSubtree(root);
+  }
+  function ensureVehicleStaffSources(){
+    if(!vehicleStaffScreenActive())return Promise.resolve(false);
+    if(vehicleStaffSourcesPromise)return vehicleStaffSourcesPromise;
+    var gate=window.PETATOEMobileStartupGate;
+    var jobs=[];
+    if(gate&&typeof gate.ensureGroup==='function'){
+      jobs.push(gate.ensureGroup('payroll'));
+      jobs.push(gate.ensureGroup('settingsSetup'));
+    }
+    vehicleStaffSourcesPromise=Promise.all(jobs.map(function(job){return Promise.resolve(job).catch(function(){return false})})).then(function(){
+      var facade=window.PETATOEPayrollReadFacade;
+      if(facade&&typeof facade.refresh==='function')return facade.refresh().catch(function(){return null});
+      return null;
+    }).then(function(){refreshVehicleStaffScreen();return true;}).finally(function(){vehicleStaffSourcesPromise=null;});
+    return vehicleStaffSourcesPromise;
+  }
   function setMasterSection(section){
     currentMasterSection=String(section||val('appointmentMasterSection')||'animalTypes');
     var sel=byId('appointmentMasterSection'); if(sel&&sel.value!==currentMasterSection)sel.value=currentMasterSection;
     document.querySelectorAll('[data-master-panel]').forEach(function(p){p.classList.toggle('active',p.getAttribute('data-master-panel')===currentMasterSection)});
     renderMasterData();
+    if(currentMasterSection==='vehicleStaff')ensureVehicleStaffSources();
   }
   function appointmentMasterSectionValue(){return val('appointmentMasterSection')||currentMasterSection||'animalTypes'}
   function masterCustomerRows(){
@@ -3239,8 +3264,10 @@
   };
   if(!window.__PETATOE_APPOINTMENT_REFERENCE_REFRESH_BOUND__){
     window.__PETATOE_APPOINTMENT_REFERENCE_REFRESH_BOUND__=true;
-    window.addEventListener('petatoe:payroll-read-facade-refreshed',function(){try{if(currentTab==='master'&&appointmentMasterSectionValue()==='vehicleStaff')renderMasterData();}catch(_e){} });
-    document.addEventListener('petatoe:reference-registry-updated',function(){try{if(currentTab==='master'&&appointmentMasterSectionValue()==='vehicleStaff')renderMasterData();}catch(_e){} });
+    window.addEventListener('petatoe:payroll-read-facade-refreshed',function(){try{refreshVehicleStaffScreen();}catch(_e){} });
+    document.addEventListener('petatoe:reference-registry-updated',function(){try{refreshVehicleStaffScreen();}catch(_e){} });
+    window.addEventListener('petatoe:localization-center-ready',function(){try{refreshVehicleStaffScreen();}catch(_e){} });
+    window.addEventListener('petatoe:localization-ready',function(){try{refreshVehicleStaffScreen();}catch(_e){} });
   }
   if(!window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__){
     window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__=true;
