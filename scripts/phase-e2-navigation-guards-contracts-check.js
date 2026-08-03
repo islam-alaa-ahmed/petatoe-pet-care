@@ -7,7 +7,7 @@ const router=read('router/navigation-controller.js');
 const index=read('index.html');
 const sw=read('service-worker.js');
 const config=JSON.parse(read('config/petatoe-version.json'));
-const token='10.0.25-phase-e2-navigation-guards-contracts-1';
+const token=config.buildVersion;
 check(router.includes("permission-runtime-not-ready"),'router fails closed while permission runtime is unavailable');
 check(router.includes('pendingGuardedRoute={tabId:tabId'),'router preserves blocked route intent for safe replay');
 check(router.includes("petatoe:navigationpermissionsapplied',replayGuardedRoute"),'guarded route replays only after permission application');

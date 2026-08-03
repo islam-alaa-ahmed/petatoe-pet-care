@@ -27,6 +27,6 @@ check(gate.includes("commissions:'commission'"),'startup gate maps commissions r
 check(index.includes('navigation/navigation.js?v='+token),'index loads certified navigation token');
 check(sw.includes("const APP_VERSION = '"+token+"';"),'service worker cache namespace is certified');
 check(config.buildVersion===token && config.cacheVersion===token,'version source keeps build/cache token synchronized');
-check(['10.0.25-phase-e1-smart-active-state-contract-1','10.0.25-phase-e2-navigation-guard-replay-contract-1'].includes(config.runtimeContracts.navigationRuntime),'navigation runtime contract preserves E1 active-state behavior');
+check(['10.0.25-phase-e1-smart-active-state-contract-1','10.0.25-phase-e2-navigation-guard-replay-contract-1','10.0.25-phase-e3-previous-route-lifecycle-contract-1'].includes(config.runtimeContracts.navigationRuntime),'navigation runtime contract preserves E1 active-state behavior');
 if(failures){ console.error('Phase E1 Navigation Certification: FAILED ('+failures+')'); process.exit(1); }
 console.log('Phase E1 Navigation Certification: PASSED');

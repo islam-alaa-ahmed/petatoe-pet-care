@@ -6,14 +6,14 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_NAVIGATION_GUARDS_CONTRACTS_CERTIFICATION_E2",
-  "buildVersion": "10.0.25-phase-e2-navigation-guards-contracts-1",
-  "cacheVersion": "10.0.25-phase-e2-navigation-guards-contracts-1",
+  "releaseName": "PETATOE_V10_0_25_NAVIGATION_RUNTIME_LIFECYCLE_CERTIFICATION_E3",
+  "buildVersion": "10.0.25-phase-e3-navigation-runtime-lifecycle-1",
+  "cacheVersion": "10.0.25-phase-e3-navigation-runtime-lifecycle-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
     "smartReportsReadAdapter": "10.0.25-smart-reports-sr5-4-read-adapter",
-    "navigationRuntime": "10.0.25-phase-e2-navigation-guard-replay-contract-1",
+    "navigationRuntime": "10.0.25-phase-e3-previous-route-lifecycle-contract-1",
     "readinessRuntime": "10.0.25-phase7-required-optional-deferred-contract-1",
     "inventoryCountRuntime": "10.0.25-phase9-inventory-count-safety-contract-1",
     "permissionRuntime": "10.0.25-phase10-canonical-permission-key-contract-1",
@@ -30,7 +30,8 @@
     "loaderRegistry": "10.0.25-phase-d1-loader-registry-contract-1",
     "recordsRouteHydration": "10.0.25-phase-d2-2-records-nonblocking-route-contract-1",
     "businessModuleLoading": "10.0.25-phase-d2-route-owned-business-hydration-contract-1",
-    "navigationGuardRuntime": "10.0.25-phase-e2-permission-ready-route-replay-contract-1"
+    "navigationGuardRuntime": "10.0.25-phase-e2-permission-ready-route-replay-contract-1",
+    "navigationLifecycle": "10.0.25-phase-e3-previous-route-lifecycle-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

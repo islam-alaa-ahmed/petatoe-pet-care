@@ -47,11 +47,11 @@
     }
     return {appointmentsSubTab:appointmentsSubTab,navigationScreen:navigationScreen,source:String(routeIntent.source||'').trim()};
   }
-  function dispatchTabChange(tabId,smartOpen,routeIntent){
+  function dispatchTabChange(tabId,smartOpen,routeIntent,previousTab,previousSmart){
     var intent=normalizeRouteIntent(tabId,routeIntent);
     try{
       if(tabId==='appointments') window.__PETATOE_APPOINTMENTS_NAV_INTENT__=intent.appointmentsSubTab;
-      document.dispatchEvent(new CustomEvent('petatoe:tabchange',{detail:{tabId:tabId,smartOpen:smartOpen||'',previousTab:window.PETATOERouter&&window.PETATOERouter.current||'',appointmentsSubTab:intent.appointmentsSubTab,navigationScreen:intent.navigationScreen,source:intent.source}}));
+      document.dispatchEvent(new CustomEvent('petatoe:tabchange',{detail:{tabId:tabId,smartOpen:smartOpen||'',previousTab:String(previousTab||''),previousSmart:String(previousSmart||''),appointmentsSubTab:intent.appointmentsSubTab,navigationScreen:intent.navigationScreen,source:intent.source}}));
     }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
   }
   function reportRouteBlocked(tabId, reason){
@@ -145,14 +145,14 @@
       try{ if(typeof closeSidebar==='function') closeSidebar(); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
       // PETATOE v6.1.205: opening an already-active tab must still notify screen modules.
       // Otherwise settings/users/permissions can stay blank because their render subscriber never runs.
-      dispatchTabChange(tabId,smartOpen,routeIntent);
+      dispatchTabChange(tabId,smartOpen,routeIntent,previous,previousSmart);
       return true;
     }
     if(target){ qsa('.panel').forEach(function(p){p.classList.remove('active')}); target.classList.add('active'); }
     markNav(tabId,smartOpen,normalizeRouteIntent(tabId,routeIntent));
     try{ if(typeof closeSidebar==='function') closeSidebar(); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("index.html",e);}
     runBuiltinRenderers(tabId,smartOpen);
-    dispatchTabChange(tabId,smartOpen,routeIntent);
+    dispatchTabChange(tabId,smartOpen,routeIntent,previous,previousSmart);
     return true;
   }
   function bind(){
