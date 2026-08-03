@@ -31,6 +31,7 @@
   var masterDataCache = null;
   var bootStarted = false;
   var bootDone = false;
+  var bootPromise = null;
   var appointmentsRevision = 0;
   var appointmentsServerState = Object.create(null);
   var masterDataRevision = 0;
@@ -371,7 +372,7 @@
       masterServerStamp = insertedRows.length ? (rowStamp(insertedRows[0]) || nextStamp) : nextStamp;
     }
 
-    await cleanupLegacyMasterRows(c);
+    try{ await cleanupLegacyMasterRows(c); }catch(cleanupError){ warn(cleanupError); }
     return true;
   }
 
@@ -430,30 +431,42 @@
   }
 
   function bootSupabase(){
-    if(bootStarted) return;
+    if(bootPromise) return bootPromise;
     bootStarted = true;
-    (async function(){
-      try{
-        if(!isClientReady()){
-          var started = Date.now();
-          while(!isClientReady() && Date.now() - started < 8000){
-            await new Promise(function(resolve){ setTimeout(resolve, 150); });
-          }
+    bootPromise = (async function(){
+      if(!isClientReady()){
+        var started = Date.now();
+        while(!isClientReady() && Date.now() - started < 8000){
+          await new Promise(function(resolve){ setTimeout(resolve, 150); });
         }
-        if(!isClientReady()) return;
-        var appointmentsBootRevision = appointmentsRevision;
-        var masterBootRevision = masterDataRevision;
-        var loaded = await Promise.all([loadAppointmentsSupabase(), loadMasterSupabase()]);
-        if(appointmentsRevision === appointmentsBootRevision){
-          appointmentsCache = Array.isArray(loaded[0]) ? loaded[0] : [];
-        }
-        if(masterDataRevision === masterBootRevision){
-          masterDataCache = normalizeMasterData(loaded[1] || cloneDefaultMaster());
-        }
-        bootDone = true;
-        emitChange('boot');
-      }catch(e){ warn(e); }
-    })();
+      }
+      if(!isClientReady()) throw new Error('OPERATIONS_SUPABASE_NOT_READY');
+      var appointmentsBootRevision = appointmentsRevision;
+      var masterBootRevision = masterDataRevision;
+      var loaded = await Promise.all([loadAppointmentsSupabase(), loadMasterSupabase()]);
+      if(appointmentsRevision === appointmentsBootRevision){
+        appointmentsCache = Array.isArray(loaded[0]) ? loaded[0] : [];
+      }
+      if(masterDataRevision === masterBootRevision){
+        masterDataCache = normalizeMasterData(loaded[1] || cloneDefaultMaster());
+      }
+      bootDone = true;
+      emitChange('boot');
+      return true;
+    })().catch(function(e){
+      bootStarted = false;
+      bootPromise = null;
+      warn(e);
+      throw e;
+    });
+    return bootPromise;
+  }
+
+  function ensureMasterReady(){
+    return Promise.resolve(bootSupabase()).then(function(){
+      if(!bootDone || !isClientReady()) throw new Error('OPERATIONS_MASTER_NOT_READY');
+      return true;
+    });
   }
 
   function readJSON(key, fallback){
@@ -504,21 +517,36 @@
   }
 
   function writeMasterDataConfirmed(data){
-    bootSupabase();
-    masterDataCache = normalizeMasterData(data);
-    masterDataRevision += 1;
-    var snapshotMaster = cloneJSON(masterDataCache);
-    var expectedStamp = masterServerStamp;
-    emitChange('masterData');
-    var run = writeQueue.then(function(){ return replaceMasterSupabase(snapshotMaster, { expectedStamp: expectedStamp }); });
+    var requestedMaster = normalizeMasterData(data);
+    var run = writeQueue.then(function(){
+      return ensureMasterReady().then(function(){
+        var snapshotMaster = cloneJSON(requestedMaster);
+        var expectedStamp = masterServerStamp;
+        masterDataCache = cloneJSON(snapshotMaster);
+        masterDataRevision += 1;
+        emitChange('masterData');
+        return replaceMasterSupabase(snapshotMaster, { expectedStamp: expectedStamp });
+      });
+    });
     writeQueue = run.then(function(){
       lastWriteError = null;
       try{ window.dispatchEvent(new CustomEvent('petatoe:operations-sync', { detail:{ ok:true, type:'masterData' } })); }catch(e){ warn(e); }
       return true;
     }, function(e){
       lastWriteError = e; warn(e);
-      try{ window.dispatchEvent(new CustomEvent('petatoe:operations-sync', { detail:{ ok:false, type:'masterData', error:e && (e.message || String(e)) } })); }catch(evtErr){ warn(evtErr); }
-      throw e;
+      return Promise.resolve().then(function(){
+        if(!isClientReady()) return null;
+        return loadMasterSupabase().then(function(remote){
+          if(remote){
+            masterDataCache = normalizeMasterData(remote);
+            masterDataRevision += 1;
+            emitChange('masterData');
+          }
+        }).catch(warn);
+      }).then(function(){
+        try{ window.dispatchEvent(new CustomEvent('petatoe:operations-sync', { detail:{ ok:false, type:'masterData', error:e && (e.message || String(e)) } })); }catch(evtErr){ warn(evtErr); }
+        throw e;
+      });
     });
     return writeQueue;
   }
@@ -677,6 +705,7 @@
     readMasterData: readMasterData,
     writeMasterData: writeMasterData,
     writeMasterDataConfirmed: writeMasterDataConfirmed,
+    ensureMasterReady: ensureMasterReady,
     getLastWriteError: function(){ return lastWriteError; },
     uniqueSorted: uniqueSorted,
     cloneDefaultMaster: cloneDefaultMaster,

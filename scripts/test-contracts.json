@@ -47,7 +47,8 @@
     "phase-e5-2-appointment-screen-certification-check.js",
     "phase-e5-2-1-appointment-permission-isolation-check.js",
     "phase-e5-2-2-vehicle-assignment-persistence-check.js",
-    "phase-e5-2-3-appointments-subroute-ownership-check.js"
+    "phase-e5-2-3-appointments-subroute-ownership-check.js",
+    "phase-e5-2-4-vehicle-assignment-confirmed-write-check.js"
   ],
   "historicalPatterns": [
     "v9_",
