@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_VEHICLE_STAFF_READINESS_HOTFIX_E5_1",
-  "buildVersion": "10.0.25-phase-e5-1-vehicle-staff-readiness-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-1-vehicle-staff-readiness-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_APPOINTMENT_SCREEN_CERTIFICATION_E5_2",
+  "buildVersion": "10.0.25-phase-e5-2-appointment-screen-certification-1",
+  "cacheVersion": "10.0.25-phase-e5-2-appointment-screen-certification-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -34,7 +34,8 @@
     "navigationLifecycle": "10.0.25-phase-e3-previous-route-lifecycle-contract-1",
     "sessionRuntime": "10.0.25-phase-e4-1-session-invalidation-epoch-contract-1",
     "finalProductionCertification": "10.0.25-phase-e5-production-baseline-contract-1",
-    "vehicleStaffReadiness": "10.0.25-phase-e5-1-vehicle-staff-readiness-contract-1"
+    "vehicleStaffReadiness": "10.0.25-phase-e5-1-vehicle-staff-readiness-contract-1",
+    "appointmentScreenCertification": "10.0.25-phase-e5-2-appointment-readiness-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

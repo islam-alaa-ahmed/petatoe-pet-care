@@ -39,6 +39,7 @@
   var financeReportFilters=null;
   var financeReportVisibleLimit=10;
   var vehicleStaffSourcesPromise=null;
+  var appointmentFormSourcesPromise=null;
   var STATUS_FLOW=['مجدول','في الطريق','وصل العميل','بدأت الجلسة','تمت الجلسة','تم التحصيل','مغلق','مؤكد','غير مكتملة','مؤجل','ملغي'];
   var LEGACY_STATUS_MAP={'تم':'تمت الجلسة'};
   function opsCtx(){return window.PETATOEOperationsContext||null}
@@ -1217,6 +1218,66 @@
     applyVehicleStaffAssignment();
     refreshTimeSelects();
   }
+  function appointmentFormActive(){
+    return currentTab==='add'&&!!byId('appointmentDate');
+  }
+  function refreshAppointmentAnimalLookups(){
+    document.querySelectorAll('#appointmentAnimalsRows .appointment-animal-row').forEach(function(row){
+      var type=row.querySelector('.appointment-animal-type');
+      var breed=row.querySelector('.appointment-animal-breed');
+      var size=row.querySelector('.appointment-animal-size');
+      var typeValue=type?type.value:'';
+      var breedValue=breed?breed.value:'';
+      var sizeValue=size?size.value:'';
+      if(type)safeHtml(type,animalTypeOptions(typeValue),'operations appointment animal type readiness');
+      if(breed)safeHtml(breed,breedOptionsForType(typeValue,breedValue),'operations appointment animal breed readiness');
+      if(size)safeHtml(size,sizeOptions(sizeValue),'operations appointment animal size readiness');
+      var name=row.querySelector('.appointment-animal-name');
+      if(name)name.setAttribute('placeholder',opT('petNameExample'));
+      var remove=row.querySelector('[data-op-click="removeAppointmentAnimalRow"]');
+      if(remove)remove.textContent=opT('delete');
+    });
+  }
+  function refreshAppointmentServiceLookups(){
+    document.querySelectorAll('#appointmentServicesRows .appointment-service-row').forEach(function(row){
+      var service=row.querySelector('.appointment-service-select');
+      var target=row.querySelector('.appointment-service-targets');
+      var selected=service?service.value:'';
+      var selectedTarget=target?target.value:'__all__';
+      if(service)safeHtml(service,serviceOptionHtml(selected),'operations appointment service readiness');
+      if(target){safeHtml(target,serviceTargetOptionsHtml([selectedTarget]),'operations appointment service target readiness');target.value=selectedTarget||'__all__';}
+      var remove=row.querySelector('[data-op-click="removeAppointmentServiceRow"]');
+      if(remove)remove.textContent=opT('delete');
+    });
+    recalculateAppointmentServices();
+  }
+  function refreshAppointmentFormScreen(){
+    if(!appointmentFormActive())return;
+    if(byId('appointmentAnimalsRows')&&!byId('appointmentAnimalsRows').querySelector('.appointment-animal-row'))renderAppointmentAnimalsRows([{}]);
+    if(byId('appointmentServicesRows')&&!byId('appointmentServicesRows').querySelector('.appointment-service-row'))renderAppointmentServicesRows([{}]);
+    refreshAppointmentAnimalLookups();
+    refreshAppointmentServiceLookups();
+    refreshLookupSelects();
+    refreshPetSuggestions();
+    var root=byId('appointments');
+    if(root)localizeOperationsSubtree(root);
+  }
+  function ensureAppointmentFormSources(){
+    if(!appointmentFormActive())return Promise.resolve(false);
+    if(appointmentFormSourcesPromise)return appointmentFormSourcesPromise;
+    var gate=window.PETATOEMobileStartupGate;
+    var jobs=[];
+    if(gate&&typeof gate.ensureGroup==='function'){
+      jobs.push(gate.ensureGroup('payroll'));
+      jobs.push(gate.ensureGroup('settingsSetup'));
+    }
+    appointmentFormSourcesPromise=Promise.all(jobs.map(function(job){return Promise.resolve(job).catch(function(){return false})})).then(function(){
+      var facade=window.PETATOEPayrollReadFacade;
+      if(facade&&typeof facade.refresh==='function')return facade.refresh().catch(function(){return null});
+      return null;
+    }).then(function(){refreshAppointmentFormScreen();return true;}).finally(function(){appointmentFormSourcesPromise=null;});
+    return appointmentFormSourcesPromise;
+  }
   function normalizeStatus(s){s=String(s||'مجدول').trim();return LEGACY_STATUS_MAP[s]||s||'مجدول'}
   function statusClass(s){
     s=normalizeStatus(s);
@@ -1256,6 +1317,7 @@
   }
   function setTab(tab){
     currentTab=tab||'add';
+    initBase();
     // PETATOE v6.4.90: when opening appointments master data directly, keep the screen clean
     // by hiding the appointments dashboard header, KPI cards, and internal quick tabs only.
     // This is a controlled view-state change; it does not touch router, storage, or permissions.
@@ -1264,6 +1326,7 @@
     document.querySelectorAll('[data-appointment-tab]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-appointment-tab')===currentTab)});
     document.querySelectorAll('[data-appointment-section]').forEach(function(s){s.classList.toggle('active',s.getAttribute('data-appointment-section')===currentTab)});
     render();
+    if(currentTab==='add')ensureAppointmentFormSources();
   }
   function clearForm(){
     ['appointmentId','appointmentCustomerId','appointmentCustomerSearch','appointmentClient','appointmentPhone','appointmentPetName','appointmentAddress','appointmentGoogleMapUrl','appointmentNotes'].forEach(function(id){setVal(id,'')});
@@ -3264,10 +3327,10 @@
   };
   if(!window.__PETATOE_APPOINTMENT_REFERENCE_REFRESH_BOUND__){
     window.__PETATOE_APPOINTMENT_REFERENCE_REFRESH_BOUND__=true;
-    window.addEventListener('petatoe:payroll-read-facade-refreshed',function(){try{refreshVehicleStaffScreen();}catch(_e){} });
-    document.addEventListener('petatoe:reference-registry-updated',function(){try{refreshVehicleStaffScreen();}catch(_e){} });
-    window.addEventListener('petatoe:localization-center-ready',function(){try{refreshVehicleStaffScreen();}catch(_e){} });
-    window.addEventListener('petatoe:localization-ready',function(){try{refreshVehicleStaffScreen();}catch(_e){} });
+    window.addEventListener('petatoe:payroll-read-facade-refreshed',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();}catch(_e){} });
+    document.addEventListener('petatoe:reference-registry-updated',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();}catch(_e){} });
+    window.addEventListener('petatoe:localization-center-ready',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();}catch(_e){} });
+    window.addEventListener('petatoe:localization-ready',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();}catch(_e){} });
   }
   if(!window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__){
     window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__=true;

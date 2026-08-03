@@ -43,7 +43,8 @@
     "phase-e3-navigation-runtime-lifecycle-check.js",
     "phase-e4-permissions-session-certification-check.js",
     "phase-e5-enterprise-production-certification-check.js",
-    "phase-e5-1-vehicle-staff-readiness-check.js"
+    "phase-e5-1-vehicle-staff-readiness-check.js",
+    "phase-e5-2-appointment-screen-certification-check.js"
   ],
   "historicalPatterns": [
     "v9_",
