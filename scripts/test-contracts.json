@@ -50,7 +50,8 @@
     "phase-e5-2-3-appointments-subroute-ownership-check.js",
     "phase-e5-2-4-vehicle-assignment-confirmed-write-check.js",
     "phase-e5-2-5-appointments-route-ownership-guard-check.js",
-    "phase-e5-2-6-identity-request-storm-check.js"
+    "phase-e5-2-6-identity-request-storm-check.js",
+    "phase-e5-2-7-vehicle-assignment-verified-persistence-check.js"
   ],
   "historicalPatterns": [
     "v9_",
