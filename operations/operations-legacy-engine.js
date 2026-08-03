@@ -534,6 +534,10 @@
       jobs.push(ensureSetupReferenceSource());
     }
     vehicleStaffSourcesPromise=Promise.all(jobs.map(function(job){return Promise.resolve(job).catch(function(){return false})})).then(function(){
+      var setup=window.PETATOESetup;
+      if(setup&&typeof setup.ensureMasterReady==='function')return setup.ensureMasterReady().catch(function(){return null});
+      return null;
+    }).then(function(){
       var facade=window.PETATOEPayrollReadFacade;
       if(facade&&typeof facade.refresh==='function')return facade.refresh().catch(function(){return null});
       return null;
@@ -712,7 +716,9 @@
       return v;
     });
     if(!done)master.vehicleAssignments.push({vehicle:vehicle,groomer:groomer,driver:driver,disabled:false,updatedAt:new Date().toISOString()});
-    writeMasterData(master);renderMasterData();refreshLookupSelects();toast(opT('assignmentSaved'));
+    var storage=window.PETATOEOperationsStorage;
+    var persist=storage&&typeof storage.writeMasterDataConfirmed==='function'?storage.writeMasterDataConfirmed(normalizeMasterData(master)):Promise.resolve(writeMasterData(master));
+    Promise.resolve(persist).then(function(){renderMasterData();refreshLookupSelects();toast(opT('assignmentSaved'));}).catch(function(){renderMasterData();refreshLookupSelects();try{var c=window.PETATOE_LOCALIZATION_CENTER;toast(c&&c.translateRuntime?c.translateRuntime('فشل مزامنة بيانات التشغيل مع Supabase'):'فشل مزامنة بيانات التشغيل مع Supabase');}catch(_e){toast('فشل مزامنة بيانات التشغيل مع Supabase');}});
   }
   function editVehicleAssignment(vehicle){
     vehicle=String(vehicle||'').trim(); if(!vehicle)return;
@@ -1294,6 +1300,10 @@
       jobs.push(ensureSetupReferenceSource());
     }
     appointmentFormSourcesPromise=Promise.all(jobs.map(function(job){return Promise.resolve(job).catch(function(){return false})})).then(function(){
+      var setup=window.PETATOESetup;
+      if(setup&&typeof setup.ensureMasterReady==='function')return setup.ensureMasterReady().catch(function(){return null});
+      return null;
+    }).then(function(){
       var facade=window.PETATOEPayrollReadFacade;
       if(facade&&typeof facade.refresh==='function')return facade.refresh().catch(function(){return null});
       return null;

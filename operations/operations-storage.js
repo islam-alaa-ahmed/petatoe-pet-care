@@ -503,6 +503,26 @@
     return writeJSON(KEYS.masterData, data);
   }
 
+  function writeMasterDataConfirmed(data){
+    bootSupabase();
+    masterDataCache = normalizeMasterData(data);
+    masterDataRevision += 1;
+    var snapshotMaster = cloneJSON(masterDataCache);
+    var expectedStamp = masterServerStamp;
+    emitChange('masterData');
+    var run = writeQueue.then(function(){ return replaceMasterSupabase(snapshotMaster, { expectedStamp: expectedStamp }); });
+    writeQueue = run.then(function(){
+      lastWriteError = null;
+      try{ window.dispatchEvent(new CustomEvent('petatoe:operations-sync', { detail:{ ok:true, type:'masterData' } })); }catch(e){ warn(e); }
+      return true;
+    }, function(e){
+      lastWriteError = e; warn(e);
+      try{ window.dispatchEvent(new CustomEvent('petatoe:operations-sync', { detail:{ ok:false, type:'masterData', error:e && (e.message || String(e)) } })); }catch(evtErr){ warn(evtErr); }
+      throw e;
+    });
+    return writeQueue;
+  }
+
 
   function uniqueSorted(list){
     var out = [];
@@ -656,6 +676,7 @@
     writeAppointments: writeAppointments,
     readMasterData: readMasterData,
     writeMasterData: writeMasterData,
+    writeMasterDataConfirmed: writeMasterDataConfirmed,
     getLastWriteError: function(){ return lastWriteError; },
     uniqueSorted: uniqueSorted,
     cloneDefaultMaster: cloneDefaultMaster,
