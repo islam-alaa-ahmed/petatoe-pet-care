@@ -29,7 +29,7 @@
     'setCustomerDatabaseReportSearch', 'exportCustomersDatabaseReportExcel',
     'setFinanceReportFilter', 'resetFinanceReportFilters', 'showMoreFinanceReportRows',
     'setAppointmentLocalReportFilter', 'resetAppointmentLocalReportFilters', 'showMoreAppointmentLocalReportRows',
-    'saveVehicleAssignment', 'editVehicleAssignment', 'toggleVehicleAssignment', 'removeVehicleAssignment', 'applyVehicleStaffAssignment',
+    'saveVehicleAssignment', 'editVehicleAssignment', 'toggleVehicleAssignment', 'removeVehicleAssignment', 'applyVehicleStaffAssignment', 'refreshAvailableAppointmentSlots',
     'setDispatchDateToday', 'setDailyOpsDateToday', 'printDailyOperations', 'showAppointmentDetails', 'closeAppointmentDetails',
     'selectCustomerProfile', 'setCustomerSearch', 'clearCustomerSearch', 'refreshCustomersCrm'
   ];

@@ -58,7 +58,8 @@
     "phase-e5-2-9-2-customer-import-clone-runtime-check.js",
     "phase-e5-2-10-1-customer-excel-lazy-readiness-check.js",
     "phase-e5-2-10-3-customer-xlsx-provider-readiness-check.js",
-    "phase-e5-2-10-4-customer-excel-header-template-check.js"
+    "phase-e5-2-10-4-customer-excel-header-template-check.js",
+    "phase-e5-2-11-appointment-vehicle-slot-dark-search-check.js"
   ],
   "historicalPatterns": [
     "v9_",

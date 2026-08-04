@@ -45,6 +45,7 @@
   var setupReferenceSourcePromise=null;
   var STATUS_FLOW=['مجدول','في الطريق','وصل العميل','بدأت الجلسة','تمت الجلسة','تم التحصيل','مغلق','مؤكد','غير مكتملة','مؤجل','ملغي'];
   var LEGACY_STATUS_MAP={'تم':'تمت الجلسة'};
+  var APPOINTMENT_SLOT_VALUES=['12:00','14:00','16:00','18:00','20:00','22:00'];
   function opsCtx(){return window.PETATOEOperationsContext||null}
   function byId(id){var ctx=opsCtx();return ctx&&ctx.byId?ctx.byId(id):document.getElementById(id)}
   function esc(s){var ctx=opsCtx();return ctx&&ctx.htmlEscape?ctx.htmlEscape(s):String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -904,6 +905,7 @@
   function vehicleAssignmentMap(){var m={};activeVehicleAssignments().forEach(function(v){if(v&&v.vehicle)m[v.vehicle]=v});return m}
   function applyVehicleStaffAssignment(){
     var vehicle=val('appointmentVehicle');
+    refreshAvailableAppointmentSlots();
     if(!vehicle)return;
     var row=vehicleAssignmentMap()[vehicle];
     if(!row)return;
@@ -1414,12 +1416,6 @@
     if(r&&(r.petName||r.animalType||r.breed||r.size))return [{petName:r.petName||'',animalType:r.animalType||'',breed:r.breed||'',size:r.size||'',petCount:Number(r.petCount||1)||1}];
     return [{}];
   }
-  function hourOptions(selected){
-    selected=normalizeHourValue(selected);
-    var html='<option value="">'+esc(opT('selectTime'))+'</option>';
-    for(var i=0;i<24;i++){var h=pad(i)+':00';html+='<option value="'+h+'" '+(h===selected?'selected':'')+'>'+pad(i)+'</option>';}
-    return html;
-  }
   function normalizeHourValue(v){
     v=String(v||'').trim();
     if(!v)return '';
@@ -1427,6 +1423,50 @@
     if(!m)return '';
     var h=Math.max(0,Math.min(23,Number(m[1])||0));
     return pad(h)+':00';
+  }
+  function appointmentSlotLabel(value){
+    var labels={
+      '12:00':opCustomerT('appointmentSlots.noon12',null,'12 ظهرًا'),
+      '14:00':opCustomerT('appointmentSlots.afternoon2',null,'2 ظهرًا'),
+      '16:00':opCustomerT('appointmentSlots.evening4',null,'4 مساءً'),
+      '18:00':opCustomerT('appointmentSlots.evening6',null,'6 مساءً'),
+      '20:00':opCustomerT('appointmentSlots.evening8',null,'8 مساءً'),
+      '22:00':opCustomerT('appointmentSlots.evening10',null,'10 مساءً')
+    };
+    return labels[normalizeHourValue(value)]||String(value||'');
+  }
+  function appointmentSlotEnd(value){
+    var start=normalizeHourValue(value), hour=Number(start.slice(0,2));
+    if(!start)return '';
+    return hour===22?'23:59':pad(Math.min(23,hour+2))+':00';
+  }
+  function appointmentSlotIsUnavailable(slot,date,vehicle,currentId){
+    slot=normalizeHourValue(slot);date=String(date||'');vehicle=String(vehicle||'').trim();
+    if(!slot||!date||!vehicle)return false;
+    return read().some(function(row){
+      if(!row||String(row.id||'')===String(currentId||''))return false;
+      if(normalizeStatus(row.status)==='ملغي')return false;
+      return String(row.date||'')===date&&String(row.vehicle||'').trim()===vehicle&&normalizeHourValue(row.start)===slot;
+    });
+  }
+  function appointmentSlotOptions(selected){
+    selected=normalizeHourValue(selected);
+    var date=val('appointmentDate'),vehicle=val('appointmentVehicle'),currentId=val('appointmentId');
+    var placeholder=!date||!vehicle?opCustomerT('appointmentSlots.chooseVehicleDate',null,'اختر السيارة والتاريخ أولًا'):opCustomerT('appointmentSlots.chooseSlot',null,'اختر موعد الجلسة');
+    var html='<option value="">'+esc(placeholder)+'</option>';
+    APPOINTMENT_SLOT_VALUES.forEach(function(slot){
+      var keep=slot===selected;
+      if(!keep&&appointmentSlotIsUnavailable(slot,date,vehicle,currentId))return;
+      html+='<option value="'+slot+'" '+(keep?'selected':'')+'>'+esc(appointmentSlotLabel(slot))+'</option>';
+    });
+    return html;
+  }
+  function refreshAvailableAppointmentSlots(){
+    var select=byId('appointmentSlot');if(!select)return;
+    var selected=normalizeHourValue(select.value||select.dataset.currentValue||'');
+    safeHtml(select,appointmentSlotOptions(selected),'operations appointment vehicle date slot availability');
+    if(selected&&Array.prototype.some.call(select.options||[],function(option){return option.value===selected;}))select.value=selected;
+    select.dataset.currentValue=select.value||'';
   }
   function appointmentVehicleNames(){
     var master=readMasterData();
@@ -1440,11 +1480,7 @@
     var master=readMasterData();
     return normalizeNamedList((master.groomers||[]).concat(payrollEmployeeNamesByJob('groomer')));
   }
-  function refreshTimeSelects(){
-    var st=byId('appointmentStart'), en=byId('appointmentEnd');
-    if(st)safeHtml(st,hourOptions(st.value),'operations appointment start hour select');
-    if(en)safeHtml(en,hourOptions(en.value),'operations appointment end hour select');
-  }
+  function refreshTimeSelects(){refreshAvailableAppointmentSlots();}
   function refreshLookupSelects(){
     var g=byId('appointmentGroomer'), d=byId('appointmentDriver'), v=byId('appointmentVehicle');
     var groomers=appointmentGroomerNames(), drivers=appointmentDriverNames(), vehicles=appointmentVehicleNames();
@@ -1542,7 +1578,7 @@
     var groomerRef=currentSelectSnapshot(byId('appointmentGroomer'),'groomer');
     var customerId=val('appointmentCustomerId')||namedSnapshotId('customer',val('appointmentPhone')||val('appointmentClient'));
     var customerSnapshot={id:customerId,name:val('appointmentClient'),phone:val('appointmentPhone'),address:val('appointmentAddress'),googleMapUrl:normalizeGoogleMapUrl(val('appointmentGoogleMapUrl')),capturedAt:new Date().toISOString()};
-    return calcFinancials({id:val('appointmentId')||('APT-'+Date.now()),customerId:customerId,customerNameSnapshot:customerSnapshot.name,customerPhoneSnapshot:customerSnapshot.phone,customerAddressSnapshot:customerSnapshot.address,customerGoogleMapUrlSnapshot:customerSnapshot.googleMapUrl,customerSnapshot:customerSnapshot,client:customerSnapshot.name,phone:customerSnapshot.phone,animalType:firstAnimal.animalType||val('appointmentAnimalType'),breed:firstAnimal.breed||val('appointmentBreed'),size:firstAnimal.size||val('appointmentSize'),petName:firstAnimal.petName||val('appointmentPetName'),petCount:animals.reduce(function(a,x){return a+(Number(x.petCount||1)||1)},0)||Number(val('appointmentPetCount')||1),animals:animals,service:(svcCalc.services||[]).map(function(s){return s.name}).join(' + '),services:svcCalc.services,date:val('appointmentDate'),start:normalizeHourValue(val('appointmentStart')),end:normalizeHourValue(val('appointmentEnd')),groomerId:groomerRef.id,groomerNameSnapshot:groomerRef.name,groomer:groomerRef.name,driverId:driverRef.id,driverNameSnapshot:driverRef.name,driver:driverRef.name,vehicleId:vehicleRef.id,vehicleNameSnapshot:vehicleRef.name,vehicle:vehicleRef.name,paymentMethod:val('appointmentPaymentMethod'),sessionPrice:svcCalc.gross,discount:svcCalc.discount,paidAmount:numVal('appointmentPaidAmount'),collectionStatus:val('appointmentCollectionStatus'),status:normalizeStatus(val('appointmentStatus')||'مجدول'),address:customerSnapshot.address,googleMapUrl:customerSnapshot.googleMapUrl,notes:val('appointmentNotes'),updatedAt:new Date().toISOString()});
+    return calcFinancials({id:val('appointmentId')||('APT-'+Date.now()),customerId:customerId,customerNameSnapshot:customerSnapshot.name,customerPhoneSnapshot:customerSnapshot.phone,customerAddressSnapshot:customerSnapshot.address,customerGoogleMapUrlSnapshot:customerSnapshot.googleMapUrl,customerSnapshot:customerSnapshot,client:customerSnapshot.name,phone:customerSnapshot.phone,animalType:firstAnimal.animalType||val('appointmentAnimalType'),breed:firstAnimal.breed||val('appointmentBreed'),size:firstAnimal.size||val('appointmentSize'),petName:firstAnimal.petName||val('appointmentPetName'),petCount:animals.reduce(function(a,x){return a+(Number(x.petCount||1)||1)},0)||Number(val('appointmentPetCount')||1),animals:animals,service:(svcCalc.services||[]).map(function(s){return s.name}).join(' + '),services:svcCalc.services,date:val('appointmentDate'),start:normalizeHourValue(val('appointmentSlot')),end:appointmentSlotEnd(val('appointmentSlot')),appointmentSlot:normalizeHourValue(val('appointmentSlot')),groomerId:groomerRef.id,groomerNameSnapshot:groomerRef.name,groomer:groomerRef.name,driverId:driverRef.id,driverNameSnapshot:driverRef.name,driver:driverRef.name,vehicleId:vehicleRef.id,vehicleNameSnapshot:vehicleRef.name,vehicle:vehicleRef.name,paymentMethod:val('appointmentPaymentMethod'),sessionPrice:svcCalc.gross,discount:svcCalc.discount,paidAmount:numVal('appointmentPaidAmount'),collectionStatus:val('appointmentCollectionStatus'),status:normalizeStatus(val('appointmentStatus')||'مجدول'),address:customerSnapshot.address,googleMapUrl:customerSnapshot.googleMapUrl,notes:val('appointmentNotes'),updatedAt:new Date().toISOString()});
   }
   function fill(r){
     refreshLookupSelects();
@@ -1552,7 +1588,7 @@
     var customerAddress=r.customerAddressSnapshot||customerSnapshot.address||r.address||'';
     var customerMap=r.customerGoogleMapUrlSnapshot||customerSnapshot.googleMapUrl||appointmentMapUrl(r);
     var groomerName=r.groomerNameSnapshot||r.groomer||'', driverName=r.driverNameSnapshot||r.driver||'', vehicleName=r.vehicleNameSnapshot||r.vehicle||'';
-    setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerSnapshot.id||customerKey(r));setVal('appointmentClient',customerName);setVal('appointmentPhone',customerPhone);setVal('appointmentCustomerSearch',[customerName,customerPhone].filter(Boolean).join(' — '));setNewCustomerMode(false);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentStart',r.start);setVal('appointmentEnd',r.end);setHistoricalSelectValue(byId('appointmentGroomer'),groomerName);setHistoricalSelectValue(byId('appointmentDriver'),driverName);setHistoricalSelectValue(byId('appointmentVehicle'),vehicleName);preserveSelectSnapshot(byId('appointmentGroomer'),r.groomerId||namedSnapshotId('groomer',groomerName),groomerName);preserveSelectSnapshot(byId('appointmentDriver'),r.driverId||namedSnapshotId('driver',driverName),driverName);preserveSelectSnapshot(byId('appointmentVehicle'),r.vehicleId||namedSnapshotId('vehicle',vehicleName),vehicleName);setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',customerAddress);setVal('appointmentGoogleMapUrl',customerMap);setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
+    setVal('appointmentId',r.id);setVal('appointmentCustomerId',r.customerId||customerSnapshot.id||customerKey(r));setVal('appointmentClient',customerName);setVal('appointmentPhone',customerPhone);setVal('appointmentCustomerSearch',[customerName,customerPhone].filter(Boolean).join(' — '));setNewCustomerMode(false);renderAppointmentAnimalsRows(normalizeAppointmentAnimalsForFill(r));renderAppointmentServicesRows(normalizeAppointmentServicesForFill(r));setVal('appointmentDate',r.date);setVal('appointmentSlot',normalizeHourValue(r.appointmentSlot||r.start));var slotEl=byId('appointmentSlot');if(slotEl)slotEl.dataset.currentValue=normalizeHourValue(r.appointmentSlot||r.start);setHistoricalSelectValue(byId('appointmentGroomer'),groomerName);setHistoricalSelectValue(byId('appointmentDriver'),driverName);setHistoricalSelectValue(byId('appointmentVehicle'),vehicleName);preserveSelectSnapshot(byId('appointmentGroomer'),r.groomerId||namedSnapshotId('groomer',groomerName),groomerName);preserveSelectSnapshot(byId('appointmentDriver'),r.driverId||namedSnapshotId('driver',driverName),driverName);preserveSelectSnapshot(byId('appointmentVehicle'),r.vehicleId||namedSnapshotId('vehicle',vehicleName),vehicleName);refreshAvailableAppointmentSlots();setVal('appointmentPaymentMethod',r.paymentMethod);setVal('appointmentPaidAmount',r.paidAmount||0);setVal('appointmentCollectionStatus',r.collectionStatus||'غير محصل');setVal('appointmentStatus',normalizeStatus(r.status));setVal('appointmentAddress',customerAddress);setVal('appointmentGoogleMapUrl',customerMap);setVal('appointmentNotes',r.notes); recalculateAppointmentServices(); refreshPetSuggestions();
     var t=byId('appointmentFormTitle');if(t)t.textContent=opT('editAppointmentTitle');
   }
   function routerOwnedAppointmentsSubTab(){
@@ -1587,7 +1623,7 @@
   function clearForm(){
     ['appointmentId','appointmentCustomerId','appointmentCustomerSearch','appointmentClient','appointmentPhone','appointmentPetName','appointmentAddress','appointmentGoogleMapUrl','appointmentNotes'].forEach(function(id){setVal(id,'')});
     refreshLookupSelects();
-    setVal('appointmentAnimalType','');setVal('appointmentBreed','');setVal('appointmentSize','');setVal('appointmentService','');setVal('appointmentPetCount','1');setNewCustomerMode(false);hideCustomerSearchResults();renderAppointmentAnimalsRows([{}]);setVal('appointmentDate',today());setVal('appointmentStart','');setVal('appointmentEnd','');renderAppointmentServicesRows([{}]);setVal('appointmentGroomer','');setVal('appointmentDriver','');setVal('appointmentVehicle','');['appointmentGroomer','appointmentDriver','appointmentVehicle'].forEach(function(id){var el=byId(id);if(el){delete el.dataset.snapshotId;delete el.dataset.snapshotName;}});setVal('appointmentPaymentMethod','');setVal('appointmentSessionPrice','0');setVal('appointmentDiscount','0');setVal('appointmentPaidAmount','0');setVal('appointmentCollectionStatus','غير محصل');setVal('appointmentStatus','مجدول'); refreshPetSuggestions();
+    setVal('appointmentAnimalType','');setVal('appointmentBreed','');setVal('appointmentSize','');setVal('appointmentService','');setVal('appointmentPetCount','1');setNewCustomerMode(false);hideCustomerSearchResults();renderAppointmentAnimalsRows([{}]);setVal('appointmentDate',today());setVal('appointmentSlot','');var slotEl=byId('appointmentSlot');if(slotEl)slotEl.dataset.currentValue='';renderAppointmentServicesRows([{}]);setVal('appointmentGroomer','');setVal('appointmentDriver','');setVal('appointmentVehicle','');['appointmentGroomer','appointmentDriver','appointmentVehicle'].forEach(function(id){var el=byId(id);if(el){delete el.dataset.snapshotId;delete el.dataset.snapshotName;}});setVal('appointmentPaymentMethod','');setVal('appointmentSessionPrice','0');setVal('appointmentDiscount','0');setVal('appointmentPaidAmount','0');setVal('appointmentCollectionStatus','غير محصل');setVal('appointmentStatus','مجدول'); refreshPetSuggestions();
     var t=byId('appointmentFormTitle');if(t)t.textContent=opT('addAppointmentTitle');
   }
   function saveAppointment(){
@@ -1599,6 +1635,8 @@
     var r=collect();
     if(!r.client){alert(opT('enterCustomerName'));return}
     if(!r.date){alert(opT('selectAppointmentDate'));return}
+    if(!r.vehicle){alert(opCustomerT('appointmentSlots.selectVehicle',null,'اختر السيارة أولًا'));return}
+    if(!r.start){alert(opCustomerT('appointmentSlots.selectSlot',null,'اختر موعد الجلسة'));return}
     if(!r.services||!r.services.length){alert(opT('selectAtLeastOneService'));return}
     var rows=read();
     var profile=findCustomerProfile();
@@ -2392,7 +2430,8 @@
     var out=[]; if(!row||!row.date||!row.start)return out;
     (rows||[]).forEach(function(r){
       if(!r||String(r.id)===String(row.id)||String(r.date||'')!==String(row.date||''))return;
-      if(!timesOverlap(row.start,row.end,r.start,r.end))return;
+      if(normalizeStatus(r.status)==='ملغي')return;
+      if(normalizeHourValue(row.start)!==normalizeHourValue(r.start))return;
       if(row.groomer&&r.groomer&&String(row.groomer)===String(r.groomer))out.push({reason:'الجرومر '+row.groomer,row:r});
       if(row.driver&&r.driver&&String(row.driver)===String(r.driver))out.push({reason:'السائق '+row.driver,row:r});
       if(row.vehicle&&r.vehicle&&String(row.vehicle)===String(r.vehicle))out.push({reason:'السيارة '+row.vehicle,row:r});
@@ -3587,6 +3626,7 @@
     saveVehicleAssignment:saveVehicleAssignment,
     removeVehicleAssignment:removeVehicleAssignment,
     applyVehicleStaffAssignment:applyVehicleStaffAssignment,
+    refreshAvailableAppointmentSlots:refreshAvailableAppointmentSlots,
     setDispatchDateToday:setDispatchDateToday,
     setDailyOpsDateToday:setDailyOpsDateToday,
     printDailyOperations:printDailyOperations,

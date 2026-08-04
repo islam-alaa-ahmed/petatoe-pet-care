@@ -2198,3 +2198,23 @@
 .appointments-customer-import-summary{color:var(--appt-text-strong)}
 .appointments-customer-import-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-start}
 .appointments-customer-import-actions .btn:disabled{opacity:.55;cursor:not-allowed}
+
+
+/* PETATOE E5.2.11 — appointment slot selector and dark customer search certification */
+.appointment-session-time-row{grid-template-columns:minmax(220px,1fr) minmax(220px,1fr)!important}
+.appointment-session-slot-label{grid-column:auto}
+html[data-theme="dark"] .appointment-customer-search-results{
+  background:linear-gradient(160deg,rgba(15,23,42,.98),rgba(30,41,59,.98));
+  border-color:rgba(148,163,184,.32);
+  box-shadow:0 22px 52px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.05);
+  color:#f8fafc;
+  scrollbar-color:rgba(139,92,246,.72) rgba(15,23,42,.72);
+}
+html[data-theme="dark"] .appointment-customer-search-result{color:#f8fafc;background:rgba(255,255,255,.035);border:1px solid transparent;margin:3px 0}
+html[data-theme="dark"] .appointment-customer-search-result b{color:#fff}
+html[data-theme="dark"] .appointment-customer-search-result span{color:#cbd5e1}
+html[data-theme="dark"] .appointment-customer-search-result small{color:#94a3b8}
+html[data-theme="dark"] .appointment-customer-search-result:hover,
+html[data-theme="dark"] .appointment-customer-search-result:focus-visible{background:linear-gradient(135deg,rgba(34,211,238,.14),rgba(139,92,246,.18));border-color:rgba(103,232,249,.32)}
+html[data-theme="light"] .appointment-customer-search-results{background:rgba(255,255,255,.98);color:#0f172a}
+@media (max-width:720px){.appointment-session-time-row{grid-template-columns:1fr!important}}
