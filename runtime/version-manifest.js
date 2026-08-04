@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_CUSTOMER_IMPORT_CERTIFICATION_E5_2_9",
-  "buildVersion": "10.0.25-phase-e5-2-9-customer-import-certification-1",
-  "cacheVersion": "10.0.25-phase-e5-2-9-customer-import-certification-1",
+  "releaseName": "PETATOE_V10_0_25_CUSTOMER_IMPORT_APPROVAL_HANDLER_HOTFIX_E5_2_9_1",
+  "buildVersion": "10.0.25-phase-e5-2-9-1-customer-import-approval-handler-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e5-2-9-1-customer-import-approval-handler-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -43,7 +43,8 @@
     "identityRequestControl": "10.0.25-phase-e5-2-6-identity-singleflight-cooldown-contract-1",
     "operationsSupabaseCompatibility": "10.0.25-phase-e5-2-8-rest-client-single-row-contract-1",
     "operationsVehicleSourceOwnership": "10.0.25-phase-e5-2-8-1-vehicle-source-ownership-contract-1",
-    "customerImportWorkflow": "10.0.25-phase-e5-2-9-staged-customer-import-contract-1"
+    "customerImportWorkflow": "10.0.25-phase-e5-2-9-staged-customer-import-contract-1",
+    "customerImportApprovalHandler": "10.0.25-phase-e5-2-9-1-customer-import-approval-handler-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

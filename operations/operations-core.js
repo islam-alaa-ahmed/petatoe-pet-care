@@ -20,7 +20,7 @@
     'refreshPetSuggestions', 'applyPetSuggestion', 'newCustomer', 'refreshBreedOptions',
     'addMasterItem', 'addBreed', 'removeMasterItem', 'editMasterItem', 'resetMasterData',
     'setMasterSection', 'addMasterCustomer', 'editMasterCustomer', 'removeMasterCustomer',
-    'triggerMasterCustomersExcelImport', 'handleMasterCustomersExcelImport', 'exportMasterCustomersExcel',
+    'triggerMasterCustomersExcelImport', 'handleMasterCustomersExcelImport', 'approveMasterCustomersExcelImport', 'cancelMasterCustomersExcelImport', 'exportMasterCustomersExcel',
     'addMasterService', 'triggerMasterServicesExcelImport', 'handleMasterServicesExcelImport', 'exportMasterServicesExcel',
     'addAppointmentServiceRow', 'removeAppointmentServiceRow', 'onAppointmentServiceChange', 'recalculateAppointmentServices',
     'addAppointmentAnimalRow', 'removeAppointmentAnimalRow', 'onAppointmentAnimalTypeChange',
