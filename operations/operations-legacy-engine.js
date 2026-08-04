@@ -175,6 +175,18 @@
   }
   function uniqueSorted(list){var ctx=opsCtx();if(ctx&&ctx.uniqueSorted)return ctx.uniqueSorted(list);var out=[];(list||[]).forEach(function(x){x=String(x||'').trim();if(x&&out.indexOf(x)===-1)out.push(x)});return out.sort(function(a,b){return a.localeCompare(b,'ar')})}
 
+  function cloneJSON(value){
+    if(value==null)return value;
+    try{
+      if(typeof structuredClone==='function')return structuredClone(value);
+    }catch(_structuredCloneError){}
+    try{return JSON.parse(JSON.stringify(value));}
+    catch(error){
+      try{window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('operations/operations-legacy-engine.js cloneJSON',error);}catch(_warnError){}
+      throw error;
+    }
+  }
+
   function cloneDefaultMaster(){
     try{if(window.PETATOEOperationsStorage&&typeof window.PETATOEOperationsStorage.cloneDefaultMaster==='function')return window.PETATOEOperationsStorage.cloneDefaultMaster()}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-legacy-engine.js",e);}
     return JSON.parse(JSON.stringify(DEFAULT_MASTER));
