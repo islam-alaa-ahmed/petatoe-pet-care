@@ -644,23 +644,64 @@
     });
   }
 
+  function normalizeCustomerImportText(v){
+    v = String(v == null ? '' : v);
+    try{ if(typeof v.normalize === 'function') v = v.normalize('NFC'); }catch(_){}
+    return v.replace(/[\u200B-\u200D\u2060\uFEFF]/g,'').replace(/\s+/g,' ').trim();
+  }
+
+  function canonicalCustomerCode(v){
+    v = normalizeCustomerImportText(v);
+    while(/^customer\s*:/i.test(v)) v = v.replace(/^customer\s*:/i,'').trim();
+    return v;
+  }
+
+  function isQuestionMarkCorruption(v){
+    v = normalizeCustomerImportText(v);
+    if(!v) return false;
+    var compact = v.replace(/\s+/g,'');
+    return compact.length > 0 && /^[?\uFFFD]+$/.test(compact);
+  }
+
+  function preferredCustomerText(current,incoming){
+    current = normalizeCustomerImportText(current);
+    incoming = normalizeCustomerImportText(incoming);
+    if(incoming && !isQuestionMarkCorruption(incoming)) return incoming;
+    if(current && !isQuestionMarkCorruption(current)) return current;
+    return incoming || current;
+  }
+
   function normalizeMasterCustomers(list){
     var map = {};
     (Array.isArray(list) ? list : []).forEach(function(c){
       c = c && typeof c === 'object' ? c : {};
       var row = {
-        code: String(c.code || c.customerId || c.key || '').trim(),
-        name: String(c.name || c.client || '').trim(),
-        address: String(c.address || '').trim(),
-        phone: String(c.phone || c.mobile || c.jawal || '').trim(),
+        code: canonicalCustomerCode(c.code || c.customerId || c.key || ''),
+        name: normalizeCustomerImportText(c.name || c.client || ''),
+        address: normalizeCustomerImportText(c.address || ''),
+        phone: normalizeCustomerImportText(c.phone || c.mobile || c.jawal || ''),
         googleMapUrl: String(c.googleMapUrl || c.customerMapLink || c.mapUrl || c.locationUrl || '').trim(),
         updatedAt: c.updatedAt || '',
         fieldUpdatedAt: Object.assign({}, c.fieldUpdatedAt || {}),
-        aliases: Array.isArray(c.aliases) ? c.aliases.map(function(x){ return String(x || '').trim().toLowerCase(); }).filter(Boolean) : []
+        aliases: Array.isArray(c.aliases) ? c.aliases.map(function(x){
+          x = String(x || '').trim().toLowerCase();
+          return /^customer\s*:/i.test(x) ? canonicalCustomerCode(x).toLowerCase() : x;
+        }).filter(Boolean) : []
       };
       if(!row.code) row.code = row.phone ? ('phone:' + row.phone.replace(/\s+/g,'')) : (row.name ? ('name:' + row.name.toLowerCase()) : '');
       if(!row.code && !row.name && !row.phone && !row.address && !row.googleMapUrl) return;
-      map[String(row.code || row.phone || row.name).toLowerCase()] = row;
+      var key = String(row.code || row.phone || row.name).toLowerCase();
+      if(!map[key]){ map[key] = row; return; }
+      var current = map[key];
+      map[key] = Object.assign({}, current, row, {
+        code: canonicalCustomerCode(row.code || current.code),
+        name: preferredCustomerText(current.name,row.name),
+        address: preferredCustomerText(current.address,row.address),
+        phone: preferredCustomerText(current.phone,row.phone),
+        googleMapUrl: row.googleMapUrl || current.googleMapUrl || '',
+        fieldUpdatedAt: Object.assign({}, current.fieldUpdatedAt || {}, row.fieldUpdatedAt || {}),
+        aliases: Array.from(new Set((current.aliases || []).concat(row.aliases || [])))
+      });
     });
     return Object.keys(map).map(function(k){ return map[k]; }).sort(function(a,b){ return String(a.name || a.code).localeCompare(String(b.name || b.code),'ar'); });
   }

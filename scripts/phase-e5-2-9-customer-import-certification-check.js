@@ -8,8 +8,8 @@ const html=read('index.html');
 const css=read('css/components/appointments.css');
 const version=JSON.parse(read('config/petatoe-version.json'));
 const checks=[
- ['Excel import stages rows before persistence',js.includes('pendingMasterCustomersImport={master:staged')],
- ['approval uses confirmed Supabase persistence',js.includes("storage.writeMasterDataConfirmed(payload)")],
+ ['Excel import stages rows before persistence',js.includes('pendingMasterCustomersImport={rows:cloneJSON(list)')],
+ ['approval uses confirmed Supabase persistence',js.includes('persistMasterCustomersImport(storage,rows,0)')&&js.includes('storage.writeMasterDataConfirmed(prepared.master)')],
  ['file read progress is exposed',js.includes('reader.onprogress=function')&&js.includes('customerImportProgress(')],
  ['import approval and cancel actions are registered',js.includes('approveMasterCustomersExcelImport:approveMasterCustomersExcelImport')&&js.includes('cancelMasterCustomersExcelImport:cancelMasterCustomersExcelImport')&&core.includes("'approveMasterCustomersExcelImport'")&&core.includes("'cancelMasterCustomersExcelImport'")],
  ['review UI exists',html.includes('appointmentMasterCustomersImportReview')&&html.includes('appointmentMasterCustomersImportApprove')],

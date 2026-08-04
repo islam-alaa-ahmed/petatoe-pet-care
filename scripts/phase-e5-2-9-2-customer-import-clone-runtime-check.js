@@ -10,8 +10,8 @@ const checks=[
  ['legacy engine owns a local clone helper',/function cloneJSON\(value\)\{/.test(legacy)],
  ['clone helper prefers structuredClone when available',legacy.includes("typeof structuredClone==='function'")&&legacy.includes('structuredClone(value)')],
  ['clone helper has JSON compatibility fallback',legacy.includes('JSON.parse(JSON.stringify(value))')],
- ['approval captures an isolated staged master payload',approveBlock.includes('var payload=cloneJSON(pendingMasterCustomersImport.master)')],
- ['approval reaches confirmed Supabase persistence',approveBlock.includes('storage.writeMasterDataConfirmed(payload)')],
+ ['approval captures an isolated staged master payload',approveBlock.includes('var rows=cloneJSON(pendingMasterCustomersImport.rows||[])')],
+ ['approval reaches confirmed Supabase persistence',approveBlock.includes('persistMasterCustomersImport(storage,rows,0)')&&legacy.includes('storage.writeMasterDataConfirmed(prepared.master)')],
  ['approval and cancel remain exposed by operations facade',core.includes("'approveMasterCustomersExcelImport'")&&core.includes("'cancelMasterCustomersExcelImport'")],
  ['clone runtime contract is registered',version.runtimeContracts&&version.runtimeContracts.customerImportCloneRuntime==='10.0.25-phase-e5-2-9-2-customer-import-clone-runtime-contract-1']
 ];

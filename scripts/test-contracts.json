@@ -55,7 +55,8 @@
     "phase-e5-2-8-1-operations-vehicle-source-ownership-check.js",
     "phase-e5-2-9-customer-import-certification-check.js",
     "phase-e5-2-9-1-customer-import-approval-handler-check.js",
-    "phase-e5-2-9-2-customer-import-clone-runtime-check.js"
+    "phase-e5-2-9-2-customer-import-clone-runtime-check.js",
+    "phase-e5-2-10-customer-excel-unicode-complete-import-check.js"
   ],
   "historicalPatterns": [
     "v9_",

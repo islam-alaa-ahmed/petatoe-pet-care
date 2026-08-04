@@ -10,7 +10,7 @@ const version=JSON.parse(read('config/petatoe-version.json'));
 const checks=[
  ['approval action is exposed by operations facade',core.includes("'approveMasterCustomersExcelImport'")],
  ['cancel action is exposed by operations facade',core.includes("'cancelMasterCustomersExcelImport'")],
- ['approval implementation persists through confirmed storage',legacy.includes('function approveMasterCustomersExcelImport()')&&legacy.includes('storage.writeMasterDataConfirmed(payload)')],
+ ['approval implementation persists through confirmed storage',legacy.includes('function approveMasterCustomersExcelImport()')&&legacy.includes('persistMasterCustomersImport(storage,rows,0)')&&legacy.includes('storage.writeMasterDataConfirmed(prepared.master)')],
  ['approval button dispatches the registered operation action',html.includes('data-op-click="approveMasterCustomersExcelImport"')],
  ['cancel button dispatches the registered operation action',html.includes('data-op-click="cancelMasterCustomersExcelImport"')],
  ['runtime catalog contains approval-ready localization',catalog.includes("readyForApproval:'اكتملت المراجعة")&&catalog.includes("readyForApproval:'Review complete")],
