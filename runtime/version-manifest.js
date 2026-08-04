@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_CUSTOMER_EXCEL_UNICODE_COMPLETE_IMPORT_HOTFIX_E5_2_10",
-  "buildVersion": "10.0.25-phase-e5-2-10-customer-excel-unicode-complete-import-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-10-customer-excel-unicode-complete-import-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_CUSTOMER_EXCEL_LAZY_READINESS_HOTFIX_E5_2_10_1",
+  "buildVersion": "10.0.25-phase-e5-2-10-1-customer-excel-lazy-readiness-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e5-2-10-1-customer-excel-lazy-readiness-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -46,17 +46,11 @@
     "customerImportWorkflow": "10.0.25-phase-e5-2-9-staged-customer-import-contract-1",
     "customerImportApprovalHandler": "10.0.25-phase-e5-2-9-1-customer-import-approval-handler-contract-1",
     "customerImportCloneRuntime": "10.0.25-phase-e5-2-9-2-customer-import-clone-runtime-contract-1",
-    "customerImportIntegrity": "10.0.25-phase-e5-2-10-customer-excel-unicode-complete-import-contract-1"
+    "customerExcelLazyReadiness": "10.0.25-phase-e5-2-10-1-xlsx-ready-before-import-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
     "minimumSupportedVersion": "10.0.0"
-  },
-  "policy": {
-    "releaseVersionPurpose": "User-visible product release.",
-    "cacheVersionPurpose": "Browser and service-worker cache invalidation.",
-    "runtimeContractPurpose": "Compatibility contract; changes only when the contract changes.",
-    "manualVersionLiteralsAllowed": false
   }
 };
   try{ Object.freeze(manifest.runtimeContracts); Object.freeze(manifest.native); Object.freeze(manifest); }catch(_e){}
