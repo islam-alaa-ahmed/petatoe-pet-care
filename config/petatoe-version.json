@@ -3,9 +3,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_CUSTOMER_XLSX_PROVIDER_READINESS_HOTFIX_E5_2_10_3",
-  "buildVersion": "10.0.25-phase-e5-2-10-3-customer-xlsx-provider-readiness-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-10-3-customer-xlsx-provider-readiness-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_CUSTOMER_EXCEL_HEADER_TEMPLATE_HOTFIX_E5_2_10_4",
+  "buildVersion": "10.0.25-phase-e5-2-10-4-customer-excel-header-template-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e5-2-10-4-customer-excel-header-template-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -44,7 +44,8 @@
     "customerImportApprovalHandler": "10.0.25-phase-e5-2-9-1-customer-import-approval-handler-contract-1",
     "customerImportCloneRuntime": "10.0.25-phase-e5-2-9-2-customer-import-clone-runtime-contract-1",
     "customerExcelLazyReadiness": "10.0.25-phase-e5-2-10-1-xlsx-ready-before-import-contract-1",
-    "customerExcelRuntimeProvider": "10.0.25-phase-e5-2-10-3-real-xlsx-provider-contract-1"
+    "customerExcelRuntimeProvider": "10.0.25-phase-e5-2-10-3-real-xlsx-provider-contract-1",
+    "customerExcelHeaderTemplate": "10.0.25-phase-e5-2-10-4-header-detection-template-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

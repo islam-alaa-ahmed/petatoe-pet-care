@@ -4,7 +4,7 @@
   var CATALOG={
     ar:{
       tabs:{customersPets:'👥 العملاء والحيوانات'},
-      actions:{refresh:'🔄 تحديث',restoreDefaults:'↩️ استعادة القيم الافتراضية',addSave:'إضافة / حفظ',importCustomersExcel:'📥 رفع البيانات Excel',exportCustomersExcel:'📤 تصدير البيانات Excel'},
+      actions:{refresh:'🔄 تحديث',restoreDefaults:'↩️ استعادة القيم الافتراضية',addSave:'إضافة / حفظ',importCustomersExcel:'📥 رفع البيانات Excel',exportCustomersExcel:'📤 تصدير البيانات Excel',downloadCustomersTemplate:'تنزيل النموذج'},
       filters:{allAnimalTypes:'كل أنواع الحيوانات'},
       customersPets:{title:'👥 العملاء والحيوانات'},
       master:{title:'⚙️ البيانات المرجعية للمواعيد',chooseSection:'اختر القسم',animalTypes:'🐾 أنواع الحيوانات',breeds:'🧬 السلالات',sizes:'📏 الأحجام',services:'🛁 الخدمات',customers:'👥 بيانات العملاء',vehicleStaff:'🚐 بيانات السيارات والموظفين'},
@@ -17,7 +17,7 @@
     },
     en:{
       tabs:{customersPets:'👥 Customers & Pets'},
-      actions:{refresh:'🔄 Refresh',restoreDefaults:'↩️ Restore Defaults',addSave:'Add / Save',importCustomersExcel:'📥 Import Customers Excel',exportCustomersExcel:'📤 Export Customers Excel'},
+      actions:{refresh:'🔄 Refresh',restoreDefaults:'↩️ Restore Defaults',addSave:'Add / Save',importCustomersExcel:'📥 Import Customers Excel',exportCustomersExcel:'📤 Export Customers Excel',downloadCustomersTemplate:'Download Template'},
       filters:{allAnimalTypes:'All Animal Types'},
       customersPets:{title:'👥 Customers & Pets'},
       master:{title:'⚙️ Appointment Master Data',chooseSection:'Choose Section',animalTypes:'🐾 Animal Types',breeds:'🧬 Breeds',sizes:'📏 Sizes',services:'🛁 Services',customers:'👥 Customer Data',vehicleStaff:'🚐 Vehicles & Staff'},
