@@ -2186,3 +2186,15 @@
 .appointment-new-customer-fields{display:contents}
 .appointment-new-customer-fields[hidden]{display:none!important}
 @media (max-width:720px){.appointment-customer-search-results{max-height:260px}.appointment-customer-search-result{grid-template-columns:1fr}.appointment-customer-search-result small{grid-column:auto}}
+
+/* PETATOE v10.0.25 E5.2.9 - customer Excel staged import, progress and confirmed Supabase approval */
+.appointments-customer-import-review{display:grid;gap:10px;margin:0 0 14px;padding:14px;border:1px solid rgba(34,211,238,.24);border-radius:18px;background:linear-gradient(135deg,rgba(15,23,42,.34),rgba(14,116,144,.12))}
+.appointments-customer-import-review[hidden]{display:none!important}
+.appointments-customer-import-review-head{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--appt-text-strong);font-weight:950}
+.appointments-customer-import-review-head span{min-width:48px;text-align:center;color:#67e8f9}
+.appointments-customer-import-progress{height:12px;overflow:hidden;border-radius:999px;background:rgba(15,23,42,.58);border:1px solid rgba(148,163,184,.18)}
+.appointments-customer-import-progress span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#06b6d4,#8b5cf6);transition:width .22s ease}
+.appointments-customer-import-status,.appointments-customer-import-summary{color:var(--appt-text-soft);font-size:13px;font-weight:850}
+.appointments-customer-import-summary{color:var(--appt-text-strong)}
+.appointments-customer-import-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-start}
+.appointments-customer-import-actions .btn:disabled{opacity:.55;cursor:not-allowed}

@@ -39,6 +39,8 @@
   var financeReportFilters=null;
   var financeReportVisibleLimit=10;
   var vehicleStaffSourcesPromise=null;
+  var pendingMasterCustomersImport=null;
+  var masterCustomersImportBusy=false;
   var appointmentFormSourcesPromise=null;
   var setupReferenceSourcePromise=null;
   var STATUS_FLOW=['مجدول','في الطريق','وصل العميل','بدأت الجلسة','تمت الجلسة','تم التحصيل','مغلق','مؤكد','غير مكتملة','مؤجل','ملغي'];
@@ -572,10 +574,11 @@
     var aa=customerIdentityTokens(a),bb=customerIdentityTokens(b);
     return aa.some(function(x){return bb.indexOf(x)>-1});
   }
-  function upsertMasterCustomer(c,options){
-    c=cleanMasterCustomer(c); if(!c)return false;
+  function mergeMasterCustomerInto(master,c,options){
+    c=cleanMasterCustomer(c); if(!c)return {changed:false,created:false,updated:false};
     options=options&&typeof options==='object'?options:{};
-    var master=readMasterData(), now=new Date().toISOString(), found=-1;
+    master=normalizeMasterData(master||cloneDefaultMaster());
+    var now=new Date().toISOString(), found=-1;
     (master.customers||[]).some(function(x,i){var cx=cleanMasterCustomer(x);if(cx&&customerRowsMatch(cx,c)){found=i;return true}return false});
     var current=found>-1?cleanMasterCustomer(master.customers[found]):null;
     var changed=Array.isArray(options.changedFields)?options.changedFields.slice():['name','phone','address','googleMapUrl'];
@@ -588,8 +591,15 @@
     if(c.code&&(!merged.code||changed.indexOf('code')>-1))merged.code=c.code;
     merged.aliases=customerIdentityTokens(merged);customerIdentityTokens(current||{}).concat(customerIdentityTokens(c)).forEach(function(x){if(merged.aliases.indexOf(x)===-1)merged.aliases.push(x)});
     merged.updatedAt=now;
+    var before=current?JSON.stringify(current):'';
+    var after=JSON.stringify(merged);
     if(found>-1)master.customers[found]=merged;else master.customers.push(merged);
-    writeMasterData(master); return true;
+    return {changed:before!==after,created:found===-1,updated:found>-1,master:master,customer:merged};
+  }
+  function upsertMasterCustomer(c,options){
+    var master=readMasterData(), result=mergeMasterCustomerInto(master,c,options);
+    if(!result||!result.customer)return false;
+    writeMasterData(result.master); return true;
   }
   function addMasterCustomer(){
     var c={code:val('appointmentMasterCustomerCode'),name:val('appointmentMasterCustomerName'),address:val('appointmentMasterCustomerAddress'),phone:val('appointmentMasterCustomerPhone')};
@@ -661,37 +671,97 @@
       });
     }).filter(Boolean);
   }
+  function customerImportProgress(percent,statusKey,params){
+    var panel=byId('appointmentMasterCustomersImportReview');
+    var bar=byId('appointmentMasterCustomersImportProgressBar');
+    var value=byId('appointmentMasterCustomersImportProgressValue');
+    var status=byId('appointmentMasterCustomersImportStatus');
+    percent=Math.max(0,Math.min(100,Math.round(Number(percent)||0)));
+    if(panel)panel.hidden=false;
+    if(bar){bar.style.width=percent+'%';bar.setAttribute('aria-valuenow',String(percent));}
+    if(value)value.textContent=percent+'%';
+    if(status&&statusKey)status.textContent=opCustomerT(statusKey,params,statusKey);
+  }
+  function setCustomerImportActions(reviewReady,busy){
+    var approve=byId('appointmentMasterCustomersImportApprove');
+    var cancel=byId('appointmentMasterCustomersImportCancel');
+    if(approve){approve.hidden=!reviewReady;approve.disabled=!!busy;}
+    if(cancel){cancel.hidden=!reviewReady;cancel.disabled=!!busy;}
+  }
+  function clearMasterCustomersImportReview(){
+    pendingMasterCustomersImport=null;masterCustomersImportBusy=false;
+    var panel=byId('appointmentMasterCustomersImportReview');if(panel)panel.hidden=true;
+    var summary=byId('appointmentMasterCustomersImportSummary');if(summary)summary.textContent='';
+    setCustomerImportActions(false,false);
+  }
+  function stageMasterCustomersImport(list,fileName){
+    var master=readMasterData(), staged=normalizeMasterData(master||cloneDefaultMaster());
+    var created=0,updated=0,unchanged=0;
+    list.forEach(function(row){
+      var result=mergeMasterCustomerInto(staged,row);
+      if(!result||!result.customer){unchanged++;return;}
+      staged=result.master;
+      if(result.created)created++; else if(result.changed)updated++; else unchanged++;
+    });
+    pendingMasterCustomersImport={master:staged,total:list.length,created:created,updated:updated,unchanged:unchanged,fileName:String(fileName||''),preparedAt:new Date().toISOString()};
+    var summary=byId('appointmentMasterCustomersImportSummary');
+    if(summary)summary.textContent=opCustomerT('import.reviewSummary',{total:list.length,created:created,updated:updated,unchanged:unchanged},'تم تجهيز '+list.length+' عميل للمراجعة');
+    customerImportProgress(100,'import.readyForApproval');
+    setCustomerImportActions(true,false);
+  }
   function handleMasterCustomersExcelImport(input){
     input=(input&&input.target&&input.target.files)?input.target:input;
     var file=input&&input.files&&input.files[0];
-    if(!file)return;
+    if(!file||masterCustomersImportBusy)return;
+    clearMasterCustomersImportReview();masterCustomersImportBusy=true;
+    customerImportProgress(1,'import.readingFile');setCustomerImportActions(false,true);
     var finish=function(list){
-      if(!list.length){alert(opT('noValidCustomersInFile'));return;}
-      list.forEach(upsertMasterCustomer);
-      renderMasterData();
-      toast(opT('customersImported',{count:list.length}));
-      alert(opT('customersImportedSuccess',{count:list.length}));
+      if(!list.length){customerImportProgress(0,'import.noValidRows');masterCustomersImportBusy=false;setCustomerImportActions(false,false);alert(opT('noValidCustomersInFile'));return;}
+      customerImportProgress(70,'import.validatingRows',{count:list.length});
+      setTimeout(function(){stageMasterCustomersImport(list,file.name);masterCustomersImportBusy=false;},0);
     };
     var reader=new FileReader();
+    reader.onprogress=function(e){if(e&&e.lengthComputable)customerImportProgress(Math.max(2,Math.min(55,(e.loaded/e.total)*55)),'import.readingFile')};
     reader.onload=function(e){
       try{
+        customerImportProgress(58,'import.parsingFile');
         var ext=String(file.name||'').toLowerCase();
         if(ext.endsWith('.csv')){
           var text=new TextDecoder('utf-8').decode(new Uint8Array(e.target.result));
           var rows=text.split(/\r?\n/).map(function(line){return line.split(',').map(function(x){return String(x||'').replace(/^"|"$/g,'').replace(/""/g,'"').trim()})});
-          finish(parseMasterCustomersSheetRows(rows));
-          return;
+          finish(parseMasterCustomersSheetRows(rows));return;
         }
-        if(!window.XLSX||!XLSX.read||window.__PETATOE_XLSX_STUB__){alert(opT('excelUnavailable'));return;}
+        if(!window.XLSX||!XLSX.read||window.__PETATOE_XLSX_STUB__){masterCustomersImportBusy=false;customerImportProgress(0,'import.excelUnavailable');alert(opT('excelUnavailable'));return;}
         var wb=XLSX.read(e.target.result,{type:'array',cellDates:false});
         var ws=wb.Sheets[wb.SheetNames[0]];
         var data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
         finish(parseMasterCustomersSheetRows(data));
-      }catch(err){console.error(err);alert(opT('customersFileReadFailed'));}
+      }catch(err){console.error(err);masterCustomersImportBusy=false;customerImportProgress(0,'import.readFailed');alert(opT('customersFileReadFailed'));}
       finally{if(input)input.value='';}
     };
+    reader.onerror=function(){masterCustomersImportBusy=false;customerImportProgress(0,'import.readFailed');setCustomerImportActions(false,false);if(input)input.value='';};
     reader.readAsArrayBuffer(file);
   }
+  function approveMasterCustomersExcelImport(){
+    if(masterCustomersImportBusy||!pendingMasterCustomersImport)return;
+    var storage=window.PETATOEOperationsStorage;
+    if(!storage||typeof storage.writeMasterDataConfirmed!=='function'){
+      customerImportProgress(0,'import.supabaseUnavailable');return;
+    }
+    masterCustomersImportBusy=true;setCustomerImportActions(true,true);
+    customerImportProgress(10,'import.preparingSave');
+    var payload=cloneJSON(pendingMasterCustomersImport.master), meta=Object.assign({},pendingMasterCustomersImport);
+    customerImportProgress(35,'import.savingToSupabase');
+    Promise.resolve(storage.writeMasterDataConfirmed(payload)).then(function(){
+      customerImportProgress(100,'import.savedToSupabase',{count:meta.total});
+      renderMasterData();
+      toast(opCustomerT('import.savedToast',{count:meta.total},'تم حفظ العملاء في Supabase'));
+      setTimeout(function(){clearMasterCustomersImportReview()},1800);
+    }).catch(function(err){
+      console.error(err);masterCustomersImportBusy=false;customerImportProgress(0,'import.saveFailed');setCustomerImportActions(true,false);
+    });
+  }
+  function cancelMasterCustomersExcelImport(){clearMasterCustomersImportReview();}
   function activeVehicleAssignments(){return (readMasterData().vehicleAssignments||[]).map(cleanVehicleAssignment).filter(function(v){return v&&v.vehicle&&!v.disabled&&v.groomer&&v.driver})}
   function vehicleAssignmentMap(){var m={};activeVehicleAssignments().forEach(function(v){if(v&&v.vehicle)m[v.vehicle]=v});return m}
   function applyVehicleStaffAssignment(){
@@ -3281,7 +3351,7 @@
     }
   }catch(e){}
 
-  var appointmentsPublicApi={__ready:true,__legacyEngine:true,__owner:'operations/operations-legacy-engine.js',setTab:setTab,clearForm:clearForm,saveAppointment:saveAppointment,render:render,edit:edit,remove:remove,changeStatus:changeStatus,resetFilters:resetFilters,setQuickRange:setQuickRange,setCalendarView:setCalendarView,setFinanceReportFilter:setFinanceReportFilter,resetFinanceReportFilters:resetFinanceReportFilters,showMoreFinanceReportRows:showMoreFinanceReportRows,setAppointmentLocalReportFilter:setAppointmentLocalReportFilter,resetAppointmentLocalReportFilters:resetAppointmentLocalReportFilters,showMoreAppointmentLocalReportRows:showMoreAppointmentLocalReportRows,applyCustomerSuggestion:applyCustomerSuggestion,searchAppointmentCustomers:searchAppointmentCustomers,selectAppointmentCustomer:selectAppointmentCustomer,syncNewCustomerFields:syncNewCustomerFields,refreshPetSuggestions:refreshPetSuggestions,applyPetSuggestion:applyPetSuggestion,newCustomer:newCustomer,refreshBreedOptions:refreshBreedOptions,addMasterItem:addMasterItem,addBreed:addBreed,removeMasterItem:removeMasterItem,editMasterItem:editMasterItem,resetMasterData:resetMasterData,setMasterSection:setMasterSection,selectCustomerProfile:selectCustomerProfile,setCustomerSearch:setCustomerSearch,clearCustomerSearch:clearCustomerSearch,refreshCustomersCrm:refreshCustomersCrm,exportCustomersDatabaseReportExcel:exportCustomersDatabaseReportExcel,setCustomerDatabaseReportSearch:setCustomerDatabaseReportSearch,addMasterCustomer:addMasterCustomer,editMasterCustomer:editMasterCustomer,removeMasterCustomer:removeMasterCustomer,triggerMasterCustomersExcelImport:triggerMasterCustomersExcelImport,handleMasterCustomersExcelImport:handleMasterCustomersExcelImport,exportMasterCustomersExcel:exportMasterCustomersExcel,addMasterService:addMasterService,triggerMasterServicesExcelImport:triggerMasterServicesExcelImport,handleMasterServicesExcelImport:handleMasterServicesExcelImport,exportMasterServicesExcel:exportMasterServicesExcel,addAppointmentServiceRow:addAppointmentServiceRow,removeAppointmentServiceRow:removeAppointmentServiceRow,onAppointmentServiceChange:onAppointmentServiceChange,recalculateAppointmentServices:recalculateAppointmentServices,addAppointmentAnimalRow:addAppointmentAnimalRow,removeAppointmentAnimalRow:removeAppointmentAnimalRow,onAppointmentAnimalTypeChange:onAppointmentAnimalTypeChange,addOperationsVehicle:addOperationsVehicle,addOperationsDriver:addOperationsDriver,addOperationsGroomer:addOperationsGroomer,removeOperationsVehicle:removeOperationsVehicle,removeOperationsDriver:removeOperationsDriver,removeOperationsGroomer:removeOperationsGroomer,saveVehicleAssignment:saveVehicleAssignment,editVehicleAssignment:editVehicleAssignment,toggleVehicleAssignment:toggleVehicleAssignment,removeVehicleAssignment:removeVehicleAssignment,applyVehicleStaffAssignment:applyVehicleStaffAssignment,setDispatchDateToday:setDispatchDateToday,setDailyOpsDateToday:setDailyOpsDateToday,printDailyOperations:printDailyOperations,setVehicleOpsDateToday:setVehicleOpsDateToday,renderVehicleOperations:renderVehicleOperations,renderVehicleExecutionReports:renderVehicleExecutionReports,renderOperationsKpiDashboard:renderOperationsKpiDashboard,setVehicleOpsViewTab:setVehicleOpsViewTab,selectVehicleAppointment:selectVehicleAppointment,setVehicleStatusById:setVehicleStatusById,setVehicleStatusByIndex:setVehicleStatusByIndex,nextVehicleStatusById:nextVehicleStatusById,nextVehicleStatusByIndex:nextVehicleStatusByIndex,saveVehicleSessionById:saveVehicleSessionById,saveVehicleSessionByIndex:saveVehicleSessionByIndex,closeVehicleSessionById:closeVehicleSessionById,reopenVehicleSessionById:reopenVehicleSessionById,confirmVehicleSessionById:confirmVehicleSessionById,canVehicleOpsAction:canVehicleOpsAction,handlePaymentAttachment:handlePaymentAttachment,openVehicleDirectionById:openVehicleDirectionById,showAppointmentDetails:showAppointmentDetails,closeAppointmentDetails:closeAppointmentDetails};
+  var appointmentsPublicApi={__ready:true,__legacyEngine:true,__owner:'operations/operations-legacy-engine.js',setTab:setTab,clearForm:clearForm,saveAppointment:saveAppointment,render:render,edit:edit,remove:remove,changeStatus:changeStatus,resetFilters:resetFilters,setQuickRange:setQuickRange,setCalendarView:setCalendarView,setFinanceReportFilter:setFinanceReportFilter,resetFinanceReportFilters:resetFinanceReportFilters,showMoreFinanceReportRows:showMoreFinanceReportRows,setAppointmentLocalReportFilter:setAppointmentLocalReportFilter,resetAppointmentLocalReportFilters:resetAppointmentLocalReportFilters,showMoreAppointmentLocalReportRows:showMoreAppointmentLocalReportRows,applyCustomerSuggestion:applyCustomerSuggestion,searchAppointmentCustomers:searchAppointmentCustomers,selectAppointmentCustomer:selectAppointmentCustomer,syncNewCustomerFields:syncNewCustomerFields,refreshPetSuggestions:refreshPetSuggestions,applyPetSuggestion:applyPetSuggestion,newCustomer:newCustomer,refreshBreedOptions:refreshBreedOptions,addMasterItem:addMasterItem,addBreed:addBreed,removeMasterItem:removeMasterItem,editMasterItem:editMasterItem,resetMasterData:resetMasterData,setMasterSection:setMasterSection,selectCustomerProfile:selectCustomerProfile,setCustomerSearch:setCustomerSearch,clearCustomerSearch:clearCustomerSearch,refreshCustomersCrm:refreshCustomersCrm,exportCustomersDatabaseReportExcel:exportCustomersDatabaseReportExcel,setCustomerDatabaseReportSearch:setCustomerDatabaseReportSearch,addMasterCustomer:addMasterCustomer,editMasterCustomer:editMasterCustomer,removeMasterCustomer:removeMasterCustomer,triggerMasterCustomersExcelImport:triggerMasterCustomersExcelImport,handleMasterCustomersExcelImport:handleMasterCustomersExcelImport,approveMasterCustomersExcelImport:approveMasterCustomersExcelImport,cancelMasterCustomersExcelImport:cancelMasterCustomersExcelImport,exportMasterCustomersExcel:exportMasterCustomersExcel,addMasterService:addMasterService,triggerMasterServicesExcelImport:triggerMasterServicesExcelImport,handleMasterServicesExcelImport:handleMasterServicesExcelImport,exportMasterServicesExcel:exportMasterServicesExcel,addAppointmentServiceRow:addAppointmentServiceRow,removeAppointmentServiceRow:removeAppointmentServiceRow,onAppointmentServiceChange:onAppointmentServiceChange,recalculateAppointmentServices:recalculateAppointmentServices,addAppointmentAnimalRow:addAppointmentAnimalRow,removeAppointmentAnimalRow:removeAppointmentAnimalRow,onAppointmentAnimalTypeChange:onAppointmentAnimalTypeChange,addOperationsVehicle:addOperationsVehicle,addOperationsDriver:addOperationsDriver,addOperationsGroomer:addOperationsGroomer,removeOperationsVehicle:removeOperationsVehicle,removeOperationsDriver:removeOperationsDriver,removeOperationsGroomer:removeOperationsGroomer,saveVehicleAssignment:saveVehicleAssignment,editVehicleAssignment:editVehicleAssignment,toggleVehicleAssignment:toggleVehicleAssignment,removeVehicleAssignment:removeVehicleAssignment,applyVehicleStaffAssignment:applyVehicleStaffAssignment,setDispatchDateToday:setDispatchDateToday,setDailyOpsDateToday:setDailyOpsDateToday,printDailyOperations:printDailyOperations,setVehicleOpsDateToday:setVehicleOpsDateToday,renderVehicleOperations:renderVehicleOperations,renderVehicleExecutionReports:renderVehicleExecutionReports,renderOperationsKpiDashboard:renderOperationsKpiDashboard,setVehicleOpsViewTab:setVehicleOpsViewTab,selectVehicleAppointment:selectVehicleAppointment,setVehicleStatusById:setVehicleStatusById,setVehicleStatusByIndex:setVehicleStatusByIndex,nextVehicleStatusById:nextVehicleStatusById,nextVehicleStatusByIndex:nextVehicleStatusByIndex,saveVehicleSessionById:saveVehicleSessionById,saveVehicleSessionByIndex:saveVehicleSessionByIndex,closeVehicleSessionById:closeVehicleSessionById,reopenVehicleSessionById:reopenVehicleSessionById,confirmVehicleSessionById:confirmVehicleSessionById,canVehicleOpsAction:canVehicleOpsAction,handlePaymentAttachment:handlePaymentAttachment,openVehicleDirectionById:openVehicleDirectionById,showAppointmentDetails:showAppointmentDetails,closeAppointmentDetails:closeAppointmentDetails};
   window.PETATOEOperationsAppointmentsInternal={
     version:'OPS-15-appointments-actions-adapter',
     actionsAdapter:{

@@ -52,7 +52,8 @@
     "phase-e5-2-5-appointments-route-ownership-guard-check.js",
     "phase-e5-2-6-identity-request-storm-check.js",
     "phase-e5-2-8-supabase-rest-query-compatibility-check.js",
-    "phase-e5-2-8-1-operations-vehicle-source-ownership-check.js"
+    "phase-e5-2-8-1-operations-vehicle-source-ownership-check.js",
+    "phase-e5-2-9-customer-import-certification-check.js"
   ],
   "historicalPatterns": [
     "v9_",
