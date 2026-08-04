@@ -295,7 +295,15 @@
 
   var desktopReadinessContracts = {
     xlsx: function(){
-      return !!(window.XLSX && window.XLSX.utils && typeof window.XLSX.utils.book_new === 'function');
+      /* E5.2.10.3: the fallback guard intentionally exposes an XLSX-shaped stub.
+         It must never satisfy the lazy provider contract, otherwise ensureGroup('xlsx')
+         resolves before the real parser is loaded and imports fail without a network request. */
+      return !!(window.XLSX &&
+        window.__PETATOE_XLSX_STUB__ !== true &&
+        typeof window.XLSX.read === 'function' &&
+        window.XLSX.utils &&
+        typeof window.XLSX.utils.sheet_to_json === 'function' &&
+        typeof window.XLSX.utils.book_new === 'function');
     },
     operations: function(){
       var appointments = window.PETATOEAppointments;
