@@ -262,22 +262,50 @@
   };
   function normalizeCustomerPhone(v){return String(v||'').replace(/[^0-9+]/g,'').replace(/^00/,'+').trim()}
   function normalizeCustomerName(v){return String(v||'').trim().toLowerCase().replace(/\s+/g,' ')}
+  function normalizeCustomerImportText(v){
+    v=String(v==null?'':v);
+    try{if(typeof v.normalize==='function')v=v.normalize('NFC')}catch(_){}
+    return v.replace(/[\u200B-\u200D\u2060\uFEFF]/g,'').replace(/\s+/g,' ').trim();
+  }
+  function canonicalCustomerCode(v){
+    v=normalizeCustomerImportText(v);
+    while(/^customer\s*:/i.test(v))v=v.replace(/^customer\s*:/i,'').trim();
+    return v;
+  }
+  function isQuestionMarkCorruption(v){
+    v=normalizeCustomerImportText(v);
+    if(!v)return false;
+    var compact=v.replace(/\s+/g,'');
+    return compact.length>0&&/^[?\uFFFD]+$/.test(compact);
+  }
+  function preferredCustomerText(current,incoming){
+    current=normalizeCustomerImportText(current);
+    incoming=normalizeCustomerImportText(incoming);
+    if(incoming&&!isQuestionMarkCorruption(incoming))return incoming;
+    if(current&&!isQuestionMarkCorruption(current))return current;
+    return incoming||current;
+  }
   function customerIdentityTokens(c){
     c=c&&typeof c==='object'?c:{};
     var out=[];
     function add(v){v=String(v||'').trim().toLowerCase();if(v&&out.indexOf(v)===-1)out.push(v)}
-    add(c.code||c.customerId||c.key||'');
+    var code=canonicalCustomerCode(c.code||c.customerId||c.key||'');
+    if(code){add(code);add('code:'+code)}
     var phone=normalizeCustomerPhone(c.phone||c.mobile||c.jawal||'');if(phone)add('phone:'+phone);
-    var name=normalizeCustomerName(c.name||c.client||'');if(name)add('name:'+name);
-    (Array.isArray(c.aliases)?c.aliases:[]).forEach(add);
+    if(!code&&!phone){var name=normalizeCustomerName(c.name||c.client||'');if(name)add('name:'+name)}
+    (Array.isArray(c.aliases)?c.aliases:[]).forEach(function(alias){
+      alias=String(alias||'').trim();
+      if(/^customer\s*:/i.test(alias)){var legacyCode=canonicalCustomerCode(alias);if(legacyCode){add(legacyCode);add('code:'+legacyCode)}}
+      else add(alias);
+    });
     return out;
   }
   function cleanMasterCustomer(c){
     c=c&&typeof c==='object'?c:{};
-    var code=String(c.code||c.customerId||c.key||'').trim();
-    var name=String(c.name||c.client||'').trim();
-    var phone=String(c.phone||c.mobile||c.jawal||'').trim();
-    var address=String(c.address||'').trim();
+    var code=canonicalCustomerCode(c.code||c.customerId||c.key||'');
+    var name=normalizeCustomerImportText(c.name||c.client||'');
+    var phone=normalizeCustomerImportText(c.phone||c.mobile||c.jawal||'');
+    var address=normalizeCustomerImportText(c.address||'');
     var googleMapUrl=normalizeGoogleMapUrl(c.googleMapUrl||c.customerMapLink||c.mapUrl||c.locationUrl||'');
     if(!code){code=phone?('phone:'+normalizeCustomerPhone(phone)):(name?('name:'+normalizeCustomerName(name)):'');}
     if(!code&&!name&&!phone&&!address&&!googleMapUrl)return null;
@@ -288,14 +316,18 @@
     var map={};
     (Array.isArray(list)?list:[]).forEach(function(c){
       c=cleanMasterCustomer(c); if(!c)return;
-      var key=String(c.code||c.phone||c.name||'').toLowerCase();
-      if(!map[key])map[key]=c; else map[key]=Object.assign({},map[key],c);
-    });
-    (readMasterData().customers||[]).forEach(function(mc){
-      mc=cleanMasterCustomer(mc); if(!mc)return;
-      var key=mc.code||mc.phone||mc.name; if(!key)return;
-      if(!map[key])map[key]={key:key,client:mc.name||opCustomerT('fallback.unknownCustomer',null,'عميل غير محدد'),phone:mc.phone||'',address:mc.address||'',googleMapUrl:mc.googleMapUrl||'',notes:'',appointments:[],pets:{},total:0,paid:0,remaining:0,lastVisit:'',firstVisit:''};
-      if(mc.name)map[key].client=mc.name; if(mc.phone)map[key].phone=mc.phone; if(mc.address)map[key].address=mc.address; if(mc.googleMapUrl)map[key].googleMapUrl=mc.googleMapUrl;
+      var key=String(c.code||('phone:'+normalizeCustomerPhone(c.phone))||('name:'+normalizeCustomerName(c.name))).toLowerCase();
+      if(!map[key]){map[key]=c;return;}
+      var current=map[key];
+      map[key]=Object.assign({},current,c,{
+        code:canonicalCustomerCode(c.code||current.code),
+        name:preferredCustomerText(current.name,c.name),
+        address:preferredCustomerText(current.address,c.address),
+        phone:preferredCustomerText(current.phone,c.phone),
+        googleMapUrl:c.googleMapUrl||current.googleMapUrl||'',
+        fieldUpdatedAt:Object.assign({},current.fieldUpdatedAt||{},c.fieldUpdatedAt||{}),
+        aliases:Array.from(new Set((current.aliases||[]).concat(c.aliases||[]).concat(customerIdentityTokens(current),customerIdentityTokens(c))))
+      });
     });
     return Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return String(a.name||a.code).localeCompare(String(b.name||b.code),'ar')});
   }
@@ -583,8 +615,16 @@
     return Object.keys(map).map(function(k){return map[k]}).sort(function(a,b){return String(a.name||a.code).localeCompare(String(b.name||b.code),'ar')});
   }
   function customerRowsMatch(a,b){
-    var aa=customerIdentityTokens(a),bb=customerIdentityTokens(b);
-    return aa.some(function(x){return bb.indexOf(x)>-1});
+    a=cleanMasterCustomer(a);b=cleanMasterCustomer(b);if(!a||!b)return false;
+    var ac=canonicalCustomerCode(a.code),bc=canonicalCustomerCode(b.code);
+    if(ac&&bc)return ac.toLowerCase()===bc.toLowerCase();
+    var ap=normalizeCustomerPhone(a.phone),bp=normalizeCustomerPhone(b.phone);
+    if(ap&&bp)return ap===bp;
+    if(!ac&&!bc&&!ap&&!bp){
+      var an=normalizeCustomerName(a.name),bn=normalizeCustomerName(b.name);
+      return !!an&&an===bn;
+    }
+    return false;
   }
   function mergeMasterCustomerInto(master,c,options){
     c=cleanMasterCustomer(c); if(!c)return {changed:false,created:false,updated:false};
@@ -597,8 +637,11 @@
     var merged=current?Object.assign({},current):Object.assign({},c,{fieldUpdatedAt:{}});
     merged.fieldUpdatedAt=Object.assign({},merged.fieldUpdatedAt||{});
     ['name','phone','address','googleMapUrl'].forEach(function(field){
-      var incoming=String(c[field]||'').trim();
-      if(changed.indexOf(field)>-1&&incoming){merged[field]=incoming;merged.fieldUpdatedAt[field]=now}
+      var incoming=field==='googleMapUrl'?String(c[field]||'').trim():normalizeCustomerImportText(c[field]||'');
+      if(changed.indexOf(field)>-1&&incoming){
+        merged[field]=field==='googleMapUrl'?incoming:preferredCustomerText(merged[field],incoming);
+        merged.fieldUpdatedAt[field]=now;
+      }
     });
     if(c.code&&(!merged.code||changed.indexOf('code')>-1))merged.code=c.code;
     merged.aliases=customerIdentityTokens(merged);customerIdentityTokens(current||{}).concat(customerIdentityTokens(c)).forEach(function(x){if(merged.aliases.indexOf(x)===-1)merged.aliases.push(x)});
@@ -706,18 +749,23 @@
     var summary=byId('appointmentMasterCustomersImportSummary');if(summary)summary.textContent='';
     setCustomerImportActions(false,false);
   }
-  function stageMasterCustomersImport(list,fileName){
-    var master=readMasterData(), staged=normalizeMasterData(master||cloneDefaultMaster());
-    var created=0,updated=0,unchanged=0;
-    list.forEach(function(row){
-      var result=mergeMasterCustomerInto(staged,row);
-      if(!result||!result.customer){unchanged++;return;}
-      staged=result.master;
+  function buildMasterCustomersImportPayload(list){
+    var master=normalizeMasterData(readMasterData()||cloneDefaultMaster());
+    var created=0,updated=0,unchanged=0,rejected=0;
+    (Array.isArray(list)?list:[]).forEach(function(row){
+      var result=mergeMasterCustomerInto(master,row);
+      if(!result||!result.customer){rejected++;return;}
+      master=result.master;
       if(result.created)created++; else if(result.changed)updated++; else unchanged++;
     });
-    pendingMasterCustomersImport={master:staged,total:list.length,created:created,updated:updated,unchanged:unchanged,fileName:String(fileName||''),preparedAt:new Date().toISOString()};
+    master.customers=normalizeMasterCustomers(master.customers||[]);
+    return {master:master,total:(Array.isArray(list)?list.length:0),created:created,updated:updated,unchanged:unchanged,rejected:rejected};
+  }
+  function stageMasterCustomersImport(list,fileName){
+    var preview=buildMasterCustomersImportPayload(list);
+    pendingMasterCustomersImport={rows:cloneJSON(list),total:preview.total,created:preview.created,updated:preview.updated,unchanged:preview.unchanged,rejected:preview.rejected,fileName:String(fileName||''),preparedAt:new Date().toISOString()};
     var summary=byId('appointmentMasterCustomersImportSummary');
-    if(summary)summary.textContent=opCustomerT('import.reviewSummary',{total:list.length,created:created,updated:updated,unchanged:unchanged},'تم تجهيز '+list.length+' عميل للمراجعة');
+    if(summary)summary.textContent=opCustomerT('import.reviewSummary',{total:preview.total,created:preview.created,updated:preview.updated,unchanged:preview.unchanged,rejected:preview.rejected},'تم تجهيز '+preview.total+' عميل للمراجعة');
     customerImportProgress(100,'import.readyForApproval');
     setCustomerImportActions(true,false);
   }
@@ -776,6 +824,23 @@
       alert(opCustomerT('import.excelUnavailable',null,'مكتبة Excel غير متاحة'));
     });
   }
+  function isOperationsMasterConflict(err){return !!(err&&(err.code==='OPERATIONS_MASTER_DATA_CONFLICT'||String(err.message||err).indexOf('OPERATIONS_MASTER_DATA_CONFLICT')>-1))}
+  function persistMasterCustomersImport(storage,rows,attempt){
+    attempt=Number(attempt)||0;
+    return Promise.resolve(typeof storage.ensureMasterReady==='function'?storage.ensureMasterReady():true).then(function(){
+      var prepared=buildMasterCustomersImportPayload(rows);
+      customerImportProgress(35,'import.savingToSupabase');
+      return Promise.resolve(storage.writeMasterDataConfirmed(prepared.master)).then(function(){return prepared});
+    }).catch(function(err){
+      if(isOperationsMasterConflict(err)&&attempt<1){
+        customerImportProgress(25,'import.refreshingLatestData');
+        return Promise.resolve(typeof storage.ensureMasterReady==='function'?storage.ensureMasterReady():true).then(function(){
+          return persistMasterCustomersImport(storage,rows,attempt+1);
+        });
+      }
+      throw err;
+    });
+  }
   function approveMasterCustomersExcelImport(){
     if(masterCustomersImportBusy||!pendingMasterCustomersImport)return;
     var storage=window.PETATOEOperationsStorage;
@@ -784,12 +849,11 @@
     }
     masterCustomersImportBusy=true;setCustomerImportActions(true,true);
     customerImportProgress(10,'import.preparingSave');
-    var payload=cloneJSON(pendingMasterCustomersImport.master), meta=Object.assign({},pendingMasterCustomersImport);
-    customerImportProgress(35,'import.savingToSupabase');
-    Promise.resolve(storage.writeMasterDataConfirmed(payload)).then(function(){
-      customerImportProgress(100,'import.savedToSupabase',{count:meta.total});
+    var rows=cloneJSON(pendingMasterCustomersImport.rows||[]), meta=Object.assign({},pendingMasterCustomersImport);
+    persistMasterCustomersImport(storage,rows,0).then(function(saved){
+      customerImportProgress(100,'import.savedToSupabase',{count:saved.total});
       renderMasterData();
-      toast(opCustomerT('import.savedToast',{count:meta.total},'تم حفظ العملاء في Supabase'));
+      toast(opCustomerT('import.savedToast',{count:saved.total},'تم حفظ العملاء في Supabase'));
       setTimeout(function(){clearMasterCustomersImportReview()},1800);
     }).catch(function(err){
       console.error(err);masterCustomersImportBusy=false;customerImportProgress(0,'import.saveFailed');setCustomerImportActions(true,false);
