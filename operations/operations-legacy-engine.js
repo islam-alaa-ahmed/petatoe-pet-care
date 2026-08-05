@@ -1470,7 +1470,7 @@
   }
   function appointmentVehicleNames(){
     var master=readMasterData();
-    return normalizeNamedList((master.vehicles||[]).concat(setupVehicleNamesForAppointments()));
+    return vehicleScopeFilterNames(normalizeNamedList((master.vehicles||[]).concat(setupVehicleNamesForAppointments())));
   }
   function appointmentDriverNames(){
     var master=readMasterData();
@@ -1627,6 +1627,8 @@
     var t=byId('appointmentFormTitle');if(t)t.textContent=opT('addAppointmentTitle');
   }
   function saveAppointment(){
+    var selectedVehicleForScope=val('appointmentVehicle');
+    if(selectedVehicleForScope&&!vehicleScopeCanAccess(selectedVehicleForScope)){alert(opT('permissionDenied'));return}
     if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.saveAppointment==='function'&&!saveAppointment._opsDelegating){
       saveAppointment._opsDelegating=true;
       try{return window.PETATOEOperationsAppointmentsActions.saveAppointment()}
@@ -1667,9 +1669,9 @@
     write(rows);clearForm();setTab('log');toast(opT('appointmentSaved'));
   }
   function toast(msg){try{if(typeof window.toast==='function')window.toast(msg);else if(typeof window.toastSafe==='function')window.toastSafe(msg)}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("operations/operations-legacy-engine.js",e);}}
-  function edit(id){if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.edit==='function'&&!edit._opsDelegating){edit._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.edit(id)}finally{edit._opsDelegating=false}}var r=read().find(function(x){return String(x.id)===String(id)});if(!r)return;fill(r);setTab('add')}
-  function remove(id){if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.remove==='function'&&!remove._opsDelegating){remove._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.remove(id)}finally{remove._opsDelegating=false}}if(!confirm(opT('confirmDeleteAppointment')))return;write(read().filter(function(x){return String(x.id)!==String(id)}));render();toast(opT('appointmentDeleted'))}
-  function changeStatus(id,s){if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.changeStatus==='function'&&!changeStatus._opsDelegating){changeStatus._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.changeStatus(id,s)}finally{changeStatus._opsDelegating=false}}var rows=read();rows.forEach(function(x){if(String(x.id)===String(id))x.status=normalizeStatus(s)});write(rows);render();toast(opT('appointmentStatusUpdated'))}
+  function edit(id){var scopedRow=read().find(function(x){return String(x.id)===String(id)});if(!scopedRow||!vehicleScopeCanAccess(scopedRow))return;if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.edit==='function'&&!edit._opsDelegating){edit._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.edit(id)}finally{edit._opsDelegating=false}}fill(scopedRow);setTab('add')}
+  function remove(id){var scopedRow=read().find(function(x){return String(x.id)===String(id)});if(!scopedRow||!vehicleScopeCanAccess(scopedRow))return;if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.remove==='function'&&!remove._opsDelegating){remove._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.remove(id)}finally{remove._opsDelegating=false}}if(!confirm(opT('confirmDeleteAppointment')))return;write(read().filter(function(x){return String(x.id)!==String(id)}));render();toast(opT('appointmentDeleted'))}
+  function changeStatus(id,s){var scopedRow=read().find(function(x){return String(x.id)===String(id)});if(!scopedRow||!vehicleScopeCanAccess(scopedRow))return;if(window.PETATOEOperationsAppointmentsActions&&typeof window.PETATOEOperationsAppointmentsActions.changeStatus==='function'&&!changeStatus._opsDelegating){changeStatus._opsDelegating=true;try{return window.PETATOEOperationsAppointmentsActions.changeStatus(id,s)}finally{changeStatus._opsDelegating=false}}var rows=read();rows.forEach(function(x){if(String(x.id)===String(id))x.status=normalizeStatus(s)});write(rows);render();toast(opT('appointmentStatusUpdated'))}
   function filtered(){
     var filters={
       q:val('appointmentSearch').toLowerCase(),
@@ -1683,10 +1685,10 @@
       to:val('appointmentDateToFilter')
     };
     if(window.PETATOEOperationsAppointments&&typeof window.PETATOEOperationsAppointments.filterRows==='function'){
-      return window.PETATOEOperationsAppointments.filterRows(read(),filters);
+      return vehicleScopeFilterRows(window.PETATOEOperationsAppointments.filterRows(read(),filters));
     }
     var q=filters.q, st=filters.status, an=filters.animal, gr=filters.groomer, dr=filters.driver, vh=filters.vehicle, pay=filters.payment, from=filters.from, to=filters.to;
-    return read().filter(function(r){
+    return vehicleScopeFilterRows(read()).filter(function(r){
       var blob=[r.client,r.phone,r.animalType,r.breed,r.size,r.petName,r.service,r.groomer,r.driver,r.vehicle,r.paymentMethod,r.address,r.notes,r.status].join(' ').toLowerCase();
       var d=String(r.date||'');
       return (!q||blob.indexOf(q)>-1)
@@ -2450,7 +2452,7 @@
   function calendarLocale(){return document.documentElement.lang==='en'?'en-US':'ar-SA-u-ca-gregory'}
   function calendarMonthTitle(d){try{return new Intl.DateTimeFormat(calendarLocale(),{month:'long',year:'numeric'}).format(d)}catch(_){return dateKey(d).slice(0,7)}}
   function calendarDayTitle(day){var d=new Date(String(day||'')+'T00:00:00');try{return new Intl.DateTimeFormat(calendarLocale(),{weekday:'long',day:'numeric',month:'long',year:'numeric'}).format(d)}catch(_){return day}}
-  function activeCalendarRows(rows){return (rows||[]).filter(function(r){return normalizeStatus(r.status)!=='ملغي'})}
+  function activeCalendarRows(rows){return vehicleScopeFilterRows(rows||[]).filter(function(r){return normalizeStatus(r.status)!=='ملغي'})}
   function calendarVehicleGroups(rows){return groupBy(activeCalendarRows(rows),'vehicle',opT('calendar.unassignedVehicle'))}
   function calendarAppointmentCard(r){
     return '<article class="appointments-calendar-detail-card"><div class="appointments-calendar-detail-time">'+esc(r.start||'--:--')+'</div><div class="appointments-calendar-detail-main"><b>'+esc(r.client||opT('fallback.unknownCustomer'))+'</b><small>'+esc(r.phone||'')+'</small><p>'+esc(appointmentAnimalSummary(r)||opT('fallback.unknownAnimal'))+'</p><div class="appointments-calendar-detail-service">'+esc(r.service||'-')+'</div><div class="appointments-calendar-detail-meta"><span>✂️ '+esc(r.groomer||'-')+'</span><span>🚗 '+esc(r.driver||'-')+'</span><span class="appointments-status '+statusClass(r.status)+'">'+esc(normalizeStatus(r.status))+'</span></div><small>'+esc(r.address||'')+'</small></div><button class="btn btn-ghost" type="button" data-op-click="openCalendarAppointment" data-op-arg1="'+esc(r.id||'')+'">'+esc(opT('calendar.openAppointment'))+'</button></article>';
@@ -2459,7 +2461,7 @@
   function openCalendarAppointment(id){closeCalendarDayDetails();edit(id)}
   function openCalendarDayDetails(day){
     closeCalendarDayDetails();
-    var rows=activeCalendarRows(read().filter(function(r){return String(r.date||'')===String(day||'')})).sort(function(a,b){return String(a.start||'').localeCompare(String(b.start||''))});
+    var rows=activeCalendarRows(vehicleScopeFilterRows(read()).filter(function(r){return String(r.date||'')===String(day||'')})).sort(function(a,b){return String(a.start||'').localeCompare(String(b.start||''))});
     if(!rows.length){toast(opT('calendar.noAppointments'));return}
     var groups=calendarVehicleGroups(rows), modal=document.createElement('div');
     modal.id='appointmentsCalendarDayModal';modal.className='appointments-calendar-day-modal';
@@ -2486,7 +2488,7 @@
     var el=byId('appointmentsCalendar'),warn=byId('appointmentsCalendarWarnings');if(!el)return;
     if(!val('appointmentCalendarDate'))setVal('appointmentCalendarDate',today());
     document.querySelectorAll('[data-calendar-view]').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-calendar-view')===calendarView)});
-    var range=calendarRange(),rows=read().filter(function(r){return inRange(r,range.from,range.to)}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||String(a.start||'').localeCompare(String(b.start||''))}),conflicts=[];
+    var range=calendarRange(),rows=vehicleScopeFilterRows(read()).filter(function(r){return inRange(r,range.from,range.to)}).sort(function(a,b){return String(a.date||'').localeCompare(String(b.date||''))||String(a.start||'').localeCompare(String(b.start||''))}),conflicts=[];
     rows.forEach(function(r){findConflicts(r,rows).forEach(function(){conflicts.push(r)})});
     if(warn){safeHtml(warn,conflicts.length?'<b>⚠️ '+esc(opT('calendar.conflictsTitle'))+'</b><span>'+esc(opT('calendar.conflictsMessage',{count:conflicts.length}))+'</span>':'','operations calendar conflicts');warn.style.display=conflicts.length?'flex':'none'}
     if(calendarView==='month')renderCalendarMonth(el,rows);else renderCalendarTimeline(el,rows,range);
@@ -2525,7 +2527,7 @@
     var summary=byId('appointmentsDispatchSummary'), routes=byId('appointmentsDispatchRoutes'), warn=byId('appointmentsDispatchWarnings');
     if(!summary&&!routes&&!warn)return;
     var day=dispatchDate();
-    var rows=read().filter(function(r){return String(r.date||'')===String(day)}).sort(function(a,b){return String(a.start||'').localeCompare(String(b.start||''))});
+    var rows=vehicleScopeFilterRows(read()).filter(function(r){return String(r.date||'')===String(day)}).sort(function(a,b){return String(a.start||'').localeCompare(String(b.start||''))});
     var vehicles=groupBy(rows,'vehicle','بدون سيارة'), groomers=groupBy(rows,'groomer','بدون جرومر'), drivers=groupBy(rows,'driver','بدون سائق');
     var warnings=buildDispatchWarnings(rows);
     if(warn){safeHtml(warn, warnings.length?'<b>⚠️ تنبيهات التوزيع</b><span>'+warnings.map(esc).join(' | ')+'</span>':'', 'operations legacy render');warn.style.display=warnings.length?'flex':'none'}
@@ -2550,7 +2552,7 @@
   }
   function renderTodayTimeline(){
     var el=byId('appointmentsTodayTimeline');if(!el)return;
-    var rows=read().filter(function(r){return sameDate(r,today())}).sort(function(a,b){return String(a.start||'').localeCompare(String(b.start||''))});
+    var rows=vehicleScopeFilterRows(read()).filter(function(r){return sameDate(r,today())}).sort(function(a,b){return String(a.start||'').localeCompare(String(b.start||''))});
     if(!rows.length){safeHtml(el, '<div class="appointments-empty appointments-calendar-empty">لا توجد مواعيد اليوم</div>', 'operations legacy render');return}
     safeHtml(el,rows.map(function(r){
       var st=normalizeStatus(r.status), ns=nextStatus(st);
@@ -2621,7 +2623,7 @@
   function setDailyOpsDateToday(){setVal('appointmentDailyOpsDate',today());render()}
   function dailyOpsRows(){
     var day=dailyOpsDate();
-    return read().map(function(r){return calcFinancials(r)}).filter(function(r){return String(r.date||'')===String(day)}).sort(function(a,b){return String(a.vehicle||'').localeCompare(String(b.vehicle||''),'ar')||String(a.start||'').localeCompare(String(b.start||''))||String(a.client||'').localeCompare(String(b.client||''),'ar')});
+    return vehicleScopeFilterRows(read().map(function(r){return calcFinancials(r)})).filter(function(r){return String(r.date||'')===String(day)}).sort(function(a,b){return String(a.vehicle||'').localeCompare(String(b.vehicle||''),'ar')||String(a.start||'').localeCompare(String(b.start||''))||String(a.client||'').localeCompare(String(b.client||''),'ar')});
   }
   function dailyOperationsModel(){
     var rows=dailyOpsRows(), ds=window.PETATOEOperationsReportDataset;
@@ -2676,10 +2678,14 @@
   }
   function vehicleScopeFilterRows(rows){
     rows=rows||[];
+    var scope=window.PETATOEVehicleScope;
+    if(scope&&typeof scope.filterRows==='function')return scope.filterRows(currentUserId(),rows);
     return rows.filter(function(r){return vehicleScopeCanAccess(r&&typeof r==='object'?{id:r.vehicleId||r.vehicleCode||r.vehicle,name:r.vehicle,plate:r.vehiclePlate||r.plate}:r)});
   }
   function vehicleScopeFilterNames(names){
     names=names||[];
+    var scope=window.PETATOEVehicleScope;
+    if(scope&&typeof scope.filterNames==='function')return scope.filterNames(currentUserId(),names);
     return names.filter(function(n){return vehicleScopeCanAccess(n)});
   }
   function renderVehicleOptions(){

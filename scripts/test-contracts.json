@@ -67,7 +67,8 @@
     "phase-e5-2-14-1-permission-source-hydration-check.js",
     "phase-e5-2-14-2-permission-runtime-binding-check.js",
     "phase-e5-2-14-3-permission-bootstrap-runtime-check.js",
-    "phase-e5-2-15-vehicle-current-request-lifecycle-check.js"
+    "phase-e5-2-15-vehicle-current-request-lifecycle-check.js",
+    "phase-e5-2-16-unified-vehicle-scope-check.js"
   ],
   "historicalPatterns": [
     "v9_",

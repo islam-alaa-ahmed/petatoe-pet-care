@@ -303,6 +303,22 @@
     var list=Array.isArray(scope.vehicles)?scope.vehicles.map(resolveVehicleScopeToken).map(function(x){return String(x||'').trim()}).filter(Boolean).filter(function(x){var k=normalizeVehicleKey(x);if(!k||seen[k])return false;seen[k]=1;return true;}):[];
     return {allVehicles:scope.allVehicles!==false,vehicles:list};
   }
+  function authorizedVehicleNames(uid,names){
+    var ref=uid||currentUserId();
+    var seen={};
+    return (names||[]).map(function(x){return String(x==null?'':x).trim()}).filter(function(name){
+      var key=normalizeVehicleKey(name);
+      if(!key||seen[key]||!canAccessVehicle(ref,name))return false;
+      seen[key]=1;return true;
+    });
+  }
+  function filterVehicleRows(uid,rows,resolver){
+    var ref=uid||currentUserId();
+    return (rows||[]).filter(function(row){
+      var vehicle=typeof resolver==='function'?resolver(row):(row&&typeof row==='object'?{id:row.vehicleId||row.vehicleCode||row.vehicle,name:row.vehicle||row.vehicleNameSnapshot||row.car,plate:row.vehiclePlate||row.plate}:row);
+      return canAccessVehicle(ref,vehicle);
+    });
+  }
   function parseCurrentRef(raw){try{if(raw&&typeof raw==='object')return raw;var s=String(raw||'').trim();if(!s)return null;if((s.charAt(0)==='{'&&s.charAt(s.length-1)==='}')||(s.charAt(0)==='['&&s.charAt(s.length-1)===']'))return JSON.parse(s);return {id:s,username:s}}catch(_){return null}}
   function matchUserRef(us,ref){if(!ref)return null;var rid=String(ref.id||ref.userId||ref.uid||'').trim(), rn=String(ref.username||ref.name||ref.fullName||ref.login||'').trim().toLowerCase();return (us||[]).find(function(u){var uid=String(u.id||u.userId||u.uid||'').trim(), un=String(u.username||u.name||u.login||'').trim().toLowerCase(), fn=String(u.fullName||'').trim().toLowerCase();return (rid&&uid===rid)||(rid&&un===rid.toLowerCase())||(rid&&fn===rid.toLowerCase())||(rn&&un===rn)||(rn&&uid.toLowerCase()===rn)||(rn&&fn===rn)})||null}
   function currentUserId(){
@@ -499,7 +515,20 @@
     try{window.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:String(u.id||uid),keys:descriptor.aliases.slice(),reset:true}}));document.dispatchEvent(new CustomEvent('petatoe:permissionschanged',{detail:{userId:String(u.id||uid),keys:descriptor.aliases.slice(),reset:true}}));}catch(e){}
     toast(tr('messages.restoredDefault',null,'User permissions restored to default'));if(api.render)api.render('permissions');
   };
-  window.petV139ToggleVehicleScope=function(force){var all=document.getElementById('petV139AllVehicles');var checked=typeof force==='boolean'?force:!!(all&&all.checked);document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){c.disabled=checked;c.checked=checked?true:c.checked});};
+  window.petV139ToggleVehicleScope=function(force){
+    var all=document.getElementById('petV139AllVehicles');
+    var checked=typeof force==='boolean'?force:!!(all&&all.checked);
+    document.querySelectorAll('#settings [data-v139-vehicle]').forEach(function(c){
+      if(checked){
+        c.dataset.petatoeVehicleScopePrevious=c.checked?'1':'0';
+        c.checked=true;c.disabled=true;
+      }else{
+        c.disabled=false;
+        c.checked=c.dataset.petatoeVehicleScopePrevious==='1';
+        delete c.dataset.petatoeVehicleScopePrevious;
+      }
+    });
+  };
   document.addEventListener('click',function(e){var t=e.target&&e.target.closest&&e.target.closest('[data-v139-set-module]');if(!t)return;__petV139ActiveModule=t.getAttribute('data-v139-set-module')||'home';if(window.__PETATOE_SETTINGS_API__&&window.__PETATOE_SETTINGS_API__.render)window.__PETATOE_SETTINGS_API__.render('permissions');});
   window.petV139SyncBulkHeaders=function(){var section=document.querySelector('#settings [data-v139-current-module]');if(!section)return;crudActions.forEach(function(a){var inputs=[].slice.call(section.querySelectorAll('[data-v139-action="'+a[0]+'"]'));var head=section.querySelector('[data-v139-bulk-action="'+a[0]+'"]');if(head)head.checked=!!inputs.length&&inputs.every(function(x){return x.checked})})};
   document.addEventListener('change',function(e){var t=e.target;if(!t)return;if(t.matches&&t.matches('[data-v139-bulk-action]')){var act=t.getAttribute('data-v139-bulk-action');var section=t.closest('[data-v139-current-module]')||document.querySelector('#settings [data-v139-current-module]');if(section){section.querySelectorAll('[data-v139-action="'+act+'"]').forEach(function(c){if(!c.disabled)c.checked=!!t.checked});window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();}}else if(t.matches&&t.matches('[data-v139-screen][data-v139-action]')){window.petV139SyncBulkHeaders&&window.petV139SyncBulkHeaders();}if(t&&t.id==='petV139AllVehicles')window.petV139ToggleVehicleScope(!!t.checked)});
@@ -522,5 +551,12 @@
     aliases:function(ref){return permissionKeyDescriptor(ref).aliases.slice()},
     describe:function(ref){var d=permissionKeyDescriptor(ref);return {canonical:d.canonical,aliases:d.aliases.slice(),user:d.user}}
   });
-  window.PETATOEPermissions={screenPerms:screenPerms,crudActions:crudActions,specialPerms:specialPerms,userPermStore:userPermStore,saveUserPermStore:saveUserPermStore,isSuperUser:isSuperUser,fullUserPerm:fullUserPerm,defaultUserPerm:defaultUserPerm,getUserPerm:getUserPerm,saveUserPerm:saveUserPerm,permissionSubject:permissionSubject,permissionKeyResolver:window.PETATOEPermissionKeyResolver,can:can,canSpecial:canSpecial,canAny:canAny,decision:resolvePermissionDecision,trace:permissionTrace,getVehicleList:getVehicleList,getVehicleScope:getVehicleScope,canAccessVehicle:canAccessVehicle,applyVehicleOpsDefaultSpecials:applyVehicleOpsDefaultSpecials,renderPermissionsBody:renderPermissionsBody};
+  window.PETATOEPermissions={screenPerms:screenPerms,crudActions:crudActions,specialPerms:specialPerms,userPermStore:userPermStore,saveUserPermStore:saveUserPermStore,isSuperUser:isSuperUser,fullUserPerm:fullUserPerm,defaultUserPerm:defaultUserPerm,getUserPerm:getUserPerm,saveUserPerm:saveUserPerm,permissionSubject:permissionSubject,permissionKeyResolver:window.PETATOEPermissionKeyResolver,can:can,canSpecial:canSpecial,canAny:canAny,decision:resolvePermissionDecision,trace:permissionTrace,getVehicleList:getVehicleList,getVehicleScope:getVehicleScope,canAccessVehicle:canAccessVehicle,authorizedVehicleNames:authorizedVehicleNames,filterVehicleRows:filterVehicleRows,applyVehicleOpsDefaultSpecials:applyVehicleOpsDefaultSpecials,renderPermissionsBody:renderPermissionsBody};
+  window.PETATOEVehicleScope=Object.freeze({
+    currentUser:currentUserId,
+    getScope:getVehicleScope,
+    canAccess:canAccessVehicle,
+    filterNames:authorizedVehicleNames,
+    filterRows:filterVehicleRows
+  });
 })();
