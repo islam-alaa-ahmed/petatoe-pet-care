@@ -65,7 +65,8 @@
     "phase-e5-2-13-unified-navigation-accordion-state-check.js",
     "phase-e5-2-14-permission-alias-hydration-check.js",
     "phase-e5-2-14-1-permission-source-hydration-check.js",
-    "phase-e5-2-14-2-permission-runtime-binding-check.js"
+    "phase-e5-2-14-2-permission-runtime-binding-check.js",
+    "phase-e5-2-14-3-permission-bootstrap-runtime-check.js"
   ],
   "historicalPatterns": [
     "v9_",
