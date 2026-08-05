@@ -2709,8 +2709,30 @@
     u=u||{id:id,username:id,fullName:id,role:'unknown'};
     return {id:String(u.id||id||''),name:String(u.fullName||u.name||u.username||id||'مستخدم'),role:String(u.role||u.job||'unknown')};
   }
-  function canOps(key){try{return !!(window.PETATOEPermissions&&window.PETATOEPermissions.canSpecial&&window.PETATOEPermissions.canSpecial(currentUserId(),key))}catch(e){return false}}
-  function canVehicleOpsScreen(action){try{return !!(window.PETATOEPermissions&&window.PETATOEPermissions.can&&window.PETATOEPermissions.can(currentUserId(),'vehicleOperations',action||'view'))}catch(e){return false}}
+  function currentUserObject(){
+    var u=null;
+    try{if(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function')u=window.PETATOEAuth.currentUser()}catch(e){}
+    try{if(!u&&window.__PETATOE_SETTINGS_API__&&typeof window.__PETATOE_SETTINGS_API__.currentUser==='function')u=window.__PETATOE_SETTINGS_API__.currentUser()}catch(e2){}
+    try{if(!u&&window.petCurrentUser&&typeof window.petCurrentUser==='function')u=window.petCurrentUser()}catch(e3){}
+    try{if(!u&&window.__PETATOE_ACTIVE_USER__)u=window.__PETATOE_ACTIVE_USER__}catch(e4){}
+    return u||null;
+  }
+  function isVehicleOpsSuperAdmin(){
+    var u=currentUserObject();
+    if(!u)return false;
+    try{if(window.PETATOEPermissions&&typeof window.PETATOEPermissions.isSuperUser==='function')return !!window.PETATOEPermissions.isSuperUser(u)}catch(e){}
+    var role=String(u.role||u.role_code||'').trim().toLowerCase().replace(/[\u200f\u200e]/g,'').replace(/[-\s]+/g,'_');
+    var id=String(u.id||u.userId||u.uid||'').trim().toLowerCase();
+    return role==='superadmin'||role==='super_admin'||id==='u_admin';
+  }
+  function canOps(key){
+    if(isVehicleOpsSuperAdmin())return true;
+    try{return !!(window.PETATOEPermissions&&window.PETATOEPermissions.canSpecial&&window.PETATOEPermissions.canSpecial(currentUserId(),key))}catch(e){return false}
+  }
+  function canVehicleOpsScreen(action){
+    if(isVehicleOpsSuperAdmin())return true;
+    try{return !!(window.PETATOEPermissions&&window.PETATOEPermissions.can&&window.PETATOEPermissions.can(currentUserId(),'vehicleOperations',action||'view'))}catch(e){return false}
+  }
   function canVehicleOpsAction(action){
     action=String(action||'view');
     var map={create:'vehicle_ops_create_trip',edit:'vehicle_ops_edit_trip',cancel:'vehicle_ops_cancel_trip',reopen:'vehicle_ops_reopen_trip',approve:'vehicle_ops_approve_trip',print:'vehicle_ops_print',export:'vehicle_ops_export',export_excel:'vehicle_ops_export_excel',export_pdf:'vehicle_ops_export_pdf',reports:'vehicle_ops_view_reports',kpis:'vehicle_ops_view_kpis'};

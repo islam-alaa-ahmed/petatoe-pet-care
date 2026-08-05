@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_OPERATIONS_MONTHLY_VEHICLE_CALENDAR_E5_2_12",
-  "buildVersion": "10.0.25-phase-e5-2-12-operations-monthly-vehicle-calendar-1",
-  "cacheVersion": "10.0.25-phase-e5-2-12-operations-monthly-vehicle-calendar-1",
+  "releaseName": "PETATOE_V10_0_25_VEHICLE_OPERATIONS_SUPERADMIN_ACCESS_HOTFIX_E5_2_12_1",
+  "buildVersion": "10.0.25-phase-e5-2-12-1-vehicle-operations-superadmin-access-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e5-2-12-1-vehicle-operations-superadmin-access-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
