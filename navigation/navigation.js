@@ -7,6 +7,36 @@
   function petBlock7937_q(sel,root){return (root||document).querySelector(sel)}
   function qa(sel,root){return Array.prototype.slice.call((root||document).querySelectorAll(sel))}
   function petatoe_v38142_sidebar_final_js_esc(s){return String(s==null?'':s).replace(/[&<>\'\"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]})}
+
+  function accordionState(){
+    if(window.PETATOENavigationAccordionState) return window.PETATOENavigationAccordionState;
+    var values=Object.create(null);
+    var explicit=Object.create(null);
+    function emit(id){
+      try{document.dispatchEvent(new CustomEvent('petatoe:navigationaccordionchange',{detail:{groupId:id||'',openGroups:api.snapshot()}}));}catch(_e){}
+    }
+    var api={
+      has:function(id){return Object.prototype.hasOwnProperty.call(values,String(id||''));},
+      isOpen:function(id){return values[String(id||'')]===true;},
+      isExplicit:function(id){return explicit[String(id||'')]===true;},
+      set:function(id,open,options){
+        id=String(id||''); if(!id)return false;
+        values[id]=!!open;
+        if(!options||options.explicit!==false) explicit[id]=true;
+        emit(id); return values[id];
+      },
+      toggle:function(id){return api.set(id,!api.isOpen(id),{explicit:true});},
+      ensureOpen:function(id){
+        id=String(id||''); if(!id)return false;
+        if(!api.has(id)){values[id]=true;emit(id);}
+        return api.isOpen(id);
+      },
+      snapshot:function(){var out={};Object.keys(values).forEach(function(k){out[k]=values[k]===true;});return out;}
+    };
+    window.PETATOENavigationAccordionState=api;
+    return api;
+  }
+  var navAccordion=accordionState();
   var groups=[
     {id:'operations',label:'⭐ العمليات',labelKey:'navigation.groups.transactions',items:[
       {tab:'entry',screen:'sales',title:'إدخال البيانات',sub:'تسجيل الفواتير والعمليات',titleKey:'navigation.transactions.dataEntry.title',subKey:'navigation.transactions.dataEntry.subtitle'},
@@ -152,7 +182,7 @@
       var list=(items||[]);
       if(!list.length) return false;
       var wrap=document.createElement('div'); wrap.className='pet-v142-group'; wrap.setAttribute('data-group',id);
-      var head=document.createElement('button'); head.type='button'; head.className='pet-v142-toggle'; head.setAttribute('data-v142-toggle',id);
+      var head=document.createElement('button'); head.type='button'; head.className='pet-v142-toggle'; head.setAttribute('data-v142-toggle',id); head.setAttribute('aria-expanded','false');
       setToggleLabel(head,label,labelKey||'');
       var body=document.createElement('div'); body.className='pet-v142-items';
       list.forEach(function(it){ body.appendChild(itemButton(it)); });
@@ -184,12 +214,19 @@
     try{ if(window.PETATOENavigationPermissions&&window.PETATOENavigationPermissions.apply) window.PETATOENavigationPermissions.apply(nav); document.dispatchEvent(new CustomEvent('petatoe:navbuilt',{detail:{nav:nav}})); }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('navigation/navigation.js',e);}
     return true;
   }
-  function closeOpen(nav, id){
+  function syncOpenGroups(nav){
     qa('.pet-v142-group',nav).forEach(function(g){
-      var open=!!id && g.getAttribute('data-group')===id;
+      var id=g.getAttribute('data-group')||'';
+      var open=navAccordion.isOpen(id);
       g.classList.toggle('open',open);
+      var toggle=petBlock7937_q('.pet-v142-toggle',g);
+      if(toggle) toggle.setAttribute('aria-expanded',open?'true':'false');
       var ar=petBlock7937_q('.pet-v142-arrow',g); if(ar) ar.textContent=open?'▼':'▶';
     });
+  }
+  function setGroupOpen(nav,id,open,explicit){
+    navAccordion.set(id,open,{explicit:explicit!==false});
+    syncOpenGroups(nav);
   }
   function normalizeAppointmentsSubTab(value){
     value=String(value||'').trim();
@@ -229,8 +266,8 @@
       var t=e.target.closest&&e.target.closest('[data-v142-toggle]');
       if(t&&nav.contains(t)){
         e.preventDefault(); e.stopPropagation();
-        var id=t.getAttribute('data-v142-toggle'); var group=t.closest('.pet-v142-group');
-        closeOpen(nav,!(group&&group.classList.contains('open'))?id:'');
+        var id=t.getAttribute('data-v142-toggle');
+        setGroupOpen(nav,id,!navAccordion.isOpen(id),true);
         return false;
       }
       var b=e.target.closest&&e.target.closest('button'); if(!b||!nav.contains(b)) return;
@@ -288,8 +325,10 @@
       var grp=activeBtn&&activeBtn.closest('.pet-v142-group'); groupId=grp?grp.getAttribute('data-group'):'';
     }
     if(activeBtn) activeBtn.classList.add('active');
-    // settings must stay collapsed by default on dashboard. Open only when active inside settings/logs or when user clicks.
-    if(active==='dashboard') closeOpen(nav,''); else closeOpen(nav,groupId);
+    // Preserve manual accordion state across permission refreshes and navigation rebuilds.
+    // The active group is opened only on first ownership; explicit user collapse/open always wins.
+    if(groupId) navAccordion.ensureOpen(groupId);
+    syncOpenGroups(nav);
   }
   var buildTimer=null;
   function force(){build();}
@@ -311,6 +350,7 @@
   document.addEventListener('petatoe:userchanged',function(){scheduleBuild(30);});
   window.addEventListener('petatoe:identity-ready',function(){scheduleBuild(30);});
   document.addEventListener('petatoe:navigationpermissionsapplied',function(){setTimeout(markActive,30);});
+  document.addEventListener('petatoe:navigationaccordionchange',function(){var nav=petBlock7937_q('#nav');if(nav)syncOpenGroups(nav);});
   document.addEventListener('petatoe:appointments-ready',function(){
     if(applyAppointmentsNavigationIntent()) markActive();
   });

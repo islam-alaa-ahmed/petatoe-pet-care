@@ -61,7 +61,8 @@
     "phase-e5-2-10-4-customer-excel-header-template-check.js",
     "phase-e5-2-11-appointment-vehicle-slot-dark-search-check.js",
     "phase-e5-2-12-operations-monthly-vehicle-calendar-check.js",
-    "phase-e5-2-12-1-vehicle-operations-superadmin-access-check.js"
+    "phase-e5-2-12-1-vehicle-operations-superadmin-access-check.js",
+    "phase-e5-2-13-unified-navigation-accordion-state-check.js"
   ],
   "historicalPatterns": [
     "v9_",
