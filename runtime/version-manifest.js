@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_PERMISSION_SOURCE_HYDRATION_HOTFIX_E5_2_14_1",
-  "buildVersion": "10.0.25-phase-e5-2-14-1-permission-source-hydration-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-14-1-permission-source-hydration-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_PERMISSION_RUNTIME_BINDING_HOTFIX_E5_2_14_2",
+  "buildVersion": "10.0.25-phase-e5-2-14-2-permission-runtime-binding-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e5-2-14-2-permission-runtime-binding-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -54,17 +54,12 @@
     "vehicleOperationsSuperAdminAccess": "10.0.25-phase-e5-2-12-1-superadmin-vehicle-operations-access-contract-1",
     "unifiedNavigationAccordion": "10.0.25-phase-e5-2-13-unified-navigation-accordion-state-contract-1",
     "permissionAliasHydration": "10.0.25-phase-e5-2-14-permission-alias-hydration-contract-1",
-    "permissionSourceHydration": "10.0.25-phase-e5-2-14-1-canonical-permission-source-hydration-contract-1"
+    "permissionSourceHydration": "10.0.25-phase-e5-2-14-1-canonical-permission-source-hydration-contract-1",
+    "permissionRuntimeBinding": "10.0.25-phase-e5-2-14-2-session-permission-binding-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
     "minimumSupportedVersion": "10.0.0"
-  },
-  "policy": {
-    "releaseVersionPurpose": "User-visible product release.",
-    "cacheVersionPurpose": "Browser and service-worker cache invalidation.",
-    "runtimeContractPurpose": "Compatibility contract; changes only when the contract changes.",
-    "manualVersionLiteralsAllowed": false
   }
 };
   try{ Object.freeze(manifest.runtimeContracts); Object.freeze(manifest.native); Object.freeze(manifest); }catch(_e){}

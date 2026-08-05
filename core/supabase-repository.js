@@ -640,17 +640,26 @@
             if(special){target.special=target.special||{};target.special[special]=boolAllowed(row);}
             return target;
           }
+          function permissionRowAliases(row,data){
+            var out=[],seen={};
+            function add(value){value=String(value==null?'':value).trim();var key=value.toLowerCase();if(key&&!seen[key]){seen[key]=1;out.push(value);}}
+            row=row&&typeof row==='object'?row:{}; data=data&&typeof data==='object'?data:{};
+            [row.user_id,row.uid,row.app_user_id,row.auth_user_id,row.auth_uid,row.username,row.login,row.email,
+             data.user_id,data.uid,data.app_user_id,data.auth_user_id,data.auth_uid,data.username,data.login,data.email].forEach(add);
+            return out;
+          }
           (Array.isArray(pr.data)?pr.data:[]).forEach(function(r){
             if(!r) return;
             var rawData=extractPermissionPayload(r);
-            var uid=String(r.user_id||r.uid||r.app_user_id||r.auth_user_id||r.auth_uid||rawData.user_id||rawData.uid||rawData.app_user_id||rawData.auth_user_id||'').trim();
-            if(!uid) return;
+            var aliases=permissionRowAliases(r,rawData);
+            if(!aliases.length) return;
             var key=String(r.permission_key||r.key||'full').trim();
             var data=rawData;
-            var target=map[uid]||emptyPermissionRecord();
+            var target=emptyPermissionRecord();
+            aliases.forEach(function(alias){if(map[alias])target=mergePermissionRecord(target,map[alias]);});
             if(key==='full'||data.screens||data.special||data.vehicleScope) target=mergePermissionRecord(target,data);
             else target=applyGranularPermission(target,r,key,data);
-            map[uid]=target;
+            aliases.forEach(function(alias){map[alias]=clone(target);});
           });
           /* Permission rows have existed under app ids, Supabase row UUIDs and usernames
              across older releases. Alias every loaded record to the canonical user identity so
@@ -776,8 +785,12 @@
     if(!keys.length)return {ok:false,error:'Missing permission keys'};
     deletePermissionKeysFromCache(keys);
     if(!hasClient())return {ok:false,error:'Supabase client not ready'};
-    var res=await client().from('app_user_permissions').delete().in('user_id',keys);
-    if(res.error){console.warn('PETATOE Identity permission aliases delete failed', resultError(res));return {ok:false,error:resultError(res)};}
+    /* The project REST client exposes bounded eq() filters, not supabase-js in().
+       Delete aliases one by one so canonical permission persistence cannot fail after a successful save. */
+    for(var i=0;i<keys.length;i++){
+      var res=await client().from('app_user_permissions').delete().eq('user_id',keys[i]);
+      if(res.error){console.warn('PETATOE Identity permission alias delete failed',keys[i],resultError(res));return {ok:false,error:resultError(res),failedKey:keys[i]};}
+    }
     return {ok:true,deletedKeys:keys};
   }
   async function replaceAppUserPermission(canonicalKey,aliases,perm){

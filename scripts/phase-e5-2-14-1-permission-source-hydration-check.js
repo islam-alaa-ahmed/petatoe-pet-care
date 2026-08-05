@@ -9,7 +9,7 @@ const nav=fs.readFileSync(path.join(root,'navigation/navigation-permissions.js')
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'config/petatoe-version.json'),'utf8'));
 const checks=[
   ['application users retain the Supabase Auth identity',repo.includes('auth_user_id:String(row.auth_user_id||row.auth_uid')&&repo.includes('auth_uid:String(row.auth_uid||row.auth_user_id')],
-  ['permission rows can resolve application, database and auth identities',repo.includes('r.auth_user_id||r.auth_uid')&&repo.includes('rawData.auth_user_id')],
+  ['permission rows can resolve application, database and auth identities',repo.includes('function permissionRowAliases')&&repo.includes('row.auth_user_id,row.auth_uid')&&repo.includes('data.auth_user_id,data.auth_uid')],
   ['permission aliases include the authenticated user id',repo.includes('user.auth_user_id,user.auth_uid')&&perms.includes('add(u.auth_user_id);add(u.auth_uid)')],
   ['navigation permission identity candidates include auth aliases',nav.includes('add(u&&u.auth_user_id); add(u&&u.auth_uid)')&&nav.includes('x.auth_user_id,x.auth_uid')],
   ['nested permission payloads are unwrapped',repo.includes('function extractPermissionPayload')&&repo.includes('source.permissions')&&repo.includes('source.permission')],

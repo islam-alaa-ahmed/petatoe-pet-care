@@ -15,7 +15,7 @@ check(permissions.includes("ids.replacePermission(key,descriptor.aliases,perm)")
 check(permissions.includes("ids.deletePermissionAliases(descriptor.aliases)"),'reset deletes all aliases through repository API');
 check(!permissions.includes('var st=userPermStore();delete st[uid]'),'legacy single-key reset path removed');
 check(repo.includes('async function deleteAppUserPermissionAliases(keys)'),'repository supports bulk alias deletion');
-check(repo.includes(".delete().in('user_id',keys)"),'Supabase deletes all matching permission aliases');
+check(repo.includes("delete().eq('user_id',keys[i])")&&!repo.includes("delete().in('user_id',keys)"),'Supabase deletes every matching permission alias through REST-compatible filters');
 check(repo.includes('async function replaceAppUserPermission(canonicalKey,aliases,perm)'),'repository supports canonical replacement');
 check(repo.includes('replacePermission:replaceAppUserPermission'),'canonical replacement API is exported');
 check(repo.includes('deletePermissionAliases:deleteAppUserPermissionAliases'),'alias deletion API is exported');

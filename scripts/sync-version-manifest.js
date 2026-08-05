@@ -57,7 +57,8 @@ function synchronize(){
     'core/supabase-repository.js',
     'payroll/payroll-read-facade.js',
     'payroll/payroll-core.js',
-    'warehouses/warehouse-core.js'
+    'warehouses/warehouse-core.js',
+    'mobile/mobile-enterprise-v10-shell.js'
   ];
   for(const asset of governedAssets){
     const re = new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\?v=[^\\\'"&<\\s]+', 'g');

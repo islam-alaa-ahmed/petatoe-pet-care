@@ -186,6 +186,14 @@
     }
     return null;
   }
+  function permissionSubject(ref){
+    var matched=getUserById(ref);
+    if(matched)return matched;
+    /* A restored/authenticated session is already a canonical identity subject. Do not deny it merely
+       because the asynchronous app_users list has not been hydrated in this exact render tick. */
+    if(ref&&typeof ref==='object'&&permissionStoreKeys(ref).length)return ref;
+    return null;
+  }
   function permissionRecordFor(store,u){
     store=store||{};
     var keys=permissionStoreKeys(u), storeKeys=Object.keys(store), wanted=keys.map(normalizeIdentityValue);
@@ -202,7 +210,7 @@
     return found?{found:true,key:foundKeys[0]||'',keys:foundKeys,perm:merged}:{found:false,key:'',keys:[],perm:{}};
   }
   function getUserPerm(uid){
-    var u=getUserById(uid);
+    var u=permissionSubject(uid);
     if(!u)return emptyUserPerm();
     if(isSuperUser(u))return fullUserPerm();
     var store=userPermStore(), rec=permissionRecordFor(store,u), saved=rec.perm||{};
@@ -325,7 +333,7 @@
     action=action||'view';
     var out={allow:false,user:null,screen:screen,action:action,source:'none',reason:'deny'};
     if(!uid){out.reason='missing-current-user';return out}
-    var u=getUserById(uid);
+    var u=permissionSubject(uid);
     out.user=u||null;
     if(!u){out.reason='user-not-found';return out}
     if(isSuperUser(u)){out.allow=true;out.source='superadmin';out.reason='superadmin';return out}
@@ -342,7 +350,7 @@
     key=String(key||'').trim();
     var out={allow:false,user:null,key:key,source:'none',reason:'deny'};
     if(!uid){out.reason='missing-current-user';return out}
-    var u=getUserById(uid);
+    var u=permissionSubject(uid);
     out.user=u||null;
     if(!u){out.reason='user-not-found';return out}
     if(isSuperUser(u)){out.allow=true;out.source='superadmin';out.reason='superadmin';return out}
@@ -514,5 +522,5 @@
     aliases:function(ref){return permissionKeyDescriptor(ref).aliases.slice()},
     describe:function(ref){var d=permissionKeyDescriptor(ref);return {canonical:d.canonical,aliases:d.aliases.slice(),user:d.user}}
   });
-  window.PETATOEPermissions={screenPerms:screenPerms,crudActions:crudActions,specialPerms:specialPerms,userPermStore:userPermStore,saveUserPermStore:saveUserPermStore,isSuperUser:isSuperUser,fullUserPerm:fullUserPerm,defaultUserPerm:defaultUserPerm,getUserPerm:getUserPerm,saveUserPerm:saveUserPerm,permissionKeyResolver:window.PETATOEPermissionKeyResolver,can:can,canSpecial:canSpecial,canAny:canAny,decision:resolvePermissionDecision,trace:permissionTrace,getVehicleList:getVehicleList,getVehicleScope:getVehicleScope,canAccessVehicle:canAccessVehicle,applyVehicleOpsDefaultSpecials:applyVehicleOpsDefaultSpecials,renderPermissionsBody:renderPermissionsBody};
+  window.PETATOEPermissions={screenPerms:screenPerms,crudActions:crudActions,specialPerms:specialPerms,userPermStore:userPermStore,saveUserPermStore:saveUserPermStore,isSuperUser:isSuperUser,fullUserPerm:fullUserPerm,defaultUserPerm:defaultUserPerm,getUserPerm:getUserPerm,saveUserPerm:saveUserPerm,permissionSubject:permissionSubject,permissionKeyResolver:window.PETATOEPermissionKeyResolver,can:can,canSpecial:canSpecial,canAny:canAny,decision:resolvePermissionDecision,trace:permissionTrace,getVehicleList:getVehicleList,getVehicleScope:getVehicleScope,canAccessVehicle:canAccessVehicle,applyVehicleOpsDefaultSpecials:applyVehicleOpsDefaultSpecials,renderPermissionsBody:renderPermissionsBody};
 })();
