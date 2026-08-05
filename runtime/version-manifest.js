@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_APPOINTMENT_VEHICLE_SLOT_DARK_SEARCH_HOTFIX_E5_2_11",
-  "buildVersion": "10.0.25-phase-e5-2-11-appointment-vehicle-slot-dark-search-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-11-appointment-vehicle-slot-dark-search-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_OPERATIONS_MONTHLY_VEHICLE_CALENDAR_E5_2_12",
+  "buildVersion": "10.0.25-phase-e5-2-12-operations-monthly-vehicle-calendar-1",
+  "cacheVersion": "10.0.25-phase-e5-2-12-operations-monthly-vehicle-calendar-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -49,11 +49,18 @@
     "customerExcelLazyReadiness": "10.0.25-phase-e5-2-10-1-xlsx-ready-before-import-contract-1",
     "customerExcelRuntimeProvider": "10.0.25-phase-e5-2-10-3-real-xlsx-provider-contract-1",
     "customerExcelHeaderTemplate": "10.0.25-phase-e5-2-10-4-header-detection-template-contract-1",
-    "appointmentVehicleSlotAvailability": "10.0.25-phase-e5-2-11-vehicle-date-slot-availability-contract-1"
+    "appointmentVehicleSlotAvailability": "10.0.25-phase-e5-2-11-vehicle-date-slot-availability-contract-1",
+    "operationsMonthlyVehicleCalendar": "10.0.25-phase-e5-2-12-timeline-monthly-vehicle-details-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
     "minimumSupportedVersion": "10.0.0"
+  },
+  "policy": {
+    "releaseVersionPurpose": "User-visible product release.",
+    "cacheVersionPurpose": "Browser and service-worker cache invalidation.",
+    "runtimeContractPurpose": "Compatibility contract; changes only when the contract changes.",
+    "manualVersionLiteralsAllowed": false
   }
 };
   try{ Object.freeze(manifest.runtimeContracts); Object.freeze(manifest.native); Object.freeze(manifest); }catch(_e){}
