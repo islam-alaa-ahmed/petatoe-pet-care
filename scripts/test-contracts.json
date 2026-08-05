@@ -63,7 +63,8 @@
     "phase-e5-2-12-operations-monthly-vehicle-calendar-check.js",
     "phase-e5-2-12-1-vehicle-operations-superadmin-access-check.js",
     "phase-e5-2-13-unified-navigation-accordion-state-check.js",
-    "phase-e5-2-14-permission-alias-hydration-check.js"
+    "phase-e5-2-14-permission-alias-hydration-check.js",
+    "phase-e5-2-14-1-permission-source-hydration-check.js"
   ],
   "historicalPatterns": [
     "v9_",

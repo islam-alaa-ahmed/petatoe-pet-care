@@ -56,18 +56,18 @@
     u=u||currentUser();
     var out=[], seen={};
     function add(v){ v=String(v||'').trim(); var k=v.toLowerCase(); if(k&&!seen[k]){ seen[k]=1; out.push(v); } }
-    add(u&&u.id); add(u&&u.userId); add(u&&u.uid); add(u&&u.supabase_id); add(u&&u.row_id);
+    add(u&&u.id); add(u&&u.userId); add(u&&u.uid); add(u&&u.supabase_id); add(u&&u.row_id); add(u&&u.auth_user_id); add(u&&u.auth_uid);
     add(u&&u.username); add(u&&u.login); add(u&&u.email);
     try{
       var ids=window.PETATOEIdentityStore||null;
       var users=(ids&&typeof ids.usersSync==='function'&&ids.usersSync())||[];
       var keys=out.map(function(x){return String(x).trim().toLowerCase();});
       users.forEach(function(x){
-        var primary=[x.id,x.userId,x.uid,x.supabase_id,x.row_id].map(function(v){return String(v||'').trim().toLowerCase();}).filter(Boolean);
+        var primary=[x.id,x.userId,x.uid,x.supabase_id,x.row_id,x.auth_user_id,x.auth_uid].map(function(v){return String(v||'').trim().toLowerCase();}).filter(Boolean);
         var login=[x.username,x.login,x.email].map(function(v){return String(v||'').trim().toLowerCase();}).filter(Boolean);
         var primaryHit=primary.some(function(v){return keys.indexOf(v)>-1;});
         var loginHit=login.some(function(v){return keys.indexOf(v)>-1;});
-        if(primaryHit||loginHit){ add(x.id); add(x.userId); add(x.uid); add(x.supabase_id); add(x.username); add(x.login); add(x.email); }
+        if(primaryHit||loginHit){ add(x.id); add(x.userId); add(x.uid); add(x.supabase_id); add(x.row_id); add(x.auth_user_id); add(x.auth_uid); add(x.username); add(x.login); add(x.email); }
       });
     }catch(_e){}
     return out;
@@ -211,10 +211,15 @@
       var ids = window.PETATOEIdentityStore;
       if(!ids) return true;
       var c = ids._cache || null;
-      if(c && c.loaded === true) return true;
+      if(c && c.loaded === true && c.permissionsLoaded !== false) return true;
       if(c && c.loading) return false;
+      if(c && c.loaded === true && c.permissionsLoaded === false){
+        var rt=ids._runtime||{}, now=Date.now();
+        if(typeof ids.load === 'function' && (!rt.lastAttemptAt || (now-rt.lastAttemptAt)>5000)) ids.load({force:true});
+        return false;
+      }
       if(typeof ids.load === 'function') ids.load();
-      return !!(c && c.loaded === true);
+      return !!(c && c.loaded === true && c.permissionsLoaded !== false);
     }catch(_e){ return true; }
   }
   function scheduleApply(root){

@@ -8,7 +8,7 @@ const perms=fs.readFileSync(path.join(root,'settings/permissions.js'),'utf8');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'config/petatoe-version.json'),'utf8'));
 const checks=[
   ['identity loader aggregates granular permission rows',repo.includes('function applyGranularPermission')&&repo.includes('split(/[.:/]/)')],
-  ['identity loader accepts legacy permission payload columns',repo.includes('r.permissions')&&repo.includes('r.legacy_payload')],
+  ['identity loader accepts legacy permission payload columns',repo.includes('function extractPermissionPayload')&&repo.includes('row.permissions')&&repo.includes('row.legacy_payload')],
   ['loaded permission records are aliased to canonical user identities',repo.includes('Alias every loaded record to the canonical user identity')&&repo.includes('user.supabase_id')&&repo.includes('user.username')],
   ['screen actions from granular rows preserve allowed state',repo.includes('target.screens[screen][action]=boolAllowed(row)')],
   ['special permissions from granular rows are retained',repo.includes('target.special[special]=boolAllowed(row)')],

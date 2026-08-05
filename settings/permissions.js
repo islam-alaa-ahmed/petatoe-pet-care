@@ -128,7 +128,7 @@
   function primaryUserKeys(u){
     var out=[],seen={};
     function add(v){v=String(v==null?'':v).trim();var k=v.toLowerCase();if(k&&!seen[k]){seen[k]=1;out.push(v)}}
-    if(u&&typeof u==='object'){add(u.id);add(u.userId);add(u.uid);add(u.supabase_id);add(u.row_id)}
+    if(u&&typeof u==='object'){add(u.id);add(u.userId);add(u.uid);add(u.supabase_id);add(u.row_id);add(u.auth_user_id);add(u.auth_uid)}
     else add(u);
     return out;
   }
@@ -311,7 +311,7 @@
       entry:'sales',import:'sales',records:'reports',logs:'audit',smart:'reports',executive:'reports',
       customer360:'customers',treasury:'treasury',warehouses:'vehicles',warehouse:'vehicles',fleet:'vehicles',vans:'vehicles',
       commissions:'commissions',commissionStatement:'commissionStatement',payroll:'payroll',salarySlip:'salarySlip',childrenExpenses:'childrenExpenses',
-      appointments:'appointments','appointments-master':'setup',appointmentsMaster:'setup',
+      appointments:'appointments','appointments-master':'appointments',appointmentsMaster:'appointments',
       vehicleOperations:'vehicleOperations',vehicleOperationsReports:'vehicleOperationsReports',operationKpis:'operationKpis',
       settings:'settings',system:'settings',setup:'setup',permissions:'permissions',users:'users',audit:'audit'
     };

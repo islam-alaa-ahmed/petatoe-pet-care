@@ -509,7 +509,8 @@
     return {
       id:appId||('user_'+String(row.id||Date.now())),
       supabase_id:String(row.id||''),
-      auth_user_id:String(row.auth_user_id||d.auth_user_id||''),
+      auth_user_id:String(row.auth_user_id||row.auth_uid||d.auth_user_id||d.auth_uid||''),
+      auth_uid:String(row.auth_uid||row.auth_user_id||d.auth_uid||d.auth_user_id||''),
       username:String(row.username||d.username||appId||''),
       fullName:String(row.full_name||d.fullName||d.full_name||row.username||''),
       full_name:String(row.full_name||d.full_name||d.fullName||row.username||''),
@@ -557,35 +558,79 @@
         if(!pr.error){
           var map={};
           function emptyPermissionRecord(){return {screens:{},special:{}};}
+          function permissionBoolean(value,defaultValue){
+            if(value===true||value===1)return true;
+            if(value===false||value===0)return false;
+            var text=String(value==null?'':value).trim().toLowerCase();
+            if(['true','1','yes','allow','allowed','on'].indexOf(text)>-1)return true;
+            if(['false','0','no','deny','denied','off'].indexOf(text)>-1)return false;
+            return defaultValue!==false;
+          }
           function boolAllowed(row){
-            if(row&&Object.prototype.hasOwnProperty.call(row,'allowed')) return row.allowed!==false;
+            if(row&&Object.prototype.hasOwnProperty.call(row,'allowed')) return permissionBoolean(row.allowed,true);
+            if(row&&Object.prototype.hasOwnProperty.call(row,'enabled')) return permissionBoolean(row.enabled,true);
+            if(row&&Object.prototype.hasOwnProperty.call(row,'granted')) return permissionBoolean(row.granted,true);
             return true;
+          }
+          function canonicalPermissionScreen(screen){
+            var aliases={
+              dashboard:'dashboardManagement',dashboardManagement:'dashboardManagement',dashboardOperationsPanel:'dashboardOperations',
+              entry:'sales',import:'sales',records:'reports',logs:'audit',smart:'reports',executive:'reports',customer360:'customers',
+              warehouses:'vehicles',warehouse:'vehicles',fleet:'vehicles',vans:'vehicles',
+              appointmentsMaster:'appointments','appointments-master':'appointments',appointments:'appointments',
+              vehicleOperations:'vehicleOperations',vehicleOperationsReports:'vehicleOperationsReports',operationKpis:'operationKpis',
+              system:'settings',settings:'settings',setup:'setup',permissions:'permissions',users:'users',audit:'audit'
+            };
+            screen=String(screen||'').trim();
+            return aliases[screen]||screen;
+          }
+          function canonicalPermissionAction(action){
+            var aliases={read:'view',open:'view',list:'view',create:'add',insert:'add',update:'edit',write:'edit',remove:'delete',destroy:'delete'};
+            action=String(action||'view').trim().toLowerCase();
+            return aliases[action]||action;
+          }
+          function extractPermissionPayload(row){
+            row=row&&typeof row==='object'?row:{};
+            var source=(row.data&&typeof row.data==='object')?clone(row.data):((row.permissions&&typeof row.permissions==='object')?clone(row.permissions):((row.legacy_payload&&typeof row.legacy_payload==='object')?clone(row.legacy_payload):{}));
+            if(source.permissions&&typeof source.permissions==='object'&&!source.screens&&!source.special&&!source.vehicleScope)source=clone(source.permissions);
+            if(source.permission&&typeof source.permission==='object'&&!source.screens&&!source.special&&!source.vehicleScope)source=clone(source.permission);
+            return source&&typeof source==='object'?source:{};
           }
           function mergePermissionRecord(target,source){
             target=target&&typeof target==='object'?target:emptyPermissionRecord();
             source=source&&typeof source==='object'?source:{};
             target.screens=target.screens&&typeof target.screens==='object'?target.screens:{};
             target.special=target.special&&typeof target.special==='object'?target.special:{};
-            Object.keys(source.screens||{}).forEach(function(screen){
-              target.screens[screen]=Object.assign(target.screens[screen]||{},clone(source.screens[screen]||{}));
+            var screens=source.screens&&typeof source.screens==='object'?source.screens:{};
+            Object.keys(screens).forEach(function(rawScreen){
+              var screen=canonicalPermissionScreen(rawScreen), raw=screens[rawScreen];
+              if(!screen)return;
+              target.screens[screen]=target.screens[screen]||{};
+              if(typeof raw==='boolean')target.screens[screen].view=raw;
+              else if(raw&&typeof raw==='object')Object.keys(raw).forEach(function(rawAction){
+                var action=canonicalPermissionAction(rawAction);
+                if(['view','add','edit','delete'].indexOf(action)>-1)target.screens[screen][action]=permissionBoolean(raw[rawAction],false);
+              });
             });
-            Object.keys(source.special||{}).forEach(function(key){target.special[key]=!!source.special[key];});
+            Object.keys(source.special||{}).forEach(function(key){target.special[key]=permissionBoolean(source.special[key],false);});
             if(source.vehicleScope&&typeof source.vehicleScope==='object')target.vehicleScope=clone(source.vehicleScope);
             return target;
           }
           function applyGranularPermission(target,row,key,data){
             target=target||emptyPermissionRecord();
-            var screen=String(data.screen||data.screen_key||data.module||'').trim();
-            var action=String(data.action||data.permission_action||'').trim().toLowerCase();
-            var special=String(data.special||data.special_key||'').trim();
+            data=data&&typeof data==='object'?data:{};
+            var screen=String(row.screen||row.screen_key||row.module||data.screen||data.screen_key||data.module||'').trim();
+            var action=canonicalPermissionAction(row.action||row.permission_action||data.action||data.permission_action||'');
+            var special=String(row.special||row.special_key||data.special||data.special_key||'').trim();
             var normalized=String(key||'').trim().replace(/^screen[:.]/i,'').replace(/^permission[:.]/i,'');
             var parts=normalized.split(/[.:/]/).filter(Boolean);
-            if(!screen && parts.length>1 && ['view','add','edit','delete'].indexOf(String(parts[parts.length-1]).toLowerCase())>-1){
-              action=String(parts.pop()).toLowerCase();screen=parts.join('.');
+            if(!screen && parts.length>1 && ['view','read','add','create','edit','update','delete','remove'].indexOf(String(parts[parts.length-1]).toLowerCase())>-1){
+              action=canonicalPermissionAction(parts.pop());screen=parts.join('.');
             }
-            if(!special && !screen && (/^special[:.]/i.test(String(key||''))||data.type==='special')){
+            if(!special && !screen && (/^special[:.]/i.test(String(key||''))||row.type==='special'||data.type==='special')){
               special=normalized.replace(/^special[:.]/i,'');
             }
+            screen=canonicalPermissionScreen(screen);
             if(screen){
               action=action||'view';
               target.screens=target.screens||{};target.screens[screen]=target.screens[screen]||{};
@@ -597,10 +642,11 @@
           }
           (Array.isArray(pr.data)?pr.data:[]).forEach(function(r){
             if(!r) return;
-            var uid=String(r.user_id||r.uid||r.app_user_id||'').trim();
+            var rawData=extractPermissionPayload(r);
+            var uid=String(r.user_id||r.uid||r.app_user_id||r.auth_user_id||r.auth_uid||rawData.user_id||rawData.uid||rawData.app_user_id||rawData.auth_user_id||'').trim();
             if(!uid) return;
             var key=String(r.permission_key||r.key||'full').trim();
-            var data=(r.data&&typeof r.data==='object')?clone(r.data):((r.permissions&&typeof r.permissions==='object')?clone(r.permissions):((r.legacy_payload&&typeof r.legacy_payload==='object')?clone(r.legacy_payload):{}));
+            var data=rawData;
             var target=map[uid]||emptyPermissionRecord();
             if(key==='full'||data.screens||data.special||data.vehicleScope) target=mergePermissionRecord(target,data);
             else target=applyGranularPermission(target,r,key,data);
@@ -610,7 +656,7 @@
              across older releases. Alias every loaded record to the canonical user identity so
              the current session and the navigation permission engine resolve the same payload. */
           (identityCache.users||[]).forEach(function(user){
-            var aliases=[user.id,user.userId,user.uid,user.supabase_id,user.row_id,user.username,user.login,user.email].map(function(v){return String(v||'').trim();}).filter(Boolean);
+            var aliases=[user.id,user.userId,user.uid,user.supabase_id,user.row_id,user.auth_user_id,user.auth_uid,user.username,user.login,user.email].map(function(v){return String(v||'').trim();}).filter(Boolean);
             var merged=null;
             aliases.forEach(function(alias){
               Object.keys(map).some(function(key){
@@ -622,8 +668,10 @@
             aliases.forEach(function(alias){map[alias]=clone(merged);});
           });
           identityCache.permissions=map;
-        }else{hadFailure=true;console.warn('PETATOE Identity permissions load failed', resultError(pr));}
-      }catch(e){hadFailure=true;console.warn('PETATOE Identity permissions load crashed', e)}
+          identityCache.permissionsLoaded=true;
+          identityCache.permissionLoadError='';
+        }else{hadFailure=true;identityCache.permissionsLoaded=false;identityCache.permissionLoadError=resultError(pr);console.warn('PETATOE Identity permissions load failed', resultError(pr));}
+      }catch(e){hadFailure=true;identityCache.permissionsLoaded=false;identityCache.permissionLoadError=String(e&&e.message||e||'');console.warn('PETATOE Identity permissions load crashed', e)}
       try{
         var rr=await c.from('roles').select('*').order('level',{ascending:true});
         if(!rr.error){
