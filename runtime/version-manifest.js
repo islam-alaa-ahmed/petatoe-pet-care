@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_PERMISSION_RUNTIME_BINDING_HOTFIX_E5_2_14_2",
-  "buildVersion": "10.0.25-phase-e5-2-14-2-permission-runtime-binding-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-14-2-permission-runtime-binding-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_VEHICLE_CURRENT_REQUEST_LIFECYCLE_E5_2_15",
+  "buildVersion": "10.0.25-phase-e5-2-15-vehicle-current-request-lifecycle-1",
+  "cacheVersion": "10.0.25-phase-e5-2-15-vehicle-current-request-lifecycle-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -55,7 +55,9 @@
     "unifiedNavigationAccordion": "10.0.25-phase-e5-2-13-unified-navigation-accordion-state-contract-1",
     "permissionAliasHydration": "10.0.25-phase-e5-2-14-permission-alias-hydration-contract-1",
     "permissionSourceHydration": "10.0.25-phase-e5-2-14-1-canonical-permission-source-hydration-contract-1",
-    "permissionRuntimeBinding": "10.0.25-phase-e5-2-14-2-session-permission-binding-contract-1"
+    "permissionRuntimeBinding": "10.0.25-phase-e5-2-14-2-session-permission-binding-contract-1",
+    "permissionBootstrapRuntime": "10.0.25-phase-e5-2-14-3-eager-permission-engine-contract-1",
+    "vehicleCurrentRequestLifecycle": "10.0.25-phase-e5-2-15-day-current-confirmed-lifecycle-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

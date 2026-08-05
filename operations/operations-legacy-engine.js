@@ -2850,16 +2850,35 @@
     rows.forEach(function(x){if(String(x.id)===String(id)){mutator(x);changed=true}});
     if(changed){write(rows);renderVehicleOperations();render();}
   }
-  function selectVehicleAppointment(id){vehicleOpsSelectedId=String(id||'');vehicleOpsViewTab='current';try{updateVehicleRow(id,function(x){pushExecutionLog(x,'select',{status:normalizeStatus(x.status),notes:'تم فتح الطلب في شاشة الطلب الحالي'});});}catch(e){renderVehicleOperations()}}
+  function vehicleOpsIsConfirmedOrCancelled(row){var st=normalizeStatus(row&&row.status);return st==='مؤكد'||st==='ملغي'||!!(row&&row.isConfirmed)}
+  function vehicleOpsIsCurrentRequest(row){
+    if(!row||vehicleOpsIsConfirmedOrCancelled(row))return false;
+    var st=normalizeStatus(row.status);
+    return !!row.vehicleOpsOpenedAt||['في الطريق','وصل العميل','بدأت الجلسة','تمت الجلسة','تم التحصيل','مغلق','غير مكتملة'].indexOf(st)>-1;
+  }
+  function vehicleOpsIsDayRequest(row){
+    return !!row&&!vehicleOpsIsConfirmedOrCancelled(row)&&!vehicleOpsIsCurrentRequest(row);
+  }
+  function selectVehicleAppointment(id){
+    vehicleOpsSelectedId=String(id||'');vehicleOpsViewTab='current';
+    try{
+      updateVehicleRow(id,function(x){
+        if(!x.vehicleOpsOpenedAt)x.vehicleOpsOpenedAt=new Date().toISOString();
+        x.vehicleOpsOpenedBy=x.vehicleOpsOpenedBy||currentUserId();
+        x.vehicleOpsExecutionState='current';
+        pushExecutionLog(x,'select',{status:normalizeStatus(x.status),notes:'تم بدء الطلب ونقله من جدول اليوم إلى شاشة الطلب الحالي'});
+      });
+    }catch(e){renderVehicleOperations()}
+  }
   function setVehicleOpsViewTab(tab){vehicleOpsViewTab=(tab==='current')?'current':'day';renderVehicleOperations()}
   function vehicleOpsIsClosed(row){var st=normalizeStatus(row.status);return st==='تم التحصيل'||st==='مغلق'||st==='مؤكد'||st==='غير مكتملة'||st==='ملغي'}
   function vehicleOpsPickSelected(rows){
-    if(!rows||!rows.length)return null;
+    if(!rows||!rows.length){vehicleOpsSelectedId='';return null;}
     var found=rows.find(function(r){return String(r.id)===String(vehicleOpsSelectedId)});
     if(found)return found;
-    found=rows.find(function(r){return !vehicleOpsIsClosed(r)});
-    vehicleOpsSelectedId=String((found||rows[0]).id||'');
-    return found||rows[0];
+    found=rows.find(function(r){return !vehicleOpsIsClosed(r)})||rows[0];
+    vehicleOpsSelectedId=String(found.id||'');
+    return found;
   }
   function setVehicleStatusById(id,status){
     status=normalizeStatus(status);
@@ -2913,7 +2932,12 @@
     var r=vehicleOpsRows().find(function(x){return String(x.id)===String(id)}); if(!r)return;
     if(!vehicleOpsCanConfirm(r)){toast(opT('cannotConfirmSession'));return;}
     if(!confirm(opT('confirmSession')))return;
-    updateVehicleRow(id,function(x){var oldStatus=normalizeStatus(x.status);x.status='مؤكد';x.isConfirmed=true;x.confirmedAt=new Date().toISOString();x.confirmedBy=currentUserId();x.updatedAt=x.confirmedAt;pushExecutionLog(x,'confirm',{oldStatus:oldStatus,status:'مؤكد',confirmedBy:x.confirmedBy});});
+    updateVehicleRow(id,function(x){var oldStatus=normalizeStatus(x.status);x.status='مؤكد';x.isConfirmed=true;x.confirmedAt=new Date().toISOString();x.confirmedBy=currentUserId();x.updatedAt=x.confirmedAt;x.vehicleOpsExecutionState='confirmed';x.vehicleOpsCompletedAt=x.confirmedAt;pushExecutionLog(x,'confirm',{oldStatus:oldStatus,status:'مؤكد',confirmedBy:x.confirmedBy});});
+    vehicleOpsSelectedId='';
+    var remainingCurrent=vehicleOpsRows().filter(vehicleOpsIsCurrentRequest);
+    if(remainingCurrent.length){vehicleOpsSelectedId=String(remainingCurrent[0].id||'');vehicleOpsViewTab='current';}
+    else vehicleOpsViewTab='day';
+    renderVehicleOperations();
     toast(opT('sessionConfirmed'));
   }
   function setVehicleStatusByIndex(idx,status){
@@ -3120,21 +3144,28 @@
     if(!canVehicleOpsAction('view')){if(summary)summary.textContent='';if(board)safeHtml(board,vehicleOpsNoAccessHtml('تشغيل السيارات'),'vehicle operations permission denied');return;}
     renderVehicleOptions();
     var rows=vehicleOpsRows(), day=vehicleOpsDate(), vehicles=groupBy(rows,'vehicle','بدون سيارة');
-    var selected=vehicleOpsPickSelected(rows);
+    var dayRows=rows.filter(vehicleOpsIsDayRequest), currentRows=rows.filter(vehicleOpsIsCurrentRequest);
+    var selected=vehicleOpsPickSelected(vehicleOpsViewTab==='current'?currentRows:dayRows);
     var active=countAnyStatus(rows,['في الطريق','وصل العميل','بدأت الجلسة']), done=countAnyStatus(rows,['تمت الجلسة','تم التحصيل']), collected=rows.reduce(function(a,r){return a+Number(calcFinancials(r).paidAmount||0)},0), remaining=rows.reduce(function(a,r){return a+Number(calcFinancials(r).remainingAmount||0)},0);
     if(summary){safeHtml(summary,'<div class="appointments-dispatch-summary-card"><span>📅 التاريخ</span><b>'+esc(day)+'</b><small>تشغيل السيارات</small></div><div class="appointments-dispatch-summary-card"><span>'+esc(opT('totalSessions'))+'</span><b>'+rows.length+'</b><small>'+vehicles.length+' سيارات</small></div><div class="appointments-dispatch-summary-card"><span>قيد التشغيل</span><b>'+active+'</b><small>مكتمل: '+done+'</small></div><div class="appointments-dispatch-summary-card"><span>'+esc(opT('collection'))+'</span><b>'+money(collected)+'</b><small>متبقي: '+money(remaining)+'</small></div>','operations vehicle ops summary')}
     if(!board)return;
     var tabs='<div class="vehicle-ops-tabs"><button class="vehicle-ops-tab '+(vehicleOpsViewTab==='day'?'active':'')+'" type="button" data-op-click="setVehicleOpsViewTab" data-op-arg1="day">📋 جدول اليوم</button><button class="vehicle-ops-tab '+(vehicleOpsViewTab==='current'?'active':'')+'" type="button" data-op-click="setVehicleOpsViewTab" data-op-arg1="current">🚦 الطلب الحالي</button></div>';
     if(!rows.length){safeHtml(board, tabs+'<div class="appointments-empty appointments-calendar-empty">لا توجد مواعيد تشغيل في تاريخ '+esc(day)+'</div>', 'operations legacy render');return;}
-    selected=calcFinancials(selected||rows[0]);
-    var currentId=String(selected.id||'');
-    var currentIndex=rows.findIndex(function(r){return String(r.id)===currentId});
-    var nextOpen=rows.slice(Math.max(0,currentIndex)+1).find(function(r){return !vehicleOpsIsClosed(r)})||rows.find(function(r){return !vehicleOpsIsClosed(r)});
-    var list=rows.map(function(r,i){r=calcFinancials(r);var isCurrent=String(r.id)===currentId, closed=vehicleOpsIsClosed(r), st=normalizeStatus(r.status);var progress=vehicleStageDone(r,'تم التحصيل')?'100%':(vehicleStageDone(r,'تمت الجلسة')?'80%':(vehicleStageDone(r,'بدأت الجلسة')?'60%':(vehicleStageDone(r,'وصل العميل')?'40%':(vehicleStageDone(r,'في الطريق')?'20%':'0%'))));var ops='<div class="vehicle-ops-row-actions"><button type="button" data-op-click="selectVehicleAppointment" data-op-arg1="'+esc(r.id)+'" data-op-stop="true" class="vehicle-ops-circle-action open"><span class="vehicle-ops-action-icon">🛡️</span><b>فتح</b></button>'+(vehicleOpsCanClose(r)?'<button type="button" class="vehicle-ops-circle-action close" data-op-click="closeVehicleSessionById" data-op-arg1="'+esc(r.id)+'" data-op-stop="true"><span class="vehicle-ops-action-icon">🔒</span><b>إغلاق</b></button>':'')+(vehicleOpsCanReopen(r)?'<button type="button" class="vehicle-ops-circle-action reopen" data-op-click="reopenVehicleSessionById" data-op-arg1="'+esc(r.id)+'" data-op-stop="true"><span class="vehicle-ops-action-icon">🔓</span><b>فتح مرة أخرى</b></button>':'')+(vehicleOpsCanConfirm(r)?'<button type="button" class="vehicle-ops-circle-action confirm" data-op-click="confirmVehicleSessionById" data-op-arg1="'+esc(r.id)+'" data-op-stop="true"><span class="vehicle-ops-action-icon">✅</span><b>تأكيد</b></button>':'')+'</div>';return '<button class="vehicle-ops-day-row '+(isCurrent?'active ':'')+(closed?'closed ':'')+statusClass(st)+'" type="button" data-op-click="selectVehicleAppointment" data-op-arg1="'+esc(r.id)+'"><span class="day-row-num">'+(i+1)+'</span><span class="day-row-time">'+esc(r.start||'--:--')+'<small>'+esc(r.end||'')+'</small></span><span class="day-row-main"><b>'+esc(r.client||'عميل غير محدد')+'</b><small>'+esc([r.service,r.petName,r.animalType,r.breed,r.size].filter(Boolean).join(' - ')||'جلسة')+'</small><small>📍 '+esc(r.address||'بدون عنوان')+'</small></span><span class="day-row-team"><small>✂️ '+esc(r.groomer||'-')+'</small><small>🚗 '+esc(r.driver||'-')+'</small><small>🚐 '+esc(r.vehicle||'-')+'</small></span><span class="appointments-status '+statusClass(st)+'">'+esc(st)+'</span><span class="vehicle-ops-row-progress"><i style="width:'+progress+'"></i></span><em>'+esc(st==='مؤكد'?'مؤكد':(st==='مغلق'?'مغلق':(closed?'مكتمل':(isCurrent?'مفتوح الآن':'فتح الطلب'))))+'</em>'+ops+'</button>'}).join('');
     if(vehicleOpsViewTab==='day'){
-      safeHtml(board,tabs+'<div class="vehicle-ops-day-layout"><section class="vehicle-ops-day-list"><div class="vehicle-ops-section-head"><h3>جدول اليوم حسب السيارة</h3><span>'+rows.length+'</span></div><div class="vehicle-ops-filter-chip">'+esc(val('vehicleOpsVehicleFilter')==='all'?'كل السيارات':val('vehicleOpsVehicleFilter'))+' — '+esc(day)+'</div><div class="vehicle-ops-day-list-scroll">'+list+'</div></section><aside class="vehicle-ops-day-side"><h3>الطلب المحدد</h3><div class="vehicle-ops-current-mini"><b>'+esc(selected.client||'عميل غير محدد')+'</b><p>'+esc([selected.start,selected.end].filter(Boolean).join(' - ')||'-')+'</p><p>'+esc([selected.service,selected.petName,selected.animalType].filter(Boolean).join(' - ')||'-')+'</p><span class="appointments-status '+statusClass(selected.status)+'">'+esc(normalizeStatus(selected.status))+'</span></div><button class="btn btn-primary" type="button" data-op-click="setVehicleOpsViewTab" data-op-arg1="current">فتح الطلب الحالي</button>'+(nextOpen&&String(nextOpen.id)!==currentId?'<button class="btn btn-ghost" type="button" data-op-click="selectVehicleAppointment" data-op-arg1="'+esc(nextOpen.id)+'">فتح الموعد التالي</button>':'')+'<small>اختيار أي موعد من الجدول يفتح تبويب الطلب الحالي تلقائيًا أمام السائق.</small></aside></div>','operations vehicle day board');
+      if(!dayRows.length){safeHtml(board,tabs+'<div class="appointments-empty appointments-calendar-empty">لا توجد طلبات جديدة في جدول اليوم. الطلبات التي تم فتحها انتقلت إلى شاشة الطلب الحالي.</div>','operations vehicle empty day queue');return;}
+      var list=dayRows.map(function(r,i){
+        r=calcFinancials(r);var st=normalizeStatus(r.status);
+        var progress=vehicleStageDone(r,'تم التحصيل')?'100%':(vehicleStageDone(r,'تمت الجلسة')?'80%':(vehicleStageDone(r,'بدأت الجلسة')?'60%':(vehicleStageDone(r,'وصل العميل')?'40%':(vehicleStageDone(r,'في الطريق')?'20%':'0%'))));
+        return '<article class="vehicle-ops-day-row '+statusClass(st)+'"><span class="day-row-num">'+(i+1)+'</span><span class="day-row-time">'+esc(r.start||'--:--')+'<small>'+esc(r.end||'')+'</small></span><span class="day-row-main"><b>'+esc(r.client||'عميل غير محدد')+'</b><small>'+esc([r.service,r.petName,r.animalType,r.breed,r.size].filter(Boolean).join(' - ')||'جلسة')+'</small><small>📍 '+esc(r.address||'بدون عنوان')+'</small></span><span class="day-row-team"><small>✂️ '+esc(r.groomer||'-')+'</small><small>🚗 '+esc(r.driver||'-')+'</small><small>🚐 '+esc(r.vehicle||'-')+'</small></span><span class="appointments-status '+statusClass(st)+'">'+esc(st)+'</span><span class="vehicle-ops-row-progress"><i style="width:'+progress+'"></i></span><button type="button" data-op-click="selectVehicleAppointment" data-op-arg1="'+esc(r.id)+'" data-op-stop="true" class="vehicle-ops-card-open"><span class="vehicle-ops-action-icon">🛡️</span><b>فتح</b></button></article>';
+      }).join('');
+      safeHtml(board,tabs+'<div class="vehicle-ops-day-layout single"><section class="vehicle-ops-day-list"><div class="vehicle-ops-section-head"><h3>جدول اليوم حسب السيارة</h3><span>'+dayRows.length+'</span></div><div class="vehicle-ops-filter-chip">'+esc(val('vehicleOpsVehicleFilter')==='all'?'كل السيارات':val('vehicleOpsVehicleFilter'))+' — '+esc(day)+'</div><div class="vehicle-ops-day-list-scroll">'+list+'</div></section></div>','operations vehicle day board');
       return;
     }
+    if(!currentRows.length||!selected){safeHtml(board,tabs+'<div class="appointments-empty appointments-calendar-empty">لا يوجد طلب حالي. افتح طلبًا من جدول اليوم لبدء التنفيذ.</div>','operations vehicle empty current request');return;}
+    selected=calcFinancials(selected);
+    var currentId=String(selected.id||'');
+    var currentIndex=currentRows.findIndex(function(r){return String(r.id)===currentId});
+    var nextOpen=currentRows.slice(Math.max(0,currentIndex)+1)[0]||currentRows[0]||null;
     var lockedCurrent=vehicleOpsIsLocked(selected), lockAttr=lockedCurrent?' disabled title="الجلسة مؤكدة ومقفلة"':'';
     var logs=(Array.isArray(selected.executionLog)?selected.executionLog:[]).slice(-6).reverse().map(function(x){return '<small>• '+esc(auditActionLabel(x.action))+' — '+esc(x.status||x.collectionStatus||x.paymentMethod||'')+'</small>'}).join('')||'<small>لا يوجد سجل تنفيذ بعد</small>';
     var bottom=vehicleProgressBar(selected);
