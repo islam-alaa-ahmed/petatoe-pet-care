@@ -189,10 +189,17 @@
   function permissionRecordFor(store,u){
     store=store||{};
     var keys=permissionStoreKeys(u), storeKeys=Object.keys(store), wanted=keys.map(normalizeIdentityValue);
-    for(var i=0;i<storeKeys.length;i++){
-      if(wanted.indexOf(normalizeIdentityValue(storeKeys[i]))>-1)return {found:true,key:storeKeys[i],perm:store[storeKeys[i]]||{}};
+    var foundKeys=[], merged={screens:{},special:{}}, found=false;
+    function merge(source){
+      source=source&&typeof source==='object'?source:{};
+      Object.keys(source.screens||{}).forEach(function(screen){merged.screens[screen]=Object.assign(merged.screens[screen]||{},source.screens[screen]||{})});
+      Object.keys(source.special||{}).forEach(function(key){merged.special[key]=!!source.special[key]});
+      if(source.vehicleScope&&typeof source.vehicleScope==='object')merged.vehicleScope=source.vehicleScope;
     }
-    return {found:false,key:'',perm:{}};
+    for(var i=0;i<storeKeys.length;i++){
+      if(wanted.indexOf(normalizeIdentityValue(storeKeys[i]))>-1){found=true;foundKeys.push(storeKeys[i]);merge(store[storeKeys[i]]||{});}
+    }
+    return found?{found:true,key:foundKeys[0]||'',keys:foundKeys,perm:merged}:{found:false,key:'',keys:[],perm:{}};
   }
   function getUserPerm(uid){
     var u=getUserById(uid);

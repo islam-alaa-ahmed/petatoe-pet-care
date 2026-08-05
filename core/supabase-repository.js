@@ -556,13 +556,70 @@
         var pr=await c.from('app_user_permissions').select('*');
         if(!pr.error){
           var map={};
+          function emptyPermissionRecord(){return {screens:{},special:{}};}
+          function boolAllowed(row){
+            if(row&&Object.prototype.hasOwnProperty.call(row,'allowed')) return row.allowed!==false;
+            return true;
+          }
+          function mergePermissionRecord(target,source){
+            target=target&&typeof target==='object'?target:emptyPermissionRecord();
+            source=source&&typeof source==='object'?source:{};
+            target.screens=target.screens&&typeof target.screens==='object'?target.screens:{};
+            target.special=target.special&&typeof target.special==='object'?target.special:{};
+            Object.keys(source.screens||{}).forEach(function(screen){
+              target.screens[screen]=Object.assign(target.screens[screen]||{},clone(source.screens[screen]||{}));
+            });
+            Object.keys(source.special||{}).forEach(function(key){target.special[key]=!!source.special[key];});
+            if(source.vehicleScope&&typeof source.vehicleScope==='object')target.vehicleScope=clone(source.vehicleScope);
+            return target;
+          }
+          function applyGranularPermission(target,row,key,data){
+            target=target||emptyPermissionRecord();
+            var screen=String(data.screen||data.screen_key||data.module||'').trim();
+            var action=String(data.action||data.permission_action||'').trim().toLowerCase();
+            var special=String(data.special||data.special_key||'').trim();
+            var normalized=String(key||'').trim().replace(/^screen[:.]/i,'').replace(/^permission[:.]/i,'');
+            var parts=normalized.split(/[.:/]/).filter(Boolean);
+            if(!screen && parts.length>1 && ['view','add','edit','delete'].indexOf(String(parts[parts.length-1]).toLowerCase())>-1){
+              action=String(parts.pop()).toLowerCase();screen=parts.join('.');
+            }
+            if(!special && !screen && (/^special[:.]/i.test(String(key||''))||data.type==='special')){
+              special=normalized.replace(/^special[:.]/i,'');
+            }
+            if(screen){
+              action=action||'view';
+              target.screens=target.screens||{};target.screens[screen]=target.screens[screen]||{};
+              target.screens[screen][action]=boolAllowed(row);
+              return target;
+            }
+            if(special){target.special=target.special||{};target.special[special]=boolAllowed(row);}
+            return target;
+          }
           (Array.isArray(pr.data)?pr.data:[]).forEach(function(r){
             if(!r) return;
-            var uid=String(r.user_id||'');
+            var uid=String(r.user_id||r.uid||r.app_user_id||'').trim();
             if(!uid) return;
-            var key=String(r.permission_key||'full');
-            var data=(r.data&&typeof r.data==='object')?clone(r.data):{};
-            if(key==='full'||data.screens||data.special||data.vehicleScope) map[uid]=data;
+            var key=String(r.permission_key||r.key||'full').trim();
+            var data=(r.data&&typeof r.data==='object')?clone(r.data):((r.permissions&&typeof r.permissions==='object')?clone(r.permissions):((r.legacy_payload&&typeof r.legacy_payload==='object')?clone(r.legacy_payload):{}));
+            var target=map[uid]||emptyPermissionRecord();
+            if(key==='full'||data.screens||data.special||data.vehicleScope) target=mergePermissionRecord(target,data);
+            else target=applyGranularPermission(target,r,key,data);
+            map[uid]=target;
+          });
+          /* Permission rows have existed under app ids, Supabase row UUIDs and usernames
+             across older releases. Alias every loaded record to the canonical user identity so
+             the current session and the navigation permission engine resolve the same payload. */
+          (identityCache.users||[]).forEach(function(user){
+            var aliases=[user.id,user.userId,user.uid,user.supabase_id,user.row_id,user.username,user.login,user.email].map(function(v){return String(v||'').trim();}).filter(Boolean);
+            var merged=null;
+            aliases.forEach(function(alias){
+              Object.keys(map).some(function(key){
+                if(String(key).trim().toLowerCase()!==alias.toLowerCase())return false;
+                merged=mergePermissionRecord(merged||emptyPermissionRecord(),map[key]);return true;
+              });
+            });
+            if(!merged)return;
+            aliases.forEach(function(alias){map[alias]=clone(merged);});
           });
           identityCache.permissions=map;
         }else{hadFailure=true;console.warn('PETATOE Identity permissions load failed', resultError(pr));}

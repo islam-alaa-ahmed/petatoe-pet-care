@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_UNIFIED_NAVIGATION_ACCORDION_STATE_HOTFIX_E5_2_13",
-  "buildVersion": "10.0.25-phase-e5-2-13-unified-navigation-accordion-state-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-13-unified-navigation-accordion-state-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_PERMISSION_ALIAS_HYDRATION_HOTFIX_E5_2_14",
+  "buildVersion": "10.0.25-phase-e5-2-14-permission-alias-hydration-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e5-2-14-permission-alias-hydration-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -52,7 +52,8 @@
     "appointmentVehicleSlotAvailability": "10.0.25-phase-e5-2-11-vehicle-date-slot-availability-contract-1",
     "operationsMonthlyVehicleCalendar": "10.0.25-phase-e5-2-12-timeline-monthly-vehicle-details-contract-1",
     "vehicleOperationsSuperAdminAccess": "10.0.25-phase-e5-2-12-1-superadmin-vehicle-operations-access-contract-1",
-    "unifiedNavigationAccordion": "10.0.25-phase-e5-2-13-unified-navigation-accordion-state-contract-1"
+    "unifiedNavigationAccordion": "10.0.25-phase-e5-2-13-unified-navigation-accordion-state-contract-1",
+    "permissionAliasHydration": "10.0.25-phase-e5-2-14-permission-alias-hydration-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",
