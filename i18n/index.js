@@ -44,6 +44,24 @@
   }
   function phraseKeyFor(value){return legacyHashText(value)||hashText(value);}
   function translatePhraseByKey(key,lang){return canonicalStoreValue('autoPhrases.'+key,normalizeLang(lang||currentLang()));}
+  function translateCanonicalSourceText(value,lang){
+    lang=normalizeLang(lang||currentLang());
+    if(lang!=='en')return value;
+    var text=String(value==null?'':value);
+    try{
+      var store=canonicalStore(),dict=store&&store.dictionaries&&store.dictionaries.en;
+      var direct=(dict&&dict.globalUiSource&&dict.globalUiSource[text])||(dict&&dict.runtimeSource&&dict.runtimeSource[text]);
+      if(typeof direct==='string'&&direct)return direct;
+      var tokens=dict&&dict.tokenSource;
+      if(tokens&&/[\u0600-\u06FF]/.test(text)){
+        var out=text;
+        Object.keys(tokens).sort(function(a,b){return b.length-a.length;}).forEach(function(source){if(out.indexOf(source)>-1)out=out.split(source).join(tokens[source]);});
+        out=out.replace(/[٠-٩]/g,function(d){return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d));});
+        if(out!==text&&!/[\u0600-\u06FF]/.test(out))return out;
+      }
+    }catch(_e){}
+    return text;
+  }
   function interpolate(value,params){
     var out=String(value||'');
     params=params||{};
@@ -61,7 +79,8 @@
     try{var store=canonicalStore(),dict=store&&store.dictionaries&&store.dictionaries.en;var direct=(dict&&dict.runtimeSource&&dict.runtimeSource[text])||(dict&&dict.globalUiSource&&dict.globalUiSource[text]);if(typeof direct==='string'&&direct)return direct;}catch(_e){}
     var sourceTemplates=getRuntimeTemplates('ar'),targetTemplates=getRuntimeTemplates('en');
     for(var k in sourceTemplates){if(!Object.prototype.hasOwnProperty.call(sourceTemplates,k))continue;var source=sourceTemplates[k]&&sourceTemplates[k].source,mode=sourceTemplates[k]&&sourceTemplates[k].mode||'prefix';if(typeof source!=='string')continue;if((mode==='exact'&&text===source)||(mode!=='exact'&&text.indexOf(source)===0)){var target=targetTemplates&&targetTemplates[k]&&targetTemplates[k].target;if(typeof target==='string')return interpolate(target,{rest:mode==='exact'?'':text.slice(source.length)});}}
-    return text;
+    var tokenized=translateCanonicalSourceText(text,'en');
+    return tokenized!==text?tokenized:text;
   }
   function patchRuntimeTextAPIs(){
     if(!window.__PETATOE_I18N_ORIGINAL_ALERT__&&typeof window.alert==='function'){
@@ -142,7 +161,9 @@
       var source=autoTextNodeSources.get(node);if(source===undefined){source=node.nodeValue;autoTextNodeSources.set(node,source);}
       var key=autoTextNodeKeys.get(node)||phraseKeyFor(source);autoTextNodeKeys.set(node,key);
       if(lang==='ar'){if(node.nodeValue!==source)node.nodeValue=source;return;}
-      var value=translatePhraseByKey(key,'en');if(typeof value==='string'&&value)node.nodeValue=source.replace(/\S[\s\S]*\S|\S/,value);
+      var value=translatePhraseByKey(key,'en')||translateCanonicalSourceText(source,'en');
+      if((!value||value===source)&&typeof translateRuntimeValue==='function')value=translateRuntimeValue(source,'en');
+      if(typeof value==='string'&&value&&value!==source)node.nodeValue=source.replace(/\S[\s\S]*\S|\S/,value);
     });
   }
   function translateAutoAttributes(lang,root){
@@ -161,7 +182,9 @@
         var current=el.getAttribute(attr),bucket=autoAttrKeys.get(el)||{},sources=autoAttrSources.get(el)||{};
         if(sources[attr]===undefined)sources[attr]=current;var source=sources[attr],key=bucket[attr]||phraseKeyFor(source);bucket[attr]=key;autoAttrKeys.set(el,bucket);autoAttrSources.set(el,sources);
         if(lang==='ar'){if(current!==source)el.setAttribute(attr,source);return;}
-        var value=translatePhraseByKey(key,'en');if(typeof value==='string'&&value)el.setAttribute(attr,value);
+        var value=translatePhraseByKey(key,'en')||translateCanonicalSourceText(source,'en');
+        if((!value||value===source)&&typeof translateRuntimeValue==='function')value=translateRuntimeValue(source,'en');
+        if(typeof value==='string'&&value&&value!==source)el.setAttribute(attr,value);
       });
     });
   }

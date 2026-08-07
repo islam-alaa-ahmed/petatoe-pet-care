@@ -137,6 +137,62 @@
     STORE.ar.smartReportsSource['contracts.candidatesDescription']='يرتب أفضل العملاء المرشحين لعقد سنوي أو توريد دوري بنفس منطق تحليل العملاء الحالي، مع درجة تكيفية تعتمد على الإنفاق، الزيارات، شهور النشاط، حداثة آخر زيارة، وتصنيف العميل.';
   }
   Object.assign(STORE.ar.aboutApp,{edition:'الإصدار المؤسسي',production:'الإنتاج'});
+  /* Phase E5.2.21 — English residual localization completion.
+   Arabic remains the authored UI source. English resolves exclusively through this canonical store. */
+  STORE.ar.globalUiSource=STORE.ar.globalUiSource||{};
+  STORE.en.globalUiSource=STORE.en.globalUiSource||{};
+  var E521_UI_EN={
+    'إدارة الرواتب':'Payroll Management','الرويس':'Al Ruwais',
+    'عنوان العميل أو الموقع':'Customer address or location',
+    'أي تفاصيل إضافية عن الجلسة':'Any additional session details',
+    'كشف التشغيل اليومي':'Daily Operations Statement',
+    'الموارد':'Resources','المكتمل':'Completed','إجمالي المواعيد':'Total Appointments','تاريخ الكشف':'Statement Date',
+    'كشف تشغيل يومي':'Daily Operations Statement','لا توجد مواعيد تشغيل':'No operating appointments',
+    'Timeline مواعيد اليوم':'Today’s Appointment Timeline','مواعيد اليوم Timeline':'Today’s Appointment Timeline','لا توجد مواعيد اليوم':'No appointments today',
+    'تنبيهات المواعيد':'Appointment Alerts','إجمالي التنبيهات':'Total Alerts','مواعيد اليوم':'Today’s Appointments','حرجة':'Critical','متابعة':'Follow-up',
+    'موعد سابق لم يتم إغلاقه':'A previous appointment was not closed','الحالة: مجدول':'Status: Scheduled','الحالة: مؤكد':'Status: Confirmed',
+    'التقويم التشغيلي':'Operations Calendar','التقويم الشهري':'Monthly Calendar','يومي':'Day','اليوم':'Today',
+    'تخطيط المسارات والتوزيع التشغيلي':'Route Planning & Operational Distribution','توزيع السائقين':'Driver Allocation','توزيع الجرومر':'Groomer Allocation','توزيع السيارات':'Vehicle Allocation',
+    'مجموعات':'Groups','أعلى حمل':'Peak Load','لا توجد مواعيد في تاريخ':'No appointments on',
+    'سجل المواعيد':'Appointment Log','بحث داخل العملاء...':'Search customers...','اسم العميل / الهاتف / الخدمة / العنوان':'Customer name / phone / service / address',
+    'قائمة العملاء':'Customer List','ملف العميل':'Customer Profile','الحيوانات الخاصة بالعميل':'Customer Pets','سجل الخدمات والزيارات':'Service & Visit History',
+    'أول زيارة':'First Visit','إجمالي الزيارات':'Total Visits','عدد الحيوانات':'Pet Count','زيارة':'visit','زيارات':'visits',
+    'تقرير قاعدة بيانات العملاء':'Customer Database Report','بحث داخل التقرير فقط...':'Search this report...','تصدير Excel':'Export Excel',
+    'اسم العميل':'Customer Name','رقم الجوال':'Mobile Number','نوع الحيوان':'Pet Type','اسم الحيوان':'Pet Name','آخر زيارة':'Last Visit',
+    'تقارير المواعيد':'Appointment Reports','إجمالي':'Total','محصل':'Collected','المتبقي':'Remaining','استعادة الافتراضيات':'Restore Defaults',
+    'يعرض 1 من أصل 1 سجل':'Showing 1 of 1 record','يعرض':'Showing','من أصل':'of','سجل':'record',
+    'التوقعات وذكاء الأعمال':'Forecasting & Business Intelligence','التوقع المعدل للشهر القادم':'Adjusted forecast for next month','التوقع الأساسي':'Baseline forecast','الفرق عن التوقع الأساسي':'Difference from baseline forecast',
+    'تحليل الاتجاه خلال الشهور (القيمة بالريال السعودي)':'Monthly Trend Analysis (Value in SAR)',
+    'عمود المبيعات + عدد المعاملات + متوسط الفاتورة مع قيم واضحة':'Sales bars + transaction count + average invoice with clear values',
+    'تحرير التقرير':'Edit Report','إجمالي المبيعات':'Total Sales','عدد العمليات':'Transactions','متوسط قيمة الفاتورة':'Average Invoice Value','كل البيانات':'All Data',
+    'كل السنوات':'All Years','إجمالي المبيعات (SAR)':'Total Sales (SAR)','عدد المعاملات':'Transactions','متوسط الفاتورة (SAR)':'Average Invoice (SAR)',
+    'تقرير العملاء':'Customer Report','تحديث':'Refresh','بحث داخل التقرير فقط':'Search this report',
+    'إجمالي الزيارات':'Total Visits','الحيوانات الخاصة بالعميل':'Customer Pets','قائمة العملاء':'Customer List',
+    'الأساسية - كلب متوسط':'Basic - Medium Dog','الأساسية - قط متوسط':'Basic - Medium Cat','الاساسية - كلب متوسط':'Basic - Medium Dog','الاساسية - قط متوسط':'Basic - Medium Cat',
+    'غير محدد':'Unspecified','مجدول':'Scheduled','مؤكد':'Confirmed','مؤجل':'Deferred','ملغي':'Cancelled','مكتمل':'Completed','تمت الجلسة':'Completed','تم التحصيل':'Collected',
+    'كل السيارات':'All Vehicles','كل السائقين':'All Drivers','كل الجرومر':'All Groomers','كل أنواع الحيوانات':'All Animal Types','كل الحالات':'All Statuses','كل طرق الدفع':'All Payment Methods',
+    'مسح الفلاتر':'Clear Filters','تفاصيل':'Details','تعديل':'Edit','حذف':'Delete','مسح':'Clear','حفظ الموعد':'Save Appointment',
+    'التشغيل':'Operations','التحصيل':'Collection','الملاحظات':'Notes','بيانات الجلسة':'Session Data','الخدمات المطلوبة':'Requested Services','تطبيق على':'Apply To','كل الحيوانات':'All Animals',
+    'اختر الخدمة':'Select Service','اختر السيارة':'Select Vehicle','اختر الجرومر':'Select Groomer','اختر السائق':'Select Driver','اختر طريقة الدفع':'Select Payment Method','غير محصل':'Uncollected',
+    'إضافة خدمة أخرى':'Add Another Service','موعد الجلسة':'Session Time','اختر السيارة والتاريخ أولًا':'Select the vehicle and date first',
+    'التاريخ':'Date','العنوان':'Address','البحث عن العميل':'Customer Search','عميل جديد':'New Customer','بيانات العميل':'Customer Data','بيانات الحيوان':'Pet Data',
+    'إضافة موعد جديد':'Add New Appointment','مسح النموذج':'Clear Form','التشغيل اليومي':'Daily Operations','التخطيط والمتابعة':'Planning & Follow-up','البيانات والتقارير':'Data & Reports',
+    'التنبيهات':'Alerts','كشف التشغيل اليومي':'Daily Operations Statement','إضافة موعد':'Add Appointment','Timeline اليوم':'Today Timeline',
+    'تقارير المواعيد':'Appointment Reports','العملاء والحيوانات':'Customers & Pets','مركز التقارير المتقدمة':'Advanced Reports Center',
+    'تحليل المبيعات':'Sales Analysis','تحليل السيارات':'Vehicle Analysis','تحليل العملاء':'Customer Analysis','تحليل الخدمات':'Service Analysis','التوصيات':'Recommendations',
+    'تقرير فاتورة المبيعات':'Sales Invoice Report','ملخص الأداء':'Performance Summary','تصدير الصفحة PDF':'Export Page PDF','تصدير البيانات':'Export Data','تحديث التقارير الذكية':'Refresh Smart Reports'
+  };
+  Object.keys(E521_UI_EN).forEach(function(source){STORE.ar.globalUiSource[source]=source;STORE.en.globalUiSource[source]=E521_UI_EN[source];});
+  STORE.ar.tokenSource=STORE.ar.tokenSource||{};
+  STORE.en.tokenSource=STORE.en.tokenSource||{};
+  var E521_TOKEN_EN={
+    'يناير':'January','فبراير':'February','مارس':'March','أبريل':'April','ابريل':'April','مايو':'May','يونيو':'June','يوليو':'July','أغسطس':'August','اغسطس':'August','سبتمبر':'September','أكتوبر':'October','اكتوبر':'October','نوفمبر':'November','ديسمبر':'December',
+    'الأحد':'Sunday','الاثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday','الاربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday','السبت':'Saturday',
+    'الأساسية':'Basic','الاساسية':'Basic','الشاملة':'Comprehensive','السعيدة':'Happy','كلب':'Dog','قط':'Cat','متوسط':'Medium','كبير':'Large','صغير':'Small',
+    'موعد سابق لم يتم إغلاقه':'A previous appointment was not closed','لا توجد مواعيد اليوم':'No appointments today','لا توجد مواعيد تشغيل في تاريخ':'No operating appointments on','لا توجد مواعيد في تاريخ':'No appointments on',
+    'الحالة':'Status','مجدول':'Scheduled','مؤكد':'Confirmed','مؤجل':'Deferred','ملغي':'Cancelled','مكتمل':'Completed','جلسة':'Session','سيارة':'Vehicle','سيارات':'Vehicles','عميل':'Customer','عملاء':'Customers','زيارة':'Visit','زيارات':'Visits'
+  };
+  Object.keys(E521_TOKEN_EN).forEach(function(source){STORE.ar.tokenSource[source]=source;STORE.en.tokenSource[source]=E521_TOKEN_EN[source];});
   function mergeCanonicalIntoLegacy(target,source){Object.keys(source||{}).forEach(function(key){var value=source[key];if(value&&typeof value==='object'&&!Array.isArray(value)){target[key]=target[key]&&typeof target[key]==='object'&&!Array.isArray(target[key])?target[key]:{};mergeCanonicalIntoLegacy(target[key],value);}else target[key]=value;});return target;}
   window.PETATOE_I18N_DICTIONARIES=window.PETATOE_I18N_DICTIONARIES||{};
   window.PETATOE_I18N_DICTIONARIES.ar=mergeCanonicalIntoLegacy(window.PETATOE_I18N_DICTIONARIES.ar||{},STORE.ar);
