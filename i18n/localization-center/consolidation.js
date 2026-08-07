@@ -17,51 +17,27 @@
       function language(target){return target||(center.getLanguage?center.getLanguage():(document.documentElement.lang||'ar'));}
       function normalizeText(value){return String(value==null?'':value).replace(/\s+/g,' ').trim();}
       function hashText(value){var str=normalizeText(value),h=0x811c9dc5;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24);}return 'h'+('00000000'+(h>>>0).toString(16)).slice(-8);}
-      var reverseRuntimeIndex=null;
-      function buildReverseRuntimeIndex(){
-        var out={ar:Object.create(null),en:Object.create(null)},langs=['ar','en'];
-        function pairPath(path){
-          var ar=store.getPath('ar',path),en=store.getPath('en',path);
-          if(typeof ar!=='string'||typeof en!=='string'||!ar||!en)return;
-          out.ar[normalizeText(en)]=ar;
-          out.en[normalizeText(ar)]=en;
-        }
-        function walk(obj,path){
-          Object.keys(obj||{}).forEach(function(key){
-            var next=path?path+'.'+key:key,value=obj[key];
-            if(value&&typeof value==='object'&&!Array.isArray(value))walk(value,next);
-            else if(typeof value==='string')pairPath(next);
-          });
-        }
-        var dictionaries=store.dictionaries||{};walk(dictionaries.ar||{},'');
-        return out;
-      }
       function canonicalRuntimePhrase(text,lang){
-        var translated=store.getPath(lang,'runtimeSource.'+text);
+        if(lang!=='en')return '';
+        var translated=store.getPath('en','runtimeSource.'+text);
         if(typeof translated==='string'&&translated)return translated;
-        translated=store.getPath(lang,'globalUiSource.'+text);
+        translated=store.getPath('en','globalUiSource.'+text);
         if(typeof translated==='string'&&translated)return translated;
         var hash=hashText(text);
-        translated=store.getPath(lang,'runtimePhrases.'+hash);
+        translated=store.getPath('en','runtimePhrases.'+hash);
         if(typeof translated==='string'&&translated)return translated;
-        translated=store.getPath(lang,'autoPhrases.'+hash);
-        if(typeof translated==='string'&&translated)return translated;
-        if(!reverseRuntimeIndex)reverseRuntimeIndex=buildReverseRuntimeIndex();
-        translated=reverseRuntimeIndex[lang]&&reverseRuntimeIndex[lang][normalizeText(text)];
+        translated=store.getPath('en','autoPhrases.'+hash);
         return typeof translated==='string'&&translated?translated:'';
       }
       function runtimeValue(value,targetLang,params){
         if(value==null)return value;
-        var text=String(value),lang=language(targetLang),translated=canonicalRuntimePhrase(text,lang);
-        if(typeof translated==='string'&&translated){
-          if(lang==='en'&&hasArabic(translated))translated='';
-          if(lang==='ar'&&!hasArabic(translated)&&/[A-Za-z]/.test(translated)&&translated!==text)translated='';
-        }
+        var text=String(value),lang=language(targetLang);
+        if(lang!=='en')return interpolate(text,params);
+        var translated=canonicalRuntimePhrase(text,'en');
+        if(typeof translated==='string'&&translated&&hasArabic(translated))translated='';
         return interpolate(translated||text,params);
       }
     
-      window.addEventListener('petatoe:localization-ready',function(){reverseRuntimeIndex=null;});
-      window.addEventListener('petatoe:localization-center-store-ready',function(){reverseRuntimeIndex=null;});
       center.translateRuntime=runtimeValue;
       center.runtimeDictionary={source:'PETATOE_LOCALIZATION_CENTER_STORE',count:Object.keys(store.getPath('en','runtimeSource')||{}).length};
       center.__singleSourceEnforced=true;

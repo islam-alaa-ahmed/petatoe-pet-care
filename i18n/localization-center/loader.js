@@ -1,120 +1,35 @@
-/* PETATOE v9 Enterprise Localization Center - Secure runtime database loader */
+/* PETATOE v10.0.25 — E5.2.20.1 English remote localization audit adapter.
+ * Arabic is authored source. Canonical English catalog is local runtime truth.
+ * Remote localization may be inspected for drift but never mutates runtime dictionaries.
+ */
 (function(){
   'use strict';
   var REGISTRY=window.PETATOE_LOCALIZATION_REGISTRY;
-  var CACHE=window.PETATOE_LOCALIZATION_CACHE;
-  var state={ready:false,loading:false,lastError:null,loadedLanguages:[],loadedValues:0,source:'local-files',cacheHydrated:false,lastLoadedAt:null,sourceIndex:{},requestCount:0,lastDurationMs:0,rejectedValues:0,protectedValues:0};
+  var state={ready:false,loading:false,lastError:null,loadedLanguages:[],loadedValues:0,source:'canonical-local',cacheHydrated:false,lastLoadedAt:null,sourceIndex:{},requestCount:0,lastDurationMs:0,rejectedValues:0,protectedValues:0,runtimeMutation:false,auditOnly:true,driftCount:0};
   function client(){return window.PETATOE_SUPABASE_CLIENT||window.supabase||null;}
-  function setPath(target,path,value){
-    if(!target||!path) return;
-    var parts=String(path).split('.'),cursor=target;
-    for(var i=0;i<parts.length-1;i++){var key=parts[i];if(!cursor[key]||typeof cursor[key]!=='object')cursor[key]={};cursor=cursor[key];}
-    cursor[parts[parts.length-1]]=value;
+  function canonical(){return window.PETATOE_LOCALIZATION_CENTER_STORE||null;}
+  function hasArabic(value){return /[\u0600-\u06FF]/.test(String(value==null?'':value));}
+  function flatten(obj,prefix,out){out=out||{};prefix=prefix||'';Object.keys(obj||{}).forEach(function(k){var v=obj[k],path=prefix?prefix+'.'+k:k;if(v&&typeof v==='object'&&!Array.isArray(v))flatten(v,path,out);else out[path]=v;});return out;}
+  function normalizeBundle(payload){if(Array.isArray(payload))payload=payload[0]||{};if(payload&&payload.bundle)payload=payload.bundle;return payload&&typeof payload==='object'?payload:{};}
+  async function loadBundle(db){state.requestCount++;var result=await db.rpc('get_localization_bundle',{p_language_codes:['en']});if(result.error)throw result.error;return normalizeBundle(result.data);}
+  function auditEnglish(bundle){
+    var item=bundle&&bundle.en||{},remote=flatten(item.values||item),store=canonical(),local=flatten(store&&store.dictionaries&&store.dictionaries.en||{}),drift=0,accepted=0;
+    Object.keys(remote).forEach(function(key){var value=remote[key];if(typeof value!=='string'||!value.trim()||hasArabic(value)){state.rejectedValues++;return;}accepted++;if(local[key]!==value)drift++;state.sourceIndex.en=state.sourceIndex.en||{};state.sourceIndex.en[key]='supabase-audit';});
+    state.loadedLanguages=['en'];state.loadedValues=accepted;state.driftCount=drift;state.source='supabase-english-audit';state.lastLoadedAt=new Date().toISOString();return accepted;
   }
-  function getPath(target,path){
-    return String(path||'').split('.').reduce(function(acc,key){return acc&&Object.prototype.hasOwnProperty.call(acc,key)?acc[key]:undefined;},target);
-  }
-  function hasArabic(value){return /[\u0600-\u06FF]/.test(typeof value==='string'?value:JSON.stringify(value==null?'':value));}
-  function isEmptyValue(value){return value==null||(typeof value==='string'&&!value.trim());}
-  function isSourceMetadataKey(key){return /^runtimeTemplates\.[^.]+\.source$/.test(String(key||''));}
-  function safeEnglishValue(value){
-    if(isEmptyValue(value)||hasArabic(value))return false;
-    if(Array.isArray(value))return value.every(safeEnglishValue);
-    if(value&&typeof value==='object')return Object.keys(value).every(function(key){return safeEnglishValue(value[key]);});
-    return true;
-  }
-  function filterLanguageMap(code,values,source){
-    var out={},dictionaries=window.PETATOE_I18N_DICTIONARIES||{},local=dictionaries[code]||{};
-    Object.keys(values||{}).forEach(function(key){
-      var value=values[key],existing=getPath(local,key);
-      if(code==='en'&&!isSourceMetadataKey(key)&&!safeEnglishValue(value)){state.rejectedValues++;return;}
-      /* Local dictionaries are the production source of truth. Runtime sources may only fill missing keys. */
-      if(code==='en'&&source!=='local-file'&&!isEmptyValue(existing)&&safeEnglishValue(existing)){state.protectedValues++;return;}
-      out[key]=value;
-    });
-    return out;
-  }
-  function markSources(code,values,source){
-    state.sourceIndex[code]=state.sourceIndex[code]||{};
-    Object.keys(values||{}).forEach(function(key){state.sourceIndex[code][key]=source;});
-  }
-  function mergeLanguageMap(code,values,source){
-    if(!code||!values||typeof values!=='object') return 0;
-    var dictionaries=window.PETATOE_I18N_DICTIONARIES=window.PETATOE_I18N_DICTIONARIES||{};
-    code=REGISTRY?REGISTRY.normalizeCode(code):String(code).toLowerCase();
-    dictionaries[code]=dictionaries[code]||{};
-    var accepted=filterLanguageMap(code,values,source||'runtime'),count=0;
-    var canonical=window.PETATOE_LOCALIZATION_CENTER_STORE;
-    Object.keys(accepted).forEach(function(key){
-      setPath(dictionaries[code],key,accepted[key]);
-      /* Keep one runtime source of truth: approved remote/cache values may fill only missing canonical keys. */
-      if(canonical&&canonical.dictionaries&&canonical.dictionaries[code]&&typeof canonical.getPath==='function'){
-        var existing=canonical.getPath(code,key);
-        if(isEmptyValue(existing))setPath(canonical.dictionaries[code],key,accepted[key]);
-      }
-      count++;
-    });
-    markSources(code,accepted,source||'runtime');
-    return count;
-  }
-  function hydrateCache(){
-    if(!CACHE||!REGISTRY) return 0;
-    var total=0,codes=REGISTRY.enabledCodes(),records=CACHE.readEnabled(codes);
-    Object.keys(records).forEach(function(code){total+=mergeLanguageMap(code,records[code].values,'cache');});
-    if(total){state.cacheHydrated=true;state.source='cache';state.loadedValues=total;state.loadedLanguages=Object.keys(records);}
-    return total;
-  }
-  function normalizeBundle(payload){
-    if(Array.isArray(payload)) payload=payload[0]||{};
-    if(payload&&payload.bundle) payload=payload.bundle;
-    return payload&&typeof payload==='object'?payload:{};
-  }
-  async function loadBundle(db,codes){
-    state.requestCount++;
-    var result=await db.rpc('get_localization_bundle',{p_language_codes:codes});
-    if(result.error) throw result.error;
-    return normalizeBundle(result.data);
-  }
-  function persistAndMerge(bundle){
-    var total=0,languages=[];
-    Object.keys(bundle||{}).forEach(function(code){
-      var item=bundle[code]||{},values=item.values||item;
-      if(!values||typeof values!=='object') return;
-      var normalized=REGISTRY?REGISTRY.normalizeCode(code):String(code).toLowerCase();
-      var accepted=filterLanguageMap(normalized,values,'supabase');
-      total+=mergeLanguageMap(normalized,accepted,'supabase');languages.push(normalized);
-      if(CACHE&&Object.keys(accepted).length) CACHE.writeLanguage(normalized,accepted,item.version||1);
-    });
-    state.loadedLanguages=languages;state.loadedValues=total;state.source='supabase';state.lastLoadedAt=new Date().toISOString();
-    return total;
-  }
+  function hydrateCache(){state.cacheHydrated=false;return 0;} // cache is not a runtime localization source
   function renderLanguageMenu(){
-    if(!REGISTRY) return;
-    var menu=document.getElementById('petLanguageMenu');if(!menu)return;
-    var current=REGISTRY.getStoredLanguage();menu.innerHTML='';
-    REGISTRY.list().forEach(function(language){
-      var button=document.createElement('button');button.type='button';button.className='pet-language-option';button.setAttribute('data-pet-lang',language.code);button.setAttribute('role','option');button.setAttribute('aria-selected',language.code===current?'true':'false');button.textContent=language.name;menu.appendChild(button);
-    });
+    if(!REGISTRY)return;var menu=document.getElementById('petLanguageMenu');if(!menu)return;var current=REGISTRY.getStoredLanguage();menu.innerHTML='';
+    REGISTRY.list().forEach(function(language){var button=document.createElement('button');button.type='button';button.className='pet-language-option';button.setAttribute('data-pet-lang',language.code);button.setAttribute('role','option');button.setAttribute('aria-selected',language.code===current?'true':'false');button.textContent=language.name;menu.appendChild(button);});
     if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.refreshLanguageOptions==='function')window.PETATOE_I18N.refreshLanguageOptions();
   }
-  async function load(options){
-    options=options||{};
-    if(state.loading) return state;
-    state.loading=true;state.lastError=null;window.dispatchEvent(new CustomEvent('petatoe:localization-loading',{detail:{loading:true}}));var started=(window.performance&&performance.now)?performance.now():Date.now();
-    try{
-      var db=client();if(!db||typeof db.rpc!=='function')throw new Error('Supabase client is not available');
-      var codes=REGISTRY?REGISTRY.enabledCodes():['ar','en'];
-      var bundle=await loadBundle(db,codes);
-      persistAndMerge(bundle);state.ready=true;renderLanguageMenu();
-      window.dispatchEvent(new CustomEvent('petatoe:localization-ready',{detail:Object.assign({},state)}));
-      if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.reapply==='function')window.PETATOE_I18N.reapply();
-    }catch(error){
-      state.lastError=error&&error.message?error.message:String(error);state.ready=state.cacheHydrated;renderLanguageMenu();
-      console.warn('[PETATOE ELC] Approved database bundle unavailable; cached/local dictionaries remain active.',state.lastError);
-    }finally{state.loading=false;window.dispatchEvent(new CustomEvent('petatoe:localization-loading',{detail:{loading:false}}));var ended=(window.performance&&performance.now)?performance.now():Date.now();state.lastDurationMs=Math.max(0,Math.round(ended-started));}
+  async function load(){
+    if(state.loading)return state;state.loading=true;state.lastError=null;window.dispatchEvent(new CustomEvent('petatoe:localization-loading',{detail:{loading:true}}));var started=(window.performance&&performance.now)?performance.now():Date.now();
+    try{var db=client();if(!db||typeof db.rpc!=='function')throw new Error('Supabase client is not available');var bundle=await loadBundle(db);auditEnglish(bundle);state.ready=true;renderLanguageMenu();window.dispatchEvent(new CustomEvent('petatoe:localization-ready',{detail:Object.assign({},state)}));if(window.PETATOE_I18N&&typeof window.PETATOE_I18N.reapply==='function')window.PETATOE_I18N.reapply();}
+    catch(error){state.lastError=error&&error.message?error.message:String(error);state.ready=true;state.source='canonical-local';renderLanguageMenu();console.warn('[PETATOE ELC] English remote audit unavailable; canonical local catalog remains authoritative.',state.lastError);}
+    finally{state.loading=false;window.dispatchEvent(new CustomEvent('petatoe:localization-loading',{detail:{loading:false}}));var ended=(window.performance&&performance.now)?performance.now():Date.now();state.lastDurationMs=Math.max(0,Math.round(ended-started));}
     return state;
   }
-  hydrateCache();
-  window.PETATOE_LOCALIZATION_LOADER={load:load,state:state,renderLanguageMenu:renderLanguageMenu,hydrateCache:hydrateCache,getSource:function(code,key){return state.sourceIndex[code]&&state.sourceIndex[code][key]||'local-file';}};
+  window.PETATOE_LOCALIZATION_LOADER={load:load,state:state,renderLanguageMenu:renderLanguageMenu,hydrateCache:hydrateCache,getSource:function(){return 'canonical-local';},runtimeMutation:false,auditOnly:true};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(load,0);},{once:true});else setTimeout(load,0);
 })();

@@ -26,7 +26,7 @@
     try{var store=canonicalStore();if(store&&typeof store.getPath==='function'){var value=store.getPath(normalizeLang(lang||currentLang()),key);if(value!==undefined&&value!==null&&value!=='')return value;}}catch(_e){}
     return undefined;
   }
-  function translate(key,lang){return canonicalStoreValue(key,normalizeLang(lang||currentLang()));}
+  function translate(key,lang){var code=normalizeLang(lang||currentLang());return canonicalStoreValue(key,code);}
   function normalizeTextValue(value){return String(value||'').replace(/\s+/g,' ').trim();}
   function hashText(value){
     var str=normalizeTextValue(value);

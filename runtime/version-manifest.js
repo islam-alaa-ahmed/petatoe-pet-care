@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_ENTERPRISE_LOCALIZATION_ARCHITECTURE_E5_2_20",
-  "buildVersion": "10.0.25-phase-e5-2-20-enterprise-localization-architecture-1",
-  "cacheVersion": "10.0.25-phase-e5-2-20-enterprise-localization-architecture-1",
+  "releaseName": "PETATOE_V10_0_25_ENTERPRISE_LOCALIZATION_ARCHITECTURE_HOTFIX_E5_2_20_1",
+  "buildVersion": "10.0.25-phase-e5-2-20-1-enterprise-localization-architecture-hotfix-1",
+  "cacheVersion": "10.0.25-phase-e5-2-20-1-enterprise-localization-architecture-hotfix-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -66,7 +66,8 @@
     "localizationRenderFallback": "10.0.25-phase-e5-2-19-2-nonempty-canonical-render-contract-1",
     "localizationCanonicalLookup": "10.0.25-phase-e5-2-19-3-canonical-store-first-render-contract-1",
     "localizationArabicSourceSingleEnglishCatalog": "10.0.25-phase-e5-2-19-4-arabic-source-single-english-catalog-contract-1",
-    "localizationEnterpriseArchitecture": "10.0.25-phase-e5-2-20-arabic-source-english-canonical-dom-owner-contract-1"
+    "localizationEnterpriseArchitecture": "10.0.25-phase-e5-2-20-arabic-source-english-canonical-dom-owner-contract-1",
+    "localizationEnterpriseArchitectureHotfix": "10.0.25-phase-e5-2-20-1-arabic-authored-english-single-catalog-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

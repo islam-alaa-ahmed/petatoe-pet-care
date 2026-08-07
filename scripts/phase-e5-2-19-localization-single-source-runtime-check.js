@@ -14,7 +14,7 @@ const checks=[
  ['canonical store owns migrated legacy runtime phrase',/runtimePhrases\.h266b27de/.test(dict)],
  ['Arabic canonical UI labels no longer keep known English-only report labels',/title:'لوحة التحكم'/.test(dict)&&/title:'تحليل المبيعات'/.test(dict)&&/title:'أداء السيارات'/.test(dict)&&/title:'تحليل الخدمات'/.test(dict)],
  ['runtime translation resolves auto phrases and runtime phrases',/autoPhrases\.'\+hash/.test(consolidation)&&/runtimePhrases\.'\+hash/.test(consolidation)],
- ['runtime translation has a bidirectional reverse canonical index',/buildReverseRuntimeIndex/.test(consolidation)&&/reverseRuntimeIndex\[lang\]/.test(consolidation)],
+ ['runtime translation is Arabic-source with English-only canonical lookup',!/buildReverseRuntimeIndex/.test(consolidation)&&/if\(lang!=='en'\)return interpolate\(text,params\)/.test(consolidation)],
  ['operations source resolves canonical store before exposing a fallback key',/function canonicalText/.test(ops)&&/allowKeyFallback:false/.test(ops)],
  ['operations rerenders on localization readiness and language changes',/refreshOperationsLocalizationRender/.test(ops)&&/localizationCenter\.whenReady/.test(ops)&&/language-changed',refreshOperationsLocalizationRender/.test(ops)],
  ['compatibility adapters do not request raw-key fallback',![opAdapter,whAdapter,maintenance].some(s=>/fallback:key/.test(s))],
