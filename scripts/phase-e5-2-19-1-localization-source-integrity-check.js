@@ -25,12 +25,12 @@ function t(name,ok){total++;pass+=check(name,!!ok);}
 t('canonical localization store loads',!!store&&typeof store.getPath==='function');
 t('all reported Operations keys exist in both canonical languages',visibleKeys.every(k=>{const a=store.getPath('ar','operationsSource.'+k),e=store.getPath('en','operationsSource.'+k);return typeof a==='string'&&a&&typeof e==='string'&&e;}));
 t('reported Operations keys are Arabic in AR and Arabic-free in EN',visibleKeys.every(k=>arRe.test(store.getPath('ar','operationsSource.'+k)||'')&&!arRe.test(store.getPath('en','operationsSource.'+k)||'')));
-t('operations canonicalText cannot expose a raw localization key',/function canonicalText[\s\S]{0,900}return '';/.test(ops)&&!/function canonicalText[\s\S]{0,900}return (?:String\()?key/.test(ops));
+t('operations canonicalText never blanks the UI and schedules canonical readiness repair',/function canonicalText[\s\S]{0,1800}queueLocalizationRepair\(\);[\s\S]{0,220}return String\(key\|\|''\);/.test(ops));
 t('operations repairs exact leaked keys in Arabic and English',/Defensive key-leak recovery/.test(ops)&&/store\.getPath\(lang,'operationsSource\.'\+source\)/.test(ops));
 t('lazy operations module attaches an immediate localization whenReady repair',/localizationCenter\.whenReady\(function\(\)\{setTimeout\(refreshOperationsLocalizationRender,0\);\}\)/.test(ops));
 t('appointments/customer helpers do not use key names as user-visible fallback',!/return fallback\|\|key/.test(ops)&&!/return key;/.test(ops.slice(0,8000)));
-t('operations warehouse and maintenance adapters never expose unresolved raw keys',adapters.every(s=>!/fallback:key/.test(s)&&/return typeof value==='string'&&value\?value:''/.test(s)));
-t('compatibility consolidation does not reintroduce raw-key fallback',!/\|\|key[;,)\s]/.test(consolidation)&&/allowKeyFallback:false/.test(consolidation));
+t('operations warehouse and maintenance adapters are canonical-first and never return an empty unresolved label',adapters.every(s=>!/fallback:key/.test(s)&&/return typeof value==='string'&&value\?value:String\(key\|\|''\)/.test(s)));
+t('compatibility consolidation does not replace canonical module adapters with a second fallback owner',!/PETATOE_OPERATIONS_I18N\.t=function/.test(consolidation)&&!/PETATOE_WAREHOUSE_I18N\.t=function/.test(consolidation));
 t('remote/cache loader fills missing canonical values without overriding canonical local values',/Keep one runtime source of truth/.test(loader)&&/if\(isEmptyValue\(existing\)\)setPath\(canonical\.dictionaries\[code\],key,accepted\[key\]\)/.test(loader));
 t('runtime reverse translation index is invalidated after localization hydration',/localization-ready',function\(\)\{reverseRuntimeIndex=null;\}/.test(consolidation)&&/localization-center-store-ready',function\(\)\{reverseRuntimeIndex=null;\}/.test(consolidation));
 t('all localization javascript runtime assets are network-first in the service worker',sw.includes('\\/i18n\\/[^/]+\\.js')&&sw.includes('\\/i18n\\/localization-center\\/[^/]+\\.js'));

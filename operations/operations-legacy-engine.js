@@ -23,7 +23,7 @@
     localizationRepairQueued=true;
     var run=function(){
       localizationRepairQueued=false;
-      try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();var root=document.getElementById('appointments');if(root&&root.classList.contains('active'))render();}catch(_e){}
+      try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();var roots=['appointments','vehicleOperations','vehicleOperationsReports','operationKpis'];roots.forEach(function(id){var node=document.getElementById(id);if(node)localizeOperationsSubtree(node);});var root=document.getElementById('appointments');if(root&&root.classList.contains('active'))render();else if(document.getElementById('vehicleOperations')&&document.getElementById('vehicleOperations').classList.contains('active'))renderVehicleOperations();else if(document.getElementById('vehicleOperationsReports')&&document.getElementById('vehicleOperationsReports').classList.contains('active'))renderVehicleExecutionReports();else if(document.getElementById('operationKpis')&&document.getElementById('operationKpis').classList.contains('active'))renderOperationsKpiDashboard();}catch(_e){}
     };
     try{
       var center=window.PETATOE_LOCALIZATION_CENTER;
@@ -33,13 +33,22 @@
   }
   function canonicalText(path,key,params){
     var c=window.PETATOE_LOCALIZATION_CENTER,s=window.PETATOE_LOCALIZATION_CENTER_STORE,lang=(c&&c.getLanguage?c.getLanguage():(document.documentElement.lang||'ar')),value;
-    if(c&&c.t)value=c.t(path,params,{fallback:'',allowKeyFallback:false});
-    if((value==null||value==='')&&s&&s.getPath)value=s.getPath(lang,path);
+    function read(candidate){
+      var found='';
+      if(c&&c.t)found=c.t(candidate,params,{fallback:'',allowKeyFallback:false});
+      if((found==null||found==='')&&s&&s.getPath)found=s.getPath(lang,candidate);
+      return found;
+    }
+    value=read(path);
+    /* Historical operations keys were split across catalogs. Resolve their canonical owner instead of blanking the UI. */
+    if((value==null||value==='')&&path.indexOf('operationsSource.calendar.')===0)value=read('operationsCustomer.calendar.'+path.slice('operationsSource.calendar.'.length));
+    if((value==null||value==='')&&path.indexOf('operationsSource.fallback.')===0)value=read('operationsCustomer.fallback.'+path.slice('operationsSource.fallback.'.length));
+    if((value==null||value==='')&&path==='operationsSource.permissionDenied')value=read('runtimeSource.ليس لديك صلاحية لتنفيذ هذا الإجراء');
     if(typeof value==='string'&&params){Object.keys(params).forEach(function(k){value=value.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});}
     if(typeof value==='string'&&value)return value;
     queueLocalizationRepair();
-    /* Never expose a localization key to the user while the canonical dictionary is hydrating. */
-    return '';
+    /* Fail visible, never empty: readiness replay will replace this diagnostic key as soon as the canonical catalog is available. */
+    return String(key||'');
   }
   function opT(key,params){return canonicalText('operationsSource.'+key,key,params);}
   function opReportT(key,params){return canonicalText('operations.reports.'+key,key,params);}
@@ -3770,9 +3779,16 @@
     try{
       refreshVehicleStaffScreen();
       refreshAppointmentFormScreen();
-      var root=document.getElementById('appointments');
-      if(root&&root.classList.contains('active'))render();
-      else if(root)localizeOperationsSubtree(root);
+      var roots=['appointments','vehicleOperations','vehicleOperationsReports','operationKpis'];
+      roots.forEach(function(id){var node=document.getElementById(id);if(node)localizeOperationsSubtree(node);});
+      var appointmentsRoot=document.getElementById('appointments');
+      var vehicleRoot=document.getElementById('vehicleOperations');
+      var reportsRoot=document.getElementById('vehicleOperationsReports');
+      var kpiRoot=document.getElementById('operationKpis');
+      if(appointmentsRoot&&appointmentsRoot.classList.contains('active'))render();
+      else if(vehicleRoot&&vehicleRoot.classList.contains('active')&&typeof renderVehicleOperations==='function')renderVehicleOperations();
+      else if(reportsRoot&&reportsRoot.classList.contains('active')&&typeof renderVehicleExecutionReports==='function')renderVehicleExecutionReports();
+      else if(kpiRoot&&kpiRoot.classList.contains('active')&&typeof renderOperationsKpiDashboard==='function')renderOperationsKpiDashboard();
     }catch(_e){}
   }
   if(!window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__){
