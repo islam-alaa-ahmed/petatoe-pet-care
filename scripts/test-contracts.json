@@ -74,7 +74,9 @@
     "phase-e5-2-19-localization-single-source-runtime-check.js",
     "phase-e5-2-19-1-localization-source-integrity-check.js",
     "phase-e5-2-19-2-localization-render-fallback-check.js",
-    "phase-e5-2-19-3-canonical-localization-lookup-check.js"
+    "phase-e5-2-19-3-canonical-localization-lookup-check.js",
+    "phase-e5-2-19-4-arabic-source-single-english-catalog-check.js",
+    "phase-e5-2-20-enterprise-localization-architecture-check.js"
   ],
   "historicalPatterns": [
     "v9_",
