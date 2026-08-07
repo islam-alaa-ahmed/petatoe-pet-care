@@ -73,7 +73,8 @@
     "phase-e5-2-18-appointments-reference-navigation-identity-check.js",
     "phase-e5-2-19-localization-single-source-runtime-check.js",
     "phase-e5-2-19-1-localization-source-integrity-check.js",
-    "phase-e5-2-19-2-localization-render-fallback-check.js"
+    "phase-e5-2-19-2-localization-render-fallback-check.js",
+    "phase-e5-2-19-3-canonical-localization-lookup-check.js"
   ],
   "historicalPatterns": [
     "v9_",

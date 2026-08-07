@@ -1772,7 +1772,7 @@
       ['✅',opT('monthCollected'),money(monthFinancial.paid)],
       ['⏳',opT('monthRemaining'),money(monthFinancial.remaining)]
     ];
-    safeHtml(el, cards.map(function(c){return '<div class="appointments-kpi"><span class="ico">'+c[0]+'</span><div><span>'+esc(c[1])+'</span><b>'+c[2]+'</b></div></div>'}).join(''), 'operations legacy render');
+    safeHtml(el, cards.map(function(c){var keyMap={'🔔':'activeAlerts','📅':'todayAppointments','🌅':'tomorrowAppointments','🗓️':'monthAppointments','💰':'monthRevenue','✅':'monthCollected','⏳':'monthRemaining'},i18nKey=keyMap[c[0]]||'';return '<div class="appointments-kpi"><span class="ico">'+c[0]+'</span><div><span'+(i18nKey?' data-i18n="operationsSource.'+i18nKey+'"':'')+'>'+esc(c[1])+'</span><b>'+c[2]+'</b></div></div>'}).join(''), 'operations legacy render');
   }
   function renderStatusFilter(){var sel=byId('appointmentStatusFilter');if(!sel)return;var old=sel.value||'all';safeHtml(sel, '<option value="all">'+esc(opT('allStatuses'))+'</option>'+STATUS_FLOW.map(function(x){return '<option value="'+esc(x)+'">'+esc(x)+'</option>'}).join(''), 'operations legacy render');sel.value=(old==='all'||STATUS_FLOW.indexOf(normalizeStatus(old))>-1)?(old==='all'?'all':normalizeStatus(old)):'all'}
   function renderSelectFilter(id,placeholder,values){
@@ -2741,7 +2741,7 @@
     var names=policy&&typeof policy.currentVehicleNames==='function'?policy.currentVehicleNames():vehicleNames();
     names=vehicleScopeFilterNames(uniqueSorted(names.filter(Boolean)));
     if(old&&old!=='all'&&names.indexOf(old)===-1){old='all';sel.value='all'}
-    safeHtml(sel, '<option value="all">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope render');
+    safeHtml(sel, '<option value="all" data-i18n="operationsSource.allAuthorizedVehicles">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope render');
   }
   function vehicleOpsRows(){
     var day=vehicleOpsDate(), car=val('vehicleOpsVehicleFilter')||'all', policy=window.PETATOEOperationsVehiclePolicy;
@@ -3244,7 +3244,7 @@
     var names=policy&&typeof policy.historicalVehicleNames==='function'?policy.historicalVehicleNames(read(),{from:from,to:to}):uniqueSorted(read().filter(function(r){var d=String(r.date||'');return d>=from&&d<=to}).map(function(r){return r.vehicle||''}).filter(Boolean));
     names=vehicleScopeFilterNames(names);
     if(old&&old!=='all'&&names.indexOf(old)===-1){old='all';sel.value='all'}
-    safeHtml(sel, '<option value="all">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope report render');
+    safeHtml(sel, '<option value="all" data-i18n="operationsSource.allAuthorizedVehicles">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope report render');
   }
   function vehicleExecutionReportRows(){
     var from=vehicleOpsReportDate('vehicleOpsReportFrom',today()), to=vehicleOpsReportDate('vehicleOpsReportTo',from), car=val('vehicleOpsReportVehicleFilter')||'all';
@@ -3326,7 +3326,7 @@
     var names=policy&&typeof policy.historicalVehicleNames==='function'?policy.historicalVehicleNames(read(),{from:from,to:to}):uniqueSorted(read().filter(function(r){var d=String(r.date||'');return d>=from&&d<=to}).map(function(r){return r.vehicle||''}).filter(Boolean));
     names=vehicleScopeFilterNames(names);
     if(old&&old!=='all'&&names.indexOf(old)===-1){old='all';sel.value='all'}
-    safeHtml(sel, '<option value="all">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope kpi render');
+    safeHtml(sel, '<option value="all" data-i18n="operationsSource.allAuthorizedVehicles">'+esc(opT('allAuthorizedVehicles'))+'</option>'+names.map(function(x){return '<option value="'+esc(x)+'" '+(x===old?'selected':'')+'>'+esc(x)+'</option>'}).join(''), 'operations vehicle scope kpi render');
   }
   function operationsKpiRows(){
     var from=operationsKpiDate('operationsKpiFrom',today()), to=operationsKpiDate('operationsKpiTo',from), car=val('operationsKpiVehicleFilter')||'all';

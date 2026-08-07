@@ -22,7 +22,17 @@
   function safeStorageSet(lang){try{localStorage.setItem(STORAGE_KEY,lang);}catch(_){}}
   function currentLang(){return normalizeLang(safeStorageGet()||window.__PETATOE_INITIAL_LANGUAGE__||document.documentElement.getAttribute('lang')||DEFAULT_LANG);}
   function getDict(lang){return dictionaries[normalizeLang(lang)]||dictionaries[DEFAULT_LANG]||{};}
-  function translate(key,lang){return getPath(getDict(lang||currentLang()),key);}
+  function canonicalStoreValue(key,lang){
+    try{
+      var store=window.PETATOE_LOCALIZATION_CENTER_STORE;
+      if(store&&typeof store.getPath==='function'){
+        var value=store.getPath(normalizeLang(lang||currentLang()),key);
+        if(value!==undefined&&value!==null&&value!=='')return value;
+      }
+    }catch(_e){}
+    return undefined;
+  }
+  function translate(key,lang){var code=normalizeLang(lang||currentLang()),canonical=canonicalStoreValue(key,code);return canonical!==undefined?canonical:getPath(getDict(code),key);}
   function normalizeTextValue(value){return String(value||'').replace(/\s+/g,' ').trim();}
   function hashText(value){
     var str=normalizeTextValue(value);
@@ -39,15 +49,15 @@
     return window.PETATOE_I18N_SHA1_KEYS&&window.PETATOE_I18N_SHA1_KEYS[str];
   }
   function phraseKeyFor(value){return legacyHashText(value)||hashText(value);}
-  function translatePhraseByKey(key,lang){return getPath(getDict(lang||currentLang()),'autoPhrases.'+key);}
+  function translatePhraseByKey(key,lang){var code=normalizeLang(lang||currentLang()),canonical=canonicalStoreValue('autoPhrases.'+key,code);return canonical!==undefined?canonical:getPath(getDict(code),'autoPhrases.'+key);}
   function interpolate(value,params){
     var out=String(value||'');
     params=params||{};
     Object.keys(params).forEach(function(k){out=out.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});
     return out;
   }
-  function translateRuntimeByKey(key,lang){return getPath(getDict(lang||currentLang()),'runtimePhrases.'+key);}
-  function getRuntimeTemplates(lang){return getPath(getDict(lang||currentLang()),'runtimeTemplates')||{};}
+  function translateRuntimeByKey(key,lang){var code=normalizeLang(lang||currentLang()),canonical=canonicalStoreValue('runtimePhrases.'+key,code);return canonical!==undefined?canonical:getPath(getDict(code),'runtimePhrases.'+key);}
+  function getRuntimeTemplates(lang){var code=normalizeLang(lang||currentLang()),canonical=canonicalStoreValue('runtimeTemplates',code);return canonical||getPath(getDict(code),'runtimeTemplates')||{};}
   function translateRuntimeValue(value,lang){
     if(value===undefined||value===null) return value;
     lang=normalizeLang(lang||currentLang());
