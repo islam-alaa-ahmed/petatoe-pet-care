@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_APPOINTMENTS_REFERENCE_NAVIGATION_IDENTITY_E5_2_18",
-  "buildVersion": "10.0.25-phase-e5-2-18-appointments-reference-navigation-identity-1",
-  "cacheVersion": "10.0.25-phase-e5-2-18-appointments-reference-navigation-identity-1",
+  "releaseName": "PETATOE_V10_0_25_LOCALIZATION_SINGLE_SOURCE_RUNTIME_E5_2_19",
+  "buildVersion": "10.0.25-phase-e5-2-19-localization-single-source-runtime-1",
+  "cacheVersion": "10.0.25-phase-e5-2-19-localization-single-source-runtime-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -60,7 +60,8 @@
     "vehicleCurrentRequestLifecycle": "10.0.25-phase-e5-2-15-day-current-confirmed-lifecycle-contract-1",
     "unifiedVehicleScope": "10.0.25-phase-e5-2-16-unified-vehicle-scope-contract-1",
     "singleNavigationDataSource": "10.0.25-phase-e5-2-17-canonical-navigation-data-source-contract-1",
-    "appointmentsReferenceNavigationIdentity": "10.0.25-phase-e5-2-18-appointments-reference-route-identity-contract-1"
+    "appointmentsReferenceNavigationIdentity": "10.0.25-phase-e5-2-18-appointments-reference-route-identity-contract-1",
+    "localizationSingleSourceRuntime": "10.0.25-phase-e5-2-19-bidirectional-localization-runtime-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

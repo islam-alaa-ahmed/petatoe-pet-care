@@ -17,8 +17,15 @@
 
 (function(){
   'use strict';
-  function opT(key,params){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsSource.'+key,params,{fallback:key}):key;}
-  function opReportT(key,params){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operations.reports.'+key,params,{fallback:key}):key;}
+  function canonicalText(path,key,params){
+    var c=window.PETATOE_LOCALIZATION_CENTER,s=window.PETATOE_LOCALIZATION_CENTER_STORE,lang=(c&&c.getLanguage?c.getLanguage():(document.documentElement.lang||'ar')),value;
+    if(c&&c.t)value=c.t(path,params,{fallback:'',allowKeyFallback:false});
+    if((value==null||value==='')&&s&&s.getPath)value=s.getPath(lang,path);
+    if(typeof value==='string'&&params){Object.keys(params).forEach(function(k){value=value.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});}
+    return typeof value==='string'&&value?value:String(key||'');
+  }
+  function opT(key,params){return canonicalText('operationsSource.'+key,key,params);}
+  function opReportT(key,params){return canonicalText('operations.reports.'+key,key,params);}
   function opAppointmentT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operations.appointments.'+key,params,{fallback:fallback||key}):(fallback||key);}
   function opCustomerT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsCustomer.'+key,params,{fallback:fallback||key}):(fallback||key);}
   function opStatusT(status){var map={'مجدول':'statusScheduled','في الطريق':'statusOnTheWay','وصل العميل':'statusArrived','بدأت الجلسة':'statusStarted','تمت الجلسة':'statusCompleted','تم التحصيل':'statusCollected','مغلق':'statusClosed','مؤكد':'statusConfirmed','غير مكتملة':'statusIncomplete','مؤجل':'statusPostponed','ملغي':'statusCancelled','تم':'statusCompleted'};return opT(map[String(status||'')]||'statusUnknown');}
@@ -3725,14 +3732,15 @@
     window.__PETATOE_APPOINTMENT_REFERENCE_REFRESH_BOUND__=true;
     window.addEventListener('petatoe:payroll-read-facade-refreshed',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();}catch(_e){} });
     document.addEventListener('petatoe:reference-registry-updated',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();}catch(_e){} });
-    window.addEventListener('petatoe:localization-center-ready',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();}catch(_e){} });
-    window.addEventListener('petatoe:localization-ready',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();}catch(_e){} });
+    window.addEventListener('petatoe:localization-center-ready',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();var root=document.getElementById('appointments');if(root&&root.classList.contains('active'))render();}catch(_e){} });
+    window.addEventListener('petatoe:localization-ready',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();var root=document.getElementById('appointments');if(root&&root.classList.contains('active'))render();}catch(_e){} });
   }
   if(!window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__){
     window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__=true;
     window.addEventListener('petatoe:language-changed',function(){
       var root=document.getElementById('appointments');
-      if(root)localizeOperationsSubtree(root);
+      if(root&&root.classList.contains('active'))render();
+      else if(root)localizeOperationsSubtree(root);
     });
   }
   window.__PETATOEAppointmentsLegacyEngine=appointmentsPublicApi;

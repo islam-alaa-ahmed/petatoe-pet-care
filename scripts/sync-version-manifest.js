@@ -58,7 +58,18 @@ function synchronize(){
     'payroll/payroll-read-facade.js',
     'payroll/payroll-core.js',
     'warehouses/warehouse-core.js',
-    'mobile/mobile-enterprise-v10-shell.js'
+    'mobile/mobile-enterprise-v10-shell.js',
+    'treasury/treasury-core.js',
+    'operations/operations-legacy-engine.js',
+    'i18n/ar.js',
+    'i18n/en.js',
+    'i18n/index.js',
+    'i18n/operations-source.js',
+    'i18n/warehouse-source.js',
+    'i18n/maintenance-source.js',
+    'i18n/localization-center/dictionary-store.js',
+    'i18n/localization-center/runtime.js',
+    'i18n/localization-center/consolidation.js'
   ];
   for(const asset of governedAssets){
     const re = new RegExp(asset.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\?v=[^\\\'"&<\\s]+', 'g');
