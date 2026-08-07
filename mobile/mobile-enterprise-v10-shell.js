@@ -125,9 +125,28 @@
     }
     return t(tab==='dashboard'?'home':'menu',tab||'PETATOE');
   }
+  function activeCanonicalRouteKey(){
+    var nav=document.getElementById('nav');
+    if(!nav)return '';
+    var source=nav.querySelector('button.active[data-tab],button.active[data-settings-main]');
+    return source?canonicalRouteKeyFromButton(source):'';
+  }
   function syncActive(tab){
-    document.querySelectorAll('.pet-v10-nav-btn[data-tab],.pet-v10-drawer-item[data-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab);});
-    var title=document.getElementById('petV10HeaderScreenTitle'); if(title)title.textContent=screenLabel(tab);
+    /* Bottom navigation intentionally remains tab-based because it represents top-level
+       destinations. Drawer items are route-based so appointments/add and
+       appointments/master can never appear active at the same time. */
+    document.querySelectorAll('.pet-v10-nav-btn[data-tab]').forEach(function(b){b.classList.toggle('active',b.dataset.tab===tab);});
+    var activeRouteKey=activeCanonicalRouteKey();
+    document.querySelectorAll('.pet-v10-drawer-item').forEach(function(b){
+      var match=activeRouteKey?b.dataset.routeKey===activeRouteKey:(b.dataset.tab&&b.dataset.tab===tab);
+      b.classList.toggle('active',!!match);
+    });
+    var title=document.getElementById('petV10HeaderScreenTitle');
+    if(title){
+      var activeSource=document.querySelector('#nav button.active[data-tab],#nav button.active[data-settings-main]');
+      var titleNode=activeSource&&activeSource.querySelector('[data-nav-title],.pet-v142-title,strong,b');
+      title.textContent=cleanLabel(titleNode&&titleNode.textContent)||screenLabel(tab);
+    }
     var nav=document.querySelector('.pet-v10-bottom-nav'); if(nav&&!nav.classList.contains('pet-v10-nav-tracking'))window.requestAnimationFrame(function(){positionNavBubble(nav);});
   }
   function iconFromLabel(label){ var m=(label||'').match(/[\p{Extended_Pictographic}\u2600-\u27BF]/u); return m?m[0]:'•'; }

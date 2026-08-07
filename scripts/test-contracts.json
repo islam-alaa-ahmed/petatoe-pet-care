@@ -69,7 +69,8 @@
     "phase-e5-2-14-3-permission-bootstrap-runtime-check.js",
     "phase-e5-2-15-vehicle-current-request-lifecycle-check.js",
     "phase-e5-2-16-unified-vehicle-scope-check.js",
-    "phase-e5-2-17-single-navigation-data-source-check.js"
+    "phase-e5-2-17-single-navigation-data-source-check.js",
+    "phase-e5-2-18-appointments-reference-navigation-identity-check.js"
   ],
   "historicalPatterns": [
     "v9_",

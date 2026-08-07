@@ -281,7 +281,15 @@
         if(mount && window.PETATOEObservability && typeof window.PETATOEObservability.renderInto === 'function') window.PETATOEObservability.renderInto(mount);
       }
       if(tabId){
-        document.dispatchEvent(new CustomEvent('petatoe:tabchange', { detail: { tabId: tabId, lazyHydration: true } }));
+        var router=window.PETATOERouter||{};
+        var intent=router.current===tabId?(router.currentIntent||{}):{};
+        document.dispatchEvent(new CustomEvent('petatoe:tabchange', { detail: {
+          tabId: tabId,
+          lazyHydration: true,
+          appointmentsSubTab: tabId==='appointments'?String(intent.appointmentsSubTab||''):'',
+          navigationScreen: String(intent.navigationScreen||tabId||''),
+          source: 'lazy-hydration-refresh'
+        } }));
       }
     }catch(e){
       if(window.console && console.warn) console.warn('[PETATOE Mobile Gate] refresh failed', group, e);

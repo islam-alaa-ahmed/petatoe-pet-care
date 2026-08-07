@@ -307,14 +307,23 @@
       if(active==='appointments'){
         var appointmentsActiveTab='';
         try{
-          var appointmentSection=petBlock7937_q('#appointments [data-appointment-section].active');
-          appointmentsActiveTab=appointmentSection?appointmentSection.getAttribute('data-appointment-section'):'';
+          /* E5.2.18: route intent is the canonical active identity for the shared
+             appointments panel. The DOM section may still show the previous/default
+             section for one frame while the operations lazy runtime hydrates. */
+          var router=window.PETATOERouter||{};
+          var routeIntent=router.current==='appointments'?(router.currentIntent||{}):{};
+          appointmentsActiveTab=String(routeIntent.appointmentsSubTab||(routeIntent.navigationScreen==='appointmentsMaster'?'master':'')).trim();
+          if(!appointmentsActiveTab){
+            var appointmentSection=petBlock7937_q('#appointments [data-appointment-section].active');
+            appointmentsActiveTab=appointmentSection?appointmentSection.getAttribute('data-appointment-section'):'';
+          }
           if(!appointmentsActiveTab){
             var appointmentTab=petBlock7937_q('#appointments .appointments-tab.active[data-appointment-tab]');
             appointmentsActiveTab=appointmentTab?appointmentTab.getAttribute('data-appointment-tab'):'';
           }
         }catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch('navigation/navigation.js',e);}
         if(appointmentsActiveTab==='master') activeBtn=firstVisibleButton('button[data-pet-nav-screen="appointmentsMaster"]',nav)||firstVisibleButton('button[data-tab="appointments"][data-appointments-subtab="master"]',nav);
+        else activeBtn=firstVisibleButton('button[data-tab="appointments"]:not([data-appointments-subtab])',nav)||firstVisibleButton('button[data-pet-nav-screen="appointments"]',nav);
       }
       if(!activeBtn && active==='smart') {
         var currentSmart='';
