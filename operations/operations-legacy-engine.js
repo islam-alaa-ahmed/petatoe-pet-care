@@ -17,17 +17,34 @@
 
 (function(){
   'use strict';
+  var localizationRepairQueued=false;
+  function queueLocalizationRepair(){
+    if(localizationRepairQueued)return;
+    localizationRepairQueued=true;
+    var run=function(){
+      localizationRepairQueued=false;
+      try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();var root=document.getElementById('appointments');if(root&&root.classList.contains('active'))render();}catch(_e){}
+    };
+    try{
+      var center=window.PETATOE_LOCALIZATION_CENTER;
+      if(center&&typeof center.whenReady==='function'){center.whenReady(function(){setTimeout(run,0);});return;}
+    }catch(_center){}
+    window.addEventListener('petatoe:localization-center-ready',function(){setTimeout(run,0);},{once:true});
+  }
   function canonicalText(path,key,params){
     var c=window.PETATOE_LOCALIZATION_CENTER,s=window.PETATOE_LOCALIZATION_CENTER_STORE,lang=(c&&c.getLanguage?c.getLanguage():(document.documentElement.lang||'ar')),value;
     if(c&&c.t)value=c.t(path,params,{fallback:'',allowKeyFallback:false});
     if((value==null||value==='')&&s&&s.getPath)value=s.getPath(lang,path);
     if(typeof value==='string'&&params){Object.keys(params).forEach(function(k){value=value.replace(new RegExp('\\{'+k+'\\}','g'),String(params[k]));});}
-    return typeof value==='string'&&value?value:String(key||'');
+    if(typeof value==='string'&&value)return value;
+    queueLocalizationRepair();
+    /* Never expose a localization key to the user while the canonical dictionary is hydrating. */
+    return '';
   }
   function opT(key,params){return canonicalText('operationsSource.'+key,key,params);}
   function opReportT(key,params){return canonicalText('operations.reports.'+key,key,params);}
-  function opAppointmentT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operations.appointments.'+key,params,{fallback:fallback||key}):(fallback||key);}
-  function opCustomerT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER;return c&&c.t?c.t('operationsCustomer.'+key,params,{fallback:fallback||key}):(fallback||key);}
+  function opAppointmentT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER,human=(fallback&&fallback!==key)?fallback:'';if(c&&c.t){var value=c.t('operations.appointments.'+key,params,{fallback:human,allowKeyFallback:false});if(value)return value;}queueLocalizationRepair();return human;}
+  function opCustomerT(key,params,fallback){var c=window.PETATOE_LOCALIZATION_CENTER,human=(fallback&&fallback!==key)?fallback:'';if(c&&c.t){var value=c.t('operationsCustomer.'+key,params,{fallback:human,allowKeyFallback:false});if(value)return value;}queueLocalizationRepair();return human;}
   function opStatusT(status){var map={'مجدول':'statusScheduled','في الطريق':'statusOnTheWay','وصل العميل':'statusArrived','بدأت الجلسة':'statusStarted','تمت الجلسة':'statusCompleted','تم التحصيل':'statusCollected','مغلق':'statusClosed','مؤكد':'statusConfirmed','غير مكتملة':'statusIncomplete','مؤجل':'statusPostponed','ملغي':'statusCancelled','تم':'statusCompleted'};return opT(map[String(status||'')]||'statusUnknown');}
   if(window.__PETATOEAppointmentsLegacyEngine && window.__PETATOEAppointmentsLegacyEngine.__ready) return;
   var KEY='petatoe_appointments_v1';
@@ -64,20 +81,30 @@
     }catch(_){return 'ar';}
   }
   function translateOperationsText(value){
-    var source=String(value==null?'':value);
+    var source=String(value==null?'':value),lang=operationsLanguage();
     if(!source)return source;
-    if(operationsLanguage()==='ar')return source;
     try{
+      var store=window.PETATOE_LOCALIZATION_CENTER_STORE;
+      /* Defensive key-leak recovery: only exact known Operations keys are resolved here. */
+      if(/^[A-Za-z][A-Za-z0-9_.-]*$/.test(source)&&store&&typeof store.getPath==='function'){
+        var direct=store.getPath(lang,'operationsSource.'+source);
+        if(typeof direct==='string'&&direct)return direct;
+      }
       var center=window.PETATOE_LOCALIZATION_CENTER;
       if(center&&typeof center.translateRuntime==='function'){
-        var exact=center.translateRuntime(source,'en');
-        if(typeof exact==='string'&&exact!==source&&!/[\u0600-\u06FF]/.test(exact))return exact;
+        var exact=center.translateRuntime(source,lang);
+        if(typeof exact==='string'&&exact!==source){
+          if(lang==='en'&&!/[\u0600-\u06FF]/.test(exact))return exact;
+          if(lang==='ar'&&/[\u0600-\u06FF]/.test(exact))return exact;
+        }
       }
     }catch(_exact){}
-    try{
-      var globalTranslator=window.PETATOE_GLOBAL_SCREEN_TRANSLATOR;
-      if(globalTranslator&&typeof globalTranslator.translate==='function')return globalTranslator.translate(source);
-    }catch(_mixed){}
+    if(lang==='en'){
+      try{
+        var globalTranslator=window.PETATOE_GLOBAL_SCREEN_TRANSLATOR;
+        if(globalTranslator&&typeof globalTranslator.translate==='function')return globalTranslator.translate(source);
+      }catch(_mixed){}
+    }
     return source;
   }
   function localizeOperationsSubtree(root){
@@ -92,7 +119,9 @@
         if(!parent||/^(SCRIPT|STYLE|NOSCRIPT|TEXTAREA)$/i.test(parent.tagName)||parent.closest('[data-i18n-ignore]'))continue;
         var current=String(node.nodeValue||'');
         if(lang==='ar'){
-          if(node.__petatoeOperationsArabicSource!=null)node.nodeValue=node.__petatoeOperationsArabicSource;
+          if(node.__petatoeOperationsArabicSource!=null){node.nodeValue=node.__petatoeOperationsArabicSource;continue;}
+          var repaired=translateOperationsText(current.trim());
+          if(repaired!==current.trim()&&/[\u0600-\u06FF]/.test(repaired))node.nodeValue=current.replace(current.trim(),repaired);
           continue;
         }
         if(!/[\u0600-\u06FF]/.test(current))continue;
@@ -109,7 +138,9 @@
           var current=el.getAttribute(attr)||'';
           var sourceAttr='data-petatoe-operations-source-'+attr.replace(/[^a-z0-9]/gi,'-');
           if(lang==='ar'){
-            if(el.hasAttribute(sourceAttr))el.setAttribute(attr,el.getAttribute(sourceAttr)||'');
+            if(el.hasAttribute(sourceAttr)){el.setAttribute(attr,el.getAttribute(sourceAttr)||'');return;}
+            var repairedAttr=translateOperationsText(current.trim());
+            if(repairedAttr!==current.trim()&&/[\u0600-\u06FF]/.test(repairedAttr))el.setAttribute(attr,repairedAttr);
             return;
           }
           if(!/[\u0600-\u06FF]/.test(current))return;
@@ -3735,13 +3766,27 @@
     window.addEventListener('petatoe:localization-center-ready',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();var root=document.getElementById('appointments');if(root&&root.classList.contains('active'))render();}catch(_e){} });
     window.addEventListener('petatoe:localization-ready',function(){try{refreshVehicleStaffScreen();refreshAppointmentFormScreen();var root=document.getElementById('appointments');if(root&&root.classList.contains('active'))render();}catch(_e){} });
   }
-  if(!window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__){
-    window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__=true;
-    window.addEventListener('petatoe:language-changed',function(){
+  function refreshOperationsLocalizationRender(){
+    try{
+      refreshVehicleStaffScreen();
+      refreshAppointmentFormScreen();
       var root=document.getElementById('appointments');
       if(root&&root.classList.contains('active'))render();
       else if(root)localizeOperationsSubtree(root);
-    });
+    }catch(_e){}
+  }
+  if(!window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__){
+    window.__PETATOE_OPERATIONS_LOCALIZATION_BOUND__=true;
+    window.addEventListener('petatoe:language-changed',refreshOperationsLocalizationRender);
+    /* Readiness may have completed before this lazy operations module was evaluated. */
+    try{
+      var localizationCenter=window.PETATOE_LOCALIZATION_CENTER;
+      if(localizationCenter&&typeof localizationCenter.whenReady==='function'){
+        localizationCenter.whenReady(function(){setTimeout(refreshOperationsLocalizationRender,0);});
+      }else{
+        window.addEventListener('petatoe:localization-center-ready',refreshOperationsLocalizationRender,{once:true});
+      }
+    }catch(_localizationReady){}
   }
   window.__PETATOEAppointmentsLegacyEngine=appointmentsPublicApi;
   try{

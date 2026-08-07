@@ -44,7 +44,16 @@
     code=REGISTRY?REGISTRY.normalizeCode(code):String(code).toLowerCase();
     dictionaries[code]=dictionaries[code]||{};
     var accepted=filterLanguageMap(code,values,source||'runtime'),count=0;
-    Object.keys(accepted).forEach(function(key){setPath(dictionaries[code],key,accepted[key]);count++;});
+    var canonical=window.PETATOE_LOCALIZATION_CENTER_STORE;
+    Object.keys(accepted).forEach(function(key){
+      setPath(dictionaries[code],key,accepted[key]);
+      /* Keep one runtime source of truth: approved remote/cache values may fill only missing canonical keys. */
+      if(canonical&&canonical.dictionaries&&canonical.dictionaries[code]&&typeof canonical.getPath==='function'){
+        var existing=canonical.getPath(code,key);
+        if(isEmptyValue(existing))setPath(canonical.dictionaries[code],key,accepted[key]);
+      }
+      count++;
+    });
     markSources(code,accepted,source||'runtime');
     return count;
   }

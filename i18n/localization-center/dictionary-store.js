@@ -97,6 +97,7 @@
   STORE.en.runtimePhrases=STORE.en.runtimePhrases||{};
   STORE.ar.runtimePhrases.h266b27de='يوجد موظف مرتبط بنفس السيارة في فترة متداخلة';
   STORE.en.runtimePhrases.h266b27de='An employee is already assigned to the same vehicle during an overlapping period.';
+  Object.assign(STORE.ar.app,{subtitle:'نظام التحليلات'});
   Object.assign(STORE.ar.dashboard,{title:'لوحة التحكم'});
   Object.assign(STORE.ar.actions,{reset:'إعادة تعيين 🔄'});
   Object.assign(STORE.ar.sales,{title:'تحليل المبيعات',monthlyTrend:'الاتجاه الشهري'});
@@ -108,8 +109,15 @@
   Object.assign(STORE.ar.import,{title:'رفع بيانات Excel'});
   Object.assign(STORE.ar.records,{title:'السجلات'});
   Object.assign(STORE.ar.charts,{bar:'أعمدة',line:'خطي'});
-  if(STORE.ar.smartReportsSource&&STORE.ar.smartReportsSource.customerCompare)STORE.ar.smartReportsSource.customerCompare.executiveInsights='🧠 الرؤى التنفيذية';
-  if(STORE.ar.smartReportsSource&&STORE.ar.smartReportsSource.contracts){STORE.ar.smartReportsSource.contracts.scoreValue='الدرجة {score}';STORE.ar.smartReportsSource.contracts.score='الدرجة';}
+  if(STORE.ar.smartReportsSource){
+    STORE.ar.smartReportsSource['customerCompare.executiveInsights']='🧠 الرؤى التنفيذية';
+    STORE.ar.smartReportsSource['customerCompare.periodExplanation']='نوع المقارنة الحالي: {mode} — يتم تطبيق نفس المنطق على الملخص التنفيذي، النمو، التراجع، العملاء المفقودين، ترتيب العملاء، مخطط تورنيدو، والرؤى التنفيذية.';
+    STORE.ar.smartReportsSource['contracts.scoreValue']='الدرجة {score}';
+    STORE.ar.smartReportsSource['contracts.score']='الدرجة';
+    STORE.ar.smartReportsSource['contracts.averageScore']='متوسط الدرجة';
+    STORE.ar.smartReportsSource['contracts.highScore']='درجة مرتفعة';
+    STORE.ar.smartReportsSource['contracts.candidatesDescription']='يرتب أفضل العملاء المرشحين لعقد سنوي أو توريد دوري بنفس منطق تحليل العملاء الحالي، مع درجة تكيفية تعتمد على الإنفاق، الزيارات، شهور النشاط، حداثة آخر زيارة، وتصنيف العميل.';
+  }
   Object.assign(STORE.ar.aboutApp,{edition:'الإصدار المؤسسي',production:'الإنتاج'});
   function mergeCanonicalIntoLegacy(target,source){Object.keys(source||{}).forEach(function(key){var value=source[key];if(value&&typeof value==='object'&&!Array.isArray(value)){target[key]=target[key]&&typeof target[key]==='object'&&!Array.isArray(target[key])?target[key]:{};mergeCanonicalIntoLegacy(target[key],value);}else target[key]=value;});return target;}
   window.PETATOE_I18N_DICTIONARIES=window.PETATOE_I18N_DICTIONARIES||{};

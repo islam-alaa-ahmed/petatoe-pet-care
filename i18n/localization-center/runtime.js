@@ -31,7 +31,7 @@
     return interpolate(value==null?'':value,options.params);
   }
   function t(key,params,options){options=options||{};options.params=params||{};return resolveValue(key,options);}
-  function smart(key,fallback,params){return resolveValue('smartReportsSource.'+key,{fallback:fallback,params:params||{},allowKeyFallback:true});}
+  function smart(key,fallback,params){return resolveValue('smartReportsSource.'+key,{fallback:fallback,params:params||{},allowKeyFallback:false});}
   function translate(key,fallback,lang){return resolveValue(key,{fallback:fallback,lang:lang});}
   function setLanguage(lang,options){var a=api();return a&&a.setLanguage?a.setLanguage(lang,options):lang;}
   function isLoading(){var l=window.PETATOE_LOCALIZATION_LOADER;return !!(l&&l.state&&l.state.loading);}

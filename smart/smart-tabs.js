@@ -82,7 +82,7 @@
   }
 
   function t(key){
-    try{ var c=window.PETATOE_LOCALIZATION_CENTER; return c&&typeof c.t==='function' ? c.t(key,{}, {allowKeyFallback:true}) : key; }catch(_){ return key; }
+    try{ var c=window.PETATOE_LOCALIZATION_CENTER; return c&&typeof c.t==='function' ? c.t(key,{}, {fallback:'',allowKeyFallback:false}) : ''; }catch(_){ return ''; }
   }
   function salesInvoiceArea(){ return document.getElementById('salesInvoiceReportArea'); }
   function renderSalesInvoiceState(kind){

@@ -2,7 +2,7 @@
 (function(){
   'use strict';
   var ar={smartReportsSource:{recommendationChrome:{
-    ceoTitle:'PETATOE CEO Briefing',
+    ceoTitle:'موجز PETATOE للإدارة التنفيذية',
     ceoDescription:'ملخص تنفيذي سريع مبني على بيانات العملاء والخدمات والإيرادات والتوقعات، بدون تغيير أي حسابات في التقارير القديمة.',
     aiDecisionSupport:'دعم القرار بالذكاء التحليلي',
     topDecisionToday:'أهم قرار اليوم',

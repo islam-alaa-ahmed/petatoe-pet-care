@@ -16,9 +16,9 @@ const checks=[
  ['runtime translation resolves auto phrases and runtime phrases',/autoPhrases\.'\+hash/.test(consolidation)&&/runtimePhrases\.'\+hash/.test(consolidation)],
  ['runtime translation has a bidirectional reverse canonical index',/buildReverseRuntimeIndex/.test(consolidation)&&/reverseRuntimeIndex\[lang\]/.test(consolidation)],
  ['operations source resolves canonical store before exposing a fallback key',/function canonicalText/.test(ops)&&/allowKeyFallback:false/.test(ops)],
- ['operations rerenders on localization readiness and language changes',/localization-center-ready[^\n]+render\(\)/.test(ops)&&/language-changed[\s\S]{0,220}render\(\)/.test(ops)],
+ ['operations rerenders on localization readiness and language changes',/refreshOperationsLocalizationRender/.test(ops)&&/localizationCenter\.whenReady/.test(ops)&&/language-changed',refreshOperationsLocalizationRender/.test(ops)],
  ['compatibility adapters do not request raw-key fallback',![opAdapter,whAdapter,maintenance].some(s=>/fallback:key/.test(s))],
- ['localization runtime assets are network-first critical assets',sw.includes('localization-center\\/(?:dictionary-store|runtime|consolidation)')&&sw.includes('operations-source|warehouse-source|maintenance-source')],
+ ['localization runtime assets are network-first critical assets',sw.includes('\\/i18n\\/[^/]+\\.js')&&sw.includes('\\/i18n\\/localization-center\\/[^/]+\\.js')],
  ['phase contract is registered',read('config/petatoe-version.json').includes('phase-e5-2-19-bidirectional-localization-runtime-contract-1')]
 ];
 let pass=0;for(const [name,ok] of checks){console.log(`${ok?'PASS':'FAIL'} - ${name}`);if(ok)pass++;}

@@ -28,8 +28,8 @@
       if (window.PETATOE_LOCALIZATION_CENTER && typeof window.PETATOE_LOCALIZATION_CENTER.t === 'function') {
         return window.PETATOE_LOCALIZATION_CENTER.t('maintenanceSource.' + key, fallback);
       }
-      return fallback || key;
-    } catch (e) { return fallback || key; }
+      return fallback || '';
+    } catch (e) { return fallback || ''; }
   }
 
   function safeNow() {

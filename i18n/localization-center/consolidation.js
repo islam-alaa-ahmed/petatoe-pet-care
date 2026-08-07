@@ -60,6 +60,8 @@
         return interpolate(translated||text,params);
       }
     
+      window.addEventListener('petatoe:localization-ready',function(){reverseRuntimeIndex=null;});
+      window.addEventListener('petatoe:localization-center-store-ready',function(){reverseRuntimeIndex=null;});
       center.translateRuntime=runtimeValue;
       center.runtimeDictionary={source:'PETATOE_LOCALIZATION_CENTER_STORE',count:Object.keys(store.getPath('en','runtimeSource')||{}).length};
       center.__singleSourceEnforced=true;
@@ -68,8 +70,8 @@
       legacy.translateRuntime=function(value,targetLang,params){return center.translateRuntime(value,targetLang,params);};
       legacy.translate=function(key,targetLang){return center.translate(key,key,targetLang);};
     
-      if(window.PETATOE_OPERATIONS_I18N)window.PETATOE_OPERATIONS_I18N.t=function(key,params){return center.t('operationsSource.'+key,params,{fallback:'',allowKeyFallback:false})||key;};
-      if(window.PETATOE_WAREHOUSE_I18N)window.PETATOE_WAREHOUSE_I18N.t=function(key,params){return center.t('warehouseSource.'+key,params,{fallback:'',allowKeyFallback:false})||key;};
+      if(window.PETATOE_OPERATIONS_I18N)window.PETATOE_OPERATIONS_I18N.t=function(key,params){return center.t('operationsSource.'+key,params,{fallback:'',allowKeyFallback:false})||'';};
+      if(window.PETATOE_WAREHOUSE_I18N)window.PETATOE_WAREHOUSE_I18N.t=function(key,params){return center.t('warehouseSource.'+key,params,{fallback:'',allowKeyFallback:false})||'';};
     
       window.dispatchEvent(new CustomEvent('petatoe:localization-single-source-enforced',{detail:{version:'9.4.4',storeVersion:store.version,runtimeEntries:center.runtimeDictionary.count}}));
     return true;

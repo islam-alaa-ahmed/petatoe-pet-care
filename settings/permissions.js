@@ -5,8 +5,8 @@
   'use strict';
   function tr(key,params,fallback){
     var c=window.PETATOE_LOCALIZATION_CENTER;
-    if(c&&typeof c.t==='function')return c.t('settingsPhase61.permissions.'+key,params||{}, {fallback:fallback||key});
-    return fallback||key;
+    if(c&&typeof c.t==='function')return c.t('settingsPhase61.permissions.'+key,params||{}, {fallback:fallback||'',allowKeyFallback:false});
+    return fallback||'';
   }
   var USERS_KEY='app_users', USER_PERMS_KEY='app_user_permissions', CURRENT_KEY='app_current_user_ref';
   var roleNames={superadmin:'Super Admin',super_admin:'Super Admin',admin:'Admin',manager:'Manager',operations_manager:'Operations Manager',accountant:'Accountant',sales:'Sales Manager',fleet:'Fleet Manager',driver:'Driver',groomer:'Groomer',driver_groomer:'Driver / Groomer',viewer:'Viewer'};
