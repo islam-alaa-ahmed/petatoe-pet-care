@@ -86,6 +86,7 @@ function synchronize(){
     'i18n/warehouse-source.js',
     'i18n/maintenance-source.js',
     'i18n/localization-center/dictionary-store.js',
+    'i18n/localization-center/enterprise-ui-certification.js',
     'i18n/localization-center/runtime.js',
     'i18n/localization-center/consolidation.js'
   ];

@@ -7,7 +7,43 @@
   var SOURCE_OWNERSHIP={arabic:'canonical-source',english:'canonical-translation',reverseTranslation:false};
   var META={"version":"9.4.17-display-layer-localization-performance","generatedAt":"2026-07-18T21:16:43.067Z","modules":["meta","app","language","topbar","globalSearch","dashboard","actions","filters","payroll","sidebar","navigation","exports","sales","vans","services","smart","customer360","audit","entry","import","records","charts","runtimePhrases","runtimeTemplates","autoPhrases","elc","payrollRuntime","maintenanceSource","operationsSource","warehouseSource","smartReportsSource","runtimeSource","globalUiSource"],"glossaryEntries":280};
   function merge(target,source){Object.keys(source||{}).forEach(function(k){var s=source[k],t=target[k];if(s&&typeof s==='object'&&!Array.isArray(s)){if(!t||typeof t!=='object'||Array.isArray(t))target[k]={};merge(target[k],s);}else target[k]=s;});return target;}
-  function registerModule(name,dictionaries){if(!name||!dictionaries)return false;['ar','en'].forEach(function(lang){STORE[lang]=STORE[lang]||{};STORE[lang][name]=STORE[lang][name]||{};merge(STORE[lang][name],dictionaries[lang]||{});});return true;}
+  var SOURCE_TEXT_INDEX={en:Object.create(null)},COMPOSITE_TOKEN_INDEX=[];
+  function normalizeSourceText(value){return String(value==null?'':value).replace(/\s+/g,' ').trim();}
+  function walkAligned(arNode,enNode,path,callback){
+    Object.keys(arNode||{}).forEach(function(key){
+      var arValue=arNode[key],enValue=enNode&&enNode[key],nextPath=path?path+'.'+key:key;
+      if(arValue&&typeof arValue==='object'&&!Array.isArray(arValue)){if(enValue&&typeof enValue==='object')walkAligned(arValue,enValue,nextPath,callback);return;}
+      if(typeof arValue==='string'&&typeof enValue==='string')callback(arValue,enValue,nextPath);
+    });
+  }
+  function rebuildSourceTextIndex(){
+    var map=Object.create(null),tokens=[];
+    walkAligned(STORE.ar,STORE.en,'',function(arValue,enValue,path){
+      var source=normalizeSourceText(arValue),target=normalizeSourceText(enValue);
+      if(source&&target&&source!==target&&!Object.prototype.hasOwnProperty.call(map,source))map[source]=target;
+      if(path.indexOf('enterpriseUiCertification.tokens.')===0&&source&&target&&source!==target)tokens.push({source:source,target:target});
+    });
+    tokens.sort(function(a,b){return b.source.length-a.source.length;});
+    SOURCE_TEXT_INDEX.en=map;COMPOSITE_TOKEN_INDEX=tokens;return map;
+  }
+  function translateSourceText(value,lang){
+    if(String(lang||'en').toLowerCase()!=='en')return value;
+    var source=normalizeSourceText(value),translated=SOURCE_TEXT_INDEX.en[source];
+    return typeof translated==='string'&&translated?translated:value;
+  }
+  function translateCompositeText(value,lang){
+    if(String(lang||'en').toLowerCase()!=='en')return value;
+    var original=String(value==null?'':value),exact=translateSourceText(original,'en');
+    if(exact!==original)return exact;
+    if(!/[\u0600-\u06FF]/.test(original))return original;
+    var out=original,changed=false;
+    COMPOSITE_TOKEN_INDEX.forEach(function(pair){
+      if(out.indexOf(pair.source)===-1)return;
+      out=out.split(pair.source).join(pair.target);changed=true;
+    });
+    return changed?out:original;
+  }
+  function registerModule(name,dictionaries){if(!name||!dictionaries)return false;['ar','en'].forEach(function(lang){STORE[lang]=STORE[lang]||{};STORE[lang][name]=STORE[lang][name]||{};merge(STORE[lang][name],dictionaries[lang]||{});});rebuildSourceTextIndex();return true;}
   function getPath(lang,key){var cur=STORE[lang]||{},parts=String(key||'').split('.');for(var i=0;i<parts.length;i++){if(cur==null)return cur;if(Object.prototype.hasOwnProperty.call(cur,parts[i])){cur=cur[parts[i]];continue;}var remaining=parts.slice(i).join('.');if(Object.prototype.hasOwnProperty.call(cur,remaining))return cur[remaining];return undefined;}return cur;}
 
   var CERTIFICATION_SOURCE={"ar":{"entry1":"Click للأعلى — Double Click لآخر الصفحة — اسحب لأعلى/أسفل للتمرير","entry2":"Supabase Repository غير جاهز لحفظ الهدف","entry3":"TXN / رقم الشبكة","entry4":"أدخل كلمة المرور","entry5":"أي تفاصيل إضافية عن الجلسة","entry6":"إجمالي المبيعات:","entry7":"إلى تاريخ","entry8":"ابحث أو اختر صنف","entry9":"ابحث أو اكتب اسم العميل","entry10":"اختر الخزنة","entry11":"اختر الخزنة لعرض كشف الحساب","entry12":"اختر شهر الهدف أولاً","entry13":"اختياري","entry14":"اختياري: رقم إيصال / بيان التسليم","entry15":"ارفع مبيعات البنود حسب التصنيف أولاً، ثم ارفع ملف طريقة المدفوعات لربط طريقة الدفع بالفواتير قبل الاعتماد.","entry16":"اسم الدخول","entry17":"اسم الشركة","entry18":"اسم المسؤول","entry19":"اسم المسؤول أو الجهة","entry20":"اسم المسؤول المستلم","entry21":"اكتب أو اختر صنف مخزني","entry22":"اكتب أو اختر من الأصناف المخزنية فقط","entry23":"اكتب أي جزء من الاسم أو كلمة من الاسم الثاني/الثالث","entry24":"اكتب رقم الفاتورة أو اسم العميل أو السيارة...","entry25":"اكتب ملاحظات التنفيذ هنا...","entry26":"اكتب ملاحظة متابعة/استرجاع للعميل:","entry27":"اكتب هدف شهري صحيح","entry28":"الإيميل","entry29":"الاسم الكامل","entry30":"البريد","entry31":"التقرير النشط:","entry32":"الجلسة مؤكدة ومقفلة","entry33":"الضريبة %","entry34":"العملة","entry35":"الفترة المعروضة:","entry36":"المتصفح منع فتح نافذة الطباعة. فعّل Popups للموقع ثم جرّب مرة أخرى.","entry37":"المعروض:","entry38":"املأ التاريخ والعميل وصنف واحد على الأقل","entry39":"بحث باسم الالتزام أو المسؤول","entry40":"بحث باسم الصنف","entry41":"بحث باسم الصنف أو المخزن","entry42":"بحث باسم العميل / الهاتف / الخدمة / العنوان","entry43":"بحث بالاسم أو النوع أو الملاحظات","entry44":"بحث بالسيارة أو المسؤول أو البيان","entry45":"بحث بالصنف / المخزن / المرجع / المسؤول","entry46":"بحث بالصنف أو المخزن","entry47":"بحث بالكود / الاسم / التصنيف","entry48":"بحث بالكود / الاسم / العنوان / الجوال","entry49":"بحث داخل التفاصيل...","entry50":"بحث داخل التقرير فقط...","entry51":"بحث داخل العملاء...","entry52":"بحث داخل كشف الحساب: صنف / مرجع / مسؤول","entry53":"بحث داخل كشف الحساب: مرجع / مسؤول / ملاحظات","entry54":"بحث في السجل: مستخدم / إجراء / مرجع / سبب","entry55":"بحث في سجل الحركات...","entry56":"تبويبات إدارة المواعيد","entry57":"تبويبات تحليل العملاء","entry58":"تبويبات تقارير الالتزامات","entry59":"تبويبات مصروفات الأبناء","entry60":"تعديل / حذف فواتير","entry61":"تعديل الالتزام:","entry62":"تعديل سجل موجود","entry63":"تعديل فاتورة رقم","entry64":"تعذر تصدير بيانات التقرير","entry65":"تعذر حفظ الهدف","entry66":"تعذر حفظ هدف المبيعات في Supabase","entry67":"تعذر نقل الشارت إلى نسخة الطباعة","entry68":"تغيير اللغة","entry69":"تفاصيل العملاء","entry70":"تقرير PDF منسق للتقارير الذكية — يعرض التبويب النشط فقط مع الفلاتر المختارة والرسوم والجداول بدون أزرار الواجهة.","entry71":"تلقائي عند الحفظ","entry72":"تم حذف ملاحظة الاسترجاع","entry73":"تنبيه جودة بيانات:\\n-","entry74":"حد العملية الحساسة","entry75":"حذف كل بيانات المبيعات من Supabase؟\\nعدد السجلات الحالية:","entry76":"حذف ملاحظة الاسترجاع لهذا العميل؟","entry77":"حركات تفصيلية للوارد والمنصرف والرصيد بعد كل حركة.","entry78":"رفع تقرير تفصيلي شامل: يتم إضافة كل البيانات دفعة واحدة مع فحص التكرار على مستوى البند وليس رقم الفاتورة فقط.","entry79":"رقم إذن / ملاحظة / فاتورة","entry80":"رقم إيصال / حوالة / بيان","entry81":"رقم تلقائي للفواتير اليدوية ولا يمكن تعديله يدوياً","entry82":"رقم حساب، رابط التجديد، بيانات مرجعية...","entry83":"عرض فقط","entry84":"عنوان العميل أو الموقع","entry85":"فتح ملف العميل","entry86":"فلاتر التقرير المحلي","entry87":"فلاتر سريعة للمواعيد","entry88":"قائمة المستخدم","entry89":"قطعة / عبوة / خدمة","entry90":"كشف حساب الخزنة الرئيسية","entry91":"كلمة مرور المدير الجديدة (اتركها فارغة للإبقاء على الحالية)","entry92":"كلمة مرور جديدة","entry93":"لا تملك صلاحية تعديل الحالة أو الجلسة مقفلة","entry94":"لا توجد بيانات متاحة للتصدير لهذا التقرير","entry95":"لا توجد بيانات متاحة لهذه القائمة.","entry96":"لا توجد مصروفات مسجلة في الفلتر الحالي","entry97":"لا توجد ميزانيات مسجلة حتى الآن","entry98":"لازم يكون في صنف واحد على الأقل","entry99":"لم يتم استيراد أي صنف.\\n","entry100":"ليس لديك صلاحية عرض قسم مصروفات الأبناء.","entry101":"مثال: Dog / Cat","entry102":"مثال: Husky / Persian","entry103":"مثال: أحمد محمد","entry104":"مثال: استيراد اضطراري بعد مراجعة الملف","entry105":"مثال: طعام / عناية / خدمة","entry106":"مثال: عمر","entry107":"مثال: فاتورة موبايلي / إقامة موظف / اشتراك برنامج محاسبي","entry108":"مثال: مصروف تشغيل / تحويل بنكي","entry109":"مركز الإشعارات","entry110":"مصدر البيانات: تقرير ⚠️ تنبيهات الأرصدة المنخفضة داخل المخازن","entry111":"مصدر البيانات: نفس بيانات تقرير ⚠️ تنبيهات الأرصدة المنخفضة في المخازن","entry112":"ملاحظات اختيارية","entry113":"ملف المدفوعات لا يضيف بنود جديدة، لكنه يربط طريقة الدفع برقم الفاتورة في بيانات البنود المرفوعة أو السجلات الحالية.","entry114":"من تاريخ","entry115":"و","entry116":"واتساب 0508638573","entry117":"وصف العطل أو سبب التوقف","entry118":"يتطلب كلمة مرور Super Admin ويتم تسجيل العملية في سجل التجاوز.","entry119":"يجب تأكيد الإقرار قبل التخطي.","entry120":"يمكنك تعديل الهدف الآن ثم الضغط على حفظ الهدف","entry121":"↩ رجوع للتقرير","entry122":"⏳ جاري تجهيز PDF للصفحة الحالية...","entry123":"⚠️ يوجد تعارض في الموعد:\\n","entry124":"✅ تم تجهيز نافذة PDF — اختر Save as PDF","entry125":"✅ لا توجد إشعارات حالية","entry126":"📄 قالب الأصناف","entry127":"📒 كشف حساب:","entry128":"📥 إضافة أصناف من Excel","entry129":"🚛 إدارة السيارات","entry130":"🛡️ تخطي الشروط والرفع (Super Admin)"},"en":{"entry1":"Click to go up — Double-click to go to the end — Drag up/down to scroll","entry2":"Supabase Repository is not ready to save the target","entry3":"TXN / Network reference","entry4":"Enter the password","entry5":"Any additional session details","entry6":"Total sales:","entry7":"To date","entry8":"Search for or select an item","entry9":"Search for or enter the customer name","entry10":"Select the treasury account","entry11":"Select a treasury account to view its statement","entry12":"Select the target month first","entry13":"Optional","entry14":"Optional: receipt number / delivery statement","entry15":"Upload item sales by category first, then upload the payment-method file to link payment methods to invoices before approval.","entry16":"Username","entry17":"Company name","entry18":"Responsible person","entry19":"Responsible person or entity","entry20":"Receiving responsible person","entry21":"Enter or select an inventory item","entry22":"Enter or select from inventory items only","entry23":"Enter any part of the name or a word from the second/third name","entry24":"Enter the invoice number, customer name, or vehicle...","entry25":"Enter execution notes here...","entry26":"Enter a customer follow-up/recovery note:","entry27":"Enter a valid monthly target","entry28":"Email","entry29":"Full name","entry30":"Email","entry31":"Active report:","entry32":"The session is confirmed and locked","entry33":"Tax %","entry34":"Currency","entry35":"Displayed period:","entry36":"The browser blocked the print window. Enable pop-ups for this site and try again.","entry37":"Displayed:","entry38":"Enter the date, customer, and at least one item","entry39":"Search by obligation name or responsible person","entry40":"Search by item name","entry41":"Search by item or warehouse name","entry42":"Search by customer name / phone / service / address","entry43":"Search by name, type, or notes","entry44":"Search by vehicle, responsible person, or description","entry45":"Search by item / warehouse / reference / responsible person","entry46":"Search by item or warehouse","entry47":"Search by code / name / category","entry48":"Search by code / name / address / mobile","entry49":"Search within details...","entry50":"Search within this report only...","entry51":"Search within customers...","entry52":"Search statement: item / reference / responsible person","entry53":"Search statement: reference / responsible person / notes","entry54":"Search log: user / action / reference / reason","entry55":"Search the activity log...","entry56":"Appointment management tabs","entry57":"Customer analysis tabs","entry58":"Obligation report tabs","entry59":"Children expenses tabs","entry60":"Edit / delete invoices","entry61":"Edit obligation:","entry62":"Edit existing record","entry63":"Edit invoice number","entry64":"Unable to export report data","entry65":"Unable to save the target","entry66":"Unable to save the sales target in Supabase","entry67":"Unable to transfer the chart to the print version","entry68":"Change language","entry69":"Customer details","entry70":"Formatted Smart Reports PDF — shows only the active tab with selected filters, charts, and tables, without interface buttons.","entry71":"Generated automatically on save","entry72":"Recovery note deleted","entry73":"Data quality warning:\n-","entry74":"Sensitive-operation threshold","entry75":"Delete all sales data from Supabase?\nCurrent record count:","entry76":"Delete the recovery note for this customer?","entry77":"Detailed inbound, outbound, and balance movements after each transaction.","entry78":"Upload a full detailed report: all data is added at once with duplicate checks at item level, not invoice number only.","entry79":"Permit number / note / invoice","entry80":"Receipt / transfer / statement number","entry81":"Automatic number for manual invoices; it cannot be edited manually","entry82":"Account number, renewal link, reference data...","entry83":"View only","entry84":"Customer address or location","entry85":"Open customer profile","entry86":"Local report filters","entry87":"Quick appointment filters","entry88":"User menu","entry89":"Piece / package / service","entry90":"Main treasury statement","entry91":"New administrator password (leave blank to keep the current one)","entry92":"New password","entry93":"You do not have permission to change the status, or the session is locked","entry94":"No data is available to export for this report","entry95":"No data is available for this list.","entry96":"No expenses are recorded for the current filter","entry97":"No budgets have been recorded yet","entry98":"At least one item is required","entry99":"No items were imported.\n","entry100":"You do not have permission to view the Children Expenses section.","entry101":"Example: Dog / Cat","entry102":"Example: Husky / Persian","entry103":"Example: Ahmed Mohammed","entry104":"Example: emergency import after reviewing the file","entry105":"Example: food / care / service","entry106":"Example: Omar","entry107":"Example: mobile bill / employee residency / accounting software subscription","entry108":"Example: operating expense / bank transfer","entry109":"Notification Center","entry110":"Data source: ⚠️ Low Stock Alerts report within warehouses","entry111":"Data source: the same data used by the ⚠️ Low Stock Alerts report in warehouses","entry112":"Optional notes","entry113":"The payment file does not add new items; it links the payment method to the invoice number in uploaded item data or existing records.","entry114":"From date","entry115":"and","entry116":"WhatsApp 0508638573","entry117":"Fault description or reason for stoppage","entry118":"Requires the Super Admin password, and the operation is recorded in the override log.","entry119":"You must confirm the acknowledgment before overriding.","entry120":"You can edit the target now, then click Save Target","entry121":"↩ Back to report","entry122":"⏳ Preparing a PDF of the current page...","entry123":"⚠️ There is an appointment conflict:\n","entry124":"✅ PDF window is ready — select Save as PDF","entry125":"✅ There are no current notifications","entry126":"📄 Item template","entry127":"📒 Statement:","entry128":"📥 Add items from Excel","entry129":"🚛 Vehicle Management","entry130":"🛡️ Override conditions and upload (Super Admin)"}};
@@ -137,163 +173,13 @@
     STORE.ar.smartReportsSource['contracts.candidatesDescription']='يرتب أفضل العملاء المرشحين لعقد سنوي أو توريد دوري بنفس منطق تحليل العملاء الحالي، مع درجة تكيفية تعتمد على الإنفاق، الزيارات، شهور النشاط، حداثة آخر زيارة، وتصنيف العميل.';
   }
   Object.assign(STORE.ar.aboutApp,{edition:'الإصدار المؤسسي',production:'الإنتاج'});
-  /* Phase E5.2.21 — English residual localization completion.
-   Arabic remains the authored UI source. English resolves exclusively through this canonical store. */
-  STORE.ar.globalUiSource=STORE.ar.globalUiSource||{};
-  STORE.en.globalUiSource=STORE.en.globalUiSource||{};
-  var E521_UI_EN={
-    'إدارة الرواتب':'Payroll Management','الرويس':'Al Ruwais',
-    'عنوان العميل أو الموقع':'Customer address or location',
-    'أي تفاصيل إضافية عن الجلسة':'Any additional session details',
-    'كشف التشغيل اليومي':'Daily Operations Statement',
-    'الموارد':'Resources','المكتمل':'Completed','إجمالي المواعيد':'Total Appointments','تاريخ الكشف':'Statement Date',
-    'كشف تشغيل يومي':'Daily Operations Statement','لا توجد مواعيد تشغيل':'No operating appointments',
-    'Timeline مواعيد اليوم':'Today’s Appointment Timeline','مواعيد اليوم Timeline':'Today’s Appointment Timeline','لا توجد مواعيد اليوم':'No appointments today',
-    'تنبيهات المواعيد':'Appointment Alerts','إجمالي التنبيهات':'Total Alerts','مواعيد اليوم':'Today’s Appointments','حرجة':'Critical','متابعة':'Follow-up',
-    'موعد سابق لم يتم إغلاقه':'A previous appointment was not closed','الحالة: مجدول':'Status: Scheduled','الحالة: مؤكد':'Status: Confirmed',
-    'التقويم التشغيلي':'Operations Calendar','التقويم الشهري':'Monthly Calendar','يومي':'Day','اليوم':'Today',
-    'تخطيط المسارات والتوزيع التشغيلي':'Route Planning & Operational Distribution','توزيع السائقين':'Driver Allocation','توزيع الجرومر':'Groomer Allocation','توزيع السيارات':'Vehicle Allocation',
-    'مجموعات':'Groups','أعلى حمل':'Peak Load','لا توجد مواعيد في تاريخ':'No appointments on',
-    'سجل المواعيد':'Appointment Log','بحث داخل العملاء...':'Search customers...','اسم العميل / الهاتف / الخدمة / العنوان':'Customer name / phone / service / address',
-    'قائمة العملاء':'Customer List','ملف العميل':'Customer Profile','الحيوانات الخاصة بالعميل':'Customer Pets','سجل الخدمات والزيارات':'Service & Visit History',
-    'أول زيارة':'First Visit','إجمالي الزيارات':'Total Visits','عدد الحيوانات':'Pet Count','زيارة':'visit','زيارات':'visits',
-    'تقرير قاعدة بيانات العملاء':'Customer Database Report','بحث داخل التقرير فقط...':'Search this report...','تصدير Excel':'Export Excel',
-    'اسم العميل':'Customer Name','رقم الجوال':'Mobile Number','نوع الحيوان':'Pet Type','اسم الحيوان':'Pet Name','آخر زيارة':'Last Visit',
-    'تقارير المواعيد':'Appointment Reports','إجمالي':'Total','محصل':'Collected','المتبقي':'Remaining','استعادة الافتراضيات':'Restore Defaults',
-    'يعرض 1 من أصل 1 سجل':'Showing 1 of 1 record','يعرض':'Showing','من أصل':'of','سجل':'record',
-    'التوقعات وذكاء الأعمال':'Forecasting & Business Intelligence','التوقع المعدل للشهر القادم':'Adjusted forecast for next month','التوقع الأساسي':'Baseline forecast','الفرق عن التوقع الأساسي':'Difference from baseline forecast',
-    'تحليل الاتجاه خلال الشهور (القيمة بالريال السعودي)':'Monthly Trend Analysis (Value in SAR)',
-    'عمود المبيعات + عدد المعاملات + متوسط الفاتورة مع قيم واضحة':'Sales bars + transaction count + average invoice with clear values',
-    'تحرير التقرير':'Edit Report','إجمالي المبيعات':'Total Sales','عدد العمليات':'Transactions','متوسط قيمة الفاتورة':'Average Invoice Value','كل البيانات':'All Data',
-    'كل السنوات':'All Years','إجمالي المبيعات (SAR)':'Total Sales (SAR)','عدد المعاملات':'Transactions','متوسط الفاتورة (SAR)':'Average Invoice (SAR)',
-    'تقرير العملاء':'Customer Report','تحديث':'Refresh','بحث داخل التقرير فقط':'Search this report',
-    'إجمالي الزيارات':'Total Visits','الحيوانات الخاصة بالعميل':'Customer Pets','قائمة العملاء':'Customer List',
-    'الأساسية - كلب متوسط':'Basic - Medium Dog','الأساسية - قط متوسط':'Basic - Medium Cat','الاساسية - كلب متوسط':'Basic - Medium Dog','الاساسية - قط متوسط':'Basic - Medium Cat',
-    'غير محدد':'Unspecified','مجدول':'Scheduled','مؤكد':'Confirmed','مؤجل':'Deferred','ملغي':'Cancelled','مكتمل':'Completed','تمت الجلسة':'Completed','تم التحصيل':'Collected',
-    'كل السيارات':'All Vehicles','كل السائقين':'All Drivers','كل الجرومر':'All Groomers','كل أنواع الحيوانات':'All Animal Types','كل الحالات':'All Statuses','كل طرق الدفع':'All Payment Methods',
-    'مسح الفلاتر':'Clear Filters','تفاصيل':'Details','تعديل':'Edit','حذف':'Delete','مسح':'Clear','حفظ الموعد':'Save Appointment',
-    'التشغيل':'Operations','التحصيل':'Collection','الملاحظات':'Notes','بيانات الجلسة':'Session Data','الخدمات المطلوبة':'Requested Services','تطبيق على':'Apply To','كل الحيوانات':'All Animals',
-    'اختر الخدمة':'Select Service','اختر السيارة':'Select Vehicle','اختر الجرومر':'Select Groomer','اختر السائق':'Select Driver','اختر طريقة الدفع':'Select Payment Method','غير محصل':'Uncollected',
-    'إضافة خدمة أخرى':'Add Another Service','موعد الجلسة':'Session Time','اختر السيارة والتاريخ أولًا':'Select the vehicle and date first',
-    'التاريخ':'Date','العنوان':'Address','البحث عن العميل':'Customer Search','عميل جديد':'New Customer','بيانات العميل':'Customer Data','بيانات الحيوان':'Pet Data',
-    'إضافة موعد جديد':'Add New Appointment','مسح النموذج':'Clear Form','التشغيل اليومي':'Daily Operations','التخطيط والمتابعة':'Planning & Follow-up','البيانات والتقارير':'Data & Reports',
-    'التنبيهات':'Alerts','كشف التشغيل اليومي':'Daily Operations Statement','إضافة موعد':'Add Appointment','Timeline اليوم':'Today Timeline',
-    'تقارير المواعيد':'Appointment Reports','العملاء والحيوانات':'Customers & Pets','مركز التقارير المتقدمة':'Advanced Reports Center',
-    'تحليل المبيعات':'Sales Analysis','تحليل السيارات':'Vehicle Analysis','تحليل العملاء':'Customer Analysis','تحليل الخدمات':'Service Analysis','التوصيات':'Recommendations',
-    'تقرير فاتورة المبيعات':'Sales Invoice Report','ملخص الأداء':'Performance Summary','تصدير الصفحة PDF':'Export Page PDF','تصدير البيانات':'Export Data','تحديث التقارير الذكية':'Refresh Smart Reports'
-  };
-  Object.keys(E521_UI_EN).forEach(function(source){STORE.ar.globalUiSource[source]=source;STORE.en.globalUiSource[source]=E521_UI_EN[source];});
-  STORE.ar.tokenSource=STORE.ar.tokenSource||{};
-  STORE.en.tokenSource=STORE.en.tokenSource||{};
-  var E521_TOKEN_EN={
-    'يناير':'January','فبراير':'February','مارس':'March','أبريل':'April','ابريل':'April','مايو':'May','يونيو':'June','يوليو':'July','أغسطس':'August','اغسطس':'August','سبتمبر':'September','أكتوبر':'October','اكتوبر':'October','نوفمبر':'November','ديسمبر':'December',
-    'الأحد':'Sunday','الاثنين':'Monday','الثلاثاء':'Tuesday','الأربعاء':'Wednesday','الاربعاء':'Wednesday','الخميس':'Thursday','الجمعة':'Friday','السبت':'Saturday',
-    'الأساسية':'Basic','الاساسية':'Basic','الشاملة':'Comprehensive','السعيدة':'Happy','كلب':'Dog','قط':'Cat','متوسط':'Medium','كبير':'Large','صغير':'Small',
-    'موعد سابق لم يتم إغلاقه':'A previous appointment was not closed','لا توجد مواعيد اليوم':'No appointments today','لا توجد مواعيد تشغيل في تاريخ':'No operating appointments on','لا توجد مواعيد في تاريخ':'No appointments on',
-    'الحالة':'Status','مجدول':'Scheduled','مؤكد':'Confirmed','مؤجل':'Deferred','ملغي':'Cancelled','مكتمل':'Completed','جلسة':'Session','سيارة':'Vehicle','سيارات':'Vehicles','عميل':'Customer','عملاء':'Customers','زيارة':'Visit','زيارات':'Visits'
-  };
-  Object.keys(E521_TOKEN_EN).forEach(function(source){STORE.ar.tokenSource[source]=source;STORE.en.tokenSource[source]=E521_TOKEN_EN[source];});
-
-  /* Phase E5.2.22 — program-wide canonical source-text coverage.
-     Build one reverse source index from the SAME Localization Center dictionaries.
-     This does not create a second English catalog: it only makes every aligned AR/EN
-     entry already registered in the canonical center addressable by its authored Arabic text. */
-  var E522_UI_EN={
-    'موارد':'Resources',
-    'تقرير المواعيد حسب الحالة':'Appointments by Status',
-    'تقرير المواعيد حسب الجرومر':'Appointments by Groomer',
-    'تقرير المواعيد حسب السائق':'Appointments by Driver',
-    'تقرير المواعيد حسب السيارة':'Appointments by Vehicle',
-    'تقرير المواعيد حسب طريقة الدفع':'Appointments by Payment Method',
-    'تقرير المواعيد حسب حالة التحصيل':'Appointments by Collection Status',
-    'العملاء الأكثر تكرارًا':'Most Frequent Customers',
-    'إجمالي الحالات':'Total Statuses',
-    'إجمالي الجرومرز':'Total Groomers',
-    'إجمالي السائقين':'Total Drivers',
-    'إجمالي السيارات':'Total Vehicles',
-    'إجمالي طرق الدفع':'Total Payment Methods',
-    'إجمالي حالات التحصيل':'Total Collection Statuses',
-    'إجمالي المواعيد المتكررة':'Total Repeat Appointments',
-    'البند':'Item','عدد المواعيد':'Appointment Count','النسبة':'Percentage',
-    'العميل':'Customer','طريقة الدفع':'Payment Method','حالة التحصيل':'Collection Status',
-    'لا توجد بيانات مالية':'No financial data',
-    'لا توجد بيانات لهذا التقرير':'No data for this report',
-    'بنود أخرى':'Other Items','بنود أخرى غير معروضة':'Other Hidden Items',
-    'عرض المزيد':'Show More',
-    'عرض فقط في هذه المرحلة':'View only at this stage',
-    'آخر 10 زيارات':'Last 10 Visits',
-    'السيارة / الفريق':'Vehicle / Team',
-    'عدد الزيارات':'Visit Count',
-    'الجوال':'Mobile',
-    'لا توجد نتائج مطابقة':'No matching results',
-    'لا توجد حيوانات مسجلة لهذا العميل بعد.':'No pets are registered for this customer yet.',
-    'اختر عميلًا لعرض الحيوانات الخاصة به.':'Select a customer to view their pets.',
-    'لا توجد زيارات مسجلة لهذا العميل حتى الآن.':'No visits are recorded for this customer yet.',
-    'اختر عميلًا لعرض سجل الزيارات.':'Select a customer to view visit history.',
-    'عرض الرئيسية':'Show Home',
-    'كل السنوات':'All Years',
-    'لا توجد فواتير':'No invoices',
-    'إجمالي السجلات':'Total Records',
-    'إجمالي البنود':'Total Items',
-    'إجمالي السجلات المطابقة للفلتر':'Matching Records',
-    'الاسم':'Name',
-    'المصدر':'Source',
-    'تاريخ الإضافة':'Date Added',
-    'إجراءات':'Actions',
-    'المخزن الرئيسي':'Main Warehouse',
-    'سعر الوحدة':'Unit Price',
-    'طريقة السداد':'Payment Method',
-    'طريقه الدفع':'Payment Method',
-    'الضرائب':'Taxes',
-    'السياره':'Vehicle',
-    'الخدمه':'Service',
-    'الإجمالي (SAR)':'Total (SAR)',
-    'المبيعات شامل الضريبة':'Sales Including VAT',
-    'نقد':'Cash','نقدى':'Cash',
-    'مصروف':'Expense',
-    'مستخدم':'User',
-    'مواعيد':'Appointments'
-  };
-  Object.keys(E522_UI_EN).forEach(function(source){STORE.ar.globalUiSource[source]=source;STORE.en.globalUiSource[source]=E522_UI_EN[source];});
-
-  function buildCanonicalSourceTextIndex(){
-    var index={ar:{},en:{}}, conflicts={};
-    function scoreEnglish(value){
-      value=String(value==null?'':value);
-      if(!value)return -100;
-      var score=/[\u0600-\u06FF]/.test(value)?-20:20;
-      if(/^[A-Za-z_$][\w$]*(?:[.-][A-Za-z_$][\w$]*)+$/.test(value))score-=10;
-      return score+Math.min(value.length,80)/1000;
-    }
-    function add(arValue,enValue,path){
-      if(typeof arValue!=='string'||typeof enValue!=='string'||!arValue||!enValue)return;
-      var prev=index.en[arValue];
-      if(prev===undefined||scoreEnglish(enValue)>scoreEnglish(prev)) index.en[arValue]=enValue;
-      else if(prev!==enValue){(conflicts[arValue]=conflicts[arValue]||[]).push({path:path,value:enValue});}
-      index.ar[arValue]=arValue;
-    }
-    function walk(arNode,enNode,path){
-      if(!arNode||typeof arNode!=='object')return;
-      Object.keys(arNode).forEach(function(key){
-        var av=arNode[key],ev=enNode&&enNode[key],next=path?path+'.'+key:key;
-        if(av&&typeof av==='object'&&!Array.isArray(av))walk(av,(ev&&typeof ev==='object')?ev:null,next);
-        else add(av,ev,next);
-      });
-    }
-    walk(STORE.ar,STORE.en,'');
-    Object.keys(STORE.ar.globalUiSource||{}).forEach(function(source){
-      var target=STORE.en.globalUiSource&&STORE.en.globalUiSource[source];
-      if(typeof target==='string'&&target)index.en[source]=target;
-    });
-    return {ar:index.ar,en:index.en,conflicts:conflicts};
-  }
-  var CANONICAL_SOURCE_TEXT_INDEX=buildCanonicalSourceTextIndex();
   function mergeCanonicalIntoLegacy(target,source){Object.keys(source||{}).forEach(function(key){var value=source[key];if(value&&typeof value==='object'&&!Array.isArray(value)){target[key]=target[key]&&typeof target[key]==='object'&&!Array.isArray(target[key])?target[key]:{};mergeCanonicalIntoLegacy(target[key],value);}else target[key]=value;});return target;}
   window.PETATOE_I18N_DICTIONARIES=window.PETATOE_I18N_DICTIONARIES||{};
   window.PETATOE_I18N_DICTIONARIES.ar=mergeCanonicalIntoLegacy(window.PETATOE_I18N_DICTIONARIES.ar||{},STORE.ar);
   window.PETATOE_I18N_DICTIONARIES.en=mergeCanonicalIntoLegacy(window.PETATOE_I18N_DICTIONARIES.en||{},STORE.en);
   registerModule('certificationSource',CERTIFICATION_SOURCE);
+  rebuildSourceTextIndex();
   window.PETATOE_LOCALIZATION_CENTER_DICTIONARIES=STORE;
-  window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,sourceOwnership:SOURCE_OWNERSHIP,dictionaries:STORE,sourceTextIndex:CANONICAL_SOURCE_TEXT_INDEX,registerModule:registerModule,getPath:getPath,merge:merge};
+  window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,sourceOwnership:SOURCE_OWNERSHIP,dictionaries:STORE,registerModule:registerModule,getPath:getPath,merge:merge,translateSourceText:translateSourceText,translateCompositeText:translateCompositeText,rebuildSourceTextIndex:rebuildSourceTextIndex};
   window.dispatchEvent(new CustomEvent('petatoe:localization-center-store-ready',{detail:META}));
 })();
