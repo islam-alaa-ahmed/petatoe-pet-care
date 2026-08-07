@@ -193,12 +193,107 @@
     'الحالة':'Status','مجدول':'Scheduled','مؤكد':'Confirmed','مؤجل':'Deferred','ملغي':'Cancelled','مكتمل':'Completed','جلسة':'Session','سيارة':'Vehicle','سيارات':'Vehicles','عميل':'Customer','عملاء':'Customers','زيارة':'Visit','زيارات':'Visits'
   };
   Object.keys(E521_TOKEN_EN).forEach(function(source){STORE.ar.tokenSource[source]=source;STORE.en.tokenSource[source]=E521_TOKEN_EN[source];});
+
+  /* Phase E5.2.22 — program-wide canonical source-text coverage.
+     Build one reverse source index from the SAME Localization Center dictionaries.
+     This does not create a second English catalog: it only makes every aligned AR/EN
+     entry already registered in the canonical center addressable by its authored Arabic text. */
+  var E522_UI_EN={
+    'موارد':'Resources',
+    'تقرير المواعيد حسب الحالة':'Appointments by Status',
+    'تقرير المواعيد حسب الجرومر':'Appointments by Groomer',
+    'تقرير المواعيد حسب السائق':'Appointments by Driver',
+    'تقرير المواعيد حسب السيارة':'Appointments by Vehicle',
+    'تقرير المواعيد حسب طريقة الدفع':'Appointments by Payment Method',
+    'تقرير المواعيد حسب حالة التحصيل':'Appointments by Collection Status',
+    'العملاء الأكثر تكرارًا':'Most Frequent Customers',
+    'إجمالي الحالات':'Total Statuses',
+    'إجمالي الجرومرز':'Total Groomers',
+    'إجمالي السائقين':'Total Drivers',
+    'إجمالي السيارات':'Total Vehicles',
+    'إجمالي طرق الدفع':'Total Payment Methods',
+    'إجمالي حالات التحصيل':'Total Collection Statuses',
+    'إجمالي المواعيد المتكررة':'Total Repeat Appointments',
+    'البند':'Item','عدد المواعيد':'Appointment Count','النسبة':'Percentage',
+    'العميل':'Customer','طريقة الدفع':'Payment Method','حالة التحصيل':'Collection Status',
+    'لا توجد بيانات مالية':'No financial data',
+    'لا توجد بيانات لهذا التقرير':'No data for this report',
+    'بنود أخرى':'Other Items','بنود أخرى غير معروضة':'Other Hidden Items',
+    'عرض المزيد':'Show More',
+    'عرض فقط في هذه المرحلة':'View only at this stage',
+    'آخر 10 زيارات':'Last 10 Visits',
+    'السيارة / الفريق':'Vehicle / Team',
+    'عدد الزيارات':'Visit Count',
+    'الجوال':'Mobile',
+    'لا توجد نتائج مطابقة':'No matching results',
+    'لا توجد حيوانات مسجلة لهذا العميل بعد.':'No pets are registered for this customer yet.',
+    'اختر عميلًا لعرض الحيوانات الخاصة به.':'Select a customer to view their pets.',
+    'لا توجد زيارات مسجلة لهذا العميل حتى الآن.':'No visits are recorded for this customer yet.',
+    'اختر عميلًا لعرض سجل الزيارات.':'Select a customer to view visit history.',
+    'عرض الرئيسية':'Show Home',
+    'كل السنوات':'All Years',
+    'لا توجد فواتير':'No invoices',
+    'إجمالي السجلات':'Total Records',
+    'إجمالي البنود':'Total Items',
+    'إجمالي السجلات المطابقة للفلتر':'Matching Records',
+    'الاسم':'Name',
+    'المصدر':'Source',
+    'تاريخ الإضافة':'Date Added',
+    'إجراءات':'Actions',
+    'المخزن الرئيسي':'Main Warehouse',
+    'سعر الوحدة':'Unit Price',
+    'طريقة السداد':'Payment Method',
+    'طريقه الدفع':'Payment Method',
+    'الضرائب':'Taxes',
+    'السياره':'Vehicle',
+    'الخدمه':'Service',
+    'الإجمالي (SAR)':'Total (SAR)',
+    'المبيعات شامل الضريبة':'Sales Including VAT',
+    'نقد':'Cash','نقدى':'Cash',
+    'مصروف':'Expense',
+    'مستخدم':'User',
+    'مواعيد':'Appointments'
+  };
+  Object.keys(E522_UI_EN).forEach(function(source){STORE.ar.globalUiSource[source]=source;STORE.en.globalUiSource[source]=E522_UI_EN[source];});
+
+  function buildCanonicalSourceTextIndex(){
+    var index={ar:{},en:{}}, conflicts={};
+    function scoreEnglish(value){
+      value=String(value==null?'':value);
+      if(!value)return -100;
+      var score=/[\u0600-\u06FF]/.test(value)?-20:20;
+      if(/^[A-Za-z_$][\w$]*(?:[.-][A-Za-z_$][\w$]*)+$/.test(value))score-=10;
+      return score+Math.min(value.length,80)/1000;
+    }
+    function add(arValue,enValue,path){
+      if(typeof arValue!=='string'||typeof enValue!=='string'||!arValue||!enValue)return;
+      var prev=index.en[arValue];
+      if(prev===undefined||scoreEnglish(enValue)>scoreEnglish(prev)) index.en[arValue]=enValue;
+      else if(prev!==enValue){(conflicts[arValue]=conflicts[arValue]||[]).push({path:path,value:enValue});}
+      index.ar[arValue]=arValue;
+    }
+    function walk(arNode,enNode,path){
+      if(!arNode||typeof arNode!=='object')return;
+      Object.keys(arNode).forEach(function(key){
+        var av=arNode[key],ev=enNode&&enNode[key],next=path?path+'.'+key:key;
+        if(av&&typeof av==='object'&&!Array.isArray(av))walk(av,(ev&&typeof ev==='object')?ev:null,next);
+        else add(av,ev,next);
+      });
+    }
+    walk(STORE.ar,STORE.en,'');
+    Object.keys(STORE.ar.globalUiSource||{}).forEach(function(source){
+      var target=STORE.en.globalUiSource&&STORE.en.globalUiSource[source];
+      if(typeof target==='string'&&target)index.en[source]=target;
+    });
+    return {ar:index.ar,en:index.en,conflicts:conflicts};
+  }
+  var CANONICAL_SOURCE_TEXT_INDEX=buildCanonicalSourceTextIndex();
   function mergeCanonicalIntoLegacy(target,source){Object.keys(source||{}).forEach(function(key){var value=source[key];if(value&&typeof value==='object'&&!Array.isArray(value)){target[key]=target[key]&&typeof target[key]==='object'&&!Array.isArray(target[key])?target[key]:{};mergeCanonicalIntoLegacy(target[key],value);}else target[key]=value;});return target;}
   window.PETATOE_I18N_DICTIONARIES=window.PETATOE_I18N_DICTIONARIES||{};
   window.PETATOE_I18N_DICTIONARIES.ar=mergeCanonicalIntoLegacy(window.PETATOE_I18N_DICTIONARIES.ar||{},STORE.ar);
   window.PETATOE_I18N_DICTIONARIES.en=mergeCanonicalIntoLegacy(window.PETATOE_I18N_DICTIONARIES.en||{},STORE.en);
   registerModule('certificationSource',CERTIFICATION_SOURCE);
   window.PETATOE_LOCALIZATION_CENTER_DICTIONARIES=STORE;
-  window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,sourceOwnership:SOURCE_OWNERSHIP,dictionaries:STORE,registerModule:registerModule,getPath:getPath,merge:merge};
+  window.PETATOE_LOCALIZATION_CENTER_STORE={version:META.version,meta:META,sourceOwnership:SOURCE_OWNERSHIP,dictionaries:STORE,sourceTextIndex:CANONICAL_SOURCE_TEXT_INDEX,registerModule:registerModule,getPath:getPath,merge:merge};
   window.dispatchEvent(new CustomEvent('petatoe:localization-center-store-ready',{detail:META}));
 })();
