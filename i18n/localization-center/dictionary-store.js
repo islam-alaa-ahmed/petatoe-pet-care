@@ -21,7 +21,7 @@
     walkAligned(STORE.ar,STORE.en,'',function(arValue,enValue,path){
       var source=normalizeSourceText(arValue),target=normalizeSourceText(enValue);
       if(source&&target&&source!==target&&!Object.prototype.hasOwnProperty.call(map,source))map[source]=target;
-      if(path.indexOf('enterpriseUiCertification.tokens.')===0&&source&&target&&source!==target)tokens.push({source:source,target:target});
+      if((path.indexOf('enterpriseUiCertification.tokens.')===0||path.indexOf('.tokens.')!==-1)&&source&&target&&source!==target)tokens.push({source:source,target:target});
     });
     tokens.sort(function(a,b){return b.source.length-a.source.length;});
     SOURCE_TEXT_INDEX.en=map;COMPOSITE_TOKEN_INDEX=tokens;return map;
@@ -41,7 +41,11 @@
       if(out.indexOf(pair.source)===-1)return;
       out=out.split(pair.source).join(pair.target);changed=true;
     });
-    return changed?out:original;
+    if(changed){
+      out=out.replace(/[٠-٩]/g,function(ch){return String('٠١٢٣٤٥٦٧٨٩'.indexOf(ch));}).replace(/[۰-۹]/g,function(ch){return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(ch));});
+      return out;
+    }
+    return original;
   }
   function registerModule(name,dictionaries){if(!name||!dictionaries)return false;['ar','en'].forEach(function(lang){STORE[lang]=STORE[lang]||{};STORE[lang][name]=STORE[lang][name]||{};merge(STORE[lang][name],dictionaries[lang]||{});});rebuildSourceTextIndex();return true;}
   function getPath(lang,key){var cur=STORE[lang]||{},parts=String(key||'').split('.');for(var i=0;i<parts.length;i++){if(cur==null)return cur;if(Object.prototype.hasOwnProperty.call(cur,parts[i])){cur=cur[parts[i]];continue;}var remaining=parts.slice(i).join('.');if(Object.prototype.hasOwnProperty.call(cur,remaining))return cur[remaining];return undefined;}return cur;}

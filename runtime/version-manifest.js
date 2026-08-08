@@ -6,9 +6,9 @@
   "product": "PETATOE",
   "releaseVersion": "10.0.25",
   "releaseLabel": "v10.0.25",
-  "releaseName": "PETATOE_V10_0_25_SESSION_HEADER_IDENTITY_STABILITY_HOTFIX_E5_2_24",
-  "buildVersion": "10.0.25-phase-e5-2-24-session-header-identity-stability-hotfix-1",
-  "cacheVersion": "10.0.25-phase-e5-2-24-session-header-identity-stability-hotfix-1",
+  "releaseName": "PETATOE_V10_0_25_PROGRAM_WIDE_LOCALIZATION_CLOSURE_E5_2_25",
+  "buildVersion": "10.0.25-phase-e5-2-25-program-wide-localization-closure-1",
+  "cacheVersion": "10.0.25-phase-e5-2-25-program-wide-localization-closure-1",
   "runtimeContracts": {
     "startupGate": "10.0.25-sg4-6-9-smart-reports-soft-ui-dependency-1",
     "smartReportsRegistration": "10.0.25-smart-reports-sr3-registration",
@@ -69,7 +69,8 @@
     "localizationEnterpriseArchitecture": "10.0.25-phase-e5-2-20-arabic-source-english-canonical-dom-owner-contract-1",
     "localizationEnterpriseArchitectureHotfix": "10.0.25-phase-e5-2-20-1-arabic-authored-english-single-catalog-contract-1",
     "localizationEnterpriseCertification": "10.0.25-phase-e5-2-23-program-wide-single-source-localization-contract-1",
-    "sessionHeaderIdentityStability": "10.0.25-phase-e5-2-24-session-header-identity-stability-contract-1"
+    "sessionHeaderIdentityStability": "10.0.25-phase-e5-2-24-session-header-identity-stability-contract-1",
+    "programWideLocalizationClosure": "10.0.25-phase-e5-2-25-program-wide-localization-closure-contract-1"
   },
   "native": {
     "latestVersion": "10.0.0",

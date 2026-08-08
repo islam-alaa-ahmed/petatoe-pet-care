@@ -19,25 +19,33 @@
       function hashText(value){var str=normalizeText(value),h=0x811c9dc5;for(var i=0;i<str.length;i++){h^=str.charCodeAt(i);h+=(h<<1)+(h<<4)+(h<<7)+(h<<8)+(h<<24);}return 'h'+('00000000'+(h>>>0).toString(16)).slice(-8);}
       function canonicalRuntimePhrase(text,lang){
         if(lang!=='en')return '';
-        var translated=store.getPath('en','runtimeSource.'+text);
-        if(typeof translated==='string'&&translated)return translated;
-        translated=store.getPath('en','globalUiSource.'+text);
-        if(typeof translated==='string'&&translated)return translated;
+        var runtime=window.PETATOE_LOCALIZATION_RUNTIME;
+        if(runtime&&typeof runtime.translateRuntime==='function'){
+          var resolved=runtime.translateRuntime(text,'en');
+          if(typeof resolved==='string'&&resolved&&resolved!==text&&!hasArabic(resolved))return resolved;
+        }
+        if(store&&typeof store.translateSourceText==='function'){
+          var exact=store.translateSourceText(text,'en');
+          if(typeof exact==='string'&&exact&&exact!==text&&!hasArabic(exact))return exact;
+        }
+        if(store&&typeof store.translateCompositeText==='function'){
+          var composite=store.translateCompositeText(text,'en');
+          if(typeof composite==='string'&&composite&&composite!==text&&!hasArabic(composite))return composite;
+        }
         var hash=hashText(text);
-        translated=store.getPath('en','runtimePhrases.'+hash);
-        if(typeof translated==='string'&&translated)return translated;
+        var translated=store.getPath('en','runtimePhrases.'+hash);
+        if(typeof translated==='string'&&translated&&!hasArabic(translated))return translated;
         translated=store.getPath('en','autoPhrases.'+hash);
-        return typeof translated==='string'&&translated?translated:'';
+        if(typeof translated==='string'&&translated&&!hasArabic(translated))return translated;
+        return '';
       }
       function runtimeValue(value,targetLang,params){
         if(value==null)return value;
         var text=String(value),lang=language(targetLang);
         if(lang!=='en')return interpolate(text,params);
-        var translated=canonicalRuntimePhrase(text,'en');
-        if(typeof translated==='string'&&translated&&hasArabic(translated))translated='';
-        return interpolate(translated||text,params);
+        return interpolate(canonicalRuntimePhrase(text,'en')||text,params);
       }
-    
+
       center.translateRuntime=runtimeValue;
       center.runtimeDictionary={source:'PETATOE_LOCALIZATION_CENTER_STORE',count:Object.keys(store.getPath('en','runtimeSource')||{}).length};
       center.__singleSourceEnforced=true;
