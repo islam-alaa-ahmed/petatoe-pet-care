@@ -184,9 +184,14 @@
     }
     return ids._cache||null;
   }
-  async function loadFreshUsers(){
+  async function loadFreshUsers(forceRefresh){
     var ids=identityStore();
-    try{ if(ids && typeof ids.load==='function') await ids.load({force:true}); }catch(_e){}
+    try{
+      if(ids && typeof ids.load==='function'){
+        if(forceRefresh) await ids.load({force:true});
+        else await ensureIdentityReady();
+      }
+    }catch(_e){}
     try{ if(ids && typeof ids.usersSync==='function') return ids.usersSync()||[]; }catch(_e){}
     return getUsers();
   }
@@ -247,7 +252,7 @@
     }else{
       remote = await validateRemoteEnterpriseSession(su, reason || 'session-validate');
       if(remote && remote.ok === false) return remote;
-      list=await loadFreshUsers();
+      list=await loadFreshUsers(reason==='session-watch'||reason==='users-changed');
     }
     if(remote && remote.ok === false) return remote;
     var fresh=(list||[]).find(function(u){return sameUserRef(u,su);});
@@ -1264,7 +1269,13 @@
       var nameEl = document.getElementById('topbarUserName') || box.querySelector('b');
       if(nameEl) nameEl.textContent = displayName;
       var roleEl = document.getElementById('topbarUserRole') || box.querySelector('small');
-      if(roleEl) roleEl.textContent = displayRole;
+      if(roleEl){
+        /* Auth owns this text after session resolution. The initial data-i18n=topbar.loading
+           marker is bootstrap-only; leaving it attached lets the localization MutationObserver
+           overwrite the resolved role back to "Loading" on every language/runtime pass. */
+        roleEl.removeAttribute('data-i18n');
+        roleEl.textContent = displayRole;
+      }
 
       if(!box.querySelector('.pet-auth-user-chevron')){
         var firstDiv = box.querySelector('div');
@@ -1449,6 +1460,9 @@
     getUsers();
     var user = sessionUser();
     if(user && user.id){
+      /* Resolve the visible header from the persisted authenticated session immediately.
+         Remote/identity validation continues below and can revoke the session if required. */
+      updateHeader(user);
       var valid=await validateSessionUser('auth-restore');
       if(valid && valid.ok){
         setLoggedInClass(true);

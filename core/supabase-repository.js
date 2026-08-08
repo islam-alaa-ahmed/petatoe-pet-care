@@ -537,6 +537,10 @@
   async function loadIdentityStore(options){
     options=options||{};
     if(identityCache.loading) return identityCache.loading;
+    /* Normal readers share the hydrated identity snapshot. Only explicit force refreshes
+       may hit app_users/app_user_permissions/roles again. This prevents navigation,
+       payroll, settings and auth readers from independently reissuing the same triplet. */
+    if(!options.force && identityCache.loaded===true) return identityCache;
     var nowMs=Date.now();
     if(!options.force && identityRuntime.lastFailureAt && (nowMs-identityRuntime.lastFailureAt)<IDENTITY_RETRY_COOLDOWN_MS){
       return identityCache;

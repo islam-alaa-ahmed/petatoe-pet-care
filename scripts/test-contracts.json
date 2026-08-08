@@ -78,7 +78,8 @@
     "phase-e5-2-19-4-arabic-source-single-english-catalog-check.js",
     "phase-e5-2-20-enterprise-localization-architecture-check.js",
     "phase-e5-2-20-1-enterprise-localization-architecture-hotfix-check.js",
-    "phase-e5-2-23-enterprise-localization-certification-check.js"
+    "phase-e5-2-23-enterprise-localization-certification-check.js",
+    "phase-e5-2-24-session-header-identity-stability-check.js"
   ],
   "historicalPatterns": [
     "v9_",
