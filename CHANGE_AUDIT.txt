@@ -1,0 +1,23 @@
+PETATOE CSV IMPORT FIX
+
+Root Cause:
+1) The canonical sales import engine sent every supported file, including .csv, through XLSX workbook parsing and required workbook SheetNames. Valid CSV uploads could therefore fail with "Excel file has no readable sheets", leaving importData empty and making the Super Admin skip path end with "no uploadable data".
+2) Items-by-category validation allowed only 0.10 SAR difference between the calculated line total and the imported total. The supplied export rounds line totals to whole SAR, so legitimate rounding differences can reach exactly 0.50 SAR.
+
+Impact:
+- CSV files are parsed directly as CSV data instead of being required to expose Excel sheets.
+- XLS/XLSX behavior remains on the existing workbook path.
+- Items-by-category line-total validation now accepts normal rounding differences up to 0.50 SAR; differences above 0.50 SAR remain blocked.
+- The parsed matrix still passes through the existing header, business-rule, duplicate, preview, and confirmation validation.
+
+Scope:
+Modified only assets/js/sales/import-engine.js. No database, permission, translation, layout, or unrelated report behavior changed.
+
+Regression Risk:
+Low. XLS/XLSX path is preserved. CSV parser handles UTF-8 BOM, quoted fields, escaped quotes, CRLF/LF, and comma/semicolon/tab delimiters. The only business-validation adjustment is the rounding tolerance for Items By Category totals.
+
+Verification:
+- JavaScript syntax: PASS (node --check)
+- Supplied CSV: 141 rows total (1 header + 140 data rows), all with 10 columns.
+- Required supplied header matches Items By Category mode.
+- Maximum supplied line-total rounding difference: exactly 0.50 SAR; therefore all supplied rows pass the corrected rounding tolerance.
