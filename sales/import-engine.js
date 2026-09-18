@@ -10,8 +10,6 @@
   let importMode='full';
   let stagedPaymentMap={};
   let lastImportErrors=[];
-  let pendingOverrideReplace=false;
-  let pendingOverrideContext='validation';
   const arLetters='أإآاىيهةؤئء';
   function normText(v){return String(v??'').trim().replace(/\s+/g,' ').replace(/ي/g,'ى').replace(/ة/g,'ه').toLowerCase();}
   function normHeader(v){return normText(v).replace(/[\u064B-\u065F]/g,'').replace(/[()\[\]{}\-_/\\.:،,]/g,'').replace(/\s+/g,'');}
@@ -21,141 +19,55 @@
   function isBlank(v){return v==null || String(v).trim()===''}
   function safeNum(v){return (typeof parseNum==='function')?parseNum(v):Number(String(v||'').replace(/,/g,''))||0}
   function cleanInvoice(v){return String(v??'').trim()}
-  function normalizeInvoiceKey(v){
-    let s=String(v??'').trim();
-    if(!s) return '';
-    s=s.replace(/[٠-٩]/g,function(d){return String('٠١٢٣٤٥٦٧٨٩'.indexOf(d));})
-       .replace(/[۰-۹]/g,function(d){return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d));})
-       .replace(/\u00a0/g,' ')
-       .replace(/,/g,'')
-       .replace(/\s+/g,'')
-       .trim();
-    if(/^\d+\.0+$/.test(s)) s=s.replace(/\.0+$/,'');
-    if(/^0+\d+$/.test(s)) s=s.replace(/^0+(?=\d)/,'');
-    return normText(s);
-  }
   function isCashText(v){const x=normText(v);return ['cash','كاش','نقدى','نقدي'].some(k=>x===k||x.includes(k));}
   function detectInvoiceType(r){return ((isCashText(r.invoice)||isCashText(r.client)) && safeNum(r.tax)===0)?'CASH':'TAX'}
   function recordDuplicateKey(r){
-    // Unified duplicate policy shared by Excel import and manual invoice entry.
-    const policy=window.PETATOESalesDuplicatePolicy;
-    if(policy&&typeof policy.recordKey==='function')return policy.recordKey(r);
+    // DUPLICATE_RULE_MULTI_FIELD_FIX:
+    // يتم الحكم على تكرار البند عند تطابق: رقم الفاتورة + العميل + الصنف/الخدمة + السيارة + قيمة الصنف.
+    // لذلك فواتير متعددة البنود لن تظهر كتكرار لمجرد أن رقم الفاتورة واحد.
     const lineValue=safeNum(r.totalInc||r.total||r.totalWithVat||r.amount||r.lineTotal||r.price).toFixed(2);
-    const parts=[normalizeInvoiceKey(r.invoice),r.client,r.item,(r.van||r.vehicle||r.car||r.carName||r.vehicleName),lineValue];
+    const parts=[r.invoice,r.client,r.item,(r.van||r.vehicle||r.car||r.carName||r.vehicleName),lineValue];
     return parts.map(x=>normText(x)).join('|');
   }
   function makeError(row,col,msg,value){return {row,col,cell:cellRef(row,col),msg,value};}
-
-  function appendImportAudit(kind, entry){
-    try{
-      const R=window.PETATOESupabaseRepository;
-      if(R&&R.hasClient&&R.hasClient()&&typeof R.appendSystemList==='function'){
-        R.appendSystemList(kind==='override'?'sales_import_override_audit':'sales_import_audit', entry, 300).then(function(res){
-          if(res&&!res.ok) console.warn('[PETATOE Import] Supabase audit save failed', res.error);
-        }).catch(function(e){ console.warn('[PETATOE Import] Supabase audit save crashed', e); });
-      }
-    }catch(e){ console.warn('[PETATOE Import] audit failed', e); }
-  }
-  function findCurrentFullUser(){
-    // Supabase-only cleanup: import override relies on the active authenticated user exposed by the app runtime.
-    let cu=null;
-    try{ cu=(window.PETATOEAuth&&typeof window.PETATOEAuth.currentUser==='function')?window.PETATOEAuth.currentUser():null; }catch(_e){}
-    if(!cu){ try{ cu=window.petCurrentUser&&typeof window.petCurrentUser==='function'?window.petCurrentUser():null; }catch(_e){} }
-    if(!cu){ try{ cu=window.__PETATOE_ACTIVE_USER__||window.currentUser||null; }catch(_e){} }
-    return cu;
-  }
-  function isSuperAdminUser(u){
-    const role=normText((u&&(u.role||u.job||u.type||u.permission))||'');
-    const id=normText((u&&(u.id||u.username||u.fullName||u.name))||'');
-    return id==='admin'||id==='u_admin'||role.indexOf('super')>=0||role.indexOf('سوبر')>=0;
-  }
-  function verifyOverridePassword(password){
-    const full=findCurrentFullUser();
-    if(!isSuperAdminUser(full)) return {ok:false, reason:'هذه العملية متاحة فقط لمستخدم Super Admin'};
-    const p=String(password||'');
-    if(!p) return {ok:false, reason:'أدخل كلمة مرور Super Admin'};
-    try{ if(window.PETATOEPasswordSecurity && typeof window.PETATOEPasswordSecurity.verifyPassword==='function' && window.PETATOEPasswordSecurity.verifyPassword(p, full)) return {ok:true,user:full}; }catch(_e){}
-    if(full && full.password && String(full.password)===p) return {ok:true,user:full};
-    return {ok:false, reason:'كلمة مرور Super Admin غير صحيحة'};
-  }
-  function auditOverride(reason, replace){
-    try{
-      const u=findCurrentFullUser()||{};
-      const detail='Override import by '+String(u.username||u.fullName||u.id||'Super Admin')+' | rows='+String((importData||[]).length)+' | errors='+String((lastImportErrors||[]).length)+' | mode='+String(importMode)+' | replace='+String(!!replace)+' | reason='+(reason||'-');
-      if(window.__PETATOE_SETTINGS_API__ && typeof window.__PETATOE_SETTINGS_API__.audit==='function') window.__PETATOE_SETTINGS_API__.audit('Import Validation Override', detail, 'warn');
-      appendImportAudit('override',{time:new Date().toISOString(),user:u.username||u.fullName||u.id||'Super Admin',rows:(importData||[]).length,errors:(lastImportErrors||[]).length,mode:importMode,replace:!!replace,reason:reason||''});
-    }catch(e){ try{ console.warn('[PETATOE Import Override] audit failed', e); }catch(_e){} }
-  }
-
-  async function assertImportPeriodsUnlocked(rows, replace){
-    const guard=window.PETATOECommissionPeriodGuard;
-    if(!guard){
-      if(typeof toast==='function')toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر التحقق من قفل شهر العمولات'):'Unable to verify the commission month lock');
-      return false;
-    }
-    const result=replace&&typeof guard.assertReplaceAllowed==='function'?await guard.assertReplaceAllowed():await guard.assertRowsUnlocked(rows||[]);
-    if(!result||result.ok!==true){
-      const periods=result&&result.lockedPeriods&&result.lockedPeriods.length?result.lockedPeriods.join('، '):'';
-      const key=replace?'لا يمكن استبدال بيانات المبيعات أثناء وجود شهور عمولات مقفلة':'لا يمكن رفع فواتير تخص شهر عمولات مقفول';
-      const message=(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime(key):key)+(periods?' — '+periods:'');
-      renderErrors([makeError(1,1,key,periods||'')]);
-      if(typeof toast==='function')toast(message);
-      return false;
-    }
-    return true;
-  }
-  async function forceImportAfterOverride(reason){
-    if(!(importData&&importData.length)){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات قابلة للرفع بعد التخطي'):'لا توجد بيانات قابلة للرفع بعد التخطي'); return; }
-    const replace=!!pendingOverrideReplace;
-    auditOverride(reason, replace);
-    const existingRows=dsRecords().slice();
-    const uploadRows=(importData||[]).slice();
-    if(!(await assertImportPeriodsUnlocked(uploadRows,replace)))return false;
-    const nextRows=replace?uploadRows:existingRows.concat(uploadRows);
-    return await commitImportedRows(nextRows,'import-override-confirmed','تم رفع البيانات إلى Supabase بتجاوز قواعد التحقق بواسطة Super Admin',{uploadRows:uploadRows,replace:replace});
-  }
-  function ensureOverrideStyle(){
-    if(document.getElementById('pet-import-override-style')) return;
-    const st=document.createElement('style'); st.id='pet-import-override-style';
-    st.textContent='.pet-import-override-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}.pet-import-override-btn{border:1px solid rgba(245,158,11,.65);background:linear-gradient(135deg,rgba(245,158,11,.24),rgba(239,68,68,.18));color:#fff;border-radius:16px;padding:10px 14px;font-weight:900;cursor:pointer;box-shadow:0 12px 30px rgba(245,158,11,.18)}.pet-import-override-note{font-size:12px;color:var(--muted)}.pet-override-modal-backdrop{position:fixed;inset:0;z-index:999999;background:rgba(2,6,23,.58);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px}.pet-override-modal{width:min(520px,96vw);border-radius:24px;border:1px solid rgba(148,163,184,.35);background:linear-gradient(135deg,rgba(15,23,42,.96),rgba(30,41,59,.92));box-shadow:0 30px 90px rgba(0,0,0,.45);padding:22px;color:#fff;direction:rtl}.pet-override-modal h3{margin:0 0 8px;font-size:22px}.pet-override-modal p{margin:0 0 14px;color:rgba(226,232,240,.82);line-height:1.7}.pet-override-modal label{display:block;margin:12px 0 6px;font-weight:800}.pet-override-modal input,.pet-override-modal textarea{width:100%;box-sizing:border-box;border-radius:14px;border:1px solid rgba(148,163,184,.35);background:rgba(15,23,42,.66);color:#fff;padding:11px 12px;outline:none}.pet-override-modal textarea{min-height:70px;resize:vertical}.pet-override-modal .pet-override-check{display:flex;gap:8px;align-items:flex-start;margin:12px 0;color:rgba(226,232,240,.86)}.pet-override-modal .pet-override-check input{width:auto;margin-top:4px}.pet-override-modal .pet-override-error{color:#fecaca;font-weight:800;min-height:20px;margin-top:8px}.pet-override-modal .pet-override-actions{display:flex;gap:10px;justify-content:flex-start;margin-top:14px}.pet-override-modal button{border:0;border-radius:14px;padding:10px 14px;font-weight:900;cursor:pointer}.pet-override-cancel{background:rgba(148,163,184,.22);color:#e5e7eb}.pet-override-confirm{background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff}';
-    document.head.appendChild(st);
-  }
-  function openOverrideModal(){
-    ensureOverrideStyle();
-    const full=findCurrentFullUser();
-    if(!isSuperAdminUser(full)){ toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تخطي قواعد الرفع متاح فقط لـ Super Admin'):'تخطي قواعد الرفع متاح فقط لـ Super Admin'); return; }
-    const old=document.getElementById('petImportOverrideModal'); if(old)old.remove();
-    const bd=document.createElement('div'); bd.className='pet-override-modal-backdrop'; bd.id='petImportOverrideModal';
-    bd.innerHTML='<div class="pet-override-modal" role="dialog" aria-modal="true"><h3>🛡️ تخطي قواعد التحقق والرفع</h3><p>سيتم رفع البيانات رغم وجود أخطاء أو تكرار. استخدم هذا الإجراء فقط عند التأكد من صحة الملف ومسؤوليتك عن التجاوز.</p><label>سبب التجاوز / ملاحظة</label><textarea id="petOverrideReason" placeholder="مثال: استيراد اضطراري بعد مراجعة الملف"></textarea><label>كلمة مرور Super Admin</label><input id="petOverridePassword" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور"><label class="pet-override-check"><input id="petOverrideAcknowledge" type="checkbox"><span>أقر أن هذا الإجراء قد يرفع بيانات مخالفة لقواعد التحقق أو مكررة.</span></label><div class="pet-override-error" id="petOverrideError"></div><div class="pet-override-actions"><button type="button" class="pet-override-confirm" id="petOverrideConfirmBtn">تخطي والرفع</button><button type="button" class="pet-override-cancel" id="petOverrideCancelBtn">إلغاء</button></div></div>';
-    document.body.appendChild(bd);
-    const close=()=>bd.remove();
-    bd.querySelector('#petOverrideCancelBtn').addEventListener('click', close);
-    bd.addEventListener('click', e=>{ if(e.target===bd) close(); });
-    setTimeout(()=>{try{bd.querySelector('#petOverridePassword').focus();}catch(_e){}},30);
-    bd.querySelector('#petOverrideConfirmBtn').addEventListener('click', ()=>{
-      const err=bd.querySelector('#petOverrideError');
-      if(!bd.querySelector('#petOverrideAcknowledge').checked){ err.textContent='يجب تأكيد الإقرار قبل التخطي.'; return; }
-      const check=verifyOverridePassword(bd.querySelector('#petOverridePassword').value);
-      if(!check.ok){ err.textContent=check.reason; return; }
-      const reason=bd.querySelector('#petOverrideReason').value||'';
-      close(); forceImportAfterOverride(reason).catch(function(e){ console.error('[PETATOE Import Override] failed', e); if(typeof toast==='function') toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل تنفيذ التخطي والرفع'):'فشل تنفيذ التخطي والرفع'); });
-    });
-  }
-  function appendOverrideButton(box){
-    if(!box || document.getElementById('petImportOverrideBtn')) return;
-    ensureOverrideStyle();
-    const wrap=document.createElement('div'); wrap.className='pet-import-override-actions';
-    const btn=document.createElement('button'); btn.type='button'; btn.id='petImportOverrideBtn'; btn.className='pet-import-override-btn'; btn.textContent='🛡️ تخطي الشروط والرفع (Super Admin)';
-    const note=document.createElement('span'); note.className='pet-import-override-note'; note.textContent='يتطلب كلمة مرور Super Admin ويتم تسجيل العملية في سجل التجاوز.';
-    btn.addEventListener('click', openOverrideModal);
-    wrap.appendChild(btn); wrap.appendChild(note); box.appendChild(wrap);
-  }
 
   function clearNode(node){while(node&&node.firstChild)node.removeChild(node.firstChild);}
   function appendText(parent, tag, text, className){const el=document.createElement(tag); if(className)el.className=className; el.textContent=String(text??''); parent.appendChild(el); return el;}
   function appendMiniStat(parent,label,value){const mini=document.createElement('div'); mini.className='mini'; appendText(mini,'span',label); appendText(mini,'b',value); parent.appendChild(mini); return mini;}
   function renderImportStats(stats){const box=document.getElementById('importStats'); if(!box)return; clearNode(box); (stats||[]).forEach(s=>appendMiniStat(box,s.label,s.value));}
   function ensureXlsxReady(){return !!(window.XLSX&&window.XLSX.read&&window.XLSX.utils&&window.XLSX.utils.sheet_to_json);}
+  function isCsvFile(file){
+    const name=String(file&&file.name||'').toLowerCase();
+    const type=String(file&&file.type||'').toLowerCase();
+    return name.endsWith('.csv')||type.includes('text/csv')||type.includes('application/csv');
+  }
+  function decodeCsvBuffer(buffer){
+    const bytes=new Uint8Array(buffer||new ArrayBuffer(0));
+    let text='';
+    try{text=new TextDecoder('utf-8',{fatal:false}).decode(bytes);}catch(_e){for(let i=0;i<bytes.length;i++)text+=String.fromCharCode(bytes[i]);}
+    return text.replace(/^\uFEFF/,'');
+  }
+  function detectCsvDelimiter(text){
+    const sample=String(text||'').split(/\r?\n/).slice(0,8).join('\n');
+    const candidates=[',',';','\t'];
+    let best=',',bestCount=-1;
+    candidates.forEach(d=>{let count=0,inQuotes=false;for(let i=0;i<sample.length;i++){const ch=sample[i];if(ch==='\"'){if(inQuotes&&sample[i+1]==='\"')i++;else inQuotes=!inQuotes;}else if(!inQuotes&&ch===d)count++;}if(count>bestCount){best=d;bestCount=count;}});
+    return best;
+  }
+  function parseCsvMatrix(text){
+    const src=String(text||'').replace(/^\uFEFF/,'');
+    const delimiter=detectCsvDelimiter(src);
+    const rows=[]; let row=[],field='',inQuotes=false;
+    for(let i=0;i<src.length;i++){
+      const ch=src[i];
+      if(ch==='\"'){if(inQuotes&&src[i+1]==='\"'){field+='\"';i++;}else inQuotes=!inQuotes;continue;}
+      if(!inQuotes&&ch===delimiter){row.push(field);field='';continue;}
+      if(!inQuotes&&(ch==='\n'||ch==='\r')){if(ch==='\r'&&src[i+1]==='\n')i++;row.push(field);field='';if(row.some(v=>String(v).trim()!==''))rows.push(row);row=[];continue;}
+      field+=ch;
+    }
+    row.push(field);if(row.some(v=>String(v).trim()!==''))rows.push(row);
+    return rows;
+  }
   function renderErrors(errors){
     lastImportErrors=errors||[];
     const box=document.getElementById('importErrors');
@@ -181,9 +93,8 @@
     });
     box.appendChild(ul);
     if(lastImportErrors.length>80){const more=appendText(box,'div','تم عرض أول 80 خطأ فقط.'); more.style.marginTop='8px'; more.style.color='var(--muted)';}
-    appendOverrideButton(box);
     const pv=document.getElementById('previewCard'); if(pv)pv.style.display='none';
-    if(typeof toast==='function')toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم منع الرفع - راجع تفاصيل الأخطاء'):'تم منع الرفع - راجع تفاصيل الأخطاء');
+    if(typeof toast==='function')toast('تم منع الرفع - راجع تفاصيل الأخطاء');
   }
   function clearErrors(){renderErrors([])}
   function findHeaderRow(data, wanted){
@@ -270,7 +181,7 @@
       const discountValue=safeNum(r.disc);
       const signedDiscount=(discountValue<0)?discountValue:-discountValue;
       const expected=baseAmount+signedDiscount+safeNum(r.tax);
-      if(Math.abs(expected-safeNum(r.totalInc))>0.10){errors.push(makeError(erow,idx.totalInc+1,`الإجمالي لا يطابق: سعر الوحدة × الكمية ${discountValue<0?'+ الخصم السالب':'- الخصم'} + الضرائب. المتوقع ${expected.toFixed(2)}`,readCell(row,idx.totalInc)));}
+      if(Math.abs(expected-safeNum(r.totalInc))>0.50+Number.EPSILON){errors.push(makeError(erow,idx.totalInc+1,`الإجمالي لا يطابق: سعر الوحدة × الكمية ${discountValue<0?'+ الخصم السالب':'- الخصم'} + الضرائب. المتوقع ${expected.toFixed(2)}`,readCell(row,idx.totalInc)));}
       out.push(r);
     }
     validateRowsBusiness(out,errors);
@@ -287,7 +198,7 @@
       const inv=cleanInvoice(readCell(row,invIdx)); const pay=String(readCell(row,payIdx)||'').trim();
       validateRequired(erow,invIdx,'رقم الفاتورة',inv,errors); validateRequired(erow,payIdx,'طريقه الدفع',pay,errors);
       if(!inv||!pay)continue;
-      const key=normalizeInvoiceKey(inv);
+      const key=normText(inv);
       if(payMap[key] && normText(payMap[key])!==normText(pay)) errors.push(makeError(erow,payIdx+1,`رقم الفاتورة "${inv}" له أكثر من طريقة دفع مختلفة. الصف السابق ${seenRows[key]}`,pay));
       else {payMap[key]=pay; seenRows[key]=erow;}
     }
@@ -298,152 +209,9 @@
     rows.forEach((r,i)=>{const row=i+2; const k=recordDuplicateKey(r); if(inside[k]!=null)errors.push(makeError(row,1,`السطر مكرر داخل نفس الملف مع الصف ${inside[k]}`,r.invoice)); else inside[k]=row; if(!r.date)errors.push(makeError(row,3,'التاريخ غير صالح',r.date)); if(safeNum(r.totalInc)<0 && !String(r.invoice).includes('-')){} });
   }
 
-  function dsRecords(){
-    try{return (window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[]}catch(e){}
-    try{ if(typeof records!=='undefined' && Array.isArray(records)) return records; }catch(_e){}
-    return [];
-  }
-  function dsSetRecords(arr){
-    const safe=Array.isArray(arr)?arr:[];
-    let ok=false;
-    try{ if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.setRecordsSync==='function'){ window.PETATOEDataSource.setRecordsSync(safe); ok=true; } }catch(e){console.warn('PETATOEImport setRecordsSync failed',e)}
-    try{ if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.syncRecordsCache==='function'){ window.PETATOEDataSource.syncRecordsCache(safe); ok=true; } }catch(e){console.warn('PETATOEImport syncRecordsCache failed',e)}
-    try{ if(typeof records!=='undefined'){ records=safe; ok=true; } }catch(e){console.warn('PETATOEImport records assignment failed',e)}
-    try{ window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),rows:safe.length,ok:ok}; }catch(_e){}
-    return ok;
-  }
-  function hasOfficialDataLayer(){
-    return !!(window.PETATOEDataLayer && typeof window.PETATOEDataLayer.insertSalesRecords === 'function');
-  }
-  function setImportProgress(stage, details){
-    try{
-      window.__PETATOE_IMPORT_PROGRESS__={
-        stage:String(stage||''),
-        time:new Date().toISOString(),
-        details:details||null
-      };
-    }catch(_e){}
-  }
-  async function commitImportedRows(nextRows, eventName, message, options){
-    options = options || {};
-    const uploadRows = Array.isArray(options.uploadRows) ? options.uploadRows.slice() : ((importData || []).slice());
-    let ok=false;
-    let supabaseResult=null;
-
-    if(hasOfficialDataLayer()){
-      try{
-        setImportProgress('preparing',{rows:uploadRows.length,replace:!!options.replace});
-        if(typeof toast==='function') toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('جاري رفع البيانات الرسمية إلى Supabase...'):'جاري رفع البيانات الرسمية إلى Supabase...');
-        setImportProgress('validating',{rows:uploadRows.length,replace:!!options.replace});
-        supabaseResult = await window.PETATOEDataLayer.insertSalesRecords(uploadRows, {
-          mode: importMode,
-          replace: !!options.replace,
-          source: eventName || 'excel-import',
-          onProgress:function(stage){ setImportProgress(stage,{rows:uploadRows.length,replace:!!options.replace}); }
-        });
-        if(!supabaseResult || !supabaseResult.ok){
-          const msg=(supabaseResult&&supabaseResult.error&&supabaseResult.error.message)?supabaseResult.error.message:'فشل حفظ البيانات في Supabase';
-          console.error('[PETATOE Import] Supabase save failed', supabaseResult);
-          renderErrors([makeError(1,1,'فشل الرفع إلى Supabase',msg)]);
-          if(typeof toast==='function') toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('فشل الرفع إلى Supabase — راجع Console'):'فشل الرفع إلى Supabase — راجع Console');
-          setImportProgress('failed',{rows:uploadRows.length,replace:!!options.replace,error:msg});
-          window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase',rows:uploadRows.length,result:supabaseResult};
-          return false;
-        }
-        ok=true;
-        // Official source is Supabase. Refresh the runtime cache from Supabase after write,
-        // so Dashboard / Smart Reports / Records read the same cross-device source.
-        try{
-          if(window.PETATOEDataSource && typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
-            await window.PETATOEDataSource.refreshSalesRecordsFromSupabase(eventName || 'sales-import-supabase-commit');
-          }else if(window.PETATOEDataSource && typeof window.PETATOEDataSource.syncRecordsCache==='function'){
-            window.PETATOEDataSource.syncRecordsCache(uploadRows,{reason:'sales-import-runtime-fallback'});
-          }
-        }catch(e){console.warn('PETATOEImport runtime cache refresh failed',e)}
-      }catch(e){
-        console.error('[PETATOE Import] Supabase save crashed', e);
-        renderErrors([makeError(1,1,'حدث خطأ أثناء الرفع إلى Supabase',e&&e.message?e.message:String(e))]);
-        if(typeof toast==='function') toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('حدث خطأ أثناء الرفع إلى Supabase'):'حدث خطأ أثناء الرفع إلى Supabase');
-        setImportProgress('failed',{rows:uploadRows.length,replace:!!options.replace,error:String(e&&e.message?e.message:e)});
-        window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase',rows:uploadRows.length,error:String(e&&e.message?e.message:e)};
-        return false;
-      }
-    }else{
-      // Supabase-only sales import: Data Layer is mandatory in production.
-      const msg='PETATOEDataLayer غير محمل — تم إلغاء الرفع لمنع الحفظ المحلي أو فقدان البيانات';
-      console.error('[PETATOE Import] Data Layer missing; Supabase-only commit aborted');
-      renderErrors([makeError(1,1,'تعذر الرفع إلى Supabase',msg)]);
-      if(typeof toast==='function') toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تعذر الرفع إلى Supabase — راجع Console'):'تعذر الرفع إلى Supabase — راجع Console');
-      window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:false,target:'supabase-required',rows:uploadRows.length,error:msg};
-      return false;
-    }
-
-    try{
-      if(window.PETATOEReferenceRegistry&&typeof window.PETATOEReferenceRegistry.syncSalesRows==='function'){
-        window.PETATOEReferenceRegistry.syncSalesRows(uploadRows,{source:eventName||'excel-import'});
-      }
-    }catch(e){console.warn('PETATOE reference registry sync after import failed',e)}
-    try{if(window.PETATOESmartTabs&&typeof window.PETATOESmartTabs.notifyDataChanged==='function')window.PETATOESmartTabs.notifyDataChanged(eventName||'import-confirmed');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("sales/import-engine.js",e);}
-    try{ if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex(); }catch(_e){}
-    try{ if(typeof renderRecords==='function') renderRecords(); }catch(_e){}
-    try{ if(typeof refreshCurrentPage==='function') refreshCurrentPage(); }catch(_e){}
-    importData=[];
-    lastImportErrors=[];
-    const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
-    const box=document.getElementById('importErrors'); if(box){box.style.display='none'; clearNode(box);}
-    setImportProgress(ok?'completed':'failed',{rows:uploadRows.length,replace:!!options.replace,transactional:!!(supabaseResult&&supabaseResult.transactional)});
-    window.__PETATOE_LAST_IMPORT_COMMIT__={time:new Date().toISOString(),ok:ok,target:'supabase',rows:uploadRows.length,result:supabaseResult};
-    appendImportAudit('import',{time:new Date().toISOString(),ok:!!ok,target:'supabase',rows:uploadRows.length,mode:importMode,replace:!!options.replace,source:eventName||'sales-import'});
-    if(typeof toast==='function')toast(message || (ok?'تم رفع البيانات الرسمية إلى Supabase بنجاح':'تمت محاولة حفظ البيانات'));
-    return ok;
-  }
-  function applyPaymentsToRows(rows,payMap){
-    const list=Array.isArray(rows)?rows:[];
-    const byInvoice={};
-    list.forEach(function(r){
-      const raw=cleanInvoice(r&&r.invoice);
-      const k=normalizeInvoiceKey(raw);
-      if(!k)return;
-      (byInvoice[k]=byInvoice[k]||[]).push(r);
-    });
-    let matched=0, updatedRows=0;
-    const missing=[];
-    const invoiceRowsByKey={};
-    Object.keys(payMap||{}).forEach(function(k){
-      const rowsForKey=byInvoice[k]||[];
-      if(rowsForKey.length){
-        matched++;
-        invoiceRowsByKey[k]=rowsForKey;
-        rowsForKey.forEach(function(r){
-          r.pay=payMap[k];
-          r.payment_method=payMap[k];
-          updatedRows++;
-        });
-      }else{
-        missing.push(k);
-      }
-    });
-    return {matched:matched,updatedRows:updatedRows,missing:missing,invoiceRowsByKey:invoiceRowsByKey};
-  }
-  async function persistPaymentMethodsToSupabase(applyResult,payMap){
-    const dl=window.PETATOEDataLayer;
-    if(!dl||typeof dl.update!=='function') return {ok:false,error:'PETATOEDataLayer.update is not available'};
-    const batches=[]; let invoices=0, rows=0;
-    for(const key of Object.keys((applyResult&&applyResult.invoiceRowsByKey)||{})){
-      const pay=payMap[key];
-      const rawInvoices=[...new Set((applyResult.invoiceRowsByKey[key]||[]).map(function(r){return cleanInvoice(r&&r.invoice);}).filter(Boolean))];
-      for(const inv of rawInvoices){
-        const res=await dl.update('sales_records',{payment_method:pay},{invoice_no:inv});
-        batches.push({invoice:inv,payment:pay,result:res});
-        if(!res||!res.ok){
-          return {ok:false,error:(res&&res.error&&(res.error.message||res.error))||'فشل تحديث طريقة الدفع في Supabase',failedInvoice:inv,batches:batches};
-        }
-        invoices++;
-        rows += (applyResult.invoiceRowsByKey[key]||[]).filter(function(r){return cleanInvoice(r&&r.invoice)===inv;}).length;
-      }
-    }
-    return {ok:true,invoices:invoices,rows:rows,batches:batches};
-  }
+  function dsRecords(){try{return (window.PETATOEDataSource&&window.PETATOEDataSource.getRecordsSync)?window.PETATOEDataSource.getRecordsSync():[]}catch(e){return []}}
+  function dsSetRecords(arr){try{if(window.PETATOEDataSource&&window.PETATOEDataSource.setRecordsSync){window.PETATOEDataSource.setRecordsSync(Array.isArray(arr)?arr:[]);return true}}catch(e){console.warn('PETATOEImport dsSetRecords failed',e)}return false}
+  function applyPaymentsToRows(rows,payMap){let matched=0,missing=[];(rows||[]).forEach(r=>{const k=normText(r.invoice);if(payMap[k]){r.pay=payMap[k];matched++;}else missing.push(r.invoice);});return {matched,missing:[...new Set(missing.filter(Boolean))]};}
   function duplicateErrorsAgainstExisting(rows,replace){
     if(replace)return [];
     const errors=[]; const existing={};
@@ -463,7 +231,7 @@
       if(importMode==='payments')n.textContent='ملف المدفوعات لا يضيف بنود جديدة، لكنه يربط طريقة الدفع برقم الفاتورة في بيانات البنود المرفوعة أو السجلات الحالية.';
     }
   }
-  window.setImportMode=function(mode){importMode=MODES[mode]?mode:'full';clearErrors();updateImportModeUI(); if(typeof toast==='function')toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('تم اختيار: '):'تم اختيار: '+(importMode==='full'?'رفع تقرير تفصيلي شامل':importMode==='items'?'مبيعات البنود حسب التصنيف':'تحديد طريقة المدفوعات'));};
+  window.setImportMode=function(mode){importMode=MODES[mode]?mode:'full';clearErrors();updateImportModeUI(); if(typeof toast==='function')toast('تم اختيار: '+(importMode==='full'?'رفع تقرير تفصيلي شامل':importMode==='items'?'مبيعات البنود حسب التصنيف':'تحديد طريقة المدفوعات'));};
   window.downloadTemplate=function(){
     let headers;
     if(importMode==='items')headers=['الاسم','التاريخ','رقم الفاتورة','العميل','سعر الوحدة','الكمية','الخصم','الضرائب','الإجمالي (SAR)','السياره'];
@@ -475,14 +243,22 @@
   window.processFile=function(file){
     clearErrors();
     if(!file){renderErrors([makeError(1,1,'لم يتم اختيار ملف')]);return;}
-    if(!ensureXlsxReady()){renderErrors([makeError(1,1,'مكتبة قراءة Excel غير جاهزة. أعد تحميل الصفحة ثم حاول مرة أخرى')]);return;}
+    const csv=isCsvFile(file);
+    if(!csv&&!ensureXlsxReady()){renderErrors([makeError(1,1,'مكتبة قراءة Excel غير جاهزة. أعد تحميل الصفحة ثم حاول مرة أخرى')]);return;}
     const reader=new FileReader();
-    reader.onload=async e=>{
+    reader.onload=e=>{
       try{
-        const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
-        if(!wb||!Array.isArray(wb.SheetNames)||!wb.SheetNames.length){renderErrors([makeError(1,1,'ملف Excel لا يحتوي على شيتات قابلة للقراءة')]);return;}
-        const ws=wb.Sheets[wb.SheetNames[0]], data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-        if(!Array.isArray(data)||!data.length){renderErrors([makeError(1,1,'الشيت الأول فارغ أو غير قابل للقراءة')]);return;}
+        let data;
+        if(csv){
+          data=parseCsvMatrix(decodeCsvBuffer(e.target.result));
+          if(!Array.isArray(data)||!data.length){renderErrors([makeError(1,1,'ملف CSV فارغ أو غير قابل للقراءة')]);return;}
+        }else{
+          const wb=XLSX.read(e.target.result,{type:'array',cellDates:true});
+          if(!wb||!Array.isArray(wb.SheetNames)||!wb.SheetNames.length){renderErrors([makeError(1,1,'ملف Excel لا يحتوي على شيتات قابلة للقراءة')]);return;}
+          const ws=wb.Sheets[wb.SheetNames[0]];
+          data=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+          if(!Array.isArray(data)||!data.length){renderErrors([makeError(1,1,'الشيت الأول فارغ أو غير قابل للقراءة')]);return;}
+        }
         let result;
         if(importMode==='payments'){
           result=parsePayments(data);
@@ -491,38 +267,15 @@
           let existingRows=dsRecords();
           let targetRows=(importData&&importData.length)?importData:existingRows;
           const ap=applyPaymentsToRows(targetRows,stagedPaymentMap);
-          let persistResult=null;
-          if(targetRows===existingRows && ap.updatedRows){
-            dsSetRecords(existingRows);
-            try{ if(typeof toast==='function')toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('جاري حفظ طرق الدفع في Supabase...'):'جاري حفظ طرق الدفع في Supabase...'); }catch(_e){}
-            persistResult=await persistPaymentMethodsToSupabase(ap,stagedPaymentMap);
-            if(!persistResult||!persistResult.ok){
-              renderErrors([makeError(1,1,'فشل حفظ طرق الدفع في Supabase',(persistResult&&persistResult.error)||'خطأ غير معروف')]);
-              return;
-            }
-            try{
-              if(window.PETATOEDataSource&&typeof window.PETATOEDataSource.refreshSalesRecordsFromSupabase==='function'){
-                await window.PETATOEDataSource.refreshSalesRecordsFromSupabase('payment-method-linking');
-              }
-            }catch(_e){console.warn('PETATOEImport payment refresh failed',_e)}
-            try{ if(typeof renderRecords==='function')renderRecords(); }catch(_e){}
-            try{ if(typeof refreshCurrentPage==='function')refreshCurrentPage(); }catch(_e){}
-          }
-          const statusText=targetRows===existingRows?(ap.updatedRows?'تم الحفظ':'جاهز'):'جاهز للربط مع البنود';
-          renderImportStats([
-            {label:'طرق الدفع المقروءة',value:fmt0(Object.keys(result.payments).length)},
-            {label:'فواتير تم ربطها',value:fmt0(ap.matched)},
-            {label:'بنود محدثة',value:fmt0(ap.updatedRows)},
-            {label:'غير موجودة',value:fmt0(ap.missing.length)},
-            {label:'الحالة',value:statusText}
-          ]);
+          if(targetRows===existingRows && ap.matched){dsSetRecords(existingRows); try{save()}catch(_e){console.warn('PETATOEImport post-payment save failed',_e)}}
+          renderImportStats([{label:'طرق الدفع المقروءة',value:fmt0(Object.keys(result.payments).length)},{label:'تم ربطها',value:fmt0(ap.matched)},{label:'غير موجودة',value:fmt0(ap.missing.length)},{label:'الحالة',value:'جاهز'}]);
           if(importData&&importData.length)showPreview();
           else {const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';}
-          toast(ap.matched?'تم ربط وحفظ طرق الدفع بنجاح':'تم قراءة طرق الدفع، لكن لا توجد فواتير مطابقة حالياً');
+          toast(ap.matched?'تم ربط طرق الدفع بنجاح':'تم قراءة طرق الدفع، لكن لا توجد فواتير مطابقة حالياً');
           return;
         }
         result=(importMode==='items')?parseItems(data):parseFull(data);
-        if(result.errors.length){ if(result.rows&&result.rows.length) importData=result.rows; pendingOverrideContext='validation'; pendingOverrideReplace=false; renderErrors(result.errors);return;}
+        if(result.errors.length){renderErrors(result.errors);return;}
         importData=result.rows;
         if(Object.keys(stagedPaymentMap).length)applyPaymentsToRows(importData,stagedPaymentMap);
         showPreview();
@@ -550,38 +303,19 @@
       table.appendChild(tbody);
     }
   };
-  window.confirmImport=async function(replace){
-    if(!(importData&&importData.length)){toast(window.PETATOE_LOCALIZATION_CENTER&&window.PETATOE_LOCALIZATION_CENTER.translateRuntime?window.PETATOE_LOCALIZATION_CENTER.translateRuntime('لا توجد بيانات جاهزة للاعتماد'):'لا توجد بيانات جاهزة للاعتماد');return;}
-    pendingOverrideReplace=!!replace; pendingOverrideContext='confirm';
+  window.confirmImport=function(replace){
+    if(!(importData&&importData.length)){toast('لا توجد بيانات جاهزة للاعتماد');return;}
     const errs=[];
     const dup=duplicateErrorsAgainstExisting(importData,replace); errs.push(...dup);
     if(errs.length){renderErrors(errs);return;}
     var existingRows=dsRecords().slice();
-    var uploadRows=(importData||[]).slice();
-    if(!(await assertImportPeriodsUnlocked(uploadRows,!!replace)))return false;
-    var nextRows=replace?uploadRows:existingRows.concat(uploadRows);
-    await commitImportedRows(nextRows,'import-confirmed','تم رفع البيانات الرسمية إلى Supabase بنجاح',{uploadRows:uploadRows,replace:!!replace});
+    var nextRows=replace?[...importData]:existingRows.concat(importData);
+    dsSetRecords(nextRows);
+    try{if(window.PETATOESmartTabs&&typeof window.PETATOESmartTabs.notifyDataChanged==='function')window.PETATOESmartTabs.notifyDataChanged('import-confirmed');}catch(e){window.PETATOEUtils&&window.PETATOEUtils.warnSilentCatch&&window.PETATOEUtils.warnSilentCatch("assets/js/sales/import-engine.js",e);}
+    importData=[]; if(typeof _invalidateSearchIndex==='function')_invalidateSearchIndex();
+    const pc=document.getElementById('previewCard'); if(pc)pc.style.display='none';
+    save(); toast('تم اعتماد البيانات بنجاح بدون تكرار');
   };
-
-  // PETATOE IMPORT OVERRIDE PUBLIC API
-  // Runtime verification helper. No data is written by these helpers unless open() is confirmed by Super Admin.
-  window.petatoeImportOverride = {
-    version: 'v8.0.2-dl2-supabase-import',
-    isLoaded: true,
-    getLastErrors: function(){ return (lastImportErrors||[]).slice(); },
-    getPendingRowsCount: function(){ try{return (importData||[]).length;}catch(_e){return 0;} },
-    getRecordsCount: function(){ try{return dsRecords().length;}catch(_e){return 0;} },
-    getLastCommit: function(){ return window.__PETATOE_LAST_IMPORT_COMMIT__||null; },
-    hasOfficialDataLayer: function(){ return hasOfficialDataLayer(); },
-    canOverride: function(){ try{ return isSuperAdminUser(findCurrentFullUser()); }catch(_e){ return false; } },
-    open: function(){ return openOverrideModal(); },
-    renderButton: function(){
-      const box=document.getElementById('importErrors');
-      if(box) appendOverrideButton(box);
-      return !!document.getElementById('petImportOverrideBtn');
-    }
-  };
-
   document.addEventListener('DOMContentLoaded',updateImportModeUI);
   setTimeout(updateImportModeUI,0);
 })();
